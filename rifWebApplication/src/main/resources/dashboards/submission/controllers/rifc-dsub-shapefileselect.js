@@ -42,36 +42,5 @@ angular.module("RIF")
                 //Reference the parent scope
                 var parentScope = $scope.$parent;
                 parentScope.child = $scope;
-	/*Code to change height		
-				$scope.tableHeight = 'height: 600px';  
-  
-			function getTableHeight(totalPage, currentPage, pageSize, dataLen) {  
-				var rowHeight = 30; // row height  
-				var headerHeight = 50; // header height  
-				var footerHeight = 60; // bottom scroll bar height  
-				var totalH = 0;  
-				if (totalPage > 1) {  
-					if (currentPage < totalPage) {  
-						totalH = pageSize * rowHeight + headerHeight + footerHeight;  
-					} else {  
-						var lastPageSize = dataLen % pageSize;  
-						if (lastPageSize === 0) {  
-							totalH = pageSize * rowHeight + headerHeight + footerHeight;  
-						} else {  
-							totalH = lastPageSize * rowHeight + headerHeight + footerHeight;  
-						}  
-					}  
-					console.log(totalH);  
-				} else {  
-					totalH = dataLen * rowHeight + headerHeight + footerHeight;  
-				}  
-				return 'height: ' + (totalH) + 'px';  
-			}  
-			$interval(function() {  
-				$scope.tableHeight = getTableHeight($scope.totalPage, $scope.currentPage, $scope.pageSize, $scope.gridOptions.data.length);  
-				console.log("$scope.tableHeight: " + $scope.tableHeight);  
-				$scope.gridApi.grid.handleWindowResize();  
-				$scope.gridApi.core.refresh();  
-			}, 200);  */
 
             }]);

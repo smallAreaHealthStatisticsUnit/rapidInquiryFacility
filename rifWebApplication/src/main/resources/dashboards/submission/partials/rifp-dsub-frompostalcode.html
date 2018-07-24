@@ -46,12 +46,13 @@ Disease submission modal to open postal code
 
 		<div class="postal-code-box">
 		
-			<div ng-controller="PostalCodeSelect">
-			  <div ng-show="hasGrid" class="grid-postalcode" ng-mouseleave="mouseleave($event)" ui-grid="postalCodeGridOptions" ui-grid-resize-columns></br></div>
+			<div ng-show="hasPostalGrid">
+				<div ng-show="hasPostalGrid" class="grid-postalcode" ng-mouseleave="mouseleave($event)" ui-grid="postalCodeGridOptions" ui-grid-resize-columns>
+					</br>
+				</div>
 			</div>
 			
 			<div class="bnd-fld">
-				<h3>Define point by</h3>
 				<input ng-model="selectionMethod" type="radio" ng-checked="wgs84Checked" ng-value="1" id="byWGS84" ng-change="radioChange(selectionMethod)">
 				<label for="byWGS84">WGS84/GPS latitude/longitude</label><br>
 				<div ng-show="hasPostalCode">
@@ -78,22 +79,21 @@ Disease submission modal to open postal code
 				</div>	
 				</br>			
 				<div ng-show="isPostalCode">
-				<h3>Circular buffer around postal code (metres)</h3><br>
+				<h3>Circular buffer around postal code (metres)</h3>
 				</div>
 				<div ng-show="isWGS84">
-				<h3>Circular buffer around WGS84 Latitude/longitude (metres)</h3><br>
+				<h3>Circular buffer around WGS84 Latitude/longitude (metres)</h3><
 				</div>
-				</div>	
 				<div ng-show="isNationalGrid">
-				<h3>Circular buffer around national grid X/Y (metres)</h3><br>
+				<h3>Circular buffer around national grid X/Y (metres)</h3>
 				</div>
+				</br>
 
 				<table id="breakstable">
 					<tr ng-repeat="i in possibleBands track by $index">
 						<td>Radius for band {{possibleBands[i - 1]}}:&nbsp;&nbsp;<input class="break" ng-model="bandAttr[$index]"></td> 
 					</tr>
 				</table>
-				</br>
 			</div>
 		</div>
 

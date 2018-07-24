@@ -50,6 +50,13 @@
     height: 30%;
 }
 
+.grid-postalcode { 
+    position: relative;
+    float: right;
+    width: 45%;
+    height: 30%;
+}
+
 .grid-ICD { 
     position: relative;
     width: 100%;

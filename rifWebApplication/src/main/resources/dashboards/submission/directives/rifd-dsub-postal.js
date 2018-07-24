@@ -43,7 +43,7 @@ angular.module("RIF")
                 $uibModalInstance.dismiss();
             };
             $scope.submit = function () {
-                var bOk = $scope.applyPostalCode();
+                var bOk = $scope.applyCoordinates();
                 if (bOk) {
                     $uibModalInstance.close();
                 }
@@ -62,7 +62,7 @@ angular.module("RIF")
                         var studyType = scope.$parent.input.type; // Disease Mapping or Risk Analysis
 						var selectAt = scope.$parent.input.selectAt;
 						
-                        var buffers; //concentric buffers around points					
+//                        var buffers; //concentric buffers around points					
 						var parameters=ParametersService.getParameters();
 						var selectorBands = { // Study and comparison are selectors
 								weight: 3,
@@ -73,7 +73,7 @@ angular.module("RIF")
 						if (parameters && parameters.selectorBands) {
 							selectorBands=parameters.selectorBands
 						}	
-						var initialPostalcodeGridOptions = {
+						scope.initialPostalcodeGridOptions = {
 							enableSorting: true,
 							enableRowSelection: false,
 							enableFiltering: true,
@@ -84,13 +84,11 @@ angular.module("RIF")
 							minRowsToShow: 5,
 							maxVisibleColumnCount: 4,
 							rowHeight: 20,
-							multiSelect: false,
-							onRegisterApi: function(gridApi) { scope.gridApi = gridApi; },
+							multiSelect: false, 
+							onRegisterApi: function(gridApi) { scope.gridApi = gridApi; }, 
 							columnDefs: [],
 							data: []
 						};
-						
-						var postalcodeGridOptions = angular.copy(initialPostalcodeGridOptions);
 						
 						// Capabilities
 						scope.hasNationalGrid=true;
@@ -102,11 +100,12 @@ angular.module("RIF")
 						if (scope.hasPostalCode) {
                             scope.modalHeader = "Select by Postal Code";
 							
-							scope.wgs84Checked=false;
+							scope.wgs84Checked=false; // Options checked
 							scope.postalCodeChecked=true;
 							scope.nationalGridChecked=false;
+							scope.selectionMethod = 2; // postal code
 							
-							scope.isWGS84=false;
+							scope.isWGS84=false;  // Show hide options
 							scope.isNationalGrid=false;
 							scope.isPostalCode=true;
 						}
@@ -115,6 +114,7 @@ angular.module("RIF")
 							scope.wgs84Checked=false;
 							scope.postalCodeChecked=false;
 							scope.nationalGridChecked=true;	
+							scope.selectionMethod = 3; // National Grid
 							
 							scope.isWGS84=false;
 							scope.isNationalGrid=true;
@@ -126,6 +126,7 @@ angular.module("RIF")
 							scope.wgs84Checked=true;
 							scope.postalCodeChecked=false;
 							scope.nationalGridChecked=false;
+							scope.selectionMethod = 1; // WGS84
 							
 							scope.isWGS84=true;
 							scope.isNationalGrid=false;
@@ -141,101 +142,20 @@ angular.module("RIF")
                         });
                         //user input boxes
                         scope.bandAttr = [];	
-						scope.hasGrid = false;
+						scope.xcoordinate = undefined;
+						scope.ycoordinate = undefined;
+						scope.properties = undefined;
+						scope.hasPostalGrid = false;
+						scope.postalCodeGridOptions = {};
 						
                         element.on('click', function (event) {
 							
-							scope.radioChange = function (selectionMethod) {
-								switch (selectionMethod) {
-									case 1: // WGS84
-										scope.modalHeader = "Select by WGS84 GPS Coordinates";
-										scope.isWGS84=true;
-										scope.isNationalGrid=false;
-										scope.isPostalCode=false;
-										break;
-									case 2: // Postal Code	
-										scope.modalHeader = "Select by National Grid X/Y Coordinates";
-										scope.isWGS84=false;
-										scope.isNationalGrid=false;
-										scope.isPostalCode=true;
-										break;
-									case 3: // National Grid
-										scope.modalHeader = "Select by National Grid X/Y Coordinates";
-										scope.isWGS84=false;
-										scope.isNationalGrid=true;
-										scope.isPostalCode=false;
-										break;
-								}
-							}
-							
-							scope.nationalGridChange = function(attr) {
-								scope.nationalGridCoordinate=attr;
-							}
-							scope.wgs84Change = function(attr) {
-								scope.wgs84=attr;
-							}
-							scope.postcodeChange = function(attr) {
-								scope.postcode=attr;
-							}
-							scope.checkWGS84 = function() {
-							}
-							scope.checkNationalGrid = function() {
-							}
-							scope.setPostcode = function(newPostcode) {
-								scope.postcode=newPostcode;
-							}
-							scope.setupGrid = function(smoothed_results) {
-								postalcodeGridOptions = angular.copy(initialPostalcodeGridOptions);
-								postalcodeGridOptions.columnDefs = [
-									{ field: 'Name' },
-									{ field: 'Value' }
-								];
-								var data=[];
-								for (var i=0; i<smoothed_results.length; i++) {
-									if (smoothed_results[i].Value && typeof smoothed_results[i].Value != "object") {
-										data.push(smoothed_results[i]);
-									}
-								}
-								postalcodeGridOptions.data=data;
-								
-								if (postalcodeGridOptions.data.length > 0) {
-									alertScope.consoleDebug("[rifd-dsub-risk.js] scope.postalcodeGridOptions: " +
-										JSON.stringify(postalcodeGridOptions, null, 1));
-									scope.postalcodeGridOptions = postalcodeGridOptions;
-									scope.hasGrid = true;
-									if (scope.gridApi) {
-										scope.gridApi.core.refresh();
-									}
-								}							
-							}
-							scope.checkPostcode = function() {
-								
-								if (scope.postcode) {
-									user.getPostalCodes(user.currentUser, thisGeography, scope.postcode).then(function (res) {    
-										if (res.data.nopostcodefound) {
-											scope.postcode=res.data.nopostcodefound.postalCode || scope.postcode;
-											AlertService.rifMessage('warning', res.data.nopostcodefound.warning);
-											scope.setPostcode(undefined);
-											scope.setupGrid(undefined);		
-										}
-										else {
-											if (res.data.additionalTableJson && res.data.additionalTableJson.postalCode) {
-												scope.setPostcode(res.data.additionalTableJson.postalCode);
-											}
-											AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode +
-												"; res: " + JSON.stringify(res, null, 1));
-											scope.setupGrid(res.data.smoothed_results);			  
-										}
-									}, function () { // Error handler
-										AlertService.rifMessage('warning', "Could not fetch postal codes from the database");
-
-									}).then(function () {
-									});
-								}
-								else {
-									AlertService.rifMessage('warning', "You must enter a postal code");
-								}
-							}
+                            scope.bandAttr.length = 0;
+							scope.xcoordinate = undefined;
+							scope.ycoordinate = undefined;
+							scope.properties = undefined;
+							scope.hasPostalGrid = false;
+							scope.postalCodeGridOptions = {};
 							
                             var modalInstance = $uibModal.open({
                                 animation: true,
@@ -246,14 +166,236 @@ angular.module("RIF")
                                 scope: scope,
                                 keyboard: false
                             });
+							
                         });		
 						
-                        scope.applyPostalCode = function () {
+						scope.radioChange = function (selectionMethod) {
+							switch (selectionMethod) {
+								case 1: // WGS84
+									scope.modalHeader = "Select by " + printSelectionMethod(selectionMethod);
+									scope.isWGS84=true;
+									scope.isNationalGrid=false;
+									scope.isPostalCode=false;
+									scope.selectionMethod=selectionMethod;
+									break;
+								case 2: // Postal Code	
+									scope.modalHeader = "Select by " + printSelectionMethod(selectionMethod);
+									scope.isWGS84=false;
+									scope.isNationalGrid=false;
+									scope.isPostalCode=true;
+									scope.selectionMethod=selectionMethod;
+									break;
+								case 3: // National Grid
+									scope.modalHeader = "Select by " + printSelectionMethod(selectionMethod);
+									scope.isWGS84=false;
+									scope.isNationalGrid=true;
+									scope.isPostalCode=false;
+									scope.selectionMethod=selectionMethod;
+									break;
+							}
+						}
+						
+						scope.nationalGridChange = function(attr) {
+							scope.nationalGridCoordinate=attr;
+						}
+						scope.wgs84Change = function(attr) {
+							scope.wgs84=attr;
+						}
+						scope.postcodeChange = function(attr) {
+							scope.postcode=attr;
+						}
+						
+						scope.checkWGS84 = function() {
+						}
+						scope.checkNationalGrid = function() {
+						}
+						scope.checkPostcode = function() {
+							
 							if (scope.postcode) {
-								AlertService.consoleDebug("[rifd-dsub-postal.js] apply postcode: " + scope.postcode);
+								user.getPostalCodes(user.currentUser, thisGeography, scope.postcode).then(function (res) {    
+									if (res.data.nopostcodefound) {
+										AlertService.rifMessage('warning', res.data.nopostcodefound.warning);
+//										setPostcode(undefined);
+										scope.setupGrid(undefined);	
+
+										scope.xcoordinate = undefined;
+										scope.ycoordinate = undefined;	
+										scope.properties = undefined;									
+									}
+									else {
+										scope.properties = angular.copy(res.data.additionalTableJson);
+										if (res.data.additionalTableJson && res.data.additionalTableJson.postalCode) {
+//											setPostcode(res.data.additionalTableJson.postalCode);
+										}
+										
+										if (res.data.additionalTableJson && res.data.additionalTableJson.xcoordinate && 
+										    res.data.additionalTableJson.ycoordinate) {
+											scope.xcoordinate = res.data.additionalTableJson.xcoordinate;
+											scope.ycoordinate = res.data.additionalTableJson.ycoordinate;										
+										}
+//										AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode +
+//											"; res: " + JSON.stringify(res, null, 1));
+										scope.setupGrid(res.data.smoothed_results);			  
+									}
+								}, function () { // Error handler
+									AlertService.rifMessage('warning', "Could not fetch postal codes from the database");
+
+								}).then(function () {
+								});
 							}
 							else {
-								AlertService.rifMessage('warning', 'You must enter a valid postcode');
+								AlertService.rifMessage('warning', "You must enter a postal code");
+							}
+						}
+						
+//						function setPostcode(newPostcode) {
+//							AlertService.consoleDebug("[rifd-dsub-postal.js] set postcode change: " + newPostcode);
+//							scope.postcode=newPostcode;
+//						}				
+						function printSelectionMethod(selectionMethod) {
+							var rVal="";
+							
+							switch (selectionMethod) {
+								case 1: // WGS84
+									rVal = "WGS84 GPS Coordinates";
+									break;
+								case 2: // Postal Code	
+									rVal = "Postal Code";
+									break;
+								case 3: // National Grid
+									rVal = "National Grid X/Y Coordinates";
+									break;
+							}
+							
+							return rVal;
+						}
+						
+						scope.setupGrid = function(smoothed_results) {
+							if (smoothed_results) {
+								var postalCodeGridOptions=angular.copy(scope.initialPostalcodeGridOptions);
+								postalCodeGridOptions.columnDefs = [
+									{ field: 'Name', width: 100 },
+									{ field: 'Value', width: 250 }
+								];
+								var data=[];
+								for (var i=0; i<smoothed_results.length; i++) {
+									if (smoothed_results[i].Value && typeof smoothed_results[i].Value != "object") {
+										data.push(smoothed_results[i]);
+									}
+								}
+								postalCodeGridOptions.data=data;
+								
+								if (postalCodeGridOptions.data.length > 0) {
+									
+									AlertService.consoleDebug("[rifd-dsub-postal.js] setupGrid postalCodeGridOptions: " +
+										JSON.stringify(postalCodeGridOptions, null, 1));
+									scope.postalCodeGridOptions=postalCodeGridOptions;
+									scope.hasPostalGrid = true;
+									if (scope.gridApi) {
+										scope.gridApi.core.refresh();
+									}
+								}			
+							}	
+							else {
+								scope.postalCodeGridOptions={};
+								scope.hasPostalGrid = false;
+								if (scope.gridApi) {
+									scope.gridApi.core.refresh();
+								}
+							}
+						} 
+						
+                        scope.applyCoordinates = function () {
+							if (scope.xcoordinate && scope.ycoordinate) {
+								AlertService.consoleDebug("[rifd-dsub-postal.js] apply coordinates: [" + 
+									scope.xcoordinate + ", " + scope.ycoordinate + "]");	
+								//trim any trailing zeros
+                                //check numeric
+                                var bZero = [];
+                                for (var i = 0; i < scope.bandAttr.length; i++) {
+                                    var thisBreak = Number(scope.bandAttr[i]);
+                                    if (!isNaN(thisBreak)) {
+                                        if (thisBreak !== 0) {
+                                            bZero.push(1);
+                                        } else {
+                                            bZero.push(0);
+                                        }
+                                    } else {
+                                        AlertService.rifMessage('warning', "Non-numeric band value entered");
+                                        return false; //and only display the points
+                                    }
+                                }
+                                var total = 0;
+                                for (var i in bZero) {
+                                    total += bZero[i];
+                                }
+                                if (total !== scope.bandAttr.length) {
+                                    var tmp = angular.copy(scope.bandAttr);
+                                    //there are zero values, are they at the end?
+                                    for (var i = scope.bandAttr.length - 1; i >= 0; i--) {
+                                        if (scope.bandAttr[i] === '') {
+                                            tmp.pop();
+                                        }
+                                        else {
+                                            break;
+                                        }
+                                    }
+                                    scope.bandAttr = angular.copy(tmp);
+                                }
+								if (scope.bandAttr.length == 0) {
+									AlertService.rifMessage('warning', "No distance band values supplied for points");
+									return false;
+								}
+								else {
+									//check ascending and sequential for radii
+									for (var i = 0; i < scope.bandAttr.length - 1; i++) {
+										var a = parseInt(scope.bandAttr[i]);
+										var b = parseInt(scope.bandAttr[i+1]);
+										
+										if (a.toString() != scope.bandAttr[i] || 
+											b.toString() != scope.bandAttr[i+1]) {
+											AlertService.consoleLog("[rifd-dsub-postal.js] scope.bandAttr[" + i + "]: " + 
+												JSON.stringify(scope.bandAttr));
+											AlertService.rifMessage('warning', "Distance band values are not integers");
+											return false;
+										}
+										else if (a > b) {
+											AlertService.consoleLog("[rifd-dsub-postal.js] scope.bandAttr[" + i + "]: " + 
+												JSON.stringify(scope.bandAttr));
+											AlertService.rifMessage('warning', "Distance band values are not in ascending order");
+											return false;
+										}
+									}
+								
+									//make polygons and apply selection
+//									buffers = new L.layerGroup();
+									var i = 0;
+									for (; i < scope.bandAttr.length; i++) {
+										var circle = L.circle([scope.ycoordinate, scope.xcoordinate],
+												{
+													radius: scope.bandAttr[i],
+													fillColor: 'none',
+													weight: (selectorBands.weight || 3),
+													opacity: (selectorBands.opacity || 0.8),
+													fillOpacity: (selectorBands.fillOpacity || 0),
+													color: selectorBands.bandColours[i] // Band i+1
+												});
+//										buffers.addLayer(circle);
+										$rootScope.$broadcast('makeDrawSelection', {
+											data: circle,
+											properties: scope.properties,
+											circle: true,
+											freehand: false,
+											band: i + 1,
+											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100 // Square km to 2dp
+										});
+									}
+									
+									$rootScope.$broadcast('completedDrawSelection', { maxBand: i});
+								}
+							}
+							else {
+								AlertService.rifMessage('warning', 'You must enter a valid ' + printSelectionMethod(scope.selectionMethod));
 								return false;
 							}
                             return true;
