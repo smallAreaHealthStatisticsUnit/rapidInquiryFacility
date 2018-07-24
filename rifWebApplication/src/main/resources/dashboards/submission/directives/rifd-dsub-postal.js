@@ -50,9 +50,9 @@ angular.module("RIF")
             };
         })
         .directive('postalCode', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'AlertService', 'SubmissionStateService', 
-			'user',
+			'ProjectionService', 'user',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
-            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, AlertService, SubmissionStateService,
+            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, AlertService, SubmissionStateService, ProjectionService,
 				user) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addPostalCode in rifs-utils-mapTools
