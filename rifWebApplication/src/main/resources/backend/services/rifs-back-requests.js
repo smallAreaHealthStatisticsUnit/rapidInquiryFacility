@@ -231,7 +231,11 @@ angular.module("RIF")
                 //check postcode
                 self.getPostalCodes = function (username, geography, postcode) {
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getPostalCodes?userID=' + username + '&geographyName=' + geography + '&postcode=' + postcode);
-                };
+                };                //check postcode
+				
+                self.getPostalCodeCapabilities = function (username, geography) {
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getPostalCodeCapabilities?userID=' + username + '&geographyName=' + geography);
+                };					// Get postal coding capabilities of database (and srid)
 				
                 //get areas used in a completed study (recycled faulty KG method)
                 self.getStudySubmission = function (username, studyID) {

@@ -447,9 +447,21 @@ public class StudyResultRetrievalServiceResource extends WebService {
 			@QueryParam("userID") String userID,
 			@QueryParam("geographyName") String geographyName, //SAHSU
 			@QueryParam("postcode") String postcode
-			) { //LEVEL2
+			) { 
 
 		return super.getPostalCodes(servletRequest, userID, geographyName, postcode);
+	}
+	
+	@GET
+	@Produces({"application/json"})
+	@Path("/getPostalCodeCapabilities")
+	public Response getPostalCodeCapabilities(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName
+			) { 
+
+		return super.getPostalCodeCapabilities(servletRequest, userID, geographyName);
 	}
 	
 	@GET

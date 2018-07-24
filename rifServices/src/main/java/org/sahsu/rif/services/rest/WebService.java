@@ -747,6 +747,33 @@ public class WebService {
 			result);
 	}
 	
+	protected Response getPostalCodeCapabilities(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String geographyName) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				Geography geography = Geography.newInstance(geographyName, "");
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getPostalCodeCapabilities(
+						user, geography);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getPostalCodeCapabilities error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+		}
+	
 	protected Response getPostalCodes(
 			final HttpServletRequest servletRequest,
 			final String userID,

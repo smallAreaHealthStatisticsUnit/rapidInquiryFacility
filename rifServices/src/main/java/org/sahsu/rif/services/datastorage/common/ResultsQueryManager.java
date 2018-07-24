@@ -40,6 +40,107 @@ public class ResultsQueryManager extends BaseSQLManager {
 		getTilesQueryFormatter.setNumberOfFunctionParameters(9);
 	}
 
+	String getPostalCodeCapabilities(
+			final Connection connection, 
+			final Geography geography) throws RIFServiceException {
+		String result="{}";
+
+		SelectQueryFormatter getPostalCodeCapabilitiesQueryFormatter1 =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+
+		getPostalCodeCapabilitiesQueryFormatter1.setDatabaseSchemaName("rif40");
+		getPostalCodeCapabilitiesQueryFormatter1.addSelectField("postal_population_table");
+		getPostalCodeCapabilitiesQueryFormatter1.addSelectField("srid");
+		getPostalCodeCapabilitiesQueryFormatter1.addFromTable("rif40_geographies");
+		getPostalCodeCapabilitiesQueryFormatter1.addWhereParameter("geography");
+
+		logSQLQuery("getPostalCodeCapabilities", getPostalCodeCapabilitiesQueryFormatter1, geography.getName().toUpperCase());
+	
+		PreparedStatement statement1 = null;
+		ResultSet resultSet1 = null;
+		
+		try {
+			statement1 = connection.prepareStatement(getPostalCodeCapabilitiesQueryFormatter1.generateQuery());
+			statement1.setString(1, geography.getName().toUpperCase());
+			resultSet1 = statement1.executeQuery();
+		
+			if (!resultSet1.next()) {
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					"getPostalCodeCapabilities query 1; expected 1 row, got none for geography: " + geography.getName().toUpperCase());
+			}
+			String postalPopulationTable = resultSet1.getString(1);
+			int srid = resultSet1.getInt(2);
+			
+			if (resultSet1.next()) {
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					"getPostalCodeCapabilities query 1; expected 1 row, got >1 for geography: " + geography.getName().toUpperCase());
+			}	
+
+			if (postalPopulationTable == null) {
+				throw new Exception("getPostalCodeCapabilities no postal population table defined for geography: " + geography.getName().toUpperCase());
+			}
+			if (srid == 0) {
+				throw new Exception("getPostalCodeCapabilities no/invalid srid defined for geography: " + geography.getName().toUpperCase());
+			}
+	
+			boolean hasXcoordinate=doesColumnExist(connection, 
+				"rif_data", postalPopulationTable.toLowerCase(), "xcoordinate");
+			boolean hasYcoordinate=doesColumnExist(connection, 
+				"rif_data", postalPopulationTable.toLowerCase(), "ycoordinate");
+
+			if (hasXcoordinate == false || hasYcoordinate == false) {
+				throw new Exception("getPostalCodeCapabilities X/Y coordinate columns not found in geography: " + geography.getName().toUpperCase() +
+					" postal population table: " + postalPopulationTable + 
+					"; hasXcoordinate: " + hasXcoordinate + 
+					"; hasYcoordinate: " + hasYcoordinate);
+			} 			
+			
+			JSONObject getPostalCodeCapabilities = new JSONObject();
+			getPostalCodeCapabilities.put("geography", geography.getName().toUpperCase());
+			getPostalCodeCapabilities.put("postalPopulationTable", postalPopulationTable);
+			getPostalCodeCapabilities.put("srid", srid);
+			result=getPostalCodeCapabilities.toString();	
+			
+			connection.commit();
+			
+			return result;
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetPostalCodeCapabilities",
+					geography.getName().toUpperCase());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		} catch(Exception exception) {
+			
+			JSONObject getPostalCodeCapabilities = new JSONObject();
+			getPostalCodeCapabilities.put("geography", geography.getName().toUpperCase());
+			getPostalCodeCapabilities.put("error", RIFResultTable.quote(exception.getMessage()));
+			result=getPostalCodeCapabilities.toString();	
+			
+			try {
+				connection.commit();
+			} catch(SQLException sqlException) {
+				logSQLException(sqlException);
+			}
+			
+			return result;
+			
+		} finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement1);
+			SQLQueryUtility.close(resultSet1);
+		}	
+		
+	}
+			
 	String getPostalCodes(
 			final Connection connection, 
 			final Geography geography,
@@ -161,7 +262,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 				"rif_data", postalPopulationTable.toLowerCase(), "ycoordinate");
 
 			if (hasXcoordinate == false || hasYcoordinate == false) {
-				throw new Exception("getPostalCodes X/Y coordinate columns found in geography: " + geography.getName().toUpperCase() +
+				throw new Exception("getPostalCodes X/Y coordinate columns not found in geography: " + geography.getName().toUpperCase() +
 					" postal population table: " + postalPopulationTable + 
 					"; hasXcoordinate: " + hasXcoordinate + 
 					"; hasYcoordinate: " + hasYcoordinate);

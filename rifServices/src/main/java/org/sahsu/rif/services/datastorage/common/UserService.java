@@ -79,6 +79,11 @@ public interface UserService {
 			Locale locale)
 								throws RIFServiceException;
 
+	String getPostalCodeCapabilities(
+			User _user,
+			Geography _geography)
+								throws RIFServiceException;
+
 	RIFResultTable getTileMakerCentroids(
 			User _user,
 			Geography _geography,

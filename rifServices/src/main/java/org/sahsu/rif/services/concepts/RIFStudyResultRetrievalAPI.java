@@ -20,6 +20,11 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Geography geography,
 			final String postcode,
 			final Locale locale)
+					throws RIFServiceException;	
+					
+	String getPostalCodeCapabilities(
+			final User user,
+			final Geography geography)
 					throws RIFServiceException;
 
 	String getTileMakerTiles(
