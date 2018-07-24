@@ -216,23 +216,23 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
 					exitValue = 1;
 				}
-				REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
-				if (errorTraceFromR != null) {
-					String[] strArr=errorTraceFromR.asStringArray();
-					StringBuilder strBuilder = new StringBuilder();
-					for (final String aStrArr : strArr) {
-						strBuilder.append(aStrArr).append(lineSeparator);
-					}
-					int index = -1;
-					String toReplace="'";
-					while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
-						strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
-					}
-					rErrorTrace = strBuilder.toString();
-				}
-				else {
-					rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
-				}	
+				// REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
+				// if (errorTraceFromR != null) {
+				// 	String[] strArr=errorTraceFromR.asStringArray();
+				// 	StringBuilder strBuilder = new StringBuilder();
+				// 	for (final String aStrArr : strArr) {
+				// 		strBuilder.append(aStrArr).append(lineSeparator);
+				// 	}
+				// 	int index = -1;
+				// 	String toReplace="'";
+				// 	while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
+				// 		strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
+				// 	}
+				// 	rErrorTrace = strBuilder.toString();
+				// }
+				// else {
+				// 	rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
+				// }
 			}
 			catch(Exception error) {
 				try {

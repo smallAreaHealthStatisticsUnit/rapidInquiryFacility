@@ -343,7 +343,7 @@ runRSmoothingFunctions <- function() {
 
 	establishTableNames(studyID)
 	cat("Table names established\n")
-	errorTrace<-capture.output({
+	# errorTrace<-capture.output({
 		tryCatch({
 			connDB = connectToDb()
 			cat(paste0("Connected to DB", "\n"))
@@ -361,13 +361,13 @@ runRSmoothingFunctions <- function() {
 		finally={
 			cat(paste0("connectToDb exitValue: ", exitValue, "\n"), sep="")
 		})
-	})
+	# })
 
 	cat(paste("About to test exitValue", exitValue, "and connection", "\n"))
 	# if (exitValue == 0 && !is.na(connDB)) {
 	if (exitValue == 0) {
 		cat("Performing basic stats and smoothing\n")
-		errorTrace<-capture.output({
+		# errorTrace<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
 
 			cat(paste0("About to fetch extract table outside of the try", "\n"))
@@ -434,17 +434,18 @@ runRSmoothingFunctions <- function() {
 					}
 				}
 			) # End of tryCatch
-		})
+		# })
 	}
 	else {
 		cat("Could not connect to database\n")	
-		return(list(exitValue=exitValue, errorTrace=errorTrace))
+		# return(list(exitValue=exitValue, errorTrace=errorTrace))
+		return(list(exitValue=exitValue))
 	}
 
 	# Print trace
-	if (length(errorTrace)-1 > 0) {
-		cat(errorTrace, sep="\n")
-	}
+	# if (length(errorTrace)-1 > 0) {
+	# 	cat(errorTrace, sep="\n")
+	# }
 	
 	if (exitValue == 0 && !is.na(connDB)) {
 		dropTemporaryTable()
@@ -459,7 +460,7 @@ runRSmoothingFunctions <- function() {
 #
 # Free up memory: required for JRI version as the server keeps running! 
 #
-	cat(paste0("Total memory is use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
+	cat(paste0("Total memory in use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
 	ototal<-0
 	for (oname in ls()) {
 		osize<-as.integer(object_size(get(oname)))
@@ -475,7 +476,12 @@ runRSmoothingFunctions <- function() {
 			cat(oname, ": ", format(object_size(get(oname))), "\n", sep="")
 		}
 	}	
-	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+	# cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+	#
+	# return(list(exitValue=exitValue, errorTrace=errorTrace))
 
-	return(list(exitValue=exitValue, errorTrace=errorTrace))
+	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "\n"), sep="")
+
+	return(list(exitValue=exitValue))
+
 }

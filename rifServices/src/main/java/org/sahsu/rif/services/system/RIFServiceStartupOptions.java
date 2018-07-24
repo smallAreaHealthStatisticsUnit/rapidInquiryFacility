@@ -116,7 +116,6 @@ public class RIFServiceStartupOptions {
 			host = properties.getHost();
 			port = properties.getPort();
 			databaseName = properties.getDatabaseName();
-			odbcDataSourceName = properties.getODBCDataSourceName();
 			databaseType =  properties.getDatabaseType();
 			extractDirectory = properties.getExtractDirectoryName();
 			taxonomyServicesServer = properties.getTaxonomyServicesServer();

@@ -11,7 +11,12 @@ connectToDb <- function() {
 
 	cat(paste0("Trying JDBC connection using driver class ", db_driver_class_name, ", lib dir ",
 			   java_lib_path_dir, ", URL ", db_url, ", user ", userID, "\n"))
-	driver <- JDBC(db_driver_class_name, Sys.glob(paste0(java_lib_path_dir, "/*.jar")))
+
+	# We suppress warnings when getting the driver because on some platforms a warning is
+	# generated because the JVM is already running, which stops subsequent statements from
+	# being executed.
+	suppressWarnings(driver <- JDBC(db_driver_class_name,
+		Sys.glob(paste0(java_lib_path_dir, "/*.jar"))))
 	connection <<- RJDBC::dbConnect(driver, db_url, userID, password)
 
 	cat(paste("... JDBC connection established", "\n"))
