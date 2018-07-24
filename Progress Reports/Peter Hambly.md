@@ -2758,7 +2758,7 @@ SELECT a.*, b.coa2011
   * OK to MSOA level (~9000 centroids) with acceptable performance.
 
 * Risk analysis front end issues/todo:
-  * Add selection by postal code;
+  * Add selection by postal code/WGS 84 lat/long/possibly SRID X/Y;
   * Progress of shapefile display setup after "apply" button in shapefile load modal;
   * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
   * "Green" display shapefile selection and centroids display when selected;

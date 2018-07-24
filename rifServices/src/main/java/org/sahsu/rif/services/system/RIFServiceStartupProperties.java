@@ -340,12 +340,6 @@ public final class RIFServiceStartupProperties {
 		return property; 		
 	}
 	
-	String getODBCDataSourceName()
-					throws Exception {
-		return getMandatoryRIfServiceProperty("odbcDataSourceName");
-	}
-	
-	
 	/**
 	 * Gets the message.
 	 *
