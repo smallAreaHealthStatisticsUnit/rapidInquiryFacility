@@ -78,28 +78,29 @@ public class ResultsQueryManager extends BaseSQLManager {
 					"getPostalCodeCapabilities query 1; expected 1 row, got >1 for geography: " + geography.getName().toUpperCase());
 			}	
 
-			if (postalPopulationTable == null) {
-				throw new Exception("getPostalCodeCapabilities no postal population table defined for geography: " + geography.getName().toUpperCase());
-			}
 			if (srid == 0) {
 				throw new Exception("getPostalCodeCapabilities no/invalid srid defined for geography: " + geography.getName().toUpperCase());
 			}
 	
-			boolean hasXcoordinate=doesColumnExist(connection, 
-				"rif_data", postalPopulationTable.toLowerCase(), "xcoordinate");
-			boolean hasYcoordinate=doesColumnExist(connection, 
-				"rif_data", postalPopulationTable.toLowerCase(), "ycoordinate");
+			if (postalPopulationTable != null && postalPopulationTable.length() > 0) {
+				boolean hasXcoordinate=doesColumnExist(connection, 
+					"rif_data", postalPopulationTable.toLowerCase(), "xcoordinate");
+				boolean hasYcoordinate=doesColumnExist(connection, 
+					"rif_data", postalPopulationTable.toLowerCase(), "ycoordinate");
 
-			if (hasXcoordinate == false || hasYcoordinate == false) {
-				throw new Exception("getPostalCodeCapabilities X/Y coordinate columns not found in geography: " + geography.getName().toUpperCase() +
-					" postal population table: " + postalPopulationTable + 
-					"; hasXcoordinate: " + hasXcoordinate + 
-					"; hasYcoordinate: " + hasYcoordinate);
-			} 			
+				if (hasXcoordinate == false || hasYcoordinate == false) {
+					throw new Exception("getPostalCodeCapabilities X/Y coordinate columns not found in geography: " + geography.getName().toUpperCase() +
+						" postal population table: " + postalPopulationTable + 
+						"; hasXcoordinate: " + hasXcoordinate + 
+						"; hasYcoordinate: " + hasYcoordinate);
+				} 
+			}			
 			
 			JSONObject getPostalCodeCapabilities = new JSONObject();
 			getPostalCodeCapabilities.put("geography", geography.getName().toUpperCase());
-			getPostalCodeCapabilities.put("postalPopulationTable", postalPopulationTable);
+			if (postalPopulationTable != null && postalPopulationTable.length() > 0) {
+				getPostalCodeCapabilities.put("postalPopulationTable", postalPopulationTable);
+			}
 			getPostalCodeCapabilities.put("srid", srid);
 			result=getPostalCodeCapabilities.toString();	
 			
@@ -119,6 +120,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
 		} catch(Exception exception) {
+			
+			logException(exception);
 			
 			JSONObject getPostalCodeCapabilities = new JSONObject();
 			getPostalCodeCapabilities.put("geography", geography.getName().toUpperCase());

@@ -3948,12 +3948,27 @@ angular.module("RIF")
 					crssDB["EPSG:32766"]="+proj=tmerc +lat_0=0 +lon_0=36 +k=0.9996 +x_0=500000 +y_0=10000000 +datum=WGS84 +units=m +no_defs";
 					
 					function getProjectionfromSrid(srid) {
-						var epsg="EPSG:" + srid;
-						
-						return crss[epsg];
+						if (srid) {
+							var epsg="EPSG:" + srid;
+							
+							return crssDB[epsg];
+						}
+						else {
+							return undefined;
+						}
 					}
 
                     return {
+						canReproject: function (fromSrid) {
+							var firstProjection=getProjectionfromSrid(fromSrid);
+							
+							if (firstProjection) {
+								return true;
+							}
+							else {
+								return false;
+							}
+						},
                         reproject2wgs84: function (fromSrid /* toProjection is WGS84 */, coordinates /* [x, y] */) {
 							var firstProjection=getProjectionfromSrid(fromSrid);
 							var rVal=undefined;

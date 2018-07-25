@@ -89,56 +89,57 @@ angular.module("RIF")
 							data: []
 						};
 						
-						// Capabilities
-						scope.hasNationalGrid=true;
-						scope.hasPostalCode=true;
-						
 						// User selection
 						
-						//  Capability dependent defaults
-						if (scope.hasPostalCode) {
-                            scope.modalHeader = "Select by Postal Code";
-							
-							scope.wgs84Checked=false; // Options checked
-							scope.postalCodeChecked=true;
-							scope.nationalGridChecked=false;
-							scope.selectionMethod = 2; // postal code
-							
-							scope.isWGS84=false;  // Show hide options
-							scope.isNationalGrid=false;
-							scope.isPostalCode=true;
+						function setCapabilities() {
+							//  Capability dependent defaults
+							if (scope.hasPostalCode) {
+								scope.modalHeader = "Select by Postal Code";
+								
+								scope.wgs84Checked=false; // Options checked
+								scope.postalCodeChecked=true;
+								scope.nationalGridChecked=false;
+								
+								scope.selectionMethod = 2; // postal code
+								
+								scope.isWGS84=false;  // Show hide options
+								scope.isNationalGrid=false;
+								scope.isPostalCode=true;
+							}
+							else if (scope.hasNationalGrid) {
+								scope.modalHeader = "Select by National Grid X/Y Coordinates";
+								
+								scope.wgs84Checked=false;
+								scope.postalCodeChecked=false;
+								scope.nationalGridChecked=true;	
+								
+								scope.selectionMethod = 3; // National Grid
+								
+								scope.isWGS84=false;
+								scope.isNationalGrid=true;
+								scope.isPostalCode=false;
+							}
+							else { // defaults
+								scope.modalHeader = "Select by WGS84 GPS Coordinates";
+								
+								scope.wgs84Checked=true;
+								scope.postalCodeChecked=false;
+								scope.nationalGridChecked=false;
+								scope.selectionMethod = 1; // WGS84
+								
+								scope.isWGS84=true;
+								scope.isNationalGrid=false;
+								scope.isPostalCode=false;
+							}
 						}
-						else if (scope.hasNationalGrid) {
-                            scope.modalHeader = "Select by National Grid X/Y Coordinates";
-							scope.wgs84Checked=false;
-							scope.postalCodeChecked=false;
-							scope.nationalGridChecked=true;	
-							scope.selectionMethod = 3; // National Grid
-							
-							scope.isWGS84=false;
-							scope.isNationalGrid=true;
-							scope.isPostalCode=false;
-						}
-						else { // defaults
-                            scope.modalHeader = "Select by WGS84 GPS Coordinates";
-							
-							scope.wgs84Checked=true;
-							scope.postalCodeChecked=false;
-							scope.nationalGridChecked=false;
-							scope.selectionMethod = 1; // WGS84
-							
-							scope.isWGS84=true;
-							scope.isNationalGrid=false;
-							scope.isPostalCode=false;
-						}
-						
+											
+						// Capabilities
+						scope.hasNationalGrid=false;
+						scope.hasPostalCode=false;							
+						setCapabilities();
+								
                         var thisGeography = SubmissionStateService.getState().geography;
 						
-						// Also defined in rifs-util-leafletdraw.js
-                        var factory = L.icon({
-                            iconUrl: 'images/factory.png',
-                            iconAnchor: [16, 16]
-                        });
                         //user input boxes
                         scope.bandAttr = [];	
 						scope.xcoordinate = undefined;
@@ -147,28 +148,61 @@ angular.module("RIF")
 						scope.hasPostalGrid = false;
 						scope.postalCodeGridOptions = {};
 						
+						function getPostalCodeCapabilities(callback) {
+							user.getPostalCodeCapabilities(user.currentUser, thisGeography).then(function (res) { 
+								
+								AlertService.consoleDebug("[rifd-dsub-postal.js] getPostalCodeCapabilities: " + JSON.stringify(res.data, null, 1));
+								
+								if (res.data.error) {
+									AlertService.rifMessage('error', res.data.error);
+								}
+								else {
+									if (res.data.postalPopulationTable) {
+										scope.hasPostalCode=true;
+									}
+									if (res.data.srid && ProjectionService.canReproject(res.data.srid)) {
+										scope.srid=res.data.srid;
+										scope.hasNationalGrid=true;
+									}
+								}
+								setCapabilities();
+ 
+							}, function () { // Error handler
+								AlertService.rifMessage('warning', "Could not postal code capabilities from the database for geography: " + thisGeography);
+								setCapabilities();
+							}).then(function() {
+								if (callback && typeof callback == "function") {
+									callback();
+								}
+							});
+						}
+						
                         element.on('click', function (event) {
 							
                             scope.bandAttr.length = 0;
 							scope.xcoordinate = undefined;
 							scope.ycoordinate = undefined;
 							scope.properties = undefined;
-							scope.hasPostalGrid = false;
+							scope.hasPostalGrid = false;			// Results table
 							scope.postalCodeGridOptions = {};
 							
-                            var modalInstance = $uibModal.open({
-                                animation: true,
-                                templateUrl: 'dashboards/submission/partials/rifp-dsub-frompostalcode.html',
-                                windowClass: 'postal-code-modal',
-                                controller: 'ModalPostalCodeInstanceCtrl',
-                                backdrop: 'static',
-                                scope: scope,
-                                keyboard: false
-                            });
+							getPostalCodeCapabilities(function callModal() {
+								var modalInstance = $uibModal.open({
+									animation: true,
+									templateUrl: 'dashboards/submission/partials/rifp-dsub-frompostalcode.html',
+									windowClass: 'postal-code-modal',
+									controller: 'ModalPostalCodeInstanceCtrl',
+									backdrop: 'static',
+									scope: scope,
+									keyboard: false
+								});
+							});
 							
                         });		
 						
-						scope.radioChange = function (selectionMethod) {
+						scope.postalCodeRadioChange = function (selectionMethod) {
+							
+//							AlertService.consoleDebug("[rifd-dsub-postal.js] postalCodeRadioChange: " + selectionMethod);
 							switch (selectionMethod) {
 								case 1: // WGS84
 									scope.modalHeader = "Select by " + printSelectionMethod(selectionMethod);
@@ -239,7 +273,6 @@ angular.module("RIF")
 								}, function () { // Error handler
 									AlertService.rifMessage('warning', "Could not fetch postal codes from the database");
 
-								}).then(function () {
 								});
 							}
 							else {
