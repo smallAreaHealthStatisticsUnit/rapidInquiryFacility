@@ -144,6 +144,7 @@ angular.module("RIF")
                         scope.bandAttr = [];	
 						scope.xcoordinate = undefined;
 						scope.ycoordinate = undefined;
+						scope.coordinatesSet = false;
 						scope.properties = undefined;
 						scope.hasPostalGrid = false;
 						scope.postalCodeGridOptions = {};
@@ -177,11 +178,58 @@ angular.module("RIF")
 							});
 						}
 						
+						function parseCoordinate(coordinate) {  // Lat, Long
+							if (coordinate) {
+								var splitCords = coordinate.split(',');
+								if (splitCords.length == 2) {
+									var nCoordinates = [];
+									try {
+										nCoordinates[0] = parseFloat(splitCords[0]);
+										nCoordinates[1] = parseFloat(splitCords[1]);
+										
+										return nCoordinates;
+									}
+									catch (e) {
+										AlertService.rifMessage('warning', "Unable to parse coordinate: " + coordinate +
+											"; error: " + e.message);
+									}
+								}
+								else {
+									AlertService.rifMessage('warning', "Coordinates are not in the correct comma separated form: " + coordinate);
+								}
+							}
+							
+							return undefined;
+						}
+						
+						function checkCoordinate(coordinate) {
+							if (coordinate) {
+								if (coordinate[0] <= -90 && coordinate[0] >= 90) { // y
+									AlertService.rifMessage('warning', "Coordinates check failed; latitude (Y) is invalid: " + 
+										JSON.stringify(coordinate));
+									return false;
+								}
+								else if (coordinate[0] < -180 && coordinate[0] > 180) { // y
+									AlertService.rifMessage('warning', "Coordinates check failed; longitude (X) is invalid: " + 
+										JSON.stringify(coordinate));
+									return false;
+								}
+								else {
+									return true;
+								}									
+							}
+							else {
+								AlertService.rifMessage('warning', "Coordinates check failed: no coordinate provided");
+								return false;
+							}
+						}
+						
                         element.on('click', function (event) {
 							
                             scope.bandAttr.length = 0;
 							scope.xcoordinate = undefined;
 							scope.ycoordinate = undefined;
+							scope.coordinatesSet = false;
 							scope.properties = undefined;
 							scope.hasPostalGrid = false;			// Results table
 							scope.postalCodeGridOptions = {};
@@ -226,6 +274,11 @@ angular.module("RIF")
 									scope.selectionMethod=selectionMethod;
 									break;
 							}
+							scope.hasPostalGrid = false;
+							scope.postalCodeGridOptions = {};
+							if (scope.gridApi) {
+								scope.gridApi.core.refresh();
+							}
 						}
 						
 						scope.nationalGridChange = function(attr) {
@@ -239,8 +292,54 @@ angular.module("RIF")
 						}
 						
 						scope.checkWGS84 = function() {
+							
+							if (scope.wgs84) {
+								wgs84Coordinate=parseCoordinate(scope.wgs84);
+								if (checkCoordinate(wgs84Coordinate)) {
+									AlertService.consoleDebug("[rifd-dsub-postal.js] checkWGS84: " + JSON.stringify(wgs84Coordinate));
+									scope.xcoordinate = wgs84Coordinate[1];
+									scope.ycoordinate = wgs84Coordinate[0];	
+									scope.coordinatesSet = true;
+									scope.properties = {
+										"wgs84Coordinate": 			JSON.stringify(wgs84Coordinate)
+									};		
+									smoothed_results = [];
+									smoothed_results.push({
+										"Name": "wgs84Coordinate",
+										"Value": JSON.stringify(wgs84Coordinate)
+									});
+									scope.setupGrid(smoothed_results);		
+								}
+							}
 						}
 						scope.checkNationalGrid = function() {
+							
+							if (scope.nationalGridCoordinate && scope.srid) {
+								coordinate=parseCoordinate(scope.nationalGridCoordinate); // in X, Y
+//								coordinateReversed=[];
+//								coordinateReversed[0]=coordinate[1];
+//								coordinateReversed[1]=coordinate[0];
+								wgs84Coordinate=ProjectionService.reproject2wgs84(scope.srid, coordinate);
+								if (checkCoordinate(wgs84Coordinate)) {
+									scope.xcoordinate = wgs84Coordinate[0];
+									scope.ycoordinate = wgs84Coordinate[1];		
+									scope.coordinatesSet = true;
+									scope.properties = {
+										"wgs84Coordinate": 			JSON.stringify(wgs84Coordinate),
+										"nationalGridCoordinate": 	scope.nationalGridCoordinate
+									};		
+									smoothed_results = [];
+									smoothed_results.push({
+										"Name": "wgs84Coordinate",
+										"Value": JSON.stringify(wgs84Coordinate)
+									});
+									smoothed_results.push({
+										"Name": "nationalGridCoordinate",
+										"Value": scope.nationalGridCoordinate
+									});
+									scope.setupGrid(smoothed_results);		
+								}
+							}
 						}
 						scope.checkPostcode = function() {
 							
@@ -253,6 +352,7 @@ angular.module("RIF")
 
 										scope.xcoordinate = undefined;
 										scope.ycoordinate = undefined;	
+										scope.coordinatesSet = false;
 										scope.properties = undefined;									
 									}
 									else {
@@ -264,7 +364,8 @@ angular.module("RIF")
 										if (res.data.additionalTableJson && res.data.additionalTableJson.xcoordinate && 
 										    res.data.additionalTableJson.ycoordinate) {
 											scope.xcoordinate = res.data.additionalTableJson.xcoordinate;
-											scope.ycoordinate = res.data.additionalTableJson.ycoordinate;										
+											scope.ycoordinate = res.data.additionalTableJson.ycoordinate;	
+											scope.coordinatesSet = true;									
 										}
 //										AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode +
 //											"; res: " + JSON.stringify(res, null, 1));
@@ -338,7 +439,7 @@ angular.module("RIF")
 						} 
 						
                         scope.applyCoordinates = function () {
-							if (scope.xcoordinate && scope.ycoordinate) {
+							if (scope.coordinatesSet) {
 								AlertService.consoleDebug("[rifd-dsub-postal.js] apply coordinates: [" + 
 									scope.xcoordinate + ", " + scope.ycoordinate + "]");	
 								//trim any trailing zeros
