@@ -372,62 +372,62 @@ public final class RIFStudySubmission
 	 * @param otherRIFJobSubmission the other rif job submission
 	 * @return true, if successful
 	 */
-	public boolean hasIdenticalContents(
-		final RIFStudySubmission otherRIFJobSubmission) {
-
-		if (otherRIFJobSubmission == null) {
-			return false;
-		}
-		
-		ArrayList<CalculationMethod> otherCalculationMethods
-			= otherRIFJobSubmission.getCalculationMethods();
-		ArrayList<RIFOutputOption> otherRIFOutputOptions
-			= otherRIFJobSubmission.getRIFOutputOptions();
-		
-		//@TODO KLG - casting makes this code a bit vulnerable
-		
-		Project otherProject = otherRIFJobSubmission.getProject();
-		if (project == null) {
-			if (otherProject != null) {
-				return false;
-			}
-		}
-		else {
-			if (project.hasIdenticalContents(otherProject) == false) {
-				return false;
-			}			
-		}		
-		
-		DiseaseMappingStudy diseaseMappingStudy
-			= (DiseaseMappingStudy) study;
-		DiseaseMappingStudy otherDiseaseMappingStudy
-			= (DiseaseMappingStudy) otherRIFJobSubmission.getStudy();
-		if (diseaseMappingStudy == null) {
-			if (otherDiseaseMappingStudy != null) {
-				return false;
-			}
-		}
-		else {
-			if (diseaseMappingStudy.hasIdenticalContents(otherDiseaseMappingStudy) == false) {
-				return false;
-			}
-		}
-		
-		if (CalculationMethod.hasIdenticalContents(
-			calculationMethods, 
-			otherCalculationMethods) == false) {
-			
-			return false;
-		}
-		if (RIFOutputOption.hasIdenticalContents(
-			rifOutputOptions, 
-			otherRIFOutputOptions) == false) {
-			
-			return false;
-		}
-		
-		return super.hasIdenticalContents(otherRIFJobSubmission);
-	}
+	// public boolean hasIdenticalContents(
+	// 	final RIFStudySubmission otherRIFJobSubmission) {
+	//
+	// 	if (otherRIFJobSubmission == null) {
+	// 		return false;
+	// 	}
+	//
+	// 	ArrayList<CalculationMethod> otherCalculationMethods
+	// 		= otherRIFJobSubmission.getCalculationMethods();
+	// 	ArrayList<RIFOutputOption> otherRIFOutputOptions
+	// 		= otherRIFJobSubmission.getRIFOutputOptions();
+	//
+	// 	//@TODO KLG - casting makes this code a bit vulnerable
+	//
+	// 	Project otherProject = otherRIFJobSubmission.getProject();
+	// 	if (project == null) {
+	// 		if (otherProject != null) {
+	// 			return false;
+	// 		}
+	// 	}
+	// 	else {
+	// 		if (project.hasIdenticalContents(otherProject) == false) {
+	// 			return false;
+	// 		}
+	// 	}
+	//
+	// 	DiseaseMappingStudy diseaseMappingStudy
+	// 		= (DiseaseMappingStudy) study;
+	// 	DiseaseMappingStudy otherDiseaseMappingStudy
+	// 		= (DiseaseMappingStudy) otherRIFJobSubmission.getStudy();
+	// 	if (diseaseMappingStudy == null) {
+	// 		if (otherDiseaseMappingStudy != null) {
+	// 			return false;
+	// 		}
+	// 	}
+	// 	else {
+	// 		if (diseaseMappingStudy.hasIdenticalContents(otherDiseaseMappingStudy) == false) {
+	// 			return false;
+	// 		}
+	// 	}
+	//
+	// 	if (CalculationMethod.hasIdenticalContents(
+	// 		calculationMethods,
+	// 		otherCalculationMethods) == false) {
+	//
+	// 		return false;
+	// 	}
+	// 	if (RIFOutputOption.hasIdenticalContents(
+	// 		rifOutputOptions,
+	// 		otherRIFOutputOptions) == false) {
+	//
+	// 		return false;
+	// 	}
+	//
+	// 	return super.hasIdenticalContents(otherRIFJobSubmission);
+	// }
 // ==========================================
 // Section Errors and Validation
 // ==========================================

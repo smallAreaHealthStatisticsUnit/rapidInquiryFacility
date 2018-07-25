@@ -152,7 +152,7 @@ public final class DiseaseMappingStudyManager extends BaseSQLManager {
 			connection, 
 			geography.getName());
 		AbstractStudyArea diseaseMappingStudyArea
-			= diseaseMappingStudy.getDiseaseMappingStudyArea();
+			= diseaseMappingStudy.getStudyArea();
 
 		checkAreaNonExistentItems(
 			connection,

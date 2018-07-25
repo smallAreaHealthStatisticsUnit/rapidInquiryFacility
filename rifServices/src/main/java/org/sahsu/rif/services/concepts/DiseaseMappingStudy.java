@@ -11,13 +11,11 @@ import org.sahsu.rif.services.system.RIFServiceError;
 public final class DiseaseMappingStudy extends AbstractStudy {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	
-	private AbstractStudyArea diseaseMappingStudyArea;
-    
+
 	private DiseaseMappingStudy() {
-    	
-		diseaseMappingStudyArea = AbstractStudyArea.newInstance();
-    }
+
+		super();
+	}
 	
 	static public DiseaseMappingStudy newInstance() {
 
@@ -47,8 +45,8 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 		cloneDiseaseMappingStudy.setName(originalDiseaseMappingStudy.getName());
 		cloneDiseaseMappingStudy.setDescription(originalDiseaseMappingStudy.getDescription());
 		AbstractStudyArea cloneDiseaseMappingStudyArea
-			= AbstractStudyArea.copy(originalDiseaseMappingStudy.getDiseaseMappingStudyArea());
-		cloneDiseaseMappingStudy.setDiseaseMappingStudyArea(cloneDiseaseMappingStudyArea);
+			= AbstractStudyArea.copy(originalDiseaseMappingStudy.getStudyArea());
+		cloneDiseaseMappingStudy.setStudyArea(cloneDiseaseMappingStudyArea);
 		ComparisonArea cloneComparisonArea 
 			= ComparisonArea.createCopy(originalDiseaseMappingStudy.getComparisonArea());
 		cloneDiseaseMappingStudy.setComparisonArea(cloneComparisonArea);
@@ -62,28 +60,6 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 		return cloneDiseaseMappingStudy;
 	}
 
-	
-    /**
-     * Gets the disease mapping study area.
-     *
-     * @return the disease mapping study area
-     */
-	public AbstractStudyArea getDiseaseMappingStudyArea() {
-    	
-		return diseaseMappingStudyArea;
-	}
-	
-	/**
-	 * Sets the disease mapping study area.
-	 *
-	 * @param diseaseMappingStudyArea the new disease mapping study area
-	 */
-	public void setDiseaseMappingStudyArea(final AbstractStudyArea diseaseMappingStudyArea) {
-		
-		this.diseaseMappingStudyArea = diseaseMappingStudyArea;
-	}
-
-	
 	public void identifyDifferences(
 		final DiseaseMappingStudy anotherDiseaseMappingStudy,
 		final ArrayList<String> differences) {
@@ -99,23 +75,22 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 	 * @param otherDiseaseMappingStudy the other disease mapping study
 	 * @return true, if successful
 	 */
-	public boolean hasIdenticalContents(
-		final DiseaseMappingStudy otherDiseaseMappingStudy) {
+	public boolean hasIdenticalContents(final DiseaseMappingStudy otherDiseaseMappingStudy) {
 		
 		if (otherDiseaseMappingStudy == null) {
 			return false;
 		}
 		
 		AbstractStudyArea otherDiseaseMappingStudyArea
-			= otherDiseaseMappingStudy.getDiseaseMappingStudyArea();
+			= otherDiseaseMappingStudy.getStudyArea();
 		
-		if (diseaseMappingStudyArea == null) {
+		if (studyArea == null) {
 			if (otherDiseaseMappingStudyArea != null) {
 				return false;
 			}			
 		}
 		else {
-			if (!diseaseMappingStudyArea.hasIdenticalContents(otherDiseaseMappingStudyArea)) {
+			if (!studyArea.hasIdenticalContents(otherDiseaseMappingStudyArea)) {
 				return false;
 			}
 		}
@@ -136,9 +111,9 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 		}	
 				
 		//add any errors inherent in the study area object
-		if (diseaseMappingStudyArea == null) {
+		if (studyArea == null) {
 			String diseaseMappingStudyAreaFieldName
-				= SERVICE_MESSAGES.getMessage("diseaseMappingStudyArea.label");
+				= studyArea.getRecordType();
 		
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage(
@@ -149,10 +124,10 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 		}
 		else {			
 			try {
-				diseaseMappingStudyArea.checkErrors(validationPolicy);
+				studyArea.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException exception) {
-				rifLogger.debug(this.getClass(), "DiseaseMappingStudyArea.checkErrors(): " + 
+				rifLogger.debug(this.getClass(), "AbstractStudyArea.checkErrors(): " +
 					exception.getErrorMessages().size());
 				errorMessages.addAll(exception.getErrorMessages());
 			}
@@ -172,8 +147,8 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 		throws RIFServiceSecurityException {
 		
 		super.checkSecurityViolations();
-		if (diseaseMappingStudyArea != null) {
-			diseaseMappingStudyArea.checkSecurityViolations();
+		if (studyArea != null) {
+			studyArea.checkSecurityViolations();
 		}
 	}
 }

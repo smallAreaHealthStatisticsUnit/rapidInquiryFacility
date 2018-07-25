@@ -504,7 +504,7 @@ public final class GetDiseaseMappingStudy extends CommonRIFServiceTestCase {
 			DiseaseMappingStudy study 
 				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();
 			AbstractStudyArea diseaseMappingStudyArea
-				= study.getDiseaseMappingStudyArea();
+				= study.getStudyArea();
 			diseaseMappingStudyArea.setGeoLevelToMap(cloneNonExistentGeoLevelToMap());
 			
 			validOutputFile
@@ -792,7 +792,7 @@ public final class GetDiseaseMappingStudy extends CommonRIFServiceTestCase {
 			DiseaseMappingStudy diseaseMappingStudy 
 				= (DiseaseMappingStudy) maliciousStudySubmission.getStudy();
 			AbstractStudyArea diseaseMappingStudyArea
-				= diseaseMappingStudy.getDiseaseMappingStudyArea();
+				= diseaseMappingStudy.getStudyArea();
 			diseaseMappingStudyArea.setGeoLevelSelect(cloneMaliciousGeoLevelSelect());
 					
 			validOutputFile

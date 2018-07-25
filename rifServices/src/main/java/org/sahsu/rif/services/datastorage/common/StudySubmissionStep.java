@@ -194,7 +194,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			                            comparisonArea.getGeoLevelToMap().getName());
 
 			AbstractStudyArea diseaseMappingStudyArea =
-					diseaseMappingStudy.getDiseaseMappingStudyArea();
+					diseaseMappingStudy.getStudyArea();
 			addStudyStatement.setString(ithQueryParameter++,
 			                            diseaseMappingStudyArea.getGeoLevelToMap().getName());
 
@@ -462,7 +462,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 			Geography geography = diseaseMappingStudy.getGeography();
 			AbstractStudyArea diseaseMappingStudyArea
-					= diseaseMappingStudy.getDiseaseMappingStudyArea();
+					= diseaseMappingStudy.getStudyArea();
 
 			ArrayList<MapArea> allMapAreas
 					= mapDataManager.getAllRelevantMapAreas(
@@ -593,7 +593,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			String geographyName = geography.getName();
 
 			AbstractStudyArea diseaseMappingStudyArea
-					= diseaseMappingStudy.getDiseaseMappingStudyArea();
+					= diseaseMappingStudy.getStudyArea();
 			String studyGeoLevelName
 					= diseaseMappingStudyArea.getGeoLevelToMap().getName();
 

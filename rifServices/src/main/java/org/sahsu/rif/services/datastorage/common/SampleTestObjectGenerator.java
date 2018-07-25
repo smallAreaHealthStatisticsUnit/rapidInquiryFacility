@@ -359,7 +359,7 @@ public final class SampleTestObjectGenerator {
 		diseaseMappingStudyArea.setGeoLevelArea(geoLevelArea);
 		diseaseMappingStudyArea.setGeoLevelView(geoLevelView);
 		diseaseMappingStudyArea.setGeoLevelToMap(geoLevelToMap);		
-		diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
+		diseaseMappingStudy.setStudyArea(diseaseMappingStudyArea);
 	
 		SampleTestObjectGenerator generator
 			= new SampleTestObjectGenerator();
@@ -589,7 +589,7 @@ public final class SampleTestObjectGenerator {
 		diseaseMappingStudyArea.setGeoLevelArea(studyAreaGeoLevelArea);
 		diseaseMappingStudyArea.setGeoLevelView(studyAreaGeoLevelView);
 		diseaseMappingStudyArea.setGeoLevelToMap(studyAreaGeoLevelToMap);		
-		diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
+		diseaseMappingStudy.setStudyArea(diseaseMappingStudyArea);
 
 		//Where to find out what levels the study area has?
 		MapArea mapArea1 = MapArea.newInstance(

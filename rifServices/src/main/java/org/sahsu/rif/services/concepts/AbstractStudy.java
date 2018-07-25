@@ -29,6 +29,9 @@ abstract public class AbstractStudy
 
 	static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+
+	AbstractStudyArea studyArea;
+
 	/** The name. */
 	private String name;
 	
@@ -59,7 +62,8 @@ abstract public class AbstractStudy
 		geography = Geography.newInstance();
 		comparisonArea = ComparisonArea.newInstance();
 		investigations = new ArrayList<Investigation>();
-    }
+		studyArea = AbstractStudyArea.newInstance();
+	}
 
 	/**
 	 * Gets the name.
@@ -286,6 +290,26 @@ abstract public class AbstractStudy
 		
 		return super.hasIdenticalContents(otherStudy);
 	}
+
+	/**
+	 * Gets the disease mapping study area.
+	 *
+	 * @return the disease mapping study area
+	 */
+		public AbstractStudyArea getStudyArea() {
+
+			return studyArea;
+		}
+
+	/**
+		* Sets the disease mapping study area.
+		*
+		* @param studyArea the new disease mapping study area
+		*/
+		public void setStudyArea(final AbstractStudyArea studyArea) {
+
+			this.studyArea = studyArea;
+		}
 
 	@Override
 	protected void checkSecurityViolations() 

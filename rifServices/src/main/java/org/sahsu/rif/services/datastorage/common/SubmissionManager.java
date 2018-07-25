@@ -160,7 +160,7 @@ public class SubmissionManager extends BaseSQLManager {
 			GeoLevelToMap diseaseMappingStudyAreaGeoLevelToMap
 					= GeoLevelToMap.newInstance(resultSet.getString(3));
 			AbstractStudyArea diseaseMappingStudyArea
-					= diseaseMappingStudy.getDiseaseMappingStudyArea();
+					= diseaseMappingStudy.getStudyArea();
 			diseaseMappingStudyArea.setGeoLevelToMap(diseaseMappingStudyAreaGeoLevelToMap);
 
 			//retrieving denom is awkward because we need both denom and numer to
@@ -214,7 +214,7 @@ public class SubmissionManager extends BaseSQLManager {
 						geographicalIdentifier);
 				diseaseMappingStudyArea.addMapArea(mapArea);
 			}
-			diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
+			diseaseMappingStudy.setStudyArea(diseaseMappingStudyArea);
 		}
 		finally {
 			//Cleanup database resources

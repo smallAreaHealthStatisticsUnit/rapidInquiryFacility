@@ -537,7 +537,7 @@ public final class GetDiseaseMappingStudy
 			DiseaseMappingStudy study 
 				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();
 			AbstractStudyArea diseaseMappingStudyArea
-				= study.getDiseaseMappingStudyArea();
+				= study.getStudyArea();
 			diseaseMappingStudyArea.setGeoLevelToMap(cloneNonExistentGeoLevelToMap());
 			
 			validOutputFile
@@ -825,7 +825,7 @@ public final class GetDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy 
 				= (DiseaseMappingStudy) maliciousStudySubmission.getStudy();
 			AbstractStudyArea diseaseMappingStudyArea
-				= diseaseMappingStudy.getDiseaseMappingStudyArea();
+				= diseaseMappingStudy.getStudyArea();
 			diseaseMappingStudyArea.setGeoLevelSelect(cloneMaliciousGeoLevelSelect());
 					
 			validOutputFile

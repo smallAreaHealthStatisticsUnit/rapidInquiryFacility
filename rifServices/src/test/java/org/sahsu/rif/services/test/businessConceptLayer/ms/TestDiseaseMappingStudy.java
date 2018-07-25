@@ -561,7 +561,7 @@ public final class TestDiseaseMappingStudy
 		maliciousDiseaseMappingStudy
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 		AbstractStudyArea diseaseMappingStudyArea
-			= maliciousDiseaseMappingStudy.getDiseaseMappingStudyArea();
+			= maliciousDiseaseMappingStudy.getStudyArea();
 		MapArea maliciousMapArea = MapArea.newInstance("454", "454", getTestMaliciousValue());
 		diseaseMappingStudyArea.addMapArea(maliciousMapArea);
 		try {

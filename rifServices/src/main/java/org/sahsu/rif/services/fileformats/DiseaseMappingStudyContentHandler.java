@@ -178,7 +178,7 @@ final class DiseaseMappingStudyContentHandler
 		ArrayList<Investigation> investigations
 			= investigationContentHandler.getInvestigations();
 		currentDiseaseMappingStudy.setComparisonArea(comparisonArea);
-		currentDiseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
+		currentDiseaseMappingStudy.setStudyArea(diseaseMappingStudyArea);
 		currentDiseaseMappingStudy.setInvestigations(investigations);
 		
 		return currentDiseaseMappingStudy;
@@ -204,7 +204,7 @@ final class DiseaseMappingStudyContentHandler
 		Geography geography = diseaseMappingStudy.getGeography();
 		geographyContentHandler.writeXML(geography);
 				
-		AbstractStudyArea studyArea = diseaseMappingStudy.getDiseaseMappingStudyArea();
+		AbstractStudyArea studyArea = diseaseMappingStudy.getStudyArea();
 		diseaseMappingStudyAreaContentHandler.writeXML(studyArea);
 		
 		ComparisonArea comparisonArea = diseaseMappingStudy.getComparisonArea();
@@ -246,7 +246,7 @@ final class DiseaseMappingStudyContentHandler
 			geography,
 			isFragmentWithinLargerReport);
 		
-		AbstractStudyArea studyArea = diseaseMappingStudy.getDiseaseMappingStudyArea();
+		AbstractStudyArea studyArea = diseaseMappingStudy.getStudyArea();
 		diseaseMappingStudyAreaContentHandler.writeHTML(
 			2,
 			studyArea, 
@@ -369,7 +369,7 @@ final class DiseaseMappingStudyContentHandler
 				else if (currentDelegatedHandler == diseaseMappingStudyAreaContentHandler) {
 					DiseaseMappingStudyArea diseaseMappingStudyArea
 						= diseaseMappingStudyAreaContentHandler.getDiseaseMappingStudyArea();
-					currentDiseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);					
+					currentDiseaseMappingStudy.setStudyArea(diseaseMappingStudyArea);
 				}
 				else if (currentDelegatedHandler == comparisonAreaContentHandler) {
 					ComparisonArea comparisonArea
