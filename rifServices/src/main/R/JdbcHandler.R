@@ -196,17 +196,17 @@ saveDataFrameToDatabaseTable <- function(data) {
 				dropTemporaryTable()
 			}
 
-			# NA values have been appearing in DB columns that should be null.
-			# data <- do.call(data.frame, lapply(data, function(x) {
-			# 	replace(x, is.na(x), NULL)
-			# }
-			# ))
-
 			if (db_driver_prefix == "jdbc:sqlserver") {
 					data<-do.call(data.frame, lapply(data, function(x) {
 						replace(x, is.infinite(x),NA) # Replace INF will NA for SQL Server
 					}
 					))
+
+				# NA values have been appearing in DB columns that should be null.
+				data <- do.call(data.frame, lapply(data, function(x) {
+					replace(x, is.na(x), NULL)
+				}
+				))
 			}
 
 			cat(paste0("About to write temporary table: ", temporarySmoothedResultsTableName, "\n"))
