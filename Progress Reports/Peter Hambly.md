@@ -2757,8 +2757,12 @@ SELECT a.*, b.coa2011
 * Test EWS2011 geography and centroids in RIF:
   * OK to MSOA level (~9000 centroids) with acceptable performance.
 
+#### 23rd to 27th July
+
+* Added selection by postal code; WGS 84 lat/long SRID X/Y to follow;
+* Regression test pull #47 (Change database access in R to use RJDBC) and add_study_selection_to_json
+
 * Risk analysis front end issues/todo:
-  * Add selection by postal code/WGS 84 lat/long/possibly SRID X/Y;
   * Progress of shapefile display setup after "apply" button in shapefile load modal;
   * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
   * "Green" display shapefile selection and centroids display when selected;
@@ -2766,3 +2770,4 @@ SELECT a.*, b.coa2011
   * Remove disabled AOI code;
   * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
   * Improve scaling in shapefile properties table, 40:60 split;
+  * Issue if with selectionState if "cancel" button used - shape remains! Needs a transaction count so the shape tree can be pruned;
