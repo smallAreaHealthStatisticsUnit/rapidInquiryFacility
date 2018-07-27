@@ -18,15 +18,15 @@ import org.xml.sax.SAXException;
 
 public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 
-	GeographyContentHandler geographyContentHandler;
+	private GeographyContentHandler geographyContentHandler;
 	/** The disease mapping study area content handler. */
-	AbstractGeographicalAreaContentHandler areaContentHandler;
+	private AbstractGeographicalAreaContentHandler areaContentHandler;
 	/** The comparison area content handler. */
-	ComparisonAreaContentHandler comparisonAreaContentHandler;
+	private ComparisonAreaContentHandler comparisonAreaContentHandler;
 	/** The investigation content handler. */
-	InvestigationContentHandler investigationContentHandler;
+	private InvestigationContentHandler investigationContentHandler;
 
-	RIFOutputOptionContentHandler rifOutputOptionContentHandler;
+	private RIFOutputOptionContentHandler rifOutputOptionContentHandler;
 	/** The current disease mapping study. */
 	private AbstractStudy currentStudy;
 

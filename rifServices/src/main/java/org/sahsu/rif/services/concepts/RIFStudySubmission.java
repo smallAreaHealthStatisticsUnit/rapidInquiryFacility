@@ -18,8 +18,6 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 
-	private final String studyType;
-
 	/** The job submission time. */
 	private Date jobSubmissionTime;
 	
@@ -38,12 +36,10 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
     /**
      * Instantiates a new RIF job submission.
  	*/
-	private RIFStudySubmission(String studyType) {
+	private RIFStudySubmission() {
 
-		this.studyType = studyType;
     	jobSubmissionTime = new Date();
     	project = Project.newInstance();
-    	study = AbstractStudy.newInstance(studyType);
 		calculationMethods = new ArrayList<>();
 		rifOutputOptions = new ArrayList<>();
 		rifOutputOptions.add(RIFOutputOption.DATA);
@@ -58,9 +54,9 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
      *
      * @return the RIF job submission
      */
-    public static RIFStudySubmission newInstance(String studyType) {
+    public static RIFStudySubmission newInstance() {
 
-    	return new RIFStudySubmission(studyType);
+    	return new RIFStudySubmission();
     }
     
     /**
@@ -76,8 +72,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
     		return null;
     	}
     	
-    	RIFStudySubmission cloneRIFStudySubmission =
-			    new RIFStudySubmission(originalRIFStudySubmission.studyType);
+    	RIFStudySubmission cloneRIFStudySubmission = new RIFStudySubmission();
 
     	Date originalJobSubmissionTime
     		= originalRIFStudySubmission.getJobSubmissionTime();
@@ -136,18 +131,6 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 		return calculationMethods;
 	}
 	
-	/**
-	 * Adds the rif output option.
-	 *
-	 * @param rifOutputOption the rif output option
-	 */
-/*
-	public void addRIFOutputOption(
-		final RIFOutputOption rifOutputOption) {
-		
-		rifOutputOptions.add(rifOutputOption);
-	}
-*/	
 	/**
 	 * Gets the RIF output options.
 	 *
@@ -210,15 +193,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 
 		this.study = study;
 	}
-	
-	/**
-	 * Clear calculation methods.
-	 */
-	public void clearCalculationMethods() {
-		
-		calculationMethods.clear();
-	}
-	
+
 	/**
 	 * Clear rif output options.
 	 */
@@ -315,7 +290,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {	
 		
-		ArrayList<String> errorMessages = new ArrayList<String>();
+		ArrayList<String> errorMessages = new ArrayList<>();
 		
 		String recordType = getRecordType();
 		DiseaseMappingStudy diseaseMappingStudy=null;

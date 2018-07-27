@@ -59,7 +59,8 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 			case RISK_ANALYSIS_STUDY:
 				return RiskAnalysisStudy.newInstance();
 			default:
-				throw new IllegalArgumentException("Unknown study type in AbstractStudy.newInstance");
+				throw new IllegalArgumentException(String.format(
+						"Unknown study type '%s' in AbstractStudy.newInstance", studyType));
 		}
 	}
 
