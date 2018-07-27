@@ -21,11 +21,9 @@ import org.sahsu.rif.services.system.RIFServiceMessages;
  * encompasses both the request (study) and various information about how the results
  * should be configured.
  */
-abstract public class AbstractStudy 
-	extends AbstractRIFConcept {
+public abstract class AbstractStudy extends AbstractRIFConcept {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");
 
 	static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
@@ -49,7 +47,20 @@ abstract public class AbstractStudy
 	
 	/** The investigations. */
 	private ArrayList<Investigation> investigations;
-    
+
+	public static AbstractStudy newInstance(String studyType) {
+
+		switch (studyType) {
+
+			case "disease_mapping_study":
+				return DiseaseMappingStudy.newInstance();
+			case "risk_analysis_study":
+				return RiskAnalysisStudy.newInstance();
+			default:
+				throw new IllegalArgumentException("Unknown study type in AbstractStudy.newInstance");
+		}
+	}
+
     /**
      * Instantiates a new abstract study.
      */
@@ -61,7 +72,7 @@ abstract public class AbstractStudy
 
 		geography = Geography.newInstance();
 		comparisonArea = ComparisonArea.newInstance();
-		investigations = new ArrayList<Investigation>();
+		investigations = new ArrayList<>();
 		studyArea = AbstractStudyArea.newInstance();
 	}
 

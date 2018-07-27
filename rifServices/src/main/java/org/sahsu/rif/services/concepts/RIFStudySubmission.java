@@ -114,8 +114,8 @@ public final class RIFStudySubmission
     	jobSubmissionTime = new Date();
     	project = Project.newInstance();
     	study = DiseaseMappingStudy.newInstance();
-		calculationMethods = new ArrayList<CalculationMethod>();
-		rifOutputOptions = new ArrayList<RIFOutputOption>();
+		calculationMethods = new ArrayList<>();
+		rifOutputOptions = new ArrayList<>();
 		rifOutputOptions.add(RIFOutputOption.DATA);
 		rifOutputOptions.add(RIFOutputOption.MAPS);
 		rifOutputOptions.add(RIFOutputOption.POPULATION_HOLES);

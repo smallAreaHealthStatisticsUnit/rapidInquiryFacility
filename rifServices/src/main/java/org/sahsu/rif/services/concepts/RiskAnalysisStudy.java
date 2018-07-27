@@ -4,6 +4,11 @@ import org.sahsu.rif.generic.system.RIFServiceException;
 
 public class RiskAnalysisStudy extends AbstractStudy {
 
+	public static RiskAnalysisStudy newInstance() {
+
+		return new RiskAnalysisStudy();
+	}
+
 	@Override
 	public String getRecordType() {
 

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import org.sahsu.rif.generic.fileformats.AbstractXMLContentHandler;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.services.concepts.AbstractGeographicalArea;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
@@ -85,8 +86,10 @@ import org.xml.sax.SAXException;
 
 abstract class AbstractGeographicalAreaContentHandler 
 	extends AbstractXMLContentHandler {
+	/** The current disease mapping study area. */
+	protected AbstractStudyArea currentStudyArea;
 
-// ==========================================
+	// ==========================================
 // Section Constants
 // ==========================================
 
@@ -208,8 +211,23 @@ public AbstractGeographicalAreaContentHandler() {
 // Section Override
 // ==========================================
 
+	/**
+	 * Gets the disease mapping study area.
+	 *
+	 * @return the disease mapping study area
+	 */
+	public AbstractStudyArea getStudyArea() {
 
-    @Override
+		currentStudyArea.setMapAreas(getMapAreas());
+		currentStudyArea.setGeoLevelSelect(getGeoLevelSelect());
+		currentStudyArea.setGeoLevelArea(getGeoLevelArea());
+		currentStudyArea.setGeoLevelView(getGeoLevelView());
+		currentStudyArea.setGeoLevelToMap(getGeoLevelToMap());
+
+		return currentStudyArea;
+	}
+
+	@Override
 	public void initialise(
 		final OutputStream outputStream,
 		final XMLCommentInjector commentInjector) 
