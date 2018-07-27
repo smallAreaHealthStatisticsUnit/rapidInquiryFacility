@@ -27,6 +27,8 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 
 	static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+	public static final String DISEASE_MAPPING_STUDY = "disease_mapping_study";
+	public static final String RISK_ANALYSIS_STUDY = "risk_analysis_study";
 
 	AbstractStudyArea studyArea;
 
@@ -52,9 +54,9 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 
 		switch (studyType) {
 
-			case "disease_mapping_study":
+			case DISEASE_MAPPING_STUDY:
 				return DiseaseMappingStudy.newInstance();
-			case "risk_analysis_study":
+			case RISK_ANALYSIS_STUDY:
 				return RiskAnalysisStudy.newInstance();
 			default:
 				throw new IllegalArgumentException("Unknown study type in AbstractStudy.newInstance");

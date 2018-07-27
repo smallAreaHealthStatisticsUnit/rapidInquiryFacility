@@ -112,14 +112,15 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 				
 		//add any errors inherent in the study area object
 		if (studyArea == null) {
-			String diseaseMappingStudyAreaFieldName
-				= studyArea.getRecordType();
+			// TODO: NPE waiting to happen!!!
+			// String diseaseMappingStudyAreaFieldName
+			// 	= studyArea.getRecordType();
 		
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					getRecordType(),
-					diseaseMappingStudyAreaFieldName);
+					"diseaseMappingStudyAreaFieldName"); // Quoted for now: see to-do above.
 			errorMessages.add(errorMessage);						
 		}
 		else {			

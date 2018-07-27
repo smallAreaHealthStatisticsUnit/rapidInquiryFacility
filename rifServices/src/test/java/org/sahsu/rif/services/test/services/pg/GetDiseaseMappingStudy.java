@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AgeBand;
 import org.sahsu.rif.services.concepts.AgeGroup;
@@ -146,8 +147,8 @@ public final class GetDiseaseMappingStudy extends CommonRIFServiceTestCase {
 				validUser,
 				validStudyID);
 
-		RIFStudySubmission submission
-			= RIFStudySubmission.newInstance();
+		RIFStudySubmission submission =
+				RIFStudySubmission.newInstance(AbstractStudy.DISEASE_MAPPING_STUDY);
 		submission.setStudy(diseaseMappingStudy);
 
 		RIFZipFileWriter writer = new RIFZipFileWriter();

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
 import org.sahsu.rif.services.concepts.AgeBand;
@@ -130,7 +131,8 @@ public final class SampleTestObjectGenerator {
 	
 
 	public RIFStudySubmission createSampleRIFJobSubmission() {
-		RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance();
+		RIFStudySubmission rifStudySubmission =
+				RIFStudySubmission.newInstance(AbstractStudy.DISEASE_MAPPING_STUDY);
 		rifStudySubmission.setNewRecord(false);
 
 		rifStudySubmission.setJobSubmissionTime(new Date());
@@ -550,7 +552,8 @@ public final class SampleTestObjectGenerator {
 	
 	public RIFStudySubmission createTypicalStudySubmission() {
 
-		RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance();
+		RIFStudySubmission rifStudySubmission =
+				RIFStudySubmission.newInstance(AbstractStudy.DISEASE_MAPPING_STUDY);
 		rifStudySubmission.setNewRecord(false);
 
 		rifStudySubmission.setJobSubmissionTime(new Date());

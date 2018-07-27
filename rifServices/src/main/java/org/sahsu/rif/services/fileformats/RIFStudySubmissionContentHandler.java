@@ -171,7 +171,7 @@ final public class RIFStudySubmissionContentHandler
 		throws SAXException {
 
 		if (isSingularRecordName(qualifiedName)) {
-			currentRIFJobSubmission = RIFStudySubmission.newInstance();
+			currentRIFJobSubmission = RIFStudySubmission.newInstance(qualifiedName);
 			activate();
 		}
 		else if (isDelegatedHandlerAssigned()) {

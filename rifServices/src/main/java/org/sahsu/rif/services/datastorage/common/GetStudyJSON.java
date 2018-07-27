@@ -32,6 +32,7 @@ import com.sun.jersey.client.urlconnection.HTTPSProperties;
 
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.services.concepts.AbstractStudy;
 
 public class GetStudyJSON {
 
@@ -285,7 +286,7 @@ public class GetStudyJSON {
 			addInvestigations(investigation, geographyName);
 			investigations.put("investigation", investigation);
 			study_type.put("investigations", investigations);
-			rif_job_submission.put("disease_mapping_study", study_type);
+			rif_job_submission.put(AbstractStudy.DISEASE_MAPPING_STUDY, study_type);
 			rif_job_submission.put("rif_output_options", rif_output_options);
 			addAdditionalTables(additionalData, "rif40_study_status");
 			addSqlLog(additionalData);

@@ -23,7 +23,7 @@ final class DiseaseMappingStudyContentHandler extends AbstractStudyContentHandle
     DiseaseMappingStudyContentHandler() {
 
     	super();
-	    setSingularRecordName("disease_mapping_study");
+	    setSingularRecordName(AbstractStudy.DISEASE_MAPPING_STUDY);
     }
 
 }
