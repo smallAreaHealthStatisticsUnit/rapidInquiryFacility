@@ -208,10 +208,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				 * moment, though.
 				 */
 
-				if(false) {
+				if (studySubmission.getStudy().isRiskAnalysis()) {
 
-					// sourceRScript(rengine, rifScriptPath + "performRiskAnal.R");
-					// REXP riskAnalysisExit = rengine.eval("performRiskAnal.R");
+					sourceRScript(rengine, rifScriptPath + "performRiskAnal.R");
+					REXP riskAnalysisExit = rengine.eval("performRiskAnal.R");
 					/* TODO: also, that's the script name, not the name of a function in it; but
 					 * there doesn't at present appear to be a suitable one.
 					 * Then do something with riskAnalysisExit.

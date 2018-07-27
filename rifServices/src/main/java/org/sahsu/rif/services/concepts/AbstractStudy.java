@@ -79,6 +79,17 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 		studyArea = AbstractStudyArea.newInstance();
 	}
 
+	public boolean isDiseaseMapping() {
+
+		return DiseaseMappingStudy.class.isAssignableFrom(getClass());
+	}
+
+	public boolean isRiskAnalysis() {
+
+		return RiskAnalysisStudy.class.isAssignableFrom(getClass());
+	}
+
+
 	/**
 	 * Gets the name.
 	 *
