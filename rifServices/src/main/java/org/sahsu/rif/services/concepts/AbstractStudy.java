@@ -81,12 +81,12 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 
 	public boolean isDiseaseMapping() {
 
-		return DiseaseMappingStudy.class.isAssignableFrom(getClass());
+		return this instanceof DiseaseMappingStudy;
 	}
 
 	public boolean isRiskAnalysis() {
 
-		return RiskAnalysisStudy.class.isAssignableFrom(getClass());
+		return this instanceof RiskAnalysisStudy;
 	}
 
 
