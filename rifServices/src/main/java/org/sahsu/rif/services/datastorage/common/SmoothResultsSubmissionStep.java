@@ -202,7 +202,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				sourceRScript(rengine, performSmoothingActivity.toString());
 
 				/* TODO: At this point we need to check for this being a Risk Analysis study,
-				 * rather than disease mapping. if it is, we call the performRiskAnal.R script.
+				 * rather than disease mapping. if it is, we call the AbstractStudyArea.R script.
 				 * I _think_ that should happen before the smoothing, but check with Brandon.
 				 * Or maybe it shouldn't be here all? Nowhere else calls R functions at the
 				 * moment, though.
@@ -211,7 +211,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
 					sourceRScript(rengine, rifScriptPath + "performRiskAnal.R");
-					REXP riskAnalysisExit = rengine.eval("performRiskAnal.R");
+					REXP riskAnalysisExit = rengine.eval("performRiskAnal");
 					/* TODO: also, that's the script name, not the name of a function in it; but
 					 * there doesn't at present appear to be a suitable one.
 					 * Then do something with riskAnalysisExit.

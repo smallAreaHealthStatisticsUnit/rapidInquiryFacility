@@ -14,7 +14,6 @@ import org.sahsu.rif.services.concepts.CalculationMethodPrior;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.CovariateType;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
@@ -29,6 +28,7 @@ import org.sahsu.rif.services.concepts.Project;
 import org.sahsu.rif.services.concepts.RIFServiceInformation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.concepts.Sex;
+import org.sahsu.rif.services.concepts.StudyType;
 import org.sahsu.rif.services.concepts.YearInterval;
 import org.sahsu.rif.services.concepts.YearRange;
 
@@ -346,8 +346,8 @@ public final class SampleTestObjectGenerator {
 		comparisonArea.setGeoLevelToMap(geoLevelToMap);
 		diseaseMappingStudy.setComparisonArea(comparisonArea);
 	
-		DiseaseMappingStudyArea diseaseMappingStudyArea
-			= AbstractStudyArea.newInstance();
+		AbstractStudyArea diseaseMappingStudyArea =
+				AbstractStudyArea.newInstance(StudyType.DISEASE_MAPPING);
 		diseaseMappingStudyArea.setNewRecord(false);		
 
 		diseaseMappingStudyArea.addMapArea(mapArea1);
@@ -576,8 +576,8 @@ public final class SampleTestObjectGenerator {
 	
 
 		//Set the study area
-		DiseaseMappingStudyArea diseaseMappingStudyArea
-			= AbstractStudyArea.newInstance();
+		AbstractStudyArea diseaseMappingStudyArea =
+				AbstractStudyArea.newInstance(StudyType.DISEASE_MAPPING);
 		diseaseMappingStudyArea.setNewRecord(false);		
 		GeoLevelSelect studyAreaGeoLevelSelect = GeoLevelSelect.newInstance("LEVEL2");
 		studyAreaGeoLevelSelect.setNewRecord(false);

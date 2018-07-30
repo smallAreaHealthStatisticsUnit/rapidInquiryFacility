@@ -22,9 +22,18 @@ public abstract class AbstractStudyArea extends AbstractGeographicalArea {
 	 *
 	 * @return the disease mapping study area
 	 */
-	static public DiseaseMappingStudyArea newInstance() {
+	static public AbstractStudyArea newInstance(StudyType studyType) {
 
-		return new DiseaseMappingStudyArea();
+		switch (studyType) {
+			case DISEASE_MAPPING:
+				return new DiseaseMappingStudyArea();
+			case RISK_ANALYSIS:
+				return new RiskAnalysisStudyArea();
+			default:
+				throw new IllegalStateException(
+						String.format("Unknown study type '%s' in "
+						              + "AbstractStudyArea.newInstance", studyType));
+		}
 	}
 
 	/**
@@ -60,15 +69,6 @@ public abstract class AbstractStudyArea extends AbstractGeographicalArea {
 		cloneDiseaseMappingStudyArea.setGeoLevelToMap(cloneGeoLevelToMap);
 
 		return cloneDiseaseMappingStudyArea;
-	}
-
-	public void identifyDifferences(
-		final DiseaseMappingStudyArea anotherDiseaseMappingStudyArea,
-		final ArrayList<String> differences) {
-
-		identifyDifferences(
-			anotherDiseaseMappingStudyArea,
-			differences);
 	}
 
 	/**

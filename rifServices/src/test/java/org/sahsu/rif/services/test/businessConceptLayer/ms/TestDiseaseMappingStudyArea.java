@@ -3,12 +3,14 @@ package org.sahsu.rif.services.test.businessConceptLayer.ms;
 import org.junit.Test;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
+import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
 import org.sahsu.rif.services.concepts.GeoLevelView;
 import org.sahsu.rif.services.concepts.MapArea;
+import org.sahsu.rif.services.concepts.StudyType;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.test.AbstractRIFTestCase;
 
@@ -107,8 +109,7 @@ public final class TestDiseaseMappingStudyArea extends AbstractRIFTestCase {
 		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent");
 		MapArea mapArea2 = MapArea.newInstance("222", "222", "Barnet");
 
-		masterStudyArea
-			= AbstractStudyArea.newInstance();
+		masterStudyArea = AbstractStudyArea.newInstance(StudyType.DISEASE_MAPPING);
 		masterStudyArea.setGeoLevelSelect(geoLevelSelect);
 		masterStudyArea.setGeoLevelArea(geoLevelArea);
 		masterStudyArea.setGeoLevelView(geoLevelView);

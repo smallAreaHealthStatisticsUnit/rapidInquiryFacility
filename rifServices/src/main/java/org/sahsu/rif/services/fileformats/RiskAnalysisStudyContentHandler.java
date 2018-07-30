@@ -1,12 +1,14 @@
 package org.sahsu.rif.services.fileformats;
 
 import org.sahsu.rif.services.concepts.AbstractStudy;
+import org.sahsu.rif.services.concepts.StudyType;
 
-public class RiskAnalysisStudyContentHandler extends AbstractStudyContentHandler {
+class RiskAnalysisStudyContentHandler extends AbstractStudyContentHandler {
 
-	public RiskAnalysisStudyContentHandler() {
+	RiskAnalysisStudyContentHandler() {
 
 		super();
-		setSingularRecordName(AbstractStudy.RISK_ANALYSIS_STUDY);
+		setSingularRecordName(StudyType.RISK_ANALYSIS.type());
+		areaContentHandler = new StudyAreaContentHandler(StudyType.RISK_ANALYSIS.area());
 	}
 }

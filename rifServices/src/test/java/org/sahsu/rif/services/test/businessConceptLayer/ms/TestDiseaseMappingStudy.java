@@ -3,6 +3,7 @@ package org.sahsu.rif.services.test.businessConceptLayer.ms;
 import org.junit.Test;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
+import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
 import org.sahsu.rif.services.concepts.ComparisonArea;
@@ -71,8 +72,8 @@ public final class TestDiseaseMappingStudy
 	@Test
 	public void acceptValidInstance_COMMON1() {
 		try {
-			DiseaseMappingStudy diseaseMappingStudy =
-					DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy =
+					AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 
 		} catch(RIFServiceException e) {
@@ -89,8 +90,8 @@ public final class TestDiseaseMappingStudy
 		
 		//name is blank
 		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setName(null);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -103,8 +104,8 @@ public final class TestDiseaseMappingStudy
 		}
 		
 		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setName("");
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -119,8 +120,8 @@ public final class TestDiseaseMappingStudy
 		//description is blank
 		
 		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setDescription(null);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -133,8 +134,8 @@ public final class TestDiseaseMappingStudy
 		}
 		
 		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setDescription("");
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -148,8 +149,8 @@ public final class TestDiseaseMappingStudy
 
 		//comparison area is blank
 		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setComparisonArea(null);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -169,8 +170,8 @@ public final class TestDiseaseMappingStudy
 		
 		
 		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setName("");
 			diseaseMappingStudy.setDescription(null);
 			diseaseMappingStudy.setGeography(null);
@@ -184,10 +185,6 @@ public final class TestDiseaseMappingStudy
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY, 
 				4);			
 		}
-		
-		
-		
-		
 	}
 	
 	/**
@@ -200,8 +197,8 @@ public final class TestDiseaseMappingStudy
 	public void rejectEmptyInvestigationList_ERROR() {
 		
 		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setInvestigations(null);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -214,8 +211,8 @@ public final class TestDiseaseMappingStudy
 		}		
 		
 		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.clearInvestigations();
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -259,9 +256,9 @@ public final class TestDiseaseMappingStudy
 		invalidComparisonArea.setGeoLevelView(geoLevelView);
 		invalidComparisonArea.setGeoLevelToMap(geoLevelToMap);
 
-		try {		
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+		try {
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.setComparisonArea(invalidComparisonArea);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -288,9 +285,9 @@ public final class TestDiseaseMappingStudy
 		invalidInvestigation.addHealthCode(invalidHealthCode);
 		
 		try {
-			
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.addInvestigation(invalidInvestigation);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
 			fail();
@@ -306,9 +303,9 @@ public final class TestDiseaseMappingStudy
 	
 	@Test
 	public void rejectInvestigationsWithDifferentDenominators_ERROR() {
-		
-		DiseaseMappingStudy diseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+
+		AbstractStudy diseaseMappingStudy
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		diseaseMappingStudy.clearInvestigations();
 		
 		SampleTestObjectGenerator generator
@@ -357,9 +354,9 @@ public final class TestDiseaseMappingStudy
 		 * Investigation 1 has {nearDist, ses}
 		 * Investigation 2 has {tri1KM}
 		 */
-		try {			
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+		try {
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.clearInvestigations();
 			
 			Investigation investigation1 
@@ -402,9 +399,9 @@ public final class TestDiseaseMappingStudy
 		 * Investigation 1 has {nearDist, ses}
 		 * Investigation 2 has {tri1KM}
 		 */
-		try {			
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+		try {
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.clearInvestigations();
 			
 			Investigation investigation1 
@@ -440,9 +437,9 @@ public final class TestDiseaseMappingStudy
 		 * Investigation 1 has {nearDist}
 		 * Investigation 2 has {nearDist, ses}
 		 */
-		try {			
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+		try {
+			AbstractStudy diseaseMappingStudy
+				= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.clearInvestigations();
 			
 			Investigation investigation1 
@@ -473,20 +470,15 @@ public final class TestDiseaseMappingStudy
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY,
 				1);			
 		}
-		
-		
-		
-		
 	}
-	
-	
+
 	/**
 	 * Test security violations.
 	 */
 	@Test
 	public void rejectSecurityViolations_MALICIOUS() {
-		DiseaseMappingStudy maliciousDiseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+		AbstractStudy maliciousDiseaseMappingStudy
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		maliciousDiseaseMappingStudy.setIdentifier(getTestMaliciousValue());
 		try {
 			maliciousDiseaseMappingStudy.checkSecurityViolations();
@@ -495,10 +487,9 @@ public final class TestDiseaseMappingStudy
 		catch(RIFServiceSecurityException rifServiceSecurityException) {
 			//pass
 		}
-		
-		
+
 		maliciousDiseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		maliciousDiseaseMappingStudy.setName(getTestMaliciousValue());
 		try {
 			maliciousDiseaseMappingStudy.checkSecurityViolations();
@@ -508,9 +499,8 @@ public final class TestDiseaseMappingStudy
 			//pass
 		}
 		
-		
 		maliciousDiseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		maliciousDiseaseMappingStudy.setDescription(getTestMaliciousValue());
 		try {
 			maliciousDiseaseMappingStudy.checkSecurityViolations();
@@ -519,10 +509,9 @@ public final class TestDiseaseMappingStudy
 		catch(RIFServiceSecurityException rifServiceSecurityException) {
 			//pass
 		}
-
 		
 		maliciousDiseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		maliciousDiseaseMappingStudy.setOtherNotes(getTestMaliciousValue());
 		try {
 			maliciousDiseaseMappingStudy.checkSecurityViolations();
@@ -533,7 +522,7 @@ public final class TestDiseaseMappingStudy
 		}
 		
 		maliciousDiseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		Geography maliciousGeography
 			= Geography.newInstance(getTestMaliciousValue(), "not much description");
 		maliciousDiseaseMappingStudy.setGeography(maliciousGeography);		
@@ -546,7 +535,7 @@ public final class TestDiseaseMappingStudy
 		}
 
 		maliciousDiseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		ComparisonArea maliciousComparisonArea
 			= maliciousDiseaseMappingStudy.getComparisonArea();
 		maliciousComparisonArea.setIdentifier(getTestMaliciousValue());
@@ -559,7 +548,7 @@ public final class TestDiseaseMappingStudy
 		}
 		
 		maliciousDiseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		AbstractStudyArea diseaseMappingStudyArea
 			= maliciousDiseaseMappingStudy.getStudyArea();
 		MapArea maliciousMapArea = MapArea.newInstance("454", "454", getTestMaliciousValue());
@@ -573,7 +562,7 @@ public final class TestDiseaseMappingStudy
 		}
 		
 		maliciousDiseaseMappingStudy
-			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		Investigation maliciousInvestigation
 			= Investigation.newInstance();
 		maliciousInvestigation.setTitle(getTestMaliciousValue());
@@ -586,12 +575,4 @@ public final class TestDiseaseMappingStudy
 			//pass
 		}		
 	}
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

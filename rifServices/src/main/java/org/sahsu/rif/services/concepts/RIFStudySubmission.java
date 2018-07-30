@@ -85,10 +85,9 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
     	Project originalProject = originalRIFStudySubmission.getProject();
     	cloneRIFStudySubmission.setProject(Project.createCopy(originalProject)); 	
     	
-    	DiseaseMappingStudy originalDiseaseMappingStudy
-    		= (DiseaseMappingStudy) originalRIFStudySubmission.getStudy();
-    	DiseaseMappingStudy cloneDiseaseMappingStudy
-    		= DiseaseMappingStudy.createCopy(originalDiseaseMappingStudy);
+    	AbstractStudy originalDiseaseMappingStudy = originalRIFStudySubmission.getStudy();
+    	AbstractStudy cloneDiseaseMappingStudy =
+			    AbstractStudy.createCopy(originalDiseaseMappingStudy);
     	cloneRIFStudySubmission.setStudy(cloneDiseaseMappingStudy);
     	
     	ArrayList<CalculationMethod> originalCalculationMethods
@@ -274,12 +273,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 		super.checkSecurityViolations();
 		
 		project.checkSecurityViolations();
-		
-		//For now we only have disease mapping studies
-		//In future we will have risk analysis studies
-		DiseaseMappingStudy diseaseMappingStudy
-			= (DiseaseMappingStudy) study;
-		diseaseMappingStudy.checkSecurityViolations();
+		study.checkSecurityViolations();
 		
 		for (CalculationMethod calculationMethod : calculationMethods) {
 			calculationMethod.checkSecurityViolations();
@@ -293,25 +287,21 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 		ArrayList<String> errorMessages = new ArrayList<>();
 		
 		String recordType = getRecordType();
-		DiseaseMappingStudy diseaseMappingStudy=null;
-		
+
 		if (study == null) {
-			String studyFieldName
-				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");
-			String errorMessage
-				= GENERIC_MESSAGES.getMessage(
-					"general.validation.emptyRequiredRecordField", 
+			String studyFieldName = RIFServiceMessages.getMessage("diseaseMappingStudy.label");
+			String errorMessage = GENERIC_MESSAGES.getMessage(
+					"general.validation.emptyRequiredRecordField",
 					recordType,
 					studyFieldName);
 			errorMessages.add(errorMessage);			
 		}
 		else {
 			try {
-				diseaseMappingStudy = (DiseaseMappingStudy) study;
-				diseaseMappingStudy.checkErrors(validationPolicy);
-			}
-			catch(RIFServiceException rifServiceException) {
-				rifLogger.debug(this.getClass(), "DiseaseMappingStudy.checkErrors(): " + 
+				study.checkErrors(validationPolicy);
+			} catch(RIFServiceException rifServiceException) {
+
+				rifLogger.debug(this.getClass(), "AbstractStudy.checkErrors(): " +
 					rifServiceException.getErrorMessages().size());
 				errorMessages.addAll(rifServiceException.getErrorMessages());
 			}
@@ -348,17 +338,16 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 				catch(RIFServiceException rifServiceException) {
 					rifLogger.debug(this.getClass(), "CalculationMethod.checkErrors(): " + 
 						rifServiceException.getErrorMessages().size());
-					errorMessages.addAll(errorMessages);
 				}
 			}
 		}
 		
-		if (calculationMethodsAllNonNull == true) {
+		if (calculationMethodsAllNonNull) {
 			HashSet<String> uniqueCalculationMethodNames = new HashSet<String>();
 			for (CalculationMethod calculationMethod : calculationMethods) {
 				try {
 					String displayName = calculationMethod.getDisplayName();
-					if (uniqueCalculationMethodNames.contains(displayName) == true) {
+					if (uniqueCalculationMethodNames.contains(displayName)) {
 						String errorMessage
 							= RIFServiceMessages.getMessage(
 								"rifStudySubmission.error.duplicateCalculationMethod", 
@@ -412,8 +401,8 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 					errorMessages.get(i));
 			}
 		}
-		else if (diseaseMappingStudy != null) {
-			rifLogger.info(this.getClass(), "JSON parse OK for " + diseaseMappingStudy.getName());
+		else if (study != null) {
+			rifLogger.info(this.getClass(), "JSON parse OK for " + study.getName());
 		}
 		else {
 			errorMessages.add("JSON parse OK but study object is null");
