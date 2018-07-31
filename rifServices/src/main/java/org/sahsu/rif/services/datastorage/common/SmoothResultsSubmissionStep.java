@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -35,6 +36,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	private Logger log;	// Not used - uses RIFLogger
 	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
+	private static DatabaseType databaseType;
 
 	public SmoothResultsSubmissionStep() {
 		String logManagerName=System.getProperty("java.util.logging.manager");
@@ -73,10 +75,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 		setUser(userID, password);
 
+		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
+
 		List<Parameter> rifStartupOptionParameters = rifStartupOptions.getDbParametersForRScripts();
 		addParameters(rifStartupOptionParameters);
-
-		// setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
 	}
 	
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
@@ -84,7 +86,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 		
 		StringBuilder rifScriptPath = new StringBuilder();
 		StringBuilder adjCovSmoothJri = new StringBuilder();
-		StringBuilder rifOdbc = new StringBuilder();
 		StringBuilder performSmoothingActivity = new StringBuilder();
 		String rErrorTrace="No R error tracer (see Tomcat log)";
 
@@ -195,14 +196,16 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
-				rifOdbc.append(rifScriptPath);
-				rifOdbc.append("RIF_odbc.R");
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
 
-				sourceRScript(rengine, rifScriptPath + "JdbcHandler.R");
+				if (rifStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER) { 
+					sourceRScript(rengine, rifScriptPath + "OdbcHandler.R");
+				}
+				else { 
+					sourceRScript(rengine, rifScriptPath + "JdbcHandler.R");
+				}
 				sourceRScript(rengine, adjCovSmoothJri.toString());
-				// sourceRScript(rengine, rifOdbc.toString());
 				sourceRScript(rengine, performSmoothingActivity.toString());
 
 				//RUN the actual smoothing
@@ -216,23 +219,23 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
 					exitValue = 1;
 				}
-				// REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
-				// if (errorTraceFromR != null) {
-				// 	String[] strArr=errorTraceFromR.asStringArray();
-				// 	StringBuilder strBuilder = new StringBuilder();
-				// 	for (final String aStrArr : strArr) {
-				// 		strBuilder.append(aStrArr).append(lineSeparator);
-				// 	}
-				// 	int index = -1;
-				// 	String toReplace="'";
-				// 	while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
-				// 		strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
-				// 	}
-				// 	rErrorTrace = strBuilder.toString();
-				// }
-				// else {
-				// 	rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
-				// }
+				REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
+				if (errorTraceFromR != null) {
+					String[] strArr=errorTraceFromR.asStringArray();
+				 	StringBuilder strBuilder = new StringBuilder();
+				 	for (final String aStrArr : strArr) {
+				 		strBuilder.append(aStrArr).append(lineSeparator);
+				 	}
+				 	int index = -1;
+				 	String toReplace="'";
+				 	while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
+				 		strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
+				 	}
+				 	rErrorTrace = strBuilder.toString();
+				}
+				else {
+				 	rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
+				}
 			}
 			catch(Exception error) {
 				try {

@@ -66,7 +66,13 @@ connectToDb <- function() {
   
 	errorTrace<-capture.output({
 		tryCatch({
-			connection <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password))
+			if (is.na(odbcDataSource)) {
+				cat(paste("UNABLE TO CONNECT! Null odbcDataSource\n"), sep="")
+				exitValue <<- 1
+			}
+			else {
+				connection <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password))
+			}
 		},
         warning=function(w) {
             cat(paste("UNABLE TO CONNECT! ", w, "\n"), sep="")
@@ -259,47 +265,74 @@ getAdjacencyMatrix <- function() {
 
 saveDataFrameToDatabaseTable <- function(data) {
 
-  #
-  # Save data frame to file
-  # 
-  if (dumpFramesToCsv == TRUE) {
-	  cat(paste0("Saving data frame to: ", temporarySmoothedResultsFileName, "\n"), sep="")
-	  write.csv(data, file=temporarySmoothedResultsFileName) 
-  }
-  #
-  # Save data frame to table
-  #
-  cat(paste0("Creating temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
-  sqlDrop(connection, temporarySmoothedResultsTableName, errors = FALSE) # Ignore errors 
-  
-  if (db_driver_prefix == "jdbc:postgresql") {
-		sqlSave(connection, data, tablename=temporarySmoothedResultsTableName
-#			, verbose=TRUE				# Enable save debug (1 row/tuple!)
-			)
-  }
-  else if (db_driver_prefix == "jdbc:sqlserver") {
-		ndata<-do.call(data.frame, lapply(data, function(x) {
-				replace(x, is.infinite(x),NA) # Replace INF will NA for SQL Server
+	lerrorTrace<-capture.output({
+		cat("In saveDataFrameToDatabaseTable")
+		
+#
+# Save data frame to file
+# 
+		if (dumpFramesToCsv == TRUE) {
+			cat(paste0("Saving data frame to: ", temporarySmoothedResultsFileName, "\n"), sep="")
+			write.csv(data, file=temporarySmoothedResultsFileName) 
+		}
+#
+# Save data frame to table
+#
+	cat(paste0("Creating temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
+		tryCatch({
+			withErrorTracing({
+				sqlDrop(connection, temporarySmoothedResultsTableName, errors = FALSE) # Ignore errors 
+				  
+				 if (db_driver_prefix == "jdbc:postgresql") {
+						sqlSave(connection, data, tablename=temporarySmoothedResultsTableName
+				#			, verbose=TRUE				# Enable save debug (1 row/tuple!)
+							)
+				}
+				else if (db_driver_prefix == "jdbc:sqlserver") {
+						ndata<-do.call(data.frame, lapply(data, function(x) {
+								replace(x, is.infinite(x),NA) # Replace INF will NA for SQL Server
+							}
+							))
+						sqlSave(connection, ndata, tablename=temporarySmoothedResultsTableName
+				#			, verbose=TRUE				# Enable save debug (1 row/tuple!)
+							)
+				}
+				  
+				  #Add indices to the new table so that its join with s[study_id]_map will be more 
+				  #efficient
+				cat("Creating study_id index on temporary table\n")
+				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "study_id"))
+				cat("Creating area_id index on temporary table\n")
+				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "area_id"))
+				cat("Creating genders index on temporary table\n")
+				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "genders"))
+				cat("Created indices on temporary table\n")
+				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "band_id"))
+				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "inv_id"))
+				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "adjusted"))
+				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "direct_standardisation"))
 			}
-			))
-		sqlSave(connection, ndata, tablename=temporarySmoothedResultsTableName
-#			, verbose=TRUE				# Enable save debug (1 row/tuple!)
-			)
-  }
-  
-  #Add indices to the new table so that its join with s[study_id]_map will be more 
-  #efficient
-  cat("Creating study_id index on temporary table\n")
-  sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "study_id"))
-  cat("Creating area_id index on temporary table\n")
-  sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "area_id"))
-  cat("Creating genders index on temporary table\n")
-  sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "genders"))
-  cat("Created indices on temporary table\n")
-  #sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "band_id"))
-  #sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "inv_id"))
-  #sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "adjusted"))
-  #sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "direct_standardisation"))
+		)},
+			warning=function(w) {
+				cat(paste("saveDataFrameToDatabaseTable() WARNING: ", w, "\n"), sep="")
+			},
+			error=function(e) {
+				e <<- e
+				cat(paste("saveDataFrameToDatabaseTable() ERROR: ", e$message,
+				"; call stack: ", e$call, "\n"), sep="")
+				exitValue <<- 1
+			},
+			finally={
+				cat(paste0("saveDataFrameToDatabaseTable finishing", "\n"), sep="")
+			}
+		)
+	})
+	
+	# Print trace
+	if (length(lerrorTrace)-1 > 0) {
+	 	cat(lerrorTrace, sep="\n")
+	}
+	return(lerrorTrace);				
 }
 
 generateTableIndexSQLQuery <- function(tableName, columnName) {
