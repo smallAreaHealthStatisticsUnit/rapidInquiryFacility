@@ -205,8 +205,7 @@ public final class TestGUIScenario
 			}
 		}
 		catch(RIFServiceException rifServiceException) {
-			ArrayList<String> errorMessages
-				= rifServiceException.getErrorMessages();
+			List<String> errorMessages = rifServiceException.getErrorMessages();
 			for (String errorMessage : errorMessages) {
 				System.out.println("ERROR:=="+errorMessage+"==");
 			}

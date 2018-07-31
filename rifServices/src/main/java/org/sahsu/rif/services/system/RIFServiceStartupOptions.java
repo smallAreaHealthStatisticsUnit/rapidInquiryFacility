@@ -2,6 +2,7 @@ package org.sahsu.rif.services.system;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -14,6 +15,7 @@ import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.services.datastorage.JdbcUrl;
 import org.sahsu.rif.services.system.files.TomcatBase;
 import org.sahsu.rif.services.system.files.TomcatFile;
 
@@ -35,7 +37,7 @@ public class RIFServiceStartupOptions {
 	
 	/** The database driver. */
 	private String databaseDriverPrefix;
-	
+
 	/** The host. */
 	private String host;
 	
@@ -114,7 +116,6 @@ public class RIFServiceStartupOptions {
 			host = properties.getHost();
 			port = properties.getPort();
 			databaseName = properties.getDatabaseName();
-			odbcDataSourceName = properties.getODBCDataSourceName();
 			databaseType =  properties.getDatabaseType();
 			extractDirectory = properties.getExtractDirectoryName();
 			taxonomyServicesServer = properties.getTaxonomyServicesServer();
@@ -136,6 +137,10 @@ public class RIFServiceStartupOptions {
 
 				System.setProperty("javax.net.ssl.trustStorePassword",
 				                   trustStorePassword);
+			}
+			
+			if (databaseType == DatabaseType.SQL_SERVER) { 
+				odbcDataSourceName = properties.getODBCDataSourceName();
 			}
 		}
 		catch(Exception exception) {
@@ -170,39 +175,34 @@ public class RIFServiceStartupOptions {
 		return properties.getOptionalRIfServiceProperty(propertyName, defaultValue);
 	}
 
-	public ArrayList<Parameter> extractParameters() {
-		ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+	/**
+	 * Returns a {@link List} of {@link Parameter}s from database elements in the startup
+	 * properties. This is mainly intended for passing to the R code.
+	 * @return a {@link List} of {@link Parameter}s formatted for use by the R scripts
+	 */
+	public List<Parameter> getDbParametersForRScripts() throws RIFServiceException {
+
+		List<Parameter> parameters = new ArrayList<>();
+		parameters.add(Parameter.newInstance("db_driver_prefix", databaseDriverPrefix));
+		parameters.add(Parameter.newInstance("db_host", host));
+		parameters.add(Parameter.newInstance("db_port", port));
+		parameters.add(Parameter.newInstance("db_name", databaseName));
+		parameters.add(Parameter.newInstance("db_driver_class_name", databaseDriverClassName));
+		parameters.add(Parameter.newInstance("db_url", new JdbcUrl(this).url()));
+		parameters.add(Parameter.newInstance("java_lib_path_dir", getLibDirectory()));
 		
-		Parameter databaseDriverPrefixParameter
-			= Parameter.newInstance(
-				"db_driver_prefix", 
-				databaseDriverPrefix);		
-		parameters.add(databaseDriverPrefixParameter);
+		if (databaseType == DatabaseType.SQL_SERVER) { 
+			String odbcDataSource = getODBCDataSourceName();
+			if (odbcDataSource == null) {
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.INVALID_STARTUP_OPTIONS, 
+						"odbcDataSource not set in RIFServiceStartupProperties.properties");
+				throw rifServiceException;
+			}
+			parameters.add(Parameter.newInstance("odbcDataSource", odbcDataSource));
+		}
 
-		Parameter databaseHostParameter
-			= Parameter.newInstance(
-				"db_host",
-				host);
-		parameters.add(databaseHostParameter);
-
-		Parameter databasePortParameter
-			= Parameter.newInstance(
-				"db_port",
-				port);			
-		parameters.add(databasePortParameter);
-
-		Parameter databaseNameParameter
-			= Parameter.newInstance(
-				"db_name",
-				databaseName);			
-		parameters.add(databaseNameParameter);
-
-		Parameter databaseDriverClassNameParameter
-			= Parameter.newInstance(
-				"db_driver_class_name",
-				databaseDriverClassName);
-		parameters.add(databaseDriverClassNameParameter);
-				
 		return parameters;
 	}
 	
@@ -445,7 +445,7 @@ public class RIFServiceStartupOptions {
 		
 	}
 	
-	public String getRIFServiceResourcePath() throws RIFServiceException {
+	public String getClassesDirectory() throws RIFServiceException {
 
 		if (isWebDeployment) {
 
@@ -469,6 +469,24 @@ public class RIFServiceStartupOptions {
 			       + "target"
 			       + File.separator
 			       + "classes";
+		}
+	}
+
+	private String getLibDirectory() {
+
+		if (isWebDeployment) {
+
+			String path = new TomcatFile(new TomcatBase(), ".").pathToLibDirectory().toString();
+			rifLogger.info(getClass(), "Returning path: " + path);
+			return path;
+		}
+		else {
+
+			return (new File(".")).getAbsolutePath()
+			       + File.separator
+			       + "target"
+			       + File.separator
+			       + "lib";
 		}
 	}
 

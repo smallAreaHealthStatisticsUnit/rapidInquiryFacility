@@ -1,6 +1,6 @@
 package org.sahsu.rif.services.test;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.mockito.Mock;
@@ -117,8 +117,7 @@ public class AbstractRIFTestCase {
 		String label,
 		RIFServiceException rifServiceException) {
 		
-		ArrayList<String> errorMessages 
-			= rifServiceException.getErrorMessages();
+		List<String> errorMessages = rifServiceException.getErrorMessages();
 		for (String errorMessage : errorMessages) {
 			System.out.println(label + "=="+errorMessage+"==");
 		}

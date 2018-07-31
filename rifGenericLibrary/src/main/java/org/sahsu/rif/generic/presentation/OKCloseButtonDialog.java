@@ -1,10 +1,13 @@
 package org.sahsu.rif.generic.presentation;
 
-import org.sahsu.rif.generic.system.RIFServiceException;
+import java.awt.GridBagConstraints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.*;
-import java.awt.event.*;
-import java.awt.*;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+
+import org.sahsu.rif.generic.system.RIFServiceException;
 
 /**
  *

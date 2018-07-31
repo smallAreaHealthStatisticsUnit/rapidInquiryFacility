@@ -1,8 +1,8 @@
 package org.sahsu.rif.generic.presentation;
 
-
 import java.awt.Component;
-import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JOptionPane;
 
 /**
@@ -120,9 +120,7 @@ public final class ErrorDialog {
 	 * @param parent the parent
 	 * @param errorMessages the error messages
 	 */
-	static public void showError(
-		Component parent, 
-		ArrayList<String> errorMessages) {
+	static public void showError(Component parent, List<String> errorMessages) {
 
 		if (errorMessages.isEmpty()) {
 			return;
