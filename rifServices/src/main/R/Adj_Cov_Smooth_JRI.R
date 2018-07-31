@@ -343,7 +343,7 @@ runRSmoothingFunctions <- function() {
 
 	establishTableNames(studyID)
 	cat("Table names established\n")
-	# errorTrace<-capture.output({
+	errorTrace<-capture.output({
 		tryCatch({
 			connDB = connectToDb()
 			cat(paste0("Connected to DB", "\n"))
@@ -361,7 +361,7 @@ runRSmoothingFunctions <- function() {
 		finally={
 			cat(paste0("connectToDb exitValue: ", exitValue, "\n"), sep="")
 		})
-	# })
+	})
 
 	cat(paste("About to test exitValue", exitValue, "and connection", "\n"))
 	if (exitValue == 0) {
@@ -445,6 +445,7 @@ runRSmoothingFunctions <- function() {
 	}
 	else {
 		cat("Could not connect to database\n")	
+		cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 		return(list(exitValue=exitValue, errorTrace=errorTrace))
 	}
 

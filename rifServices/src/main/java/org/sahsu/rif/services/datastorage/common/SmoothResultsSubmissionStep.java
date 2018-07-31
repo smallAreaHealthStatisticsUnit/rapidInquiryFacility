@@ -14,8 +14,9 @@ import java.util.logging.Logger;
 import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -35,6 +36,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	private Logger log;	// Not used - uses RIFLogger
 	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
+	private static DatabaseType databaseType;
 
 	public SmoothResultsSubmissionStep() {
 		String logManagerName=System.getProperty("java.util.logging.manager");
@@ -73,10 +75,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 		setUser(userID, password);
 
+		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
+
 		List<Parameter> rifStartupOptionParameters = rifStartupOptions.getDbParametersForRScripts();
 		addParameters(rifStartupOptionParameters);
-
-		// setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
 	}
 	
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
@@ -193,7 +195,14 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
 				adjCovSmoothJri.append(rifScriptPath);
-				sourceRScript(rengine, rifScriptPath + "JdbcHandler.R");
+
+				if (rifStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER) {
+					sourceRScript(rengine, rifScriptPath + "OdbcHandler.R");
+				}
+				else {
+					sourceRScript(rengine, rifScriptPath + "JdbcHandler.R");
+				}
+
 
 				// We do either Risk Analysis or Smoothing
 				REXP exitValueFromR;
@@ -213,24 +222,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					sourceRScript(rengine, adjCovSmoothJri.toString());
 					sourceRScript(rengine, performSmoothingActivity.toString());
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
-
-					// REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
-					// if (errorTraceFromR != null) {
-					// 	String[] strArr=errorTraceFromR.asStringArray();
-					// 	StringBuilder strBuilder = new StringBuilder();
-					// 	for (final String aStrArr : strArr) {
-					// 		strBuilder.append(aStrArr).append(lineSeparator);
-					// 	}
-					// 	int index = -1;
-					// 	String toReplace="'";
-					// 	while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
-					// 		strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
-					// 	}
-					// 	rErrorTrace = strBuilder.toString();
-					// }
-					// else {
-					// 	rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
-					// }
 				}
 
 				exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
@@ -239,6 +230,24 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				} else {
 					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
 					exitValue = 1;
+				}
+
+				REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
+				if (errorTraceFromR != null) {
+					String[] strArr=errorTraceFromR.asStringArray();
+				 	StringBuilder strBuilder = new StringBuilder();
+				 	for (final String aStrArr : strArr) {
+				 		strBuilder.append(aStrArr).append(lineSeparator);
+				 	}
+				 	int index = -1;
+				 	String toReplace="'";
+				 	while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
+				 		strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
+				 	}
+				 	rErrorTrace = strBuilder.toString();
+				}
+				else {
+				 	rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
 				}
 			}
 			catch(Exception error) {
@@ -264,9 +273,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					rifMemoryManager.printThreadMemory();
 					if (exitValue != 0) {
 						try {
-//							rengine.eval("q(\"no\", " + exitValue + ")");	// Causes Java to quit
-//							rengine.destroy(); 								// causes thread to exit; 
-																			// rengine.end() then causes exception)
 							rengine.end();
 						}
 						catch(Exception error3) {
@@ -277,11 +283,9 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 							
 						}				
 
-						RIFServiceExceptionFactory rifServiceExceptionFactory
-						= new RIFServiceExceptionFactory();
-						RIFServiceException rifServiceException =
-							rifServiceExceptionFactory.createRScriptException(rErrorTrace);
-						throw rifServiceException;
+						RIFServiceExceptionFactory rifServiceExceptionFactory =
+								new RIFServiceExceptionFactory();
+						throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
 					}
 					else {	
 						try {

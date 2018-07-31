@@ -122,6 +122,11 @@ public final class RIFServiceStartupProperties {
 					throws Exception {
 		return getMandatoryRIfServiceProperty("extractDirectory");
 	} 
+	
+	String getODBCDataSourceName()
+					throws Exception {
+		return getOptionalRIfServiceProperty("odbcDataSourceName");
+	} 
 
 	private String getMandatoryRIfServiceProperty(String propertyName)
 					throws Exception {

@@ -138,6 +138,10 @@ public class RIFServiceStartupOptions {
 				System.setProperty("javax.net.ssl.trustStorePassword",
 				                   trustStorePassword);
 			}
+			
+			if (databaseType == DatabaseType.SQL_SERVER) { 
+				odbcDataSourceName = properties.getODBCDataSourceName();
+			}
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(),
@@ -186,6 +190,18 @@ public class RIFServiceStartupOptions {
 		parameters.add(Parameter.newInstance("db_driver_class_name", databaseDriverClassName));
 		parameters.add(Parameter.newInstance("db_url", new JdbcUrl(this).url()));
 		parameters.add(Parameter.newInstance("java_lib_path_dir", getLibDirectory()));
+		
+		if (databaseType == DatabaseType.SQL_SERVER) { 
+			String odbcDataSource = getODBCDataSourceName();
+			if (odbcDataSource == null) {
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.INVALID_STARTUP_OPTIONS, 
+						"odbcDataSource not set in RIFServiceStartupProperties.properties");
+				throw rifServiceException;
+			}
+			parameters.add(Parameter.newInstance("odbcDataSource", odbcDataSource));
+		}
 
 		return parameters;
 	}

@@ -184,21 +184,21 @@ getAdjacencyMatrix <- function() {
 saveDataFrameToDatabaseTable <- function(data) {
 
 	lerrorTrace<-capture.output({
-	cat("In saveDataFrameToDatabaseTable")
+		cat("In saveDataFrameToDatabaseTable")
 
-	#
-	# Save data frame to file
-	#
-	if (dumpFramesToCsv == TRUE) {
-		cat(paste0("Saving data frame to: ", temporarySmoothedResultsFileName, "\n"), sep="")
-		write.csv(data, file=temporarySmoothedResultsFileName)
-	}
+#
+# Save data frame to file
+#
+		if (dumpFramesToCsv == TRUE) {
+			cat(paste0("Saving data frame to: ", temporarySmoothedResultsFileName, "\n"), sep="")
+			write.csv(data, file=temporarySmoothedResultsFileName)
+		}
 
-	#
-	# Save data frame to table
-	#
-	cat(paste0("Creating temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
-	tryCatch({
+#
+# Save data frame to table
+#
+		cat(paste0("Creating temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
+		tryCatch({
 			withErrorTracing({
 				if (dbExistsTable(connection, temporarySmoothedResultsTableName)) {
 					dropTemporaryTable()
