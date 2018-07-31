@@ -30,17 +30,10 @@
 ## Brandon Parkes
 ## @author bparkes
 ##
-#rm(list=ls())
-library(pryr)
-library(plyr)
-library(abind)
-library(INLA)
-library(maptools)
-library(spdep)
-library(Matrix)
+
 ############################################################################################################
 #   RIF PROJECT
-#   RIF performSmoothingActivity functions
+#   RIF performRiskAnal functions
 ############################################################################################################
 #Find NULL data within adjustement covariates and replace by 0
 findNULL=function(xd){return(sapply(as.list(xd),FUN=function(yd){ans=yd
@@ -56,7 +49,7 @@ convertToDBFormat=function(dataIn){
   dataOut = cbind(band_id, genders, direct_standardisation)
   
   observed = dataIn$observed
-  adjusted = 1
+  adjusted = dataIn$adjusted
   expected = dataIn$expected # assuming direct = TRUE. If direct = FALSE, use RR_UNADJ
   relative_risk = dataIn$RR_ADJ # assuming indirect. If direct, use null
   lower95 = dataIn$RRL95_ADJ # assuming direct = TRUE. If direct = FALSE, use RRL95_UNADJ
@@ -80,32 +73,11 @@ res=c(xd)
 if (length(xd)>1){for (i in 2:length(xd)){res=paste(res,xd[i],sep='-')}}
 return(res)}
 
-# Set the working directory based on the value from the Java class
-setwd(working_dir)
-
-adj<<-TRUE
-investigationName <<- "lung_cancer"
-studyName <<- "UNKNOWN"
-#The id of the investigation - used when writing the results back to the database. Input paremeter
-investigationId <<- "15"
-model = "none"
-#name of adjustment (covariate) variable (except age group and sex). 
-#todo add more adjustment variables and test the capabilities. 
-names.adj<<-c('median_hh_income_quin')
-#names.adj<<-c('none')
-temporarySmoothedResultsFileName <<-"RA_map.csv"
-temporaryExtractFileName <<-"RA_extract.csv"
-
-
-
-data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
-
-
-
-
+# The function that does all the work
+performBandAnal <- function(data) {
   if (studyName == "REXCEPTION") {
-	cat("REXCEPTION test study detected: ", studyDescription, "\n", sep="")
-	stop("REXCEPTION test study")
+    cat("REXCEPTION test study detected: ", studyDescription, "\n", sep="")
+    stop("REXCEPTION test study")
   }	
   
   cat("Covariates: ", paste0(names.adj), "\n", sep="")
@@ -119,14 +91,13 @@ data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
     invcol =  which(ColNames==toupper(investigationName))
     if (length(invcol)==0){
       cat(paste('The column defined by the investigation_name parameter: ', investigationName, 
-		'not found in data table. Data assumed to be all zero!\n'), sep="")
+                'not found in data table. Data assumed to be all zero!\n'), sep="")
     }
     else{
       #copy to the new inv_1 column
       data$inv_1 = data[,invcol]
     }
   }
-  
   #convert nas in inv_1 column to zeros
   data$inv_1[which(is.na(data$inv_1))]=0
   #ensure area_id is stored as char
@@ -344,14 +315,140 @@ data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
   } else {
     ## Long UNDAJ section
     
-     } #end adj == false section
-  
-  
+    #Make comparative variables in a array of dim: age-sex-area-year-adjustement
+    #increase comp to compComplete so that there is one row for each combination of 
+    #age-sex-area-year-adjustement 
+    # BP- the area field in the comparison rows should NOT be used. Just need to match comparison rows by age, sex, year
+    compComplete=expand.grid(unique(comp$age_group),unique(comp$sex),unique(comp$area_id),unique(comp$year))
+    compComplete=as.data.frame(compComplete)
+    names(compComplete)=c('age_group','sex','area_id','year')
+    
+    compComplete=merge(compComplete, comp,by=c('age_group','sex','area_id','year'),all.x=TRUE)
+    
+    #Fill the array for comparative areas
+    compComplete=compComplete[order(compComplete$year,compComplete$area_id,compComplete$sex,compComplete$age_group),]
+    cCASES=array(compComplete$inv_1,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year))))
+    cCASES=apply(cCASES,MARGIN=c(1,2,3),FUN=sum) #Mean over the years -
+    cCASESNoArea=apply(cCASES,MARGIN=c(1,2),FUN=sum,na.rm=TRUE) #Mean over the areas
+    
+    cCASES=abind(cCASES,apply(cCASES,MARGIN=c(1,3),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
+    cCASESNoArea=abind(cCASESNoArea,apply(cCASESNoArea,MARGIN=c(1),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
+    
+    cPOP=array(compComplete$total_pop,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year))))
+    
+    cPOP=apply(cPOP,MARGIN=c(1,2,3),FUN=sum) #Mean over the years
+    cPOPNoArea=apply(cPOP,MARGIN=c(1,2),FUN=sum,na.rm=TRUE) #Mean over the areas
+    
+    cPOPNoArea=abind(cPOPNoArea,apply(cPOPNoArea,MARGIN=c(1),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
+    
+    #unadjusted rates
+    # CHeck this line works as expected!
+    cRATESNoArea=apply(cCASESNoArea,MARGIN=c(1,2),FUN=sum,na.rm=TRUE)/apply(cPOPNoArea,MARGIN=c(1,2),FUN=sum,na.rm=TRUE)
+    
+    #link between study region and counts
+    #Creates and array of the area ids
+    S_area_id=array(data$area_id,dim=c(length(unique(data$age_group)),length(unique(data$sex)),length(unique(data$area_id)),length(unique(data$year))))[1,1,,1]
+    C_area_id=array(compComplete$area_id,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year))))
+    c_area_id=c()
+    for (i in 1:length(unique(compComplete$area_id))){
+      c_area_id=c(c_area_id,C_area_id[,,i,][which(is.na(C_area_id[,,i,])==FALSE)][1]) 
+    }
+    C_area_id=c_area_id
+    
+    ###NON ADJUSTED
+    #Expected number of cases non adjusted
+    RES$EXP_UNADJ=NA
+    RES$EXP_UNADJ[which(RES$gender==1)]=apply(POP[,1,]*cRATESNoArea[,1],MARGIN=2,FUN=sum, na.rm = TRUE)
+    RES$EXP_UNADJ[which(RES$gender==2)]=apply(POP[,2,]*cRATESNoArea[,2],MARGIN=2,FUN=sum, na.rm = TRUE)
+    RES$EXP_UNADJ[which(RES$gender==3)]=apply(POP[,3,]*cRATESNoArea[,3],MARGIN=2,FUN=sum, na.rm = TRUE)
+    
+    #Relative Risk non adjusted
+    RES$RR_UNADJ=NA
+    RES$RR_UNADJ[which(RES$gender==1)]=colSums(CASES[,1,], na.rm = TRUE)/RES$EXP_UNADJ[which(RES$gender==1)]
+    RES$RR_UNADJ[which(RES$gender==2)]=colSums(CASES[,2,], na.rm = TRUE)/RES$EXP_UNADJ[which(RES$gender==2)]
+    RES$RR_UNADJ[which(RES$gender==3)]=colSums(CASES[,3,], na.rm = TRUE)/RES$EXP_UNADJ[which(RES$gender==3)]
+    #convert NA's to zeros for now
+    RES$RR_UNADJ[which(is.na(RES$RR_UNADJ))]=0
+    
+    #Lower 95 percent interval non adjusted
+    RES$RRL95_UNADJ=NA
+    RES$RRL95_UNADJ[which(RES$gender==1)]=apply(cbind(colSums(CASES[,1,]),RES$EXP_UNADJ[which(RES$gender==1)]),MARGIN=1,
+                                                FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(-1.96*sqrt(1/x[1])))
+                                                }else{return(0.5*qchisq(0.025,2*x[1])/x[2])}})
+    RES$RRL95_UNADJ[which(RES$gender==2)]=apply(cbind(colSums(CASES[,2,]),RES$EXP_UNADJ[which(RES$gender==2)]),MARGIN=1,
+                                                FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(-1.96*sqrt(1/x[1])))
+                                                }else{return(0.5*qchisq(0.025,2*x[1])/x[2])}})
+    RES$RRL95_UNADJ[which(RES$gender==3)]=apply(cbind(colSums(CASES[,3,]),RES$EXP_UNADJ[which(RES$gender==3)]),MARGIN=1,
+                                                FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(-1.96*sqrt(1/x[1])))
+                                                }else{return(0.5*qchisq(0.025,2*x[1])/x[2])}})
+    RES$RRL95_UNADJ[which(is.na(RES$RRL95_UNADJ))]=0
+    
+    #Upper 95 percent interval non adjusted
+    RES$RRU95_UNADJ=NA
+    RES$RRU95_UNADJ[which(RES$gender==1)]=apply(cbind(colSums(CASES[,1,]),RES$EXP_UNADJ[which(RES$gender==1)]),MARGIN=1,
+                                                FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(1.96*sqrt(1/x[1])))
+                                                }else{return(0.5*qchisq(0.975,2*x[1]+2)/x[2])}})
+    RES$RRU95_UNADJ[which(RES$gender==2)]=apply(cbind(colSums(CASES[,2,]),RES$EXP_UNADJ[which(RES$gender==2)]),MARGIN=1,
+                                                FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(1.96*sqrt(1/x[1])))
+                                                }else{return(0.5*qchisq(0.975,2*x[1]+2)/x[2])}})
+    RES$RRU95_UNADJ[which(RES$gender==3)]=apply(cbind(colSums(CASES[,3,]),RES$EXP_UNADJ[which(RES$gender==3)]),MARGIN=1,
+                                                FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(1.96*sqrt(1/x[1])))
+                                                }else{return(0.5*qchisq(0.975,2*x[1]+2)/x[2])}})
+    RES$RRU95_UNADJ[which(is.na(RES$RRU95_UNADJ))]=0
+    
+    #Rate non adjusted
+    RES$RATE_UNADJ=NA
+    cPOP3d=apply(cPOP,MARGIN=c(1,2,3),FUN=sum,na.rm=TRUE)
+    cPOP3dNoArea=apply(cPOPNoArea,MARGIN=c(1,2),FUN=sum,na.rm=TRUE)
+    
+    RES$RATE_UNADJ[which(RES$gender==1)]=colSums(RATES[,1,]*cPOP3dNoArea[,1])/sum(cPOP3dNoArea[,1])*100000
+    RES$RATE_UNADJ[which(RES$gender==2)]=colSums(RATES[,2,]*cPOP3dNoArea[,2])/sum(cPOP3dNoArea[,2])*100000
+    RES$RATE_UNADJ[which(RES$gender==3)]=colSums(RATES[,3,]*cPOP3dNoArea[,3])/sum(cPOP3dNoArea[,3])*100000
+    
+    RES$RATE_UNADJ[which(is.na(RES$RATE_UNADJ))]=0
+    
+    #Rate Confidence interval non adjusted
+    SElog1=sqrt(colSums(cPOP3dNoArea[,1]^2*RATES[,1,]*(1-RATES[,1,])/POP[,1,]))/sum(cPOP3dNoArea[,1]*RATES[,1,])
+    SElog2=sqrt(colSums(cPOP3dNoArea[,2]^2*RATES[,2,]*(1-RATES[,2,])/POP[,2,]))/sum(cPOP3dNoArea[,2]*RATES[,2,])
+    SElog3=sqrt(colSums(cPOP3dNoArea[,3]^2*RATES[,3,]*(1-RATES[,3,])/POP[,3,]))/sum(cPOP3dNoArea[,3]*RATES[,3,])
+    
+    SE1=sqrt(colSums(cPOP3dNoArea[,1]^2*RATES[,1,]*(1-RATES[,1,])/POP[,1,]))/sum(cPOP3dNoArea[,1])*100000
+    SE2=sqrt(colSums(cPOP3dNoArea[,2]^2*RATES[,2,]*(1-RATES[,2,])/POP[,2,]))/sum(cPOP3dNoArea[,2])*100000
+    SE3=sqrt(colSums(cPOP3dNoArea[,3]^2*RATES[,1,]*(1-RATES[,3,])/POP[,3,]))/sum(cPOP3dNoArea[,3])*100000
+    
+    #Lower 95% percent rate
+    RES$RATEL95_UNADJ=NA
+    RES$RATEL95_UNADJ[which(RES$gender==1)]=apply(cbind(RES$RATE_UNADJ[which(RES$gender==1)],SElog1,SE1,colSums(CASES[,1,])),MARGIN=1,
+                                                  FUN=function(x){if(x[4]>100){return(x[1]*exp(-1.96*x[2]))
+                                                  }else{return(x[1]+(x[3]/sqrt(x[4])*(0.5*qchisq(0.025,2*x[4])-x[4])))}})                                                                                                      
+    RES$RATEL95_UNADJ[which(RES$gender==2)]=apply(cbind(RES$RATE_UNADJ[which(RES$gender==2)],SElog2,SE2,colSums(CASES[,2,])),MARGIN=1,
+                                                  FUN=function(x){if(x[4]>100){return(x[1]*exp(-1.96*x[2]))
+                                                  }else{return(x[1]+(x[3]/sqrt(x[4])*(0.5*qchisq(0.025,2*x[4])-x[4])))}})   
+    RES$RATEL95_UNADJ[which(RES$gender==3)]=apply(cbind(RES$RATE_UNADJ[which(RES$gender==3)],SElog3,SE3,colSums(CASES[,3,])),MARGIN=1,
+                                                  FUN=function(x){if(x[4]>100){return(x[1]*exp(-1.96*x[2]))
+                                                  }else{return(x[1]+(x[3]/sqrt(x[4])*(0.5*qchisq(0.025,2*x[4])-x[4])))}})   
+    RES$RATEL95_UNADJ[which(is.na(RES$RATEL95_UNADJ))]=0
+    
+    #Upper 95% percent rate
+    RES$RATEU95_UNADJ=NA
+    RES$RATEU95_UNADJ[which(RES$gender==1)]=apply(cbind(RES$RATE_UNADJ[which(RES$gender==1)],SElog1,SE1,colSums(CASES[,1,])),MARGIN=1,
+                                                  FUN=function(x){if(x[4]>100){return(x[1]*exp(1.96*x[2]))
+                                                  }else{return(x[1]+(x[3]/sqrt(x[4])*(0.5*qchisq(0.975,2*x[4]+2)-x[4])))}})                                                                                                      
+    RES$RATEU95_UNADJ[which(RES$gender==2)]=apply(cbind(RES$RATE_UNADJ[which(RES$gender==2)],SElog2,SE2,colSums(CASES[,2,])),MARGIN=1,
+                                                  FUN=function(x){if(x[4]>100){return(x[1]*exp(1.96*x[2]))
+                                                  }else{return(x[1]+(x[3]/sqrt(x[4])*(0.5*qchisq(0.975,2*x[4]+2)-x[4])))}}) 
+    RES$RATEU95_UNADJ[which(RES$gender==3)]=apply(cbind(RES$RATE_UNADJ[which(RES$gender==3)],SElog3,SE3,colSums(CASES[,3,])),MARGIN=1,
+                                                  FUN=function(x){if(x[4]>100){return(x[1]*exp(1.96*x[2]))
+                                                  }else{return(x[1]+(x[3]/sqrt(x[4])*(0.5*qchisq(0.975,2*x[4]+2)-x[4])))}})
+    RES$RATEU95_UNADJ[which(is.na(RES$RATEU95_UNADJ))]=0
+    
+  } #end adj == false section
+
   data = RES
   
   #Now the rates have been calculated for each area, need to calulate the rates per band
   #Create dataframe with 1 row for each band/gender
-
+  
   Bands = ddply(data, .variables=c('band_id','gender'),.fun=function(x){
     band_id=x$band_id[1]
     exposure = mean(x$exposure)
@@ -360,18 +457,30 @@ data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
     expected = sum(x$EXP_ADJ)
     return(data.frame(band_id,exposure,gender,observed, expected))
   })
+  
+  Bands$adjusted = adj
   Bands$RR_ADJ=Bands$observed/Bands$expected
-
+  
   # calculate the 95% CIs for the RR
   Bands$RRL95_ADJ=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
-                                            FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(-1.96*sqrt(1/x[1])))
-                                            }else{return(0.5*qchisq(0.025,2*x[1])/x[2])}})
+                        FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(-1.96*sqrt(1/x[1])))
+                        }else{return(0.5*qchisq(0.025,2*x[1])/x[2])}})
   Bands$RRU95_ADJ=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
-                                            FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(1.96*sqrt(1/x[1])))
-                                            }else{return(0.5*qchisq(0.975,2*x[1]+2)/x[2])}})
+                        FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(1.96*sqrt(1/x[1])))
+                        }else{return(0.5*qchisq(0.975,2*x[1]+2)/x[2])}})
   
   
-  #Now calculate the chi-square test for homogeneity (from p94 of the RIF v3.2 manual)
+
+  
+  # call the function to convert data to the format the db is expecting
+  originalExtractTable = convertToDBFormat(Bands)
+  return(originalExtractTable)
+  
+}
+
+#Function to perform homogeneity tests on the data - pass in the band data generated by performBandAnal function
+performHomogAnal <- function(Bands) {
+  #calculate the chi-square test for homogeneity (from p94 of the RIF v3.2 manual)
   # df is number of bands - 1
   
   # A pValHomog < 0.05 suggests the results are not homgenous across the bands (>95% likelihood)
@@ -383,7 +492,7 @@ data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
   chisqLT = c()
   pValLT = c()
   
-  TestRes = data.frame(gender,df, chisqHomog, pValHomog, chisqLT, pValLT)
+  HomogRes = data.frame(gender,df, chisqHomog, pValHomog, chisqLT, pValLT)
   
   df = length(unique(Bands$band_id)) - 1
   for (i in 1:3)
@@ -391,7 +500,7 @@ data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
     Bandi = Bands[which(Bands$gender==i),]
     Osum = sum(Bandi$observed)
     Esum = sum(Bandi$expected)
-  
+    
     gender = i
     chisqHomog = sum( (Bandi$observed - (Bandi$expected*Osum/Esum))^2 / (Bandi$expected*Osum/Esum))
     pValHomog = pchisq(chisqHomog, df = df, lower.tail = FALSE)
@@ -399,21 +508,10 @@ data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
     denom = sum((Bandi$exposure)^2 * (Bandi$expected*Osum/Esum)) - (((sum(Bandi$exposure * (Bandi$expected*Osum/Esum)))^2)/Osum)
     chisqLT = numer / denom
     pValLT = pchisq(chisqLT, df = df, lower.tail = FALSE)
-
-    TestRes = rbind(TestRes, cbind(gender,df, chisqHomog, pValHomog, chisqLT, pValLT))
-  }
-
-  write.table(TestRes,"Bands.csv", sep=',',row.names = FALSE )
+    
+    HomogRes = rbind(HomogRes, cbind(gender,df, chisqHomog, pValHomog, chisqLT, pValLT))
+  }  
+  return(HomogRes)
   
-  #write.table(Bands,"BandsTest.csv", sep=',',row.names = FALSE )
-  #Bands=read.table("BandsTest.csv",header=TRUE,sep=',')
-  
-  # call the function to convert data to the format the db is expecting
-  originalExtractTable = convertToDBFormat(Bands)
-
-  write.table(originalExtractTable,temporarySmoothedResultsFileName, sep=',',row.names = FALSE )
-  
- 
-
-
+}
 
