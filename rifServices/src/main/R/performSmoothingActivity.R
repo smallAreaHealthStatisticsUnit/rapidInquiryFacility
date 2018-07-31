@@ -39,9 +39,6 @@
 ##====================================================================
 ##FUNCTION: performSmoothingActivity
 ##PARAMETERS: Extract data frame, adjacency matrix frame
-##DESCRIPTION: assembles pieces of database information such as
-##the host, port and database name to create a database connection
-##string that can be used to make an ODBC connection
 ##====================================================================
 performSmoothingActivity <- function(data, AdjRowset) {
   if (studyName == "REXCEPTION") {

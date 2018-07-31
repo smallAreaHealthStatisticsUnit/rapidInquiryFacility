@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -1326,8 +1327,7 @@ getParameter("p 1")     yes     c d
 			if (exceptionThrownByRIFService instanceof RIFServiceException) {
 				RIFServiceException rifServiceException
 					= (RIFServiceException) exceptionThrownByRIFService;
-				ArrayList<String> errorMessages
-					= rifServiceException.getErrorMessages();
+				List<String> errorMessages = rifServiceException.getErrorMessages();
 				rifServiceExceptionProxy.setErrorMessages(errorMessages.toArray(new String[0]));
 			}
 			else {

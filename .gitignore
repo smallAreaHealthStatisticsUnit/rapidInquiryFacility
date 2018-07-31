@@ -121,4 +121,6 @@ rifDemo
 docs/databaseManagementManual.html
 docs/tileMaker.html
 **/buildNumber.properties
+
+# R projects
 **/*.Rproj*

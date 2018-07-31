@@ -2,7 +2,7 @@ package org.sahsu.rif.services.datastorage.common;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.rosuda.JRI.RMainLoopCallbacks;
@@ -17,22 +17,16 @@ public interface RService {
 	
 	void addParameter(String name, String value);
 
-	void addParameters(ArrayList<Parameter> _parameters);
+	void addParameters(List<Parameter> _parameters);
 
-	void addParameterToVerify(String parameterToVerify);
-
-	void addParameterToVerify(ArrayList<String> _parametersToVerify);
-
-	void setUser(
-			String userID,
-			String password);
+	void setUser(String userID, String password);
 
 	void setODBCDataSourceName(String odbcDataSourceName);
 
 	void setCalculationMethod(CalculationMethod calculationMethod);
 
 	//Fetch parameters array list
-	ArrayList<Parameter> getParameterArray();
+	List<Parameter> getParameterArray();
 
 	/*
 	 * Logging R console output to RIFLogger

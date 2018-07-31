@@ -2,6 +2,7 @@ package org.sahsu.rif.services.datastorage.common;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
@@ -16,13 +17,10 @@ public abstract class CommonRService implements RService {
 	private String userID;
 	private String password;
 	
-	private ArrayList<Parameter> parameters;	
-	private ArrayList<String> parametersToVerify;
-	
+	private List<Parameter> parameters;
+
 	public CommonRService() {
 		parameters = new ArrayList<>();
-		
-		parametersToVerify = new ArrayList<>();
 	}
 
 	@Override
@@ -32,20 +30,10 @@ public abstract class CommonRService implements RService {
 	}
 	
 	@Override
-	public void addParameters(final ArrayList<Parameter> _parameters) {
+	public void addParameters(final List<Parameter> _parameters) {
 		this.parameters.addAll(_parameters);		
 	}
-	
-	@Override
-	public void addParameterToVerify(final String parameterToVerify) {
-		parametersToVerify.add(parameterToVerify);
-	}
 
-	@Override
-	public void addParameterToVerify(final ArrayList<String> _parametersToVerify) {
-		parametersToVerify.addAll(_parametersToVerify);
-	}
-		
 	@Override
 	public void setUser(final String userID, final String password) {
 		
@@ -81,7 +69,7 @@ public abstract class CommonRService implements RService {
 	
 	//Fetch parameters array list
 	@Override
-	public ArrayList<Parameter> getParameterArray() {
+	public List<Parameter> getParameterArray() {
 	
 		addParameter("odbcDataSource", odbcDataSourceName);
 		addParameter("userID", userID);

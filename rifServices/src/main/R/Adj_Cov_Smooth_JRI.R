@@ -1,32 +1,3 @@
-####
-## The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
-## that rapidly addresses epidemiological and public health questions using 
-## routinely collected health and population data and generates standardised 
-## rates and relative risks for any given health outcome, for specified age 
-## and year ranges, for any given geographical area.
-##
-## Copyright 2016 Imperial College London, developed by the Small Area
-## Health Statistics Unit. The work of the Small Area Health Statistics Unit 
-## is funded by the Public Health England as part of the MRC-PHE Centre for 
-## Environment and Health. Funding for this project has also been received 
-## from the United States Centers for Disease Control and Prevention.  
-##
-## This file is part of the Rapid Inquiry Facility (RIF) project.
-## RIF is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## RIF is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-## GNU Lesser General Public License for more details.
-##
-## You should have received a copy of the GNU Lesser General Public License
-## along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
-## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
-## Boston, MA 02110-1301 USA
-
 ## Brandon Parkes
 ## @author bparkes
 ##
@@ -41,23 +12,12 @@
 #
 ############################################################################################################
 
-## CHECK & AUTO INSTALL MISSING PACKAGES
-## CHECK .libPaths(), add lib="" argument and RUN AS ADMIN IF NEEDED
-#packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "rJava")
-#if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
-#  install.packages(setdiff(packages, rownames(installed.packages())))  
-#}
-#if (!require(INLA)) {
-#	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
-#}
-
 library(pryr)
 library(plyr)
 library(abind)
 library(INLA)
 library(maptools)
 library(spdep)
-library(RODBC)
 library(Matrix)
 
 
@@ -65,11 +25,9 @@ library(Matrix)
 # SCRIPT VARIABLES
 ##====================================================================
 
-connDB <- ""	# Database connection
 exitValue <- 0 	# 0 success, 1 failure
 errorCount <- 0	# Smoothing error count
 
-				
 #Adjust for other covariate(s) or not
 #Reformat Java type > R
 adj <- FALSE #either true or false
@@ -107,7 +65,8 @@ setwd(working_dir)
 #
 ##==========================================================================
 establishTableNames <-function(vstudyID) {
- 
+
+	cat("In establishTableNames")
 #The name of the extract table that is created by the middleware for a given
 #study.  It is of the format rif_studies.s[study_id]_extract
 	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
@@ -150,9 +109,9 @@ establishTableNames <-function(vstudyID) {
 	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
 		dumpFramesToCsv <<- TRUE
 	}		
-	temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
-	temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
-	adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
+	temporarySmoothedResultsFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_map.csv"))
+	temporaryExtractFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_extract.csv"))
+	adjacencyMatrixFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_adjacency_matrix.csv"))
   
 #The name of the temporary table that this script uses to hold the data frame
 #containing smoothed results.  It should have a 1:1 correspondence between
@@ -241,12 +200,11 @@ establishTableNames <-function(vstudyID) {
 					paste0("SET INVESTIGATIONNAME=", investigationName),
 					paste0("SET STUDYNAME=", studyName),
 					paste0("SET INVESTIGATIONID=", investigationId),
-					paste0("SET ODBCDATASOURCE=", odbcDataSource),
 					paste0("SET MODEL=", model),
 					paste0("SET COVARIATENAME=", paste0(names.adj)),
 				sep="\n");
 		
-		rif40_run_R_envB<-paste0(scratchSpace, "rif40_run_R_env.bat") # Target
+		rif40_run_R_envB<-file.path(scratchSpace, "rif40_run_R_env.bat") # Target
 		
 		cat(paste("Create: ", rif40_run_R_envB, "\n"), sep="")	
 		tryCatch({			
@@ -262,11 +220,6 @@ establishTableNames <-function(vstudyID) {
 		}) # End of tryCatch
 	}
 }
-
-#make and ODBC connection
-#dbHost = 'networkRif'
-#dbName = 'rif_studies'
-#studyID = '1'
 
 ##================================================================================
 ##FUNCTION: check.integer
@@ -385,47 +338,57 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
 ##Returns (exitvalue) 0 on success, 1 on failure 
 ##================================================================================
 runRSmoothingFunctions <- function() {
+
+    cat(paste("In runRSmoothingFunctions in JRI script", "\n"))
+
 	establishTableNames(studyID)
+	cat("Table names established\n")
 	errorTrace<-capture.output({
 		tryCatch({
-			connDB=dbConnect()
+			connDB = connectToDb()
+			cat(paste0("Connected to DB", "\n"))
 		},
-		warning=function(w) {		
-			cat(paste("dbConnect() WARNING: ", w, "\n"), sep="")
-			exitValue <<- 1
+		warning=function(w) {
+			cat(paste("connectToDb() WARNING: ", w, "\n"), sep="")
+			exitValue <<- 0
 		},
 		error=function(e) {
 			e <<- e
-			cat(paste("dbConnect() ERROR: ", e$message, 
+			cat(paste("connectToDb() ERROR: ", e$message,
 				"; call stack: ", e$call, "\n"), sep="")
 			exitValue <<- 1
 		},
 		finally={
-			cat(paste0("dbConnect exitValue: ", exitValue, "\n"), sep="")
+			cat(paste0("connectToDb exitValue: ", exitValue, "\n"), sep="")
 		})
 	})
-		
 
-	if (exitValue == 0 && !is.na(connDB)) {  
-		cat("Performing basic stats and smoothing\n")	
-		errorTrace<-capture.output({
+	cat(paste("About to test exitValue", exitValue, "and connection", "\n"))
+	if (exitValue == 0) {
+		cat("Performing basic stats and smoothing\n")
+		errorTrace<<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
-					
+
+#			cat(paste0("About to fetch extract table outside of the try", "\n"))
+#			data=fetchExtractTable()
 			tryCatch({
 					withErrorTracing({  				
 #
 # extract the relevant Study data
 #
 #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
+						cat(paste0("About to fetch extract table", "\n"))
 						data=fetchExtractTable()
 
 #
 # Get Adjacency matrix
-#  	
+#
+						cat(paste0("About to get adjacency matrix", "\n"))
 						AdjRowset=getAdjacencyMatrix()
 #
 # Call: performSmoothingActivity()
-#						
+#
+						cat(paste0("About to smooth", "\n"))
 						result <- performSmoothingActivity(data, AdjRowset)
 					})
 				},
@@ -459,8 +422,17 @@ runRSmoothingFunctions <- function() {
 									"; result$area_id[1]: ", result$area_id[1], "\n"), sep="")
 							}
 
-							saveDataFrameToDatabaseTable(result)
-							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
+							cat("About to save to table\n")
+							lerrorTrace <<- saveDataFrameToDatabaseTable(result)	# may set exitValue
+							if (exitValue == 0) {
+								lerrorTrace2 <<- updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue
+								if (!is.null(lerrorTrace2) && length(lerrorTrace2)-1 > 0) {
+									append(lerrorTrace, lerrorTrace2)
+								}
+								else {
+									lerrorTrace <<- lerrorTrace2
+								}
+							}
 						}
 						else {
 							cat("ERROR! No result$area_id column found\n")
@@ -473,12 +445,17 @@ runRSmoothingFunctions <- function() {
 	}
 	else {
 		cat("Could not connect to database\n")	
+		cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 		return(list(exitValue=exitValue, errorTrace=errorTrace))
 	}
 
-	# Print trace
-	if (length(errorTrace)-1 > 0) {
-		cat(errorTrace, sep="\n")
+	if (!is.null(lerrorTrace) && length(lerrorTrace)-1 > 0) {
+		if (!is.null(errorTrace)) {
+			append(errorTrace, lerrorTrace)
+		}
+		else {
+			errorTrace <<- lerrorTrace
+		}
 	}
 	
 	if (exitValue == 0 && !is.na(connDB)) {
@@ -487,14 +464,13 @@ runRSmoothingFunctions <- function() {
 	# Dummy change to check conflict is resolved
   
 	if (!is.na(connDB)) {
-		dbDisConnect()
+		disconnect()
 	}
-	
 
 #
 # Free up memory: required for JRI version as the server keeps running! 
 #
-	cat(paste0("Total memory is use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
+	cat(paste0("Total memory in use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
 	ototal<-0
 	for (oname in ls()) {
 		osize<-as.integer(object_size(get(oname)))
@@ -509,8 +485,20 @@ runRSmoothingFunctions <- function() {
 		if (oname != "oname") {
 			cat(oname, ": ", format(object_size(get(oname))), "\n", sep="")
 		}
+	}
+	
+	# Print trace
+	if (length(errorTrace)-1 > 0) {
+		cat(paste0("\nAdj_Cov_Smooth_JRI.R errorTrace: >>>\n"), sep="")
+	 	cat(errorTrace, sep="\n")
+		cat(paste0("\n<<< End of Adj_Cov_Smooth_JRI.R errorTrace.\n\n"), sep="")
 	}	
 	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 
 	return(list(exitValue=exitValue, errorTrace=errorTrace))
+
+#	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "\n"), sep="")
+
+#	return(list(exitValue=exitValue))
+
 }

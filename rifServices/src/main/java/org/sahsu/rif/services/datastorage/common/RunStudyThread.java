@@ -43,7 +43,7 @@ public class RunStudyThread implements Runnable {
 		final String password,		
 		final RIFStudySubmission studySubmission,
 		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final ServiceResources rifServiceResources) {
+		final ServiceResources rifServiceResources) throws RIFServiceException {
 		
 		this.connection = connection;
 		this.user = user;				
@@ -233,9 +233,10 @@ public class RunStudyThread implements Runnable {
 				= RIFServiceMessages.getMessage(
 					"studyState.studyResultsRFailure.description");
 			updateStudyStatusState(statusMessage, rifServiceException, errorStudyState);
-			throw rifServiceException;
+			throw new RIFServiceException(rifServiceException,
+			                              "Status is '%s'; error study state is '%s'",
+			                              statusMessage, errorStudyState);
 		}
-
 	}
 
 	// Normal state transition
