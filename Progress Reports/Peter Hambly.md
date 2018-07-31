@@ -2772,3 +2772,14 @@ SELECT a.*, b.coa2011
   * Improve scaling in shapefile properties table, 40:60 split;
   * Issue if with selectionState if "cancel" button used - shape remains! Needs a transaction time so the shape tree can be pruned;
   * Separate in selectionState map display methods from maptable directive;
+  
+#### 30th July to 3rd August
+
+* Regression and fix test pull #47 (Change database access in R to use RJDBC) and add_study_selection_to_json:
+  * Had to use RODBC on SQL Server due to:
+    ``` 
+	saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
+	```
+  * Fixed error handlers;
+  * Improved tests for *odbcDataSourceName*.  
+  
