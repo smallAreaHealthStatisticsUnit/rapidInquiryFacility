@@ -2757,12 +2757,29 @@ SELECT a.*, b.coa2011
 * Test EWS2011 geography and centroids in RIF:
   * OK to MSOA level (~9000 centroids) with acceptable performance.
 
+#### 23rd to 27th July
+
+* Added selection by postal code; WGS 84 lat/long SRID X/Y;
+* Regression test pull #47 (Change database access in R to use RJDBC) and add_study_selection_to_json;
+* Progress of shapefile display setup after "apply" button in shapefile load modal;
+
 * Risk analysis front end issues/todo:
-  * Add selection by postal code;
-  * Progress of shapefile display setup after "apply" button in shapefile load modal;
   * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
   * "Green" display shapefile selection and centroids display when selected;
   * Check selection methods (e.g. by attribute: DB; bands 69, 63, 0) are saved to study selection;
   * Remove disabled AOI code;
   * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
   * Improve scaling in shapefile properties table, 40:60 split;
+  * Issue if with selectionState if "cancel" button used - shape remains! Needs a transaction time so the shape tree can be pruned;
+  * Separate in selectionState map display methods from maptable directive;
+  
+#### 30th July to 3rd August
+
+* Regression and fix test pull #47 (Change database access in R to use RJDBC) and add_study_selection_to_json:
+  * Had to use *RODBC* on SQL Server due to *RJDBC* error:
+    ``` 
+	saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
+	```
+  * Fixed error handlers;
+  * Improved tests for *odbcDataSourceName*.  
+  

@@ -27,6 +27,7 @@ import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
+import org.sahsu.rif.services.datastorage.JdbcUrl;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.system.files.TomcatBase;
@@ -1035,33 +1036,7 @@ public class BaseSQLManager implements SQLManager {
 	 */
 	private String generateURLText() {
 
-		String databaseDriverPrefix = rifServiceStartupOptions.getDatabaseDriverPrefix();
-		
-		if (databaseDriverPrefix.equals("jdbc:sqlserver")) {
-			return rifServiceStartupOptions.getDatabaseDriverPrefix()
-				   + ":"
-				   + "//"
-				   + rifServiceStartupOptions.getHost()
-				   + ":"
-				   + rifServiceStartupOptions.getPort();
-		}
-		else if (databaseDriverPrefix.equals("jdbc:postgresql")) {
-			return rifServiceStartupOptions.getDatabaseDriverPrefix()
-				   + ":"
-				   + "//"
-				   + rifServiceStartupOptions.getHost()
-				   + ":"
-				   + rifServiceStartupOptions.getPort()
-				   + "/"
-				   + rifServiceStartupOptions.getDatabaseName();
-		}
-		else {
-			rifLogger.error(
-				getClass(), 
-				"Unsupported database driver: " + 
-				databaseDriverPrefix);
-			return null;
-		}
+		return new JdbcUrl(rifServiceStartupOptions).url();
 	}
 
 	public void deregisterAllUsers() throws RIFServiceException {

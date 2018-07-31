@@ -46,7 +46,7 @@ public final class CommonHealthOutcomeManager implements HealthOutcomeManager {
 
 		String targetPathValue;
 		try {
-			targetPathValue = rifServiceStartupOptions.getRIFServiceResourcePath();
+			targetPathValue = rifServiceStartupOptions.getClassesDirectory();
 		} catch (RIFServiceException e) {
 			throw new IllegalStateException(getClass().getSimpleName() + ": problem getting "
 			                                + "startup options", e);
