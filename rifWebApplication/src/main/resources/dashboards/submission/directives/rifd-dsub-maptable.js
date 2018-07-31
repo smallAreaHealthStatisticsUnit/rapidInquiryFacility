@@ -66,7 +66,8 @@ angular.module("RIF")
 						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups
 						
 						SubmissionStateService.setAreaMap($scope.areamap);
-						
+						$scope.bShowHideSelectionShapes=SelectStateService.getState().showHideSelectionShapes;
+						$scope.bShowHideCentroids=SelectStateService.getState().showHideCentroids;
                         $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
 
                         //Reference the child scope
@@ -386,9 +387,14 @@ angular.module("RIF")
                         };
                         //Show-hide centroids
                         $scope.showCentroids = function () {
+					
                             if ($scope.areamap.hasLayer(centroidMarkers)) {
                                 $scope.areamap.removeLayer(centroidMarkers);
+								$scope.bShowHideCentroids = false;
+								SelectStateService.getState().showHideCentroids = false;
                             } else {
+								$scope.bShowHideCentroids = true;
+								SelectStateService.getState().showHideCentroids = true;
                                 $scope.areamap.addLayer(centroidMarkers);
                             }
                         }; 
@@ -405,6 +411,10 @@ angular.module("RIF")
 									$scope.info.remove();
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] remove info control");
 								}
+								
+								$scope.bShowHideSelectionShapes = false;
+								SelectStateService.getState().showHideSelectionShapes = false;
+
                             } 
 							else {
                                 $scope.areamap.addLayer($scope.shapes);
@@ -414,8 +424,14 @@ angular.module("RIF")
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] add info control");
 								}
 								
+								$scope.bShowHideSelectionShapes = true;
+								SelectStateService.getState().showHideSelectionShapes = true;
+								
 								$scope.bringShapesToFront();
                             }
+							alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + 
+								SelectStateService.getState().showHideSelectionShapes);
+
                         };
 
                         /*
@@ -693,7 +709,23 @@ angular.module("RIF")
                                     }
                                 });
                                 $scope.areamap.addLayer($scope.geoJSON);
-
+								
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideCentroid: " + SelectStateService.getState().showHideCentroids +
+								 "; $scope.bShowHideCentroids: " + $scope.bShowHideCentroids + 
+								 "; centroidMarkers: " + centroidMarkers + 
+								 "; $scope.areamap.hasLayer(centroidMarkers): " + $scope.areamap.hasLayer(centroidMarkers));
+								if (SelectStateService.getState().showHideCentroids) {
+									$scope.bShowHideCentroids = true;
+									if (!$scope.areamap.hasLayer(centroidMarkers)) {
+										$scope.areamap.addLayer(centroidMarkers);
+									}
+								} else {
+									if ($scope.areamap.hasLayer(centroidMarkers)) {
+										$scope.areamap.removeLayer(centroidMarkers);
+									}
+									$scope.bShowHideCentroids = false;
+								}			
+								
                                 //Get max bounds
                                 user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
                                     var lowestLevel = res.data[0].names[0];
@@ -747,6 +779,8 @@ angular.module("RIF")
                             $scope.selectedPolygon.length = 0;
 //                            $scope.clearAOI();
                             if ($scope.areamap.hasLayer(centroidMarkers)) {
+								$scope.bShowHideCentroids = false;
+								SelectStateService.getState().showHideCentroids = false;
                                 $scope.areamap.removeLayer(centroidMarkers);
                             }
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
@@ -778,28 +812,42 @@ angular.module("RIF")
 										"; freehand: " + selectedShapes[i].freehand +
 										"; points: " + points);
 								}
+									
+							
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + SelectStateService.getState().showHideSelectionShapes +
+								 "; $scope.bShowHideSelectionShapes: " + $scope.bShowHideSelectionShapes + 
+								 "; $scope.shapes: " + $scope.shapes + 
+								 "; $scope.areamap.hasLayer($scope.shapes): " + $scope.areamap.hasLayer($scope.shapes));
+								if (SelectStateService.getState().showHideSelectionShapes) {
+									$scope.bShowHideSelectionShapes = true;
+									if (!$scope.areamap.hasLayer($scope.shapes)) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
+										$scope.areamap.addLayer($scope.shapes);
+										if ($scope.info._map == undefined) { // Add back info control
+											$scope.info.addTo($scope.areamap);
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] add info control");
+										}
 								
-								if ($scope.info._map == undefined) { // Add back info control
-									$scope.info.addTo($scope.areamap);
-								}
-								
-								if (!$scope.areamap.hasLayer($scope.shapes)) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): add shapes layerGroup");
-									$scope.shapes = new L.layerGroup();
-									$scope.areamap.addLayer($scope.shapes);
-								}
-								else {
+										$scope.bringShapesToFront();
+									}
 									if ($scope.shapes.getLayers().length == 0) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has no layers");				
-//										$scope.areamap.removeLayer($scope.shapes);
-//										$scope.shapes = new L.layerGroup();
-//										$scope.areamap.addLayer($scope.shapes);
 									}
 									else {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has " +
 											$scope.shapes.getLayers().length + " layers");
 									}
-								}
+								} else {
+									if ($scope.areamap.hasLayer($scope.shapes)) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] remove shapes layerGroup");
+										$scope.areamap.removeLayer($scope.shapes);
+										if ($scope.info._map) { // Remove info control
+											$scope.info.remove();
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] remove info control");
+										}
+									}
+									$scope.bShowHideSelectionShapes = false;
+								}	
 								
 								for (var i = 0; i < selectedShapes.length; i++) {
 									var selectedShape=selectedShapes[i];

@@ -46,7 +46,9 @@ angular.module("RIF")
 							studyShapes: [],
 							comparisonSelectAt: undefined,
 							comparisonSelectedAreas: []
-						}
+						},
+						showHideCentroids: false,
+						showHideSelectionShapes: true
                     };
                     var t = {
                         studyType: "risk_analysis_study",
@@ -69,7 +71,9 @@ angular.module("RIF")
 // 15 - Risk Analysis (exposure shapefile)
 							comparisonSelectAt: undefined,
 							comparisonSelectedAreas: []
-						}
+						},
+						showHideCentroids: false,
+						showHideSelectionShapes: true
                     };
 					
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
