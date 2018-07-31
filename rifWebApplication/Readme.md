@@ -1363,10 +1363,13 @@ Grant appropriate read, write and execute access to these directories for Tomcat
   
 ### 4.3.2 R ODBC
   
-This is only required for SQL Server ports of the RIF. All Postgres ports use R JDBC. We have been forced to use *ROdBC* on SQL 
+This is only required for SQL Server ports of the RIF. All Postgres ports use R JDBC. We have been forced to use *RODBC* on SQL 
 Server due to an *RJDBC* error:
 ``` 
-saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
+saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data 
+stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not 
+a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is 
+data of numeric type with scale greater than precision.
 ```
   
 Create and test a system ODBC datasource 
