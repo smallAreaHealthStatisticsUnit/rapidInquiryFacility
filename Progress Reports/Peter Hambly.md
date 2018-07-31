@@ -2776,7 +2776,7 @@ SELECT a.*, b.coa2011
 #### 30th July to 3rd August
 
 * Regression and fix test pull #47 (Change database access in R to use RJDBC) and add_study_selection_to_json:
-  * Had to use RODBC on SQL Server due to:
+  * Had to use *RODBC* on SQL Server due to *RJDBC* error:
     ``` 
 	saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
 	```

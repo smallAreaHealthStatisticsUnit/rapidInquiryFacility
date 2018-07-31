@@ -1140,8 +1140,7 @@ database.databaseName=sahsuland
 database.databaseType=sqlServer
 
 #
-# Set the ODBC data source. These are current for Postgres 9.4-6 and SQL Server 2016/7
-#odbcDataSourceName=PostgreSQL35W
+# Set the ODBC data source for SQL Server only. Postgres uses JDBC
 odbcDataSourceName=SQLServer13
 
 ```
@@ -1160,8 +1159,7 @@ database.databaseName=sahsuland
 database.databaseType=postgresql
 
 #
-# Set the ODBC data source. These are current for Postgres 9.4-6 and SQL Server 2016/7
-odbcDataSourceName=PostgreSQL35W
+# Set the ODBC data source for SQL Server only. Postgres uses JDBC
 #odbcDataSourceName=SQLServer13
 ```
 
@@ -1365,24 +1363,15 @@ Grant appropriate read, write and execute access to these directories for Tomcat
   
 ### 4.3.2 R ODBC
   
+This is only required for SQL Server ports of the RIF. All Postgres ports use R JDBC. We have been forced to use *ROdBC* on SQL 
+Server due to an *RJDBC* error:
+``` 
+saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
+```
+  
 Create and test a system ODBC datasource 
 
 * Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as Adminstrator" for the database in use
-
-1 Postgres
- 
-* If you did not install it using stackbuilder, install the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
-* Create a ODBC system using using the "system" tab and "Add". The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=PostgreSQL35W```; so   
-  the name is *PostgreSQL35W*. For Postgres chose the Unicode driver and fill in the database, server, host, port, RIF username and password (the password is not used in  the R):
- 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_setup.png?raw=true "ODBC setup")
-
-* Select the datasource tab and set *Max Varchar* and *Max Long Varchar* to 8190.
-
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_options.png?raw=true "ODBC options")
-
-2 SQL Server
-
 * Use SQL Server Native Client version 11, 2011 version or later; 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup").
   
@@ -1413,7 +1402,7 @@ Start *R* in an Administrator command window and run the following script:
 
 ```R
 # CHECK & AUTO INSTALL MISSING PACKAGES
-packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "MatrixModels", "rJava")
+packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "RJDBC", "MatrixModels", "rJava")
 if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
   install.packages(setdiff(packages, rownames(installed.packages())))  
 }
