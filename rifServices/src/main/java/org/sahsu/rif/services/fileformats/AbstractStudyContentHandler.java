@@ -13,6 +13,7 @@ import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.Geography;
 import org.sahsu.rif.services.concepts.Investigation;
+import org.sahsu.rif.services.concepts.StudyType;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -20,7 +21,7 @@ public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 
 	private GeographyContentHandler geographyContentHandler;
 	/** The disease mapping study area content handler. */
-	private AbstractGeographicalAreaContentHandler areaContentHandler;
+	AbstractGeographicalAreaContentHandler areaContentHandler;
 	/** The comparison area content handler. */
 	private ComparisonAreaContentHandler comparisonAreaContentHandler;
 	/** The investigation content handler. */
@@ -34,7 +35,6 @@ public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 		comparisonAreaContentHandler = new ComparisonAreaContentHandler();
 		rifOutputOptionContentHandler = new RIFOutputOptionContentHandler();
 		geographyContentHandler = new GeographyContentHandler();
-		areaContentHandler = new StudyAreaContentHandler();
 		investigationContentHandler = new InvestigationContentHandler();
 	}
 
@@ -70,7 +70,6 @@ public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 
 		ComparisonArea comparisonArea = comparisonAreaContentHandler.getComparisonArea();
 		AbstractStudyArea studyArea = areaContentHandler.getStudyArea();
-
 		ArrayList<Investigation> investigations = investigationContentHandler.getInvestigations();
 		currentStudy.setComparisonArea(comparisonArea);
 		currentStudy.setStudyArea(studyArea);
@@ -110,16 +109,14 @@ public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 	}
 
 	@Override
-    public void startElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName,
-		final Attributes attributes)
-			throws SAXException {
+    public void startElement(final String nameSpaceURI, final String localName,
+			final String qualifiedName, final Attributes attributes) throws SAXException {
+
+		StudyType type = StudyType.fromTypeString(qualifiedName);
 
 		if (isSingularRecordName(qualifiedName)) {
 
-			currentStudy = AbstractStudy.newInstance(qualifiedName);
+			currentStudy = AbstractStudy.newInstance(type);
 			activate();
 		} else if (isDelegatedHandlerAssigned()) {
 
@@ -131,15 +128,16 @@ public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 
 			//check to see if handlers could be assigned to delegate parsing
 			if (geographyContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+
 				assignDelegatedHandler(geographyContentHandler);
-			}
-			else if (areaContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+			} else if (areaContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+
 				assignDelegatedHandler(areaContentHandler);
-			}
-			else if (comparisonAreaContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+			} else if (comparisonAreaContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+
 				assignDelegatedHandler(comparisonAreaContentHandler);
-			}
-			else if (investigationContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+			} else if (investigationContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+
 				assignDelegatedHandler(investigationContentHandler);
 			}
 
@@ -153,16 +151,11 @@ public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 					localName,
 					qualifiedName,
 					attributes);
-			}
-			else if (isSingularRecordName(qualifiedName)) {
+			} else if (isSingularRecordName(qualifiedName)) {
 
-				currentStudy = AbstractStudy.newInstance(qualifiedName);
+				currentStudy = AbstractStudy.newInstance(type);
 				activate();
 			}
-			else {
-				assert false;
-			}
-
 		}
 	}
 

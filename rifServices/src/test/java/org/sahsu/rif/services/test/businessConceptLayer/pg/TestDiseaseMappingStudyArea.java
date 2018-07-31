@@ -9,6 +9,7 @@ import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
 import org.sahsu.rif.services.concepts.GeoLevelView;
 import org.sahsu.rif.services.concepts.MapArea;
+import org.sahsu.rif.services.concepts.StudyType;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.test.AbstractRIFTestCase;
 
@@ -107,8 +108,7 @@ public final class TestDiseaseMappingStudyArea extends AbstractRIFTestCase {
 		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent");
 		MapArea mapArea2 = MapArea.newInstance("222", "222", "Barnet");
 
-		masterAbstractStudyArea
-			= AbstractStudyArea.newInstance();
+		masterAbstractStudyArea = AbstractStudyArea.newInstance(StudyType.DISEASE_MAPPING);
 		masterAbstractStudyArea.setGeoLevelSelect(geoLevelSelect);
 		masterAbstractStudyArea.setGeoLevelArea(geoLevelArea);
 		masterAbstractStudyArea.setGeoLevelView(geoLevelView);

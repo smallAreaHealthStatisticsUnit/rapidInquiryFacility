@@ -343,7 +343,7 @@ runRSmoothingFunctions <- function() {
 
 	establishTableNames(studyID)
 	cat("Table names established\n")
-	# errorTrace<-capture.output({
+	errorTrace<-capture.output({
 		tryCatch({
 			connDB = connectToDb()
 			cat(paste0("Connected to DB", "\n"))
@@ -361,17 +361,16 @@ runRSmoothingFunctions <- function() {
 		finally={
 			cat(paste0("connectToDb exitValue: ", exitValue, "\n"), sep="")
 		})
-	# })
+	})
 
 	cat(paste("About to test exitValue", exitValue, "and connection", "\n"))
-	# if (exitValue == 0 && !is.na(connDB)) {
 	if (exitValue == 0) {
 		cat("Performing basic stats and smoothing\n")
-		# errorTrace<-capture.output({
+		errorTrace<<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
 
-			cat(paste0("About to fetch extract table outside of the try", "\n"))
-			data=fetchExtractTable()
+#			cat(paste0("About to fetch extract table outside of the try", "\n"))
+#			data=fetchExtractTable()
 			tryCatch({
 					withErrorTracing({  				
 #
@@ -423,9 +422,17 @@ runRSmoothingFunctions <- function() {
 									"; result$area_id[1]: ", result$area_id[1], "\n"), sep="")
 							}
 
-							cat("About to save to table")
-							saveDataFrameToDatabaseTable(result)
-							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue
+							cat("About to save to table\n")
+							lerrorTrace <<- saveDataFrameToDatabaseTable(result)	# may set exitValue
+							if (exitValue == 0) {
+								lerrorTrace2 <<- updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue
+								if (!is.null(lerrorTrace2) && length(lerrorTrace2)-1 > 0) {
+									append(lerrorTrace, lerrorTrace2)
+								}
+								else {
+									lerrorTrace <<- lerrorTrace2
+								}
+							}
 						}
 						else {
 							cat("ERROR! No result$area_id column found\n")
@@ -434,18 +441,22 @@ runRSmoothingFunctions <- function() {
 					}
 				}
 			) # End of tryCatch
-		# })
+		})
 	}
 	else {
 		cat("Could not connect to database\n")	
-		# return(list(exitValue=exitValue, errorTrace=errorTrace))
-		return(list(exitValue=exitValue))
+		cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+		return(list(exitValue=exitValue, errorTrace=errorTrace))
 	}
 
-	# Print trace
-	# if (length(errorTrace)-1 > 0) {
-	# 	cat(errorTrace, sep="\n")
-	# }
+	if (!is.null(lerrorTrace) && length(lerrorTrace)-1 > 0) {
+		if (!is.null(errorTrace)) {
+			append(errorTrace, lerrorTrace)
+		}
+		else {
+			errorTrace <<- lerrorTrace
+		}
+	}
 	
 	if (exitValue == 0 && !is.na(connDB)) {
 		dropTemporaryTable()
@@ -455,7 +466,6 @@ runRSmoothingFunctions <- function() {
 	if (!is.na(connDB)) {
 		disconnect()
 	}
-	
 
 #
 # Free up memory: required for JRI version as the server keeps running! 
@@ -475,13 +485,20 @@ runRSmoothingFunctions <- function() {
 		if (oname != "oname") {
 			cat(oname, ": ", format(object_size(get(oname))), "\n", sep="")
 		}
+	}
+	
+	# Print trace
+	if (length(errorTrace)-1 > 0) {
+		cat(paste0("\nAdj_Cov_Smooth_JRI.R errorTrace: >>>\n"), sep="")
+	 	cat(errorTrace, sep="\n")
+		cat(paste0("\n<<< End of Adj_Cov_Smooth_JRI.R errorTrace.\n\n"), sep="")
 	}	
-	# cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
-	#
-	# return(list(exitValue=exitValue, errorTrace=errorTrace))
+	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 
-	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "\n"), sep="")
+	return(list(exitValue=exitValue, errorTrace=errorTrace))
 
-	return(list(exitValue=exitValue))
+#	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "\n"), sep="")
+
+#	return(list(exitValue=exitValue))
 
 }

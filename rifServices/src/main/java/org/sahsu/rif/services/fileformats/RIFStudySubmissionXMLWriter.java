@@ -8,8 +8,8 @@ import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
-import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
+import org.sahsu.rif.services.concepts.StudyType;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 
 /**
@@ -184,8 +184,8 @@ public final class RIFStudySubmissionXMLWriter {
 			"rif_output_option", 
 			"rifOutputOption.toolTip");
 		commentInjector.setRecordToolTipMessage(
-				AbstractStudy.DISEASE_MAPPING_STUDY,
-			"diseaseMappingStudy.label");
+				StudyType.DISEASE_MAPPING.type(),
+				"diseaseMappingStudy.label");
 		commentInjector.setRecordToolTipMessage(
 			"comparison_area", 
 			"comparisonArea.toolTip");

@@ -9,12 +9,12 @@ import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AgeBand;
 import org.sahsu.rif.services.concepts.AgeGroup;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
 import org.sahsu.rif.services.concepts.Geography;
 import org.sahsu.rif.services.concepts.Investigation;
@@ -175,7 +175,7 @@ public class SubmissionManager extends BaseSQLManager {
 
 	private void retrieveStudyAreaForStudy(
 			final Connection connection,
-			final DiseaseMappingStudy diseaseMappingStudy)
+			final AbstractStudy study)
 			throws SQLException,
 			       RIFServiceException {
 
@@ -192,16 +192,16 @@ public class SubmissionManager extends BaseSQLManager {
 			logSQLQuery(
 					"retrieveStudyAreaForStudy",
 					queryFormatter,
-					diseaseMappingStudy.getIdentifier());
+					study.getIdentifier());
 
 			statement
 					= createPreparedStatement(
 					connection,
 					queryFormatter);
-			statement.setInt(1, Integer.valueOf(diseaseMappingStudy.getIdentifier()));
+			statement.setInt(1, Integer.valueOf(study.getIdentifier()));
 
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-					= AbstractStudyArea.newInstance();
+			AbstractStudyArea studyArea = AbstractStudyArea.newInstance(study.type());
+
 			//KLG: TODO - how can we improve this so we can add in extra
 			//information?
 			resultSet = statement.executeQuery();
@@ -212,9 +212,9 @@ public class SubmissionManager extends BaseSQLManager {
 						geographicalIdentifier,
 						geographicalIdentifier,
 						geographicalIdentifier);
-				diseaseMappingStudyArea.addMapArea(mapArea);
+				studyArea.addMapArea(mapArea);
 			}
-			diseaseMappingStudy.setStudyArea(diseaseMappingStudyArea);
+			study.setStudyArea(studyArea);
 		}
 		finally {
 			//Cleanup database resources

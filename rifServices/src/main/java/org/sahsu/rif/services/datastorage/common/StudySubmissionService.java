@@ -922,7 +922,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	
 	public String submitStudy(
 		final User _user,
-		final RIFStudySubmission _rifStudySubmission,
+		final RIFStudySubmission rifStudySubmission,
 		final File _outputFile) throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -934,8 +934,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
-		RIFStudySubmission rifStudySubmission
-			= RIFStudySubmission.createCopy(_rifStudySubmission);
+		// RIFStudySubmission rifStudySubmission
+		// 	= RIFStudySubmission.createCopy(_rifStudySubmission);
 		
 		File outputFile = null;
 		if (_outputFile != null) {

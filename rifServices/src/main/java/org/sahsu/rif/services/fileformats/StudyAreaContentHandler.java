@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.generic.fileformats.XMLUtility;
 import org.sahsu.rif.services.concepts.AbstractStudyArea;
+import org.sahsu.rif.services.concepts.StudyType;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -16,9 +17,9 @@ final class StudyAreaContentHandler extends AbstractGeographicalAreaContentHandl
 	/**
      * Instantiates a new disease mapping study area content handler.
      */
-    StudyAreaContentHandler() {
+    StudyAreaContentHandler(String recordName) {
 		
-		setSingularRecordName("disease_mapping_study_area");
+		setSingularRecordName(recordName);
 	}
 
 	/**
@@ -56,7 +57,8 @@ final class StudyAreaContentHandler extends AbstractGeographicalAreaContentHandl
 		throws SAXException {
 
 		if (isSingularRecordName(qualifiedName)) {
-			currentStudyArea = AbstractStudyArea.newInstance();
+			currentStudyArea = AbstractStudyArea.newInstance(
+					StudyType.fromAreaString(qualifiedName));
 			activate();				
 		}
 		else {

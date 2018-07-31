@@ -1,7 +1,5 @@
 package org.sahsu.rif.services.concepts;
 
-import org.sahsu.rif.generic.system.RIFServiceException;
-
 public class RiskAnalysisStudy extends AbstractStudy {
 
 	public static RiskAnalysisStudy newInstance() {
@@ -9,14 +7,14 @@ public class RiskAnalysisStudy extends AbstractStudy {
 		return new RiskAnalysisStudy();
 	}
 
+	private RiskAnalysisStudy() {
+
+		super(StudyType.RISK_ANALYSIS);
+	}
+
 	@Override
 	public String getRecordType() {
 
 		return SERVICE_MESSAGES.getMessage("riskAnalysisStudy.label");
-	}
-
-	@Override
-	public void checkErrors(final ValidationPolicy validationPolicy) throws RIFServiceException {
-
 	}
 }

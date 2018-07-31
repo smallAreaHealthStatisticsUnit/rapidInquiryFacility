@@ -12,6 +12,7 @@ import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 
 /**
@@ -27,8 +28,6 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 
 	static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
-	public static final String DISEASE_MAPPING_STUDY = "disease_mapping_study";
-	public static final String RISK_ANALYSIS_STUDY = "risk_analysis_study";
 
 	AbstractStudyArea studyArea;
 
@@ -50,43 +49,46 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 	/** The investigations. */
 	private ArrayList<Investigation> investigations;
 
-	public static AbstractStudy newInstance(String studyType) {
+	private StudyType studyType;
+
+	public static AbstractStudy newInstance(StudyType studyType) {
 
 		switch (studyType) {
 
-			case DISEASE_MAPPING_STUDY:
+			case DISEASE_MAPPING:
 				return DiseaseMappingStudy.newInstance();
-			case RISK_ANALYSIS_STUDY:
+			case RISK_ANALYSIS:
 				return RiskAnalysisStudy.newInstance();
 			default:
 				throw new IllegalArgumentException(String.format(
-						"Unknown study type '%s' in AbstractStudy.newInstance", studyType));
+						"Unknown study type '%s' in AbstractStudy.newInstance", studyType.type()));
 		}
 	}
 
     /**
      * Instantiates a new abstract study.
+     * @param studyType the type of study
      */
-	public AbstractStudy() {
+	public AbstractStudy(StudyType studyType) {
     	
 		name = "";
 		description = "";
 		otherNotes = "";
-
+		this.studyType = studyType;
 		geography = Geography.newInstance();
 		comparisonArea = ComparisonArea.newInstance();
 		investigations = new ArrayList<>();
-		studyArea = AbstractStudyArea.newInstance();
+		studyArea = AbstractStudyArea.newInstance(studyType);
 	}
 
 	public boolean isDiseaseMapping() {
 
-		return this instanceof DiseaseMappingStudy;
+		return studyType == StudyType.DISEASE_MAPPING;
 	}
 
 	public boolean isRiskAnalysis() {
 
-		return this instanceof RiskAnalysisStudy;
+		return studyType == StudyType.RISK_ANALYSIS;
 	}
 
 
@@ -336,8 +338,87 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 			this.studyArea = studyArea;
 		}
 
+	public void checkErrors(final ValidationPolicy validationPolicy)
+		throws RIFServiceException {
+
+		ArrayList<String> errorMessages = new ArrayList<>();
+		checkErrors(
+			validationPolicy,
+			errorMessages);
+		if (errorMessages.size() > 0) {
+			rifLogger.debug(this.getClass(), "AbstractStudy.checkErrors(): "
+			                                 + errorMessages.size());
+		}
+
+		//add any errors inherent in the study area object
+		if (studyArea == null) {
+			// TODO: NPE waiting to happen!!!
+			// String diseaseMappingStudyAreaFieldName
+			// 	= studyArea.getRecordType();
+
+			String errorMessage
+				= GENERIC_MESSAGES.getMessage(
+					"general.validation.emptyRequiredRecordField",
+					getRecordType(),
+					"diseaseMappingStudyAreaFieldName"); // Quoted for now: see to-do above.
+			errorMessages.add(errorMessage);
+		}
+		else {
+			try {
+				studyArea.checkErrors(validationPolicy);
+			}
+			catch(RIFServiceException exception) {
+				rifLogger.debug(this.getClass(), "AbstractStudyArea.checkErrors(): " +
+				                                                     exception.getErrorMessages()
+						                                                     .size());
+				errorMessages.addAll(exception.getErrorMessages());
+			}
+		}
+
+		countErrors(RIFServiceError.INVALID_DISEASE_MAPPING_STUDY, errorMessages);
+	}
+
+	/**
+	 * Creates the copy.
+	 *
+	 * @param originalDiseaseMappingStudy the original disease mapping study
+	 * @return the disease mapping study
+	 */
+	static public AbstractStudy createCopy(
+		final AbstractStudy originalDiseaseMappingStudy) {
+
+		if (originalDiseaseMappingStudy == null) {
+			return null;
+		}
+
+		AbstractStudy cloneDiseaseMappingStudy = AbstractStudy.newInstance(
+				originalDiseaseMappingStudy.type());
+		Geography originalGeography
+			= originalDiseaseMappingStudy.getGeography();
+		Geography cloneGeography = Geography.createCopy(originalGeography);
+		cloneDiseaseMappingStudy.setGeography(cloneGeography);
+
+		cloneDiseaseMappingStudy.setIdentifier(originalDiseaseMappingStudy.getIdentifier());
+		cloneDiseaseMappingStudy.setName(originalDiseaseMappingStudy.getName());
+		cloneDiseaseMappingStudy.setDescription(originalDiseaseMappingStudy.getDescription());
+		AbstractStudyArea cloneDiseaseMappingStudyArea
+			= AbstractStudyArea.copy(originalDiseaseMappingStudy.getStudyArea());
+		cloneDiseaseMappingStudy.setStudyArea(cloneDiseaseMappingStudyArea);
+		ComparisonArea cloneComparisonArea
+			= ComparisonArea.createCopy(originalDiseaseMappingStudy.getComparisonArea());
+		cloneDiseaseMappingStudy.setComparisonArea(cloneComparisonArea);
+
+		ArrayList<Investigation> originalInvestigations
+			= originalDiseaseMappingStudy.getInvestigations();
+		ArrayList<Investigation> cloneInvestigations
+			= Investigation.createCopy(originalInvestigations);
+		cloneDiseaseMappingStudy.setInvestigations(cloneInvestigations);
+
+		return cloneDiseaseMappingStudy;
+	}
+
 	@Override
-	protected void checkSecurityViolations() 
+	public void checkSecurityViolations()
 		throws RIFServiceSecurityException {
 
 		super.checkSecurityViolations();
@@ -613,5 +694,10 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 	public String getDisplayName() {
 		
 		return name;
+	}
+
+	public StudyType type() {
+
+		return studyType;
 	}
 }
