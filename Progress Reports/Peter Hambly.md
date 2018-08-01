@@ -2762,16 +2762,6 @@ SELECT a.*, b.coa2011
 * Added selection by postal code; WGS 84 lat/long SRID X/Y;
 * Regression test pull #47 (Change database access in R to use RJDBC) and add_study_selection_to_json;
 * Progress of shapefile display setup after "apply" button in shapefile load modal;
-
-* Risk analysis front end issues/todo:
-  * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
-  * "Green" display shapefile selection and centroids display when selected;
-  * Check selection methods (e.g. by attribute: DB; bands 69, 63, 0) are saved to study selection;
-  * Remove disabled AOI code;
-  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
-  * Improve scaling in shapefile properties table, 40:60 split;
-  * Issue if with selectionState if "cancel" button used - shape remains! Needs a transaction time so the shape tree can be pruned;
-  * Separate in selectionState map display methods from maptable directive;
   
 #### 30th July to 3rd August
 
@@ -2782,4 +2772,38 @@ SELECT a.*, b.coa2011
 	```
   * Fixed error handlers;
   * Improved tests for *odbcDataSourceName*.  
+* "Green" display shapefile selection and centroids display when selected;  
+* Remove disabled AOI code and clear AOI button;
+* Fixed missing zoom to extent button;
+
+* Risk analysis front end issues/todo:
+  * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
+  * Check the following selection methods are saved to study selection:
+    * (e.g. by attribute: DB; bands 69, 63, 0);
+	* file names;
+	* geolevel select and list;
+  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
+  * Improve scaling in shapefile properties table, 40:60 split;
+  * Issue if with selectionState if "cancel" button used - shape remains! Needs a transaction time so the shape tree can be pruned;
+  * Separate in selectionState map display methods from maptable directive;
+  * On-screen toggle between disease mapping and risk analysis doesn't work properly #52: 
+    https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/52; 
+	
+* Database Changes (See TODO](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/TODO#database-issues):	 
+  * Save/restore user selection methods to/from database;	
+  * Save user print selection to/from database;	
+  * The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
+  * rif40_homogeneity:
+	| Column name      | Column description                                                                  |
+	|------------------|-------------------------------------------------------------------------------------| 
+	| study_id[PK][FK] | rif40_studies.study_id                                                              | 
+	| inv_id[PK][FK]   | rif40_investigations.inv_id                                                         | 
+	| adjusted[PK]     | 0 or 1 indicating adjusted/unadjusted results                                       | 
+	| genders[PK]      | 1, 2 or 3, indicating Males, Females or Both                                        | 
+	| homogeneity_dof  | the number of degrees of freedom                                                    | 
+	| homogeneity_chi2 | the chi2-value for the homogeneity test                                             | 
+	| homogeneity_p    | the p-value for the homogeneity test                                                | 
+	| linearity_chi2   | the chi2-value for the linearity test                                               | 
+	| linearity_p      | the p-value for the linearity test                                                  | 
+	| explt5           | the number of bands in the study which have an expected number of cases less than 1 | 
   
