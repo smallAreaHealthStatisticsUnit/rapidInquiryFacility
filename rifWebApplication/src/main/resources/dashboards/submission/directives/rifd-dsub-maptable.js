@@ -77,10 +77,6 @@ angular.module("RIF")
 						$scope.areamap.on('remove', function(e) {
                             alertScope.consoleDebug("[rifd-dsub-maptable.js] removed shared areamap");
 						});
-//						$scope.areamap.on('layeradd', function(layerEvent){
-//                            alertScope.consoleDebug("[rifd-dsub-maptable.js] added layer to areamap" +
-//								"; layerId: " + (layerEvent.layer._leaflet_id || "(no _leaflet_id)"));
-//						});
 						$scope.areamap.on('error', function(errorEvent){
                             alertScope.consoleError("[rifd-dsub-maptable.js] error in areamap" +
 								(errorEvent.message || "(no message)"));
@@ -179,7 +175,6 @@ angular.module("RIF")
                         $scope.clear = function () {
                             $scope.selectedPolygon.length = 0;
                             $scope.input.selectedPolygon.length = 0;
-//                            $scope.clearAOI();
 							if ($scope.input.type === "Risk Analysis") {
 								SelectStateService.initialiseRiskAnalysis();
 							}
@@ -200,7 +195,7 @@ angular.module("RIF")
 							}
                         };
 						
-						// Bring shapes to front by descending band order; lowest in front (so dblclick works!)
+						// Bring shapes to front by descending band order; lowest in front (so mouseover/mouseout works!)
 						$scope.bringShapesToFront = function() {
 							var layerCount=0;
 							var maxBands=0;
@@ -330,13 +325,6 @@ angular.module("RIF")
 							}
 						}; 
 						
-                        //remove AOI layer
-                        $scope.clearAOI = function () {
-//                            if ($scope.areamap.hasLayer($scope.shpfile)) {
-//                               $scope.areamap.removeLayer($scope.shpfile);
-//                               $scope.shpfile = new L.layerGroup();
-//                            }
-                        };
                         //Select all in map and table
                         $scope.selectAll = function () {
                             $scope.selectedPolygon.length = 0;
@@ -777,7 +765,6 @@ angular.module("RIF")
                         $scope.geoLevelChange = function () {
                             //Clear the map
                             $scope.selectedPolygon.length = 0;
-//                            $scope.clearAOI();
                             if ($scope.areamap.hasLayer(centroidMarkers)) {
 								$scope.bShowHideCentroids = false;
 								SelectStateService.getState().showHideCentroids = false;
@@ -880,9 +867,6 @@ angular.module("RIF")
 													selectedShape: selectedShape
 												});										
 											circle.on({
-//												dblclick : function(e) {
-//													selectedShapesHighLightFeature(e, this.options.selectedShape);
-//												}, 
 												mouseover : function(e) {
 													selectedShapesHighLightFeature(e, this.options.selectedShape);
 												}, 
@@ -936,9 +920,6 @@ angular.module("RIF")
 											});		
 										if (polygon && polygon._latlngs.length > 0) {										
 											polygon.on({
-//												dblclick : function(e) {
-//													selectedShapesHighLightFeature(e, this.options.selectedShape);
-//												}, 
 												mouseover : function(e) {
 													selectedShapesHighLightFeature(e, this.options.selectedShape);
 												}, 
@@ -1031,9 +1012,6 @@ angular.module("RIF")
                         var centroidMarkers = new L.layerGroup();
 						$scope.shapes = new L.layerGroup();
                         $scope.areamap.addLayer($scope.shapes);
-						
-                        //shapefile AOI, used in directive
-//                        $scope.shpfile = new L.layerGroup();
 
                         //Set up table (UI-grid)
                         $scope.gridOptions = ModalAreaService.getAreaTableOptions();
@@ -1061,8 +1039,6 @@ angular.module("RIF")
                                 if ($scope.selectedPolygon[i].id === feature) {
                                     bFound = true;
                                     //max possible is six bands according to specs
-//                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
-//                                    return cb[$scope.selectedPolygon[i].band - 1];
                                     return selectorBands.bandColours[$scope.selectedPolygon[i].band - 1];
                                 }
                             }
@@ -1353,7 +1329,6 @@ angular.module("RIF")
 											fillOpacity: (savedShape.style.fillOpacity || selectorBands.fillOpacity || 0)
 										});										
 									circle.on({
-//										dblclick: highLightFeature,
 										mouseover: highLightFeature,
 										mouseout: resetFeature
 									});
@@ -1443,7 +1418,6 @@ angular.module("RIF")
 									}
 								
 									polygon.on({
-//										dblclick: highLightFeature,
 										mouseover: highLightFeature,
 										mouseout: resetFeature
 									}); 
