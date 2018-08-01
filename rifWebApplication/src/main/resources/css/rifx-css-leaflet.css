@@ -120,9 +120,11 @@
 .btn-clear, .btn-clear:active {
     background: white url("../images/glyphicon/glyphicons-551-erase.png") no-repeat;
 }
+
 .btn-zoomExtent, .btn-zoomExtent:active {
     background: white url("../images/glyphicon/glyphicons-371-globe-af.png") no-repeat;
 }
+
 .btn-zoomStudy, .btn-zoomStudy:active {
     background: white url("../images/glyphicon/glyphicons-488-fit-image-to-frame.png") no-repeat;
 }
