@@ -369,7 +369,10 @@ angular.module("RIF")
                                 alertScope.showError("File is not a shapefile");
                                 return false;
                             }
-
+							if (scope.bandAttr.length > 0) {
+								SelectStateService.getState().studySelection.bandAttr=angular.copy(scope.bandAttr);
+							}
+							
                             //check user input on bands
                             if (scope.selectionMethod === 3 || scope.isPoint) {
                                 //trim any trailing zeros

@@ -1287,14 +1287,20 @@ angular.module("RIF")
 							}
 							else {
 								var fileList = SelectStateService.getState().studySelection.fileList;
-								if (fileList && fileList.length > 0) {
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] " + fileList.length +
-									"; savedShape.isShapefile: " + savedShape.isShapefile);	
+									if (fileList && fileList.length > 0) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] " + fileList.length +
+										"; savedShape.isShapefile: " + savedShape.isShapefile);	
 								}
 								else {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] no shapefiles");
 								}								
 							}
+							
+							if (SelectStateService.getState().studySelection.bandAttr.length > 0) {
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] " + 
+									SelectStateService.getState().studySelection.bandAttr.length +
+									"; bandAttr: " + JSON.stringify(SelectStateService.getState().studySelection.bandAttr, null, 1));	
+							}					
 							
 							savedShape.style={
 										color: (selectorBands.bandColours[savedShape.band-1] || 'blue'),
