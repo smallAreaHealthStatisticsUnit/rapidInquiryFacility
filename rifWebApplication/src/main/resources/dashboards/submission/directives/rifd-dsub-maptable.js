@@ -1217,6 +1217,7 @@ angular.module("RIF")
 							
 							// Create savedShape for SelectStateService
 							var savedShape = {
+								isShapefile: (shape.isShapefile || false),
 								circle: shape.circle,
 								freehand: shape.freehand,
 								band: shape.band,
@@ -1247,7 +1248,8 @@ angular.module("RIF")
 							else if (shape.selectionMethod === 3) { // selectionMethod 3: make selection by attribute value in file			
 								SelectStateService.getState().studySelection.riskAnalysisType = 15;				
 							}
-									
+								
+							
 							if (savedShape.freehand) {						
 								
 								if ($scope.input.type === "Risk Analysis") {
@@ -1282,6 +1284,16 @@ angular.module("RIF")
 										}
 									}
 								}
+							}
+							else {
+								var fileList = SelectStateService.getState().studySelection.fileList;
+								if (fileList && fileList.length > 0) {
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] " + fileList.length +
+									"; savedShape.isShapefile: " + savedShape.isShapefile);	
+								}
+								else {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] no shapefiles");
+								}								
 							}
 							
 							savedShape.style={

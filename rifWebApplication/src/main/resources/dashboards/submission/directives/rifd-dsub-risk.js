@@ -52,13 +52,12 @@ angular.module("RIF")
                 }
             };
         })
-        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 
+        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'SelectStateService', 'AlertService',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
-            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants) {
+            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, SelectStateService, AlertService) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
                     link: function (scope, element, attr) {
-
                         var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
                         var studyType = scope.$parent.input.type; // Disease Mapping or Risk Analysis
 						
@@ -182,16 +181,35 @@ angular.module("RIF")
                                     var deferred = $q.defer();
                                     //http://jsfiddle.net/ashalota/ov0p4ajh/10/
                                     //http://leaflet.calvinmetcalf.com/#3/31.88/10.63
+									
+									scope.shapeFile = {
+										fileName: file.name,
+										fileSize: file.size,
+										featureCount: 0,
+										points: 0,
+										polygons: 0,
+										propertiesList: [],
+										hasBandAttribute: false
+									};
+									
                                     reader.onload = function () {
                                         var bAttr = false;
                                         scope.attrs = [];
                                         poly = new L.Shapefile(this.result, {
                                             style: function (feature) {
+												
+												scope.shapeFile.featureCount++;
+												if (feature.properties) {
+													scope.shapeFile.propertiesList.push(feature.properties);
+												}
+												
                                                 if (feature.geometry.type === "Point") {
+													scope.shapeFile.points++;
                                                     scope.isPolygon = false;
                                                     scope.isPoint = true;
                                                     scope.isTable = true;
                                                 } else if (feature.geometry.type === "Polygon") {
+													scope.shapeFile.polygons++;
                                                     if (!bAttr) {
 
 														var exposureAttributesCount = 0;
@@ -199,6 +217,7 @@ angular.module("RIF")
                                                             scope.attrs.push(property);
 															if (property == "band") {
 																scope.hasBandAttribute = true;
+																scope.shapeFile.hasBandAttribute = true;
 															}
 															else {
 																exposureAttributesCount++;
@@ -221,6 +240,7 @@ angular.module("RIF")
                                                         color: 'blue'
                                                     };
                                                 }
+																
                                             },
                                             onEachFeature: function (feature, layer) {
                                                 //add markers with pop-ups if points
@@ -242,7 +262,10 @@ angular.module("RIF")
                                     };
 									
                                     reader.onloadend = function () {
-										alertScope.consoleDebug("[rifd-dsub-risk.js] read shapefile: " + file.name);
+										SelectStateService.getState().studySelection.fileList.push(scope.shapeFile);
+										AlertService.consoleDebug("[rifd-dsub-risk.js] Read shapeFile " + file.name + " [" + 
+											SelectStateService.getState().studySelection.fileList.length + "]: " + 
+											JSON.stringify(scope.shapeFile, null, 1));
 									};
 									
                                     reader.readAsArrayBuffer(file);
@@ -524,6 +547,7 @@ angular.module("RIF")
 										properties['$$hashKey']=undefined;
 									}
                                     var shape = {
+										isShapefile: true,
                                         data: angular.copy(polygon),
 										circle: false,
 										freehand: false,

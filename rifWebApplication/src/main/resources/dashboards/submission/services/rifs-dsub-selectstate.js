@@ -45,7 +45,8 @@ angular.module("RIF")
 							studySelectedAreas: [],
 							studyShapes: [],
 							comparisonSelectAt: undefined,
-							comparisonSelectedAreas: []
+							comparisonSelectedAreas: [],
+							fileList: []
 						},
 						showHideCentroids: false,
 						showHideSelectionShapes: true
@@ -70,7 +71,8 @@ angular.module("RIF")
 // 14 - Risk Analysis (coverage shapefile), 
 // 15 - Risk Analysis (exposure shapefile)
 							comparisonSelectAt: undefined,
-							comparisonSelectedAreas: []
+							comparisonSelectedAreas: [],
+							fileList: []
 						},
 						showHideCentroids: false,
 						showHideSelectionShapes: true
