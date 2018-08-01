@@ -47,9 +47,10 @@ angular.module("RIF")
 
                         reader.onload = function (onLoadEvent) {
                             scope.$apply(function () {
-                                fn(scope, {$fileContent: onLoadEvent.target.result});
+                                fn(scope, {$fileContent: onLoadEvent.target.result, $fileName: scope.fileName});
                             });
                         };
+						scope.fileName=(onChangeEvent.srcElement || onChangeEvent.target).files[0].name;
                         reader.readAsText((onChangeEvent.srcElement || onChangeEvent.target).files[0]);
                     });
                 }

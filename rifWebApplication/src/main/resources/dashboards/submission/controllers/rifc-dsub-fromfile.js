@@ -614,8 +614,9 @@ angular.module("RIF")
                     $scope.modalHeader = "Open study from file";
                     $scope.accept = ".json";
 
-                    $scope.showContent = function ($fileContent) {
+                    $scope.showContent = function ($fileContent, $fileName) {
                         $scope.content = $fileContent.toString();
+						$scope.fileName = $fileName;
                     };
 
                     $scope.uploadFile = function () {
@@ -751,7 +752,7 @@ angular.module("RIF")
 							}
 							if (bPass) {
 								//All tests passed
-								$scope.consoleDebug("[rifc-dsub-fromfile.js] RIF study parsed from file");
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] RIF study parsed from file: " + $scope.fileName);
 								$scope.$parent.resetState();
 							}
 							else {

@@ -426,6 +426,10 @@ angular.module("RIF")
                          * DISEASE MAPPING OR RISK MAPPING
                          */
                         $scope.studyTypeChanged = function () {
+							alertScope.consoleDebug("[rifd-dsub-maptable.js] studyTypeChanged(): " +
+								"; input.type: "+ $scope.input.type + 
+								"; SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType);
+								
                             //clear selection
                             $scope.clear();
                             //offer the correct number of bands
@@ -1731,8 +1735,9 @@ angular.module("RIF")
                         $scope.openFromList = function () {
                             $scope.modalHeader = "Upload ID file";
                             $scope.accept = ".csv";
-                            $scope.showContent = function ($fileContent) {
+                            $scope.showContent = function ($fileContent, $fileName) {
                                 $scope.content = $fileContent.toString();
+								$scope.fileName = $fileName;
                             };
                             $scope.uploadFile = function () {
 								/* Upload CSV file. Required fields: ID,Band. Name is 

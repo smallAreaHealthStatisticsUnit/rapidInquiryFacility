@@ -102,13 +102,13 @@ angular.module("RIF")
 						else {
 							$scope.showErrorNoHide("[rifc-dsub-studyarea.js] Study type mismatch, expecting SelectStateService.getState().studyType: " +
 								SelectStateService.getState().studyType + " ; got: " + input.type);
+								
+                            SubmissionStateService.getState().studyTree = false;
+                            $scope.tree = false;
 						}
 						SelectStateService.getState().studySelection.studySelectAt = input.selectAt;
 						SelectStateService.getState().studySelection.studySelectedAreas = 
 							input.selectedPolygon;
-								
-						if (input.type === "Risk Analysis") {
-						}	
 						
 						try {
 							var r=SelectStateService.verifyStudySelection();
