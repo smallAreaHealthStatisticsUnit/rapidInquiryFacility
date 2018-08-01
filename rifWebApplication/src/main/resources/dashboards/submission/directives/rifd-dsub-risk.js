@@ -43,7 +43,10 @@ angular.module("RIF")
                 $uibModalInstance.dismiss();
             };
             $scope.submit = function () {
+				
+				$scope.disableSubmit=true;
                 var bOk = $scope.displayShapeFile();
+				$scope.disableSubmit=false;
                 if (bOk) {
                     $uibModalInstance.close();
                 }
@@ -121,6 +124,7 @@ angular.module("RIF")
                             scope.bandAttr.length = 0;
 							scope.hasGrid = false;
 							scope.shapefileGridOptions = {};
+							scope.disableSubmit=false;
 							
                             //remove any existing AOI layer
                             poly = null;
