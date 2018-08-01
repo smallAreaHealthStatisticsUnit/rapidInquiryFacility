@@ -606,7 +606,7 @@ angular.module("RIF")
                 function fromFileError() {
 					fromFileErrorCount++;
 					if (fromFileErrorCount < 2) {
-						$scope.showError("Could not upload saved study file");
+						$scope.showError("Could not upload saved study file: " + $scope.fileName);
 					}
                 }
 
@@ -725,11 +725,11 @@ angular.module("RIF")
 									if (bPass) {
 										//All tests passed
 										confirmStateChanges();
-										$scope.showSuccess("RIF study opened from file");
+										$scope.showSuccess("RIF " + StudyAreaStateService.getState().type + " study opened from file: " + $scope.fileName);
 										$scope.$parent.resetState();
 									}
 									else {
-										$scope.showError("RIF study opened from file failed with " +
+										$scope.showError("RIF study opened from file: " + $scope.fileName + " failed with " +
 											errorCount + " error(s)");
 									}
 								});
