@@ -2794,16 +2794,17 @@ SELECT a.*, b.coa2011
   * Save user print selection to/from database;	
   * The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
   * rif40_homogeneity:
-	| Column name      | Column description                                                                  |
-	|------------------|-------------------------------------------------------------------------------------| 
-	| study_id[PK][FK] | rif40_studies.study_id                                                              | 
-	| inv_id[PK][FK]   | rif40_investigations.inv_id                                                         | 
-	| adjusted[PK]     | 0 or 1 indicating adjusted/unadjusted results                                       | 
-	| genders[PK]      | 1, 2 or 3, indicating Males, Females or Both                                        | 
-	| homogeneity_dof  | the number of degrees of freedom                                                    | 
-	| homogeneity_chi2 | the chi2-value for the homogeneity test                                             | 
-	| homogeneity_p    | the p-value for the homogeneity test                                                | 
-	| linearity_chi2   | the chi2-value for the linearity test                                               | 
-	| linearity_p      | the p-value for the linearity test                                                  | 
-	| explt5           | the number of bands in the study which have an expected number of cases less than 1 | 
+  
+  | Column name      | Column description                                                                  |
+  |------------------|-------------------------------------------------------------------------------------| 
+  | study_id[PK][FK] | rif40_studies.study_id                                                              | 
+  | inv_id[PK][FK]   | rif40_investigations.inv_id                                                         | 
+  | adjusted[PK]     | 0 or 1 indicating adjusted/unadjusted results                                       | 
+  | genders[PK]      | 1, 2 or 3, indicating Males, Females or Both                                        | 
+  | homogeneity_dof  | the number of degrees of freedom                                                    | 
+  | homogeneity_chi2 | the chi2-value for the homogeneity test                                             | 
+  | homogeneity_p    | the p-value for the homogeneity test                                                | 
+  | linearity_chi2   | the chi2-value for the linearity test                                               | 
+  | linearity_p      | the p-value for the linearity test                                                  | 
+  | explt5           | the number of bands in the study which have an expected number of cases less than 1 | 
   
