@@ -1,0 +1,492 @@
+<head>
+<title>
+RIF Coding Conventions
+</title>
+
+<meta 
+	name="author" 
+	lang="en" 
+	content="Kevin Garwood">
+<meta 
+	name="keywords" 
+	lang="en" 
+	content="Rapid Inquiry Facility, RIF, environmental health, Kevin Garwood">
+	
+<link rel="stylesheet" href="./rifDesignManual.css" type="text/css">
+</head>
+
+<body>
+
+<h1>RIF v4.0 and new design considerations</h1>
+
+<p>
+Whereas the emphasis of development in RIF v3.0 was end-user features for epidemiologists, the 
+development of RIF v4.0 is driven by the needs of RIF managers, statisticians, and the need to support 
+non-functional requirements of the software system such as better performance, security, accessibility, 
+extensibility and maintainability.
+</p>
+
+<p>
+Statisticians will be able to contribute statistical plugins that will post-process study results.  
+For example, they may develop new ways of applying Bayesian smoothing to results.  RIF managers will 
+have better features to help them load and maintain health and geospatial data.  As well, they will have 
+features that allow them to support information governance tasks.  For example, the Information Governance 
+Tool will alert them about whether any of the population cell counts fall below a threshold that could 
+identify an individual.  
+</p>
+
+<p>
+There are changes in the development environment as well.  Instead of having one 
+dedicated developer, we have multiple developers who contribute to parts of the project at different times.  
+Changes in funding have made it more difficult to dedicate any programmer to just one project full time.  
+Our way of developing code has had to anticipate contributions from developers who have different strengths 
+and use different technologies.  For example, one developer has skill in creating front-ends using JavaScript, 
+whereas another developer has skill in making database scripts written for Oracle or PostgreSQL databases.
+</p>
+
+<p>
+When ESRI deprecated support for Microsoft Visual Basic, we decided that we needed to invest in building 
+a new RIF that would scale with larger data sets and would age well as technologies it depended on came and 
+went.  As well, we wanted to design the tool suite in a way that would support a new generation of RIF 
+developers.  Given that Imperial College was forced to bear the costs of rewriting the RIF software from 
+scratch, we gave priority to ensuring that we could help minimise future maintenance costs.
+</p>
+
+<p>
+In light of problems we encountered in the development of RIF v3.0, we have taken a number of measures to 
+improve the design of the software. These may be regarded as factors that have significantly influenced design.
+</p>
+
+<h2>
+<a name="#new_choose_open_source_tools">
+Lower costs by using freely available open source tools that enjoy wide market share
+</a>
+</h2>
+
+<p>
+Our first major task was to think about which software technologies should be used to create RIF v4.0.  
+We decided that the best candidate open source database was PostgreSQL.  It performed well with large 
+data sets, and it had support for PostGIS, which is a library of geospatial operations.  
+</p>
+
+<p>
+We decided to use Java to code any business logic that could not be handled by the database, and a 
+combination of PHP and HTML5 for any web-based forms.  We also decided that any work involving web 
+services would be supported using the Jersey project.
+</p>
+
+<p>
+For Imperial College's implementation of the RIF, we would use a stack of tools which were all free, 
+widely supported open source tools.  However, we needed to generalise the design of the software to 
+accommodate needs of the CDC.
+</p>
+
+<h2>
+<a name="anticipate_middleware">
+Anticipate the development of middleware to offset requirements of multiple database vendors
+</a>
+</h2>
+Our original plan was to build code for the back-end of the RIF using PostsgreSQL to process most of 
+the database queries and PostGIS to process specialised geospatial operations.  However, it eventually 
+became clear the CDC's implementation of the RIF would need to work with SQL Server. 
+</p>
+
+<p> 
+Initially, we were going to write most of the queries relating to database operations in SQL procedures 
+that would reside on the database server.  We reasoned that it made most sense to let code that was part 
+of the database to support computationally intensive tasks that used database data.
+</p>
+
+<p>
+However, it was not clear what feature set could be supported uniformly across both PostgreSQL and SQL 
+Server.  Furthermore, SQL Server did not appear to come bundled with any technology that was comparable 
+to PostGIS.  In the interest of preserving cross-vendor compatibility, it became clear that we had to 
+migrate support for some database features out of stored database procedures and into Java code that was 
+used to support business operations.  
+</p>
+
+<p>
+The need to support two very different back ends forced our design to have a layer of middleware 
+which could perform tasks that were not uniformly supported by either database vendor. 
+</p>
+
+<h2>
+<a name="minimise_tool_dependencies">
+Reduce impact of future obsolescence by minimising tool chain dependencies
+</a>
+</h2>
+
+<p>
+One of the most popular sentiments in software development is: "don't reinvent the wheel".  If 
+someone else has written code to support a feature, there is a temptation to use the libraries 
+to save work.  There is an even greater temptation to reuse software when it has been made available 
+as an open source project.  However, adding software libraries can complicate matters of licensing 
+and installation of software products.  As well, their use can raise the skill requirement of 
+future developers and make the software applications more vulnerable to obsolescence.  Much 
+publicity has been given to popular open source projects such as Linux, PostgreSQL, Eclipse, 
+various Apache projects and MySQL.  These projects have large user bases and are maintained by a 
+distributed but well organised collection of developers who evolve high quality products.  
+</p>
+
+<p>
+Furthermore, there are enough developers who have an interest or stake in development such that 
+some are likely to be actively scrutinising the code base.  However, in more typical open source 
+projects, the quality and provenance of the code is poorly documented or not documented at all. 
+Significant effort may be required to determine its fitness for purpose, and whether the cost of 
+configuring and initially using it is less than developing code from scratch.  
+</p>
+
+<p>
+Longer term maintenance costs must also be considered.  The ability for a library to avoid 
+obsolescence will depend on how many people are in the developer community, how well they are funded, 
+and how well the project is marketed relative to other projects that claim to support the same features.  
+These concerns made us cautious about incorporating software libraries from new or little known open 
+source projects. 
+</p>
+
+<p>
+However, we have also had to be careful in considering how we use libraries from well-established 
+open source projects.  Specifically, we have had to be concerned about how well they would integrate 
+with one another. RIF v3.0 may have had more costly software dependencies than RIF v4.0, but they 
+were more tightly integrated with one another as well.  The rich feature set of ArcGIS was maintained 
+under the direction of a single organisation.  The code base was written using Microsoft Visual Basic, 
+which was well supported by MS Access, another Microsoft product that guaranteed seamless integration 
+between electronic forms and the database the supported them.
+</p>
+
+<p>
+In RIF v4.0, the software uses a technology stack of open source tools which are maintained by 
+different communities. Their use of interfaces developed through community standards should in theory 
+ensure that one implementation of an open source library can be substituted for another.  However, 
+there is still potential that there will be interoperability problems between the tools.  
+</p>
+
+<p>
+There are three kinds of open source libraries we have had to consider for RIF v4.0:
+<ul>
+<li>
+web application frameworks
+</li>
+<li>
+object-relational mapping frameworks
+</li>
+<li>
+libraries that are included in distributions by Integrated Development Environments (IDEs)
+</li>
+</ul>
+
+
+<p>
+We didn't develop web applications using a web application framework because the team had 
+already built complex geospatial web applications using JavaScript and HTML5.  Federico Fabbri had 
+produced SAHSU's much lauded Environmental Health Atlas.  Many users of this application asked 
+that similar features for mapping navigation be reused in the web-based versions of RIF tools.  
+By using JavaScript, Federico was able to reuse code that had already been tested in a related project.
+
+We also avoided using object-relational mapping frameworks because we were not sure how well they 
+would support performance tuning queries that had to map to SQL Server, PostgreSQL and Oracle 
+databases.  My own impression of ORMs is that they work best when
+<ul>
+<li>
+there is a simple mapping between Java objects and relational table fields
+</li>
+<li>
+the in-memory objects are mapped to a single database product
+</li>
+<li>
+database queries use plain, standard SQL
+</li>
+</ul>
+<p>
+Mapping objects to relational tables is often a difficult task that must be continued as 
+the data model for the software evolves.  Originally SAHSU thought it would only use PostgreSQL, 
+but we later had to support SQL Server and support data wrappers that would allow PostgreSQL to 
+delegate actions to Oracle.  As well, we are still determining how or if specialised geospatial 
+features found in PostGIS can be supported by SQL Server.  The prospect of maintaining object 
+relational mappings to non-standard queries suggested there may be risk in doing this through 
+the frameworks.  
+</p>
+
+<p>
+Deciding not to use web or ORM frameworks comes with its own cost.  The code base has a lot of 
+repetitive patterned code that is used to marshal and un-marshal data between Java objects and 
+database tables.  The extra code is specific to just the RIF software, and the code must continue 
+to be maintained and tested.
+
+<p>
+Finally, we decided to avoid relying on software libraries that came bundled with IDEs such as 
+NetBeans and Eclipse.  Originally we developed RIF code with NetBeans before switching to Eclipse.  
+NetBeans had built-in wizards for generating web services.  However, those services seemed to become 
+reliant on the libraries the IDE would include in the executable that was produced.   We felt it was 
+not desirable to make the RIF implicitly dependent on libraries that were packaged specifically in 
+relation to a particular development environment.  Therefore we now take care not to make the compiled 
+code dependent on Eclipse-specific libraries either. 
+</p>
+
+<h2>
+<a name="open_source_codebase">
+Open source the code to prevent single-source development and recover value for research funds spent 
+on development activities 
+</a>
+</h2>
+Research grants are designed to fund research, not development projects.  
+Software development can appear to funding bodies as being costly, long-running activities whose return 
+on investment is not easily expressed in terms of publications or efficiency gains.  It is more common 
+for funding bodies to value other metrics of use such as estimates of effort saved using a tool; monitoring 
+the download count for an application; or observing how often a tool is cited in other publications.  
+Another way to show value for a development project is to publish the code base.  In deciding whether to 
+publish the code base we had to weigh the benefits of sharing knowledge about the product against the 
+potential revenue that could come from protecting intellectual property of a closed code base.
+</p>
+
+<p>
+The RIF has been developed in a publicly funded research institution and the users of the software will 
+also likely be public funded research institutions.  The nature of routinely collected health data would 
+suggest the most likely kind of group to have data permissions would be public health units in the UK.  
+Neither the development team nor the anticipated clients function within a corporate, market-driven 
+environment that would sustain the life of the product as a closed-source system.
+</p>
+
+<p>
+Furthermore, it is in the public interest that projects can scrutinise code which can produce results 
+that influence public policy.  For example, if the finding of a study drew incorrect conclusions, project 
+leaders should have the option of investigating the software as a potential source of error.
+Perhaps the most compelling reason to publish the code base is to reduce the risk that the RIF project 
+becomes critically reliant on single-source development.  Natural turnover of developer staff puts 
+Imperial College at a risk of losing valuable institutional knowledge about a product it has spent a 
+decade producing.
+</p>
+
+<p>
+Open sourcing code doesn't guarantee that other developers will understand how the software works.  
+However, I would contend that publishing code tends to encourage developers to make their work more 
+readable for at least two reasons:
+<ul>
+<li>
+their work advertises their skill
+</li>
+<li>
+they may feel more compelled to justify design decisions in anticipation of peer review by the wider 
+developer community
+</li>
+</ul>
+Open sourcing the code encourages developers to be more transparent about their design process, and 
+increases the likelihood that their work can be extended or reused by future developers. 
+
+
+<h2>
+<a name="deskill_codebase">
+Design the code base so that it can be maintained by developers with minimal skill
+</a>
+</h2> 
+Although the RIF project has been better funded than other scientific software projects, 
+its future development will likely be characterised by a series of lone developers who may be 
+domain scientists but who may not be experienced software developers.  This may not turn out to 
+be the case - but it is best if we make this assumption.  
+
+
+<p>
+Making this assumption influences us in other ways:
+<ul>
+<li>
+development should minimise the number of technologies it depends on
+</li>
+<li>
+development should avoid making 'clever code'
+</li>
+</ul>
+</p>
+
+<p>
+The more technologies that need to work together to make the RIF work, the broader the skill 
+set that would be required of a single developer to maintain it.  The more advanced the coding 
+work appears in the code base, the greater the depth of skill will be required of that same 
+developer.  The greater the breadth and depth of experience required in the developer, the more 
+the project will have to compete with commercial rates for hiring more experienced programmers.
+
+
+<h2>
+<a name="invest_in_upfront_design">
+Invest in up-front design to lower future maintenance costs
+</a>
+</h2>
+Every software project has to consider how much emphasis their project gives to up-front design.  
+Developing a formally designed and documented architecture takes significant investment and the task 
+of synchronising documentation about the design with the code is an ongoing maintenance cost.  
+
+
+<p>
+In projects where software requirements are volatile or not clearly defined, it can be desirable 
+to avoid up front design in favour of focusing design on short term needs.  When new requirements 
+emerge, the development process supports the idea of refactoring code and testing changes with an 
+evolving set of automated test suites.  Instead of focusing on architectural design, projects in 
+these environments will tend to rely on reusing a collection of smaller-scale design patterns that 
+embody common coding scenarios.  
+</p>
+
+<p>
+Rather than investing in development of an elaborate architecture and formalising high level 
+abstractions through documentation, many of these teams choose to rely on pair programming and direct 
+interactions amongst developers to share their knowledge.
+</p>
+
+<p>
+The characteristics of our project are different.  Even after we reassessed what epidemiologists 
+wanted RIF v4.0 to do, the requirements that emerged seemed largely consistent with those that 
+had been articulated in the previous decade of tool development.  At least two of the developers 
+had observed the RIF evolve from much earlier versions.  
+</p>
+
+<p>
+Two members of the database team had spent years responding to ad hoc requests that are embodied by 
+what the tools do.  Some of our requirements for doing risk analysis, advanced statistical analysis and 
+information governance still need to be clarified.  However, most of our requirements have been 
+predictable and are unlikely to change much in the short to medium term future.  This characteristic 
+of having mature requirements suggests that high level designs will remain well synchronised with 
+changes that occur in the code base.  In recent years, we have acquired more interest in the tool by 
+other research groups who are located in different countries.  In future, we may receive more technical 
+help from these groups to develop the product.  Although we can use various teleconferencing technologies 
+to share development knowledge, funding constraints will limit how often we can meet face-to-face.
+</p>
+
+<p>
+If we make the conservative assumption that future development will be supported through a succession 
+of lone developers, then it is best to assume that project memory about design will more likely be 
+conveyed through written rather than through oral means.
+
+<h3>
+<a name="develop_tool_suite">
+Develop a tool suite rather than a tool to cater to different types of users
+</a>
+</h3> 
+RIF v3.0 was developed as a single desktop application that was mainly used by epidemiologists.  
+However, today the application must support features for statisticians and advanced features for RIF 
+managers.  In developing a single monolithic application that supports all users, there is a risk that 
+the maintenance costs of maintaining features for one group will be influenced by the maintenance of 
+unrelated features.
+
+<p>
+Separating requirements based on the type of user and the type of task helps streamline development 
+of electronic forms and can promote the development of isolated code modules that can be maintained 
+independently of one another.  For example, the features an epidemiologist needs to create and run a 
+study are very different than the features a RIF manager might need to load new geospatial data into 
+the database.  By catering separate tools to separate kinds of users, developers can work on making the 
+language of interaction more meaningful: the epidemiologist does not have to see menus relating to JSON 
+file formats and the RIF manager does not have to look over fields that describe ICD codes for a given study.
+</p>
+
+<p>
+Even within each role, the nature of the tasks can be very different.  Whereas creating a study 
+requires many data entry features, retrieving study results requires different features for visualising 
+the results.  As well, a single scientist will create a study but the results may become available to 
+many of them.  Similarly, the tasks RIF managers perform as part of loading population data into the 
+database are very different than the task of inspecting study results for information governance 
+concerns.
+</p>
+
+<p>
+Recasting the RIF as a collection of tools allows concerns about accessibility and security to be 
+better managed.  For example, it may be desirable to allow a scientist or even the public to remotely 
+view study results using a web browser.  However, there may not be a similar need to allow a RIF manager 
+web-based access to features that would add or delete data from the RIF database.  If all of the features 
+were to be supported in a single web application, the system might unnecessarily expose vulnerabilities 
+to malicious code attacks. 
+</p>
+
+<p>
+Now consider if these types of features were supported in different applications.  Suppose the features 
+for viewing study results were supported in a publically accessible web application.  Further suppose that 
+the data loading facilities were supported by a desktop application installed within a secure corporate 
+Intranet, on the server that hosts the database.  The application for viewing study results would still 
+expose the web server to outside malicious attacks.  However, the attack surface (the set of exposed 
+vulnerabilities) would be reduced because the access to data loading features would be more restricted.  
+</p>
+
+<p>
+Resolving support of the entire feature set into support for a collection of specialised tools provides 
+another means of distributing work within the development team.  For example, one person could work on 
+the study retrieval tool while another works on the mechanics of the data loader tool.  If the team 
+grows, it becomes easier to assign discrete programming tasks that will not cause clashes in concurrent 
+development.
+</p>
+
+<h2>
+<a name="use_web_and_desktop">
+Use a mix of web-based applications and desktop applications to suit different users
+</a>
+</h2>
+<p>
+In designing the electronic forms for the tools, there are at least three needs which have 
+influenced the technologies we chose to use:
+<ul>
+<li>
+the need to minimise the cost of installing the RIF for different users
+</li>
+<li>
+the need to promote visibility of study results for a potentially broad audience
+</li>
+<li>
+the need to minimise the skill set needed to maintain code
+</li>
+<li>
+the need to minimise security vulnerabilities
+</li>
+</ul>
+</p>
+
+<p>
+RIF v3.0 needed to be installed on the desktop of each user.  Apart from the effort needed to 
+ensure each installation had been properly configured, the tool's dependence on licenses of 
+underlying commercial applications added further cost to servicing more users.  For some public 
+health groups, the task of installing the RIF would require effort by whatever ICT department 
+managed the networks and user permissions of the systems they used.
+</p>
+
+<p>
+Deploying a software tool as a web application can help minimise the effort needed to configure 
+the systems used by end-users.  Efforts for setting up the software can be focused on a single 
+centralised installation.  Web applications would also allow epidemiologists to remotely submit 
+their studies or view their results.  
+</p>
+
+<p>
+However, web applications also come with drawbacks. It can cost less to initially create a Java 
+Swing application than it does to create a web application to do the same thing.  Electronic forms 
+created using Java Swing are using technology that already comes with standard Java libraries that 
+are already being used to support development in other parts of the code.  Web-based forms usually 
+require multiple technologies to work together in order to achieve the same effect.  In the case of 
+the RIF, our web applications render electronic forms using HTML5 and PHP code, and rely on Ajax 
+and Jersey web services to obtain data needed to populate analagous forms. 
+</p>
+
+<p>
+As well, web-based forms can incur higher long term maintenance costs.  Technologies that are used 
+to support web-based electronic forms evolve at a faster rate than the relatively stable Java Swing 
+libraries used to create desktop forms.  Creating and maintaining web-based forms requires a higher 
+programming skill set because they rely on more technologies.
+
+
+<p>
+The other major drawback of web applications is that they often expose more security vulnerabilities 
+than desktop applications.  In a desktop application, data are entered manually through explicit 
+user actions.  In a web application, those same actions can either be caused by a user or they can 
+be caused by another program.  A web application functions by submitting requests from a web application 
+that runs on a web server.  
+</p>
+
+<p>
+The web server receives requests as URLs, which are then forwarded to the application to translate 
+into meaningful commands.  However, those same URLs can be submitted by a malicious programming script.  
+Web bots can repeatedly try to access the web application, search for vulnerabilities or disguise 
+malicious code as form field values.
+</p>
+
+<p>
+The benefits of developing web applications must be balanced with the development costs and security 
+concerns that come with maintaining them.  The best balance is to develop web applications for the 
+epidemiologists and to create desktop applications to help RIF managers perform data loading and 
+information governance activities. 
+</p>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+"sqlcmd -d sahsuland_dev -i H:\SAHSU\rif_test.sql"  (use powershell to loop through long list of sql files so it will be loaded in correct/logical order)
+
+Install functions and sequences before all the tables
+
+rif40_ErrorLog.sql (needed for triggers)
+
+Not dependent on anything:
+rif40_version.sql
+rif40_a_and_e.sql
+rif40_age_group_names.sql
+rif40_geographies.sql
+rif40_health_study_themes.sql
+rif40_icd10.sql
+rif40_icd9.sql
+rif40_icd_o_3.sql
+rif40_opcs4.sql
+rif40_outcomes.sql
+rif40_reference_tables.sql
+t_rif40_projects.sql
+t_rif40_num_denom.sql
+t_rif40_parameters.sql
+rif40_error_messages.sql
+t_rif40_user_projects.sql
+rif40_tables_and_views.sql
+t_rif40_results.sql
+
+Dependencies:
+rif40_age_groups.sql foreign key reference to rif40_age_group_names.sql
+t_rif40_geolevels.sql needs rif40_geographies.sql
+rif40_covariates.sql needs rif40_geograhies.sql and t_rif40_geolevels.sql
+rif40_outcome_group.sql needs rif40_outcomes.sql
+rif40_predefined_groups.sql needs rif40_outcomes.sql
+rif40_tables.sql needs rif40_age_group_names.sql, rif40_health_study_themes.sql
+rif40_table_outcomes.sql needs rif40_tables.sql, rif40_outcomes.sql
+t_rif40_studies.sql needs t_rif40_projects, t_rif40_geolevels, rif40_tables, rif40_geographies
+rif40_study_shares.sql needs t_rif40_studies.sql
+t_rif40_comparison_areas.sql needs t_rif40_studies.sql
+t_rif40_investigations.sql needs rif40_tables.sql, t_rif40_studies.sql
+t_rif40_contextual_stats.sql needs t_rif40_investigations.sql
+t_rif40_fdw_tables needs rif40_tables
+t_rif40_study_sql_log.sql needs t_rif40_studies
+t_rif40_study_sql needs t_rif40_study_sql_log
+t_rif40_inv_covariates needs rif40_covariates, rif40_geographies, t_rif40_geolevels, t_rif40_investigations
+t_rif40_inv_conditions needs t_rif40_investigations.sql, rif40_outcome_groups, rif40_predefined_groups; plus sequences rif40_inv_id_seq, rif40_study_id_seq
+rif40_columns.sql needs rif40_tables_and_views.sql
+rif40_triggers.sql needs rif40_tables_and_views.sql
+t_rif40_study_areas needs t_rif40_studies.sql
+
+view rif40_num_num needs many functions to be built
+view rif40_numerator_outcome_columns needs view rif40_num_denom
+
+Needs Triggers for rif40_predefined_groups, rif40_tables, t_rif40_comparison_areas, t_rif40_inv_conditions, t_rif40_study_sql_log, t_rif40_study_sql
+
+Raunaque left a note on rif40_table_outcomes trigger that sounds like she wasn't certain if it was right
+Also t_rif40_studies_trigger.sql looks very dodgy (I had to edit some lines to get function to end at correct place)
+
+t_rif40_num_denom_checks has foreign keys in SQL Server but not Postgres ? (keeping them), no user can access it??
+
+t_rif40_studies -> default study_id not in SQL Server (based on sequence)
+
