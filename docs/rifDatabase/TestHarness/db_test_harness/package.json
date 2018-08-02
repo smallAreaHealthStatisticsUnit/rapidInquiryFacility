@@ -1,0 +1,32 @@
+{
+  "name": "db_test_harness",
+  "version": "1.0.0",
+  "description": "RIF database test harness",
+  "main": "db_test_harness.js",
+  "scripts": {
+    "test": "make db_test_harness"
+  },
+  "keywords": [
+    "Postgres",
+    "Microsoft SQL Server",
+    "database",
+    "test",
+    "harness"
+  ],
+  "author": "Peter Hambly, SAHSU, Imperial College London",
+  "license": "GPL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility.git"
+  },
+  "bugs": {
+    "url": "https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues"
+  },
+  "homepage": "https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility",
+  "dependencies": {
+    "mutexjs": "^1.2.0",
+    "optimist": "^0.6.1",
+    "pg": "^4.4.3",
+    "pg-native": "^1.10.0"
+  }
+}

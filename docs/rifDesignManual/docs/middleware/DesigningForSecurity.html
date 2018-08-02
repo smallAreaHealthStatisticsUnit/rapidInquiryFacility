@@ -1,0 +1,693 @@
+<head>
+<title>
+Designing for Security
+</title>
+
+<meta 
+	name="author" 
+	lang="en" 
+	content="Kevin Garwood">
+<meta 
+	name="keywords" 
+	lang="en" 
+	content="Rapid Inquiry Facility, RIF, environmental health, Kevin Garwood, Java, Security">
+	
+<link rel="stylesheet" href="../rifDesignManual.css" type="text/css">
+</head>
+
+<body>
+
+<header>
+<!-- Top Banner -->
+
+
+<table bgcolor="#B9CDE5">
+
+<tr>
+<td width="1000">
+<img src="../img/RIFMainBanner.jpg">
+</td>
+</tr>
+
+<tr>
+<td width="1000">
+
+<script src="../lib/jquery-2.1.4.min.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+var timeout         = 500;
+var closetimer		= 0;
+var ddmenuitem      = 0;
+
+function rif_open()
+{	rif_canceltimer();
+	rif_close();
+	ddmenuitem = $(this).find('ul').eq(0).css('visibility', 'visible');}
+
+function rif_close()
+{	if(ddmenuitem) ddmenuitem.css('visibility', 'hidden');}
+
+function rif_timer()
+{	closetimer = window.setTimeout(rif_close, timeout);}
+
+function rif_canceltimer()
+{	if(closetimer)
+	{	window.clearTimeout(closetimer);
+		closetimer = null;}}
+
+$(document).ready(function()
+{	$('#rif > li').bind('mouseover', rif_open);
+	$('#rif > li').bind('mouseout',  rif_timer);});
+
+document.onclick = rif_close;
+</script>
+
+<ul id="rif">
+	<li>
+		<a href="../index.html">Project Background</a>
+	</li>
+	<li>
+		<a href="../tools/Tools.html">Tool Suite</a>
+	</li>
+	<li>
+		<a href="../general_architecture/GeneralArchitecture.html">General Architecture</a>
+	</li>
+	<li>
+		<a href="../front_ends/FrontEnds.html">Front Ends</a>
+	</li>
+	<li>
+		<a href="./Middleware.html">Middleware</a>
+	</li>		
+	<li><a href="../back_ends/BackEnds.html">Back Ends</a>
+	</li>
+	<li><a href="../about_us/AboutUs.html">About Us</a>
+	</li>
+</ul>
+
+<div class="clear"> </div>
+<br>
+
+</td>
+</tr>
+</table>
+
+</header>
+
+<nav id="sideBarNavigationLinks">
+<!-- Left Side Bar -->
+
+<a href="./CodingPhilosophy.html">Coding Philosophy</a>
+<br>
+<a href="./SummaryOfDesignDecisions.html">Summary of Design Decisions</a>
+<br>
+<a href="./GeneralArchitecture.html">General Architecture</a>
+<ul>
+<li>
+	<a href="./PresentationLayer.html">Presentation Layer</a>
+</li>
+<li>
+	<a href="./BusinessConceptLayer.html">Business Concept layer</a>
+</li>
+<li>
+	<a href="./DataStorageLayer.html">Data Storage Layer</a>
+</li>
+</ul>
+
+<a href="./WebServices.html">Web Services</a>
+<br>
+<a href="./FileFormats.html">Support for File Formats</a>
+<br>
+<b>Design Aspects</b>
+	<ul>
+	<li>
+		<a href="./DesigningForSecurity.html">Security</a>
+	</li>
+	<li>
+		<a href="./DesigningForConcurrency.html">Concurrency</a>
+	</li>
+	<li>
+		<a href="./DesigningForTestability.html">Testability</a>
+	</li>
+	<li>
+		<a href="./DesigningForValidation.html">Validation</a>
+	</li>
+	<li>
+		<a href="./DesigningForMaintenance.html">Maintenance</a>
+	</li>
+	<li>
+		<a href="./ErrorHandling.html">Error Handling</a>
+	</li>
+	</ul>
+
+<a href="./CodeRoadMap.html">Code Road Map</a>
+<br>
+<a href="./CodingConventions.html">Coding Conventions</a>
+
+</nav>
+
+<section>
+<!-- Main Content Area -->
+
+
+<h1>Designing for Security</h1>
+
+<p>
+<i>
+by <a href="mailto:kgarwood@users.sourceforge.net">Kevin Garwood</a>
+</i>
+</p>
+
+
+<p>
+The aim of designing for security is to address the threat of malicious attacks that would damage
+the RIF system and to prevent sensitive data to be disclosed to unauthorised users.  We have
+designed the RIF to cope with the following threats:
+<ul>
+<li>
+malicious attacks that seek to obtain access to sensitive information
+</li>
+<li>
+unintentional disclosures of sensitive information
+</li>
+<li>
+malicious code attacks that are are meant to alter or damage the database
+</li>
+<li>
+malicious code attacks that are meant to overload the RIF system
+</li>
+</ul>
+</p>
+
+<h2>
+Establishing the expectations of support for security within an end-user environment
+</h2>
+<p>
+In some projects, too much burden of addressing perceived threats is placed on the software rather
+than the groups that would install it or the end-users who would use it.  The cost of having
+the software cope with a large number of scenarios related to these threats can complicate 
+the code base, increase the software maintenance costs, and take potentially scarce resources 
+away from other aspects of development.
+</p>
+
+<p>
+The first line of defence for the threats we have identified is to prescribe how the software
+should be installed.  From a security perspective, the ideal arrangement would be to have 
+the RIF tool suite installed on an isolated private network that was only accessible through a 
+virtual desktop environment.  Results of studies would be be accessible through an encrypted
+USB drive and only machines in a locked secure room would be have available USB ports.
+</p>
+
+<p>
+The next best arrangement would be to make the tool suite accessible only within a corporate 
+Intranet.  The RIF database would be installed on a server that was isolated within that network.
+For example, it would only be available on a restricted port.
+</p>
+
+<p>
+From a security perspective it would be best if the tools were not visible outside the corporate Intranet.
+However, we recognise that some projects may want to grant wider access to tools.  Although we have 
+designed the RIF so that all its tools can be supported with web-based applications, we have decided 
+that initially, the Data Loader Tool and the IT Governance Tool will be deployed as desktop 
+applications.  There are security benefits for using this kind of deployment.
+</p>
+
+<p>
+Desktop applications typically require human users to interact with electronic forms in order to access the 
+underlying data storage.  In contrast, the requests that support user interaction in web applications can be 
+imitated by malicious automated scripts.  Both web-browser applications and malicious scripts submit requests
+via URLs, which are processed by a web server.  When a web server receives a request, it cannot make 
+assumptions about the client that is calling it.  
+
+<p>
+Desktop applications can be made to rely on web servers as well, thereby exposing them to the same
+vulnerabilities as web applications.  However, because both the front end code for the administration tools 
+and the middleware are both written in Java, it means that client applications can call a Java middleware 
+service directly.  Whereas web services emphasise interoperability between different technologies, 
+the Java service interfaces stress integration using the same technology.  In this development context, 
+integration can provide fewer opportunities for threats than interoperability.
+</p>
+
+ 
+<p>
+Clearly the Study Submission and Study Result Viewer tools need to be deployed as web applications.  In this
+deployment context, the web server needs to be configured so that it can securely handle URL requests
+coming from outside the corporate network.  The web server should be isolated from the rest of the network
+as much as possible.
+</p>
+
+The RIF Tool Suite should be installed within a secure corporate Intranet.  The database server
+for the RIF should be isolated within that network, and its database access ports should be strictly limited.
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security1">
+Security-1
+</a>
+</b>: 
+The RIF Tool Suite should be installed within a secure corporate Intranet.  The database server
+for the RIF should be isolated within that network, and its database access ports should be 
+strictly limited.
+</i>
+</font>
+</blockquote>
+		
+
+<p>
+In the short term, our decision to initially develop the administration tools as desktop applications should
+help reduce the vulnerabilities from automated script attacks.  However, in the long term, these tools may 
+end up being reworked as web applications.  In that case, it does not make sense to rely on the security
+benefits of any one kind of front-end in the presentation layer.  Although we hope they could prevent
+malicious code attacks, we shouldn't assume they will.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security2">
+Security-2
+</a>
+</b>: 
+Design middleware methods for each tool as if it will be deployed as a web application.  However,
+in the short term of RIF development, tools that do not require remote access should be developed as
+desktop applications that use Java-based RIF services.  Tools that require remote access should be
+developed as web applications that communicate with the middleware via web services.  The web server
+should be isolated from the rest of the corporate Intranet. 
+</i>
+</font>
+</blockquote>
+
+
+<h2>
+Addressing threat of malicious code attacks
+</h2>
+
+<p>
+One of the most significant ways of reducing the risk of security threats is to reduce the attack surface that
+is provided by the code base.  An attack surface is the total number of points where a malicious attacker can 
+access the system.  We have reduced the attack surface in three ways:
+<ul>
+<li>
+minimise the visibility of variables, methods, classes and packages as much as possible
+</li>
+<li>
+make all non-abstract classes final
+</li>
+<li>
+encapsulate the business concept layer and the data storage layer using service interfaces that can hide
+implementation details from client applications
+</li>
+</ul>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#gen_design4">
+General Design-4
+</a>
+</b>: 
+Wherever possible, limit the paths of execution that are likely to occur.
+</i>
+</font>
+</blockquote>
+
+<p>
+After taking these measures, the attack surface of the middleware code base should be limited to the methods
+published in the service APIs.  The next step in securing the code base is to make copies of mutable values
+that the client applications pass to service methods.  This is called the "safe copying" technique,
+and it is discussed in the <a href="./DesignForConcurrency.html">Concurrency</a> section.
+</p>
+
+
+
+<p>
+After we create local copies of the parameter objects, the middleware then refers to the parameter objects 
+it created rather than the objects that were produced by the client.  The local copies are insulated from
+any malicious changes that may occur in the original objects during the course of executing a service
+method.  
+
+For example, a malicious script could initially call the method 
+
+<code>
+<pre>
+   getGeoLevelSelectValues(
+      User user,
+      Geography geography) 
+      throws RIFServiceException;
+</pre>
+</code>	
+	
+found in the <code>rifServices.businessConceptLayer.RIFStudySubmissionAPI</code> interface.  Suppose it
+passed a parameter value <code>Geography</code> which could pass the tests done in the object's 
+<code>checkSecurityViolations()</code> method.  Sometime after these checks were done, the client could
+have a thread that manages to set one of the <code>Geography</code> fields to an SQL injection attack.
+A malicious client could use threads to change a valid object into a harmful one.  To prevent this, we would
+make a copy of <code>Geography<code> and refer to that.  When the client tried to change values, it would
+have no effect on the middleware because it wasn't using the client's copy of <code>Geography</code>.
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#concurrency9">
+Concurrency-9
+</a>
+</b>: 
+Perform a deep-copy of any mutable object that is passed to a service method by a client application.  This 
+action will prevent the client from altering parameter values while they are being processed by the middleware.
+</i>
+</font>
+</blockquote>
+
+<p>
+The next step is to find out if the userID associated with the method call has been blacklisted 
+for past calls that contained malicious code.  This check is done first so that an unauthorised user's attempt
+to access the RIF database will fail as soon as possible.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security3">
+Security-3
+</a>
+</b>: 
+Consider a service method which has a <code>User</code> object specified as a parameter.  Immediately after the 
+<code>User</code> object has been safe-copied, check whether the userID in the copy has been blacklisted.  If
+executing the service method results in a security exception, blacklist the user.
+</i>
+</font>
+</blockquote>
+
+<p>
+The next security measure is to check every String field of every parameter object for whether the values
+resemble known forms of SQL Injection or SQL cross scripting attacks.  This check should be done immediately
+after parameter values are safe copied and checked for empty values.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security4">
+Security-4
+</a>
+</b>: 
+Business classes should have a method <code>checkSecurityViolations()</code>, which recursively 
+check whether any String fields have any malicious code values.  Field values should be compared 
+against a variable collection of regular expression patterns that are commonly associated with 
+code attacks.
+</i>
+</font>
+</blockquote>
+
+<p>
+The task of checking whether a String value matches a pattern of malicious code should be 
+supported by a single piece of extensible code that can be driven from an externally supplied list
+of malicious patterns.  The checks need to be done at a single point in the code base to ensure
+that the matching activity can be applied uniformly to the parameters of all middleware methods.  
+
+<p>
+Furthermore, the list of malicious code patterns should not be hard coded. Instead, it should
+read the patterns from a text file that can be altered as new forms of code attacks emerge.  The 
+RIF software should come with a default list of patterns, but it should allow projects to 
+modify it.  Some projects may not feel comfortable relying on a set of patterns which is visible
+in a publicly available open source project.
+</p>
+
+<p>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security5">
+Security-5
+</a>
+</b>: 
+The class <code>rifServices.util.FieldValidationUtility</code> will be responsible for checking
+all String field values contain malicious code patterns.
+</i>
+</font>
+</blockquote>
+
+
+
+<p>
+The collections of code patterns used to detect malicious values in String input data should not
+be hard coded in the application.  Instead they should be read from a file once at startup.
+The file will contain a default list of patterns that can be altered by individual projects.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security6">
+Security-6
+</a>
+</b>: 
+The class <code>rifServices.util.FieldValidationUtility</code> will obtain its list of 
+malicious code patterns from an editable file <code>MaliciousCodePatterns.txt</code>.
+Projects may wish to modify this file so they can add additional patterns in response
+to new threats of code attacks.
+</i>
+</font>
+</blockquote>
+
+<p>
+After parameter objects have been safely copied and every String input value has been
+checked for malicious code patterns, we switch focus from detection to prevention of
+attacks.
+</p>
+
+<p>
+The RIF uses <code>rifServices.dataStorageLayer.SQLConnectionManager</code> to manage a
+pool of database connections. In some software projects, a single pool is created where
+anonymous <code>Connection</code> objects can be assigned to the next user request that 
+needs one. 
+
+<p>
+In the RIF project, <code>Connection</code> objects are pooled per user to 
+provide more safeguards that would prevent a user from attempting to inappropriately 
+access the database.  When the middleware creates a new <code>Connection</code> object,
+it immediately calls a database procedure <code>rif40_setup</code>.  This procedure 
+creates user-specific views and temporary tables.  Should a malicious attack be executed 
+using a given connection, the limitations of access for the associated user should help 
+limit the damage.
+</p>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security7">
+Security-7
+</a>
+</b>: 
+Support connection pooling on a per-user basis rather than having a pool of anonymous
+connections that can be shared by different users.
+</i>
+</font>
+</blockquote>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security8">
+Security-8
+</a>
+</b>: 
+Call a database procedure that helps create user-specific views and temporary views.
+This action makes it easier to control what users can access and what damage they
+could do if their identities were used as part of a malicious attack.
+</i>
+</font>
+</blockquote>
+
+<p>
+Another way of using database connections to prevent malicious attacks is to use read-only 
+connections wherever possible.  Each connection object can be configured so that they only 
+support read operations.  Most of the service methods used for widely accessible services
+such as <code>rifServices.businessConceptLayer.RIFStudySubmissionAPI</code> and 
+<code>rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI</code>.
+</p>
+
+<p>
+Suppose that a malicious client is calling a read only method such as:
+
+<pre>
+<code>
+ArrayList<GeoLevelSelect> getGeoLevelSelectValues(
+   User user,
+   Geography geography)
+   throws RIFServiceException;
+</code>
+</pre>
+
+
+<p>
+Further suppose that a malicious client has caused the middleware to create a query to delete
+database tables.  If the query is executed on a read-only <code>Connection</code> used, 
+an exception will be thrown, indicating that an attempt to do a write operation was being made.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security9">
+Security-9
+</a>
+</b>: 
+For each user, maintain separate pools for read-only and write-enabled connections.  If a
+middleware task does not require writing data, it should use a read-only connection.
+</i>
+</font>
+</blockquote>
+
+
+<p>
+The main way we prevent malicious code attacks is to construct SQL queries using Java's
+<code>java.sql.PreparedStatement</code>.  A <code>PreparedStatement</code> uses bind
+variables that help guarantee that query parameter values could never be confused with
+database commands.  The use of prepared statements helps guarantee that a malicious
+command will simply be interpreted as a parameter value.
+</p>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security10">
+Security-10
+</a>
+</b>: 
+Execute queries using Java's <code>PreparedStatement</code> class and use bind variables to
+set query parameters.
+</i>
+</font>
+</blockquote>
+
+<h2>
+Preventing sensitive information from being accessed by unauthorised users
+</h2>
+
+<p>
+This area of design relates to managing registered users and associating them with roles
+and privileges.  Aspects of authorisation and authentication are complex, are often dependent
+on network and operating system considerations, and may be difficult to install.  For now,
+the RIF database will manage data about its registered users rather than relying on some
+external technologies.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security11">
+Security-11
+</a>
+</b>: 
+The RIF tool suite will manage user identities in the RIF database rather than delegate to services
+that might already be part of network administration services.
+</i>
+</font>
+</blockquote>
+
+
+<p>
+The RIF supports user roles that include: RIF manager, RIF student, RIF user, and RIF no suppression.
+The database uses these roles to limit access permissions of registered users.  For example,
+only users who have the role of RIF manager will be able to use the Data Loader Tool and the Information
+Governance Tool.  A RIF user will be able to see their own studies but not anyone else's studies.
+</p>
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security12">
+Security-12
+</a>
+</b>: 
+The middleware will rely on the database's system roles to help limit the access users have to data.
+</i>
+</font>
+</blockquote>
+
+
+<h2>
+Minimising sensitive information in error messages
+</h2>
+<p>
+Another source of security problems is revealing sensitive information through error 
+messages.  For example, suppose someone wanted to identify a userID in the system.  If they 
+tried <code>kgarwood</code> with a random password, they could get a message such as <code>"Incorrect 
+password for kgarwood"</code>, which would tell someone that <code>kgarwood</code> was probably a 
+legitimate userID.  Instead, it is better to show the response: <code>"You entered an incorrect user 
+name or password"</code>, which would tell a hacker less useful information.
+</p>
+
+<p>
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security13">
+Security-13
+</a>
+</b>: 
+Error messages resulting from invalid login should not reveal information about whether a userID
+is valid.
+</i>
+</font>
+</blockquote>
+
+<p>
+It is not good practice to pass a <code>SQLException</code> back to the client applications.
+Apart from it not providing much human-readable information to end-users, the exception could 
+also include sensitive information that could help hackers learn more about data sets.  We are 
+not concerned with whether the names of tables or table fields defined in the RIF schema are 
+displayed to an end-user.  These are a matter of public knowledge through our open sourcing efforts.  
+However, there is still a risk that exceptions could contain sensitive data. Therefore, we adopt
+the policy that if an SQLException is created, it must be caught and logged before throwing
+a <code>RIFServiceException</code> that contains an intelligible error message.  We will ensure
+that error messages do not contain any more information than they need.
+
+
+<blockquote>
+<font color="green">
+<i>
+<b>
+<a href="SummaryOfDesignDecisions.html#security14">
+Security-14
+</a>
+</b>: 
+Whenever a <code>java.sql.SQLException</code> is thrown in the code, it will be caught and logged.  A
+<code>rifServices.system.RIFServiceException</code> will be thrown, and its error messages will 
+not expose sensitive information beyond what is necessary.
+</i>
+</font>
+</blockquote>
+
+
+</section>
+
+
+</body>
+</html>
