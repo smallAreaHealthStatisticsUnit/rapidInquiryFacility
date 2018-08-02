@@ -227,7 +227,16 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getTileMakerCentroids?userID=dwmorley&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL4
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerCentroids?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel);
                 };
-
+				
+                //check postcode
+                self.getPostalCodes = function (username, geography, postcode) {
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getPostalCodes?userID=' + username + '&geographyName=' + geography + '&postcode=' + postcode);
+                };                //check postcode
+				
+                self.getPostalCodeCapabilities = function (username, geography) {
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getPostalCodeCapabilities?userID=' + username + '&geographyName=' + geography);
+                };					// Get postal coding capabilities of database (and srid)
+				
                 //get areas used in a completed study (recycled faulty KG method)
                 self.getStudySubmission = function (username, studyID) {
                     //http://localhost:8080/rifServices/studySubmission/getStudySubmission?userID=kgarwood&studyID=274

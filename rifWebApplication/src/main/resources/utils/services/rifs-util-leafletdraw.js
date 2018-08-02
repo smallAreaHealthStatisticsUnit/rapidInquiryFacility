@@ -43,13 +43,23 @@
  */
 
 angular.module("RIF")
-        .factory('LeafletDrawService',
-                function ($rootScope) {
+        .factory('LeafletDrawService', ['$rootScope', 'ParametersService', 
+                function ($rootScope, ParametersService) {
+					var parameters=ParametersService.getParameters();
+                    var selectorBands = { // Study and comparison are selectors
+							weight: 3,
+							opacity: 0.8,
+							fillOpacity: 0,
+							bandColours: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
+						};
+					if (parameters && parameters.selectorBands) {
+						selectorBands=parameters.selectorBands
+					}			
+					
                     function extendLeafletDrawCircle() {
 
                         //increment of band count, 1st band is #1, to a max of 6
                         var thisBand = 1;
-                        var bandColours = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
 
                         L.SimpleShape = {};
                         L.Draw.SimpleShape = L.Draw.Feature.extend({
@@ -120,6 +130,7 @@ angular.module("RIF")
                                 }
                                 //Draw a single circle only (disease mapping comparison area)
                                 if (this._map.band === 1) {
+									
                                     this._map.addLayer(this._shape);
                                     this._fireCreatedEvent();
                                     if (this._shape) {
@@ -129,8 +140,11 @@ angular.module("RIF")
                                             data: this._shape,
                                             circle: true,
                                             freehand: false,
-                                            band: thisBand
+                                            band: thisBand,
+											finalCircleBand: true
                                         });
+										
+										$rootScope.$broadcast('completedDrawSelection', {});
                                     }
                                     this.disable();
                                     if (this.options.repeatMode) {
@@ -154,8 +168,11 @@ angular.module("RIF")
                                             data: this._shape,
                                             circle: true,
                                             freehand: false,
-                                            band: thisBand
+                                            band: thisBand,
+											finalCircleBand: true
                                         });
+										
+										$rootScope.$broadcast('completedDrawSelection', {});
                                     }
                                     this.disable();
                                     if (this.options.repeatMode) {
@@ -223,7 +240,7 @@ angular.module("RIF")
                                 L.Draw.SimpleShape.prototype.initialize.call(this, map, options);
                             },
                             _drawShape: function (latlng) {
-                                this.options.shapeOptions.color = bandColours[thisBand - 1];
+                                this.options.shapeOptions.color = selectorBands.bandColours[thisBand - 1];
                                 if (!this._shape) {
                                     this._shape = new L.Circle(this._startLatLng, this._startLatLng.distanceTo(latlng), this.options.shapeOptions);
                                     this._map.addLayer(this._shape);
@@ -376,4 +393,4 @@ angular.module("RIF")
                             return extendLeafletDrawPolygon();
                         }
                     };
-                });         
+                }]);         

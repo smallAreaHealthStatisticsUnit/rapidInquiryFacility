@@ -120,9 +120,11 @@
 .btn-clear, .btn-clear:active {
     background: white url("../images/glyphicon/glyphicons-551-erase.png") no-repeat;
 }
+
 .btn-zoomExtent, .btn-zoomExtent:active {
     background: white url("../images/glyphicon/glyphicons-371-globe-af.png") no-repeat;
 }
+
 .btn-zoomStudy, .btn-zoomStudy:active {
     background: white url("../images/glyphicon/glyphicons-488-fit-image-to-frame.png") no-repeat;
 }
@@ -141,15 +143,21 @@
 .btn-centroids, .btn-centroids:active {
     background: white url("../images/glyphicon/glyphicons-267-flag.png") no-repeat;
 }
-.btn-addAOI, .btn-addAOI:active {
+.btn-shapes, .btn-shapes:active {
     background: white url("../images/glyphicon/glyphicons-97-vector-path-polygon.png") no-repeat;
+}
+.btn-addPostalCode, .btn-addPostalCode:active {
+    background: white url("../images/glyphicon/glyphicons-90-building.png") no-repeat;
+}
+.btn-addAOI, .btn-addAOI:active {
+    background: white url("../images/glyphicon/glyphicons-416-disk-open.png") no-repeat;
 }
 .btn-removeAOI, .btn-removeAOI:active {
     background: white url("../images/glyphicon/glyphicons-17-bin.png") no-repeat;
     margin-left: 0px !important;
 }
 
-.leaflet-control #lockExtentTrue, #lockExtentFalse, #lockSelectTrue, #lockSelectFalse  {
+.leaflet-control #lockExtentTrue, #lockExtentFalse, #lockSelectTrue, #lockSelectFalse, #showHideSelectionShapesTrue, #showHideSelectionShapesFalse, #showHideCentroidsTrue, #showHideCentroidsFalse {
     padding: 6px 12px;
     margin-bottom: 0;
     font-size: 14px;
@@ -193,6 +201,28 @@
 }
 .leaflet-control #lockSelectFalse {
     background: white url("../images/glyphicon/glyphicons-596-paired.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+
+.leaflet-control #showHideCentroidsTrue { 
+    background: lightgreen url("../images/glyphicon/glyphicons-267-flag.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+.leaflet-control #showHideCentroidsFalse {
+    background: white url("../images/glyphicon/glyphicons-267-flag.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+
+.leaflet-control #showHideSelectionShapesTrue { 
+    background: lightgreen url("../images/glyphicon/glyphicons-97-vector-path-polygon.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+.leaflet-control #showHideSelectionShapesFalse {
+    background: white url("../images/glyphicon/glyphicons-97-vector-path-polygon.png") no-repeat;
     background-size: 70% 70%;
     background-position: 50% 50%;
 }

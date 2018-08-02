@@ -37,8 +37,10 @@
 /* global L */
 
 angular.module("RIF")
-        .controller('ModalStudyAreaCtrl', ['$state', '$scope', '$uibModal', 'StudyAreaStateService', 'SubmissionStateService', 'CompAreaStateService',
-            function ($state, $scope, $uibModal, StudyAreaStateService, SubmissionStateService, CompAreaStateService) {
+        .controller('ModalStudyAreaCtrl', ['$state', '$scope', '$uibModal', 'StudyAreaStateService', 
+			'SubmissionStateService', 'CompAreaStateService', 'SelectStateService',
+            function ($state, $scope, $uibModal, StudyAreaStateService, 
+			SubmissionStateService, CompAreaStateService, SelectStateService) {
                 $scope.tree = SubmissionStateService.getState().studyTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -62,7 +64,7 @@ angular.module("RIF")
                             if (CompAreaStateService.getState().studyResolution !== "") {
                                 if (input.geoLevels.indexOf(CompAreaStateService.getState().studyResolution) >
                                         input.geoLevels.indexOf(input.studyResolution)) {
-                                    $scope.showError("Comparision area study resolution cannot be higher than for the study area");
+                                    $scope.showError("Comparison area study resolution cannot be higher than for the study area");
                                     //clear the comparison tree
                                     SubmissionStateService.getState().comparisonTree = false;
                                     CompAreaStateService.getState().studyResolution = "";
@@ -86,11 +88,44 @@ angular.module("RIF")
                         StudyAreaStateService.getState().geoLevels = input.geoLevels;
                         StudyAreaStateService.getState().polygonIDs = input.selectedPolygon;
                         StudyAreaStateService.getState().selectAt = input.selectAt;
+							
                         StudyAreaStateService.getState().studyResolution = input.studyResolution;
                         StudyAreaStateService.getState().center = input.center;
                         StudyAreaStateService.getState().geography = input.geography;
                         StudyAreaStateService.getState().transparency = input.transparency;
                         StudyAreaStateService.getState().type = input.type;
+						
+						if (SelectStateService.getState().studyType == "disease_mapping_study" && input.type == "Disease Mapping") {
+						}
+						else if (SelectStateService.getState().studyType == "risk_analysis_study" && input.type == "Risk Analysis") {
+						}
+						else {
+							$scope.showErrorNoHide("[rifc-dsub-studyarea.js] Study type mismatch, expecting SelectStateService.getState().studyType: " +
+								SelectStateService.getState().studyType + " ; got: " + input.type);
+								
+                            SubmissionStateService.getState().studyTree = false;
+                            $scope.tree = false;
+						}
+						SelectStateService.getState().studySelection.studySelectAt = input.selectAt;
+						SelectStateService.getState().studySelection.studySelectedAreas = 
+							input.selectedPolygon;
+						
+						try {
+							var r=SelectStateService.verifyStudySelection();
+//							$scope.consoleDebug("[rifc-dsub-studyarea.js] verifyStudySelection() " +
+//								SelectStateService.getState().studyType + " study area OK: " +
+//								JSON.stringify(r, null, 1));
+						}
+						catch (e) {
+							$scope.showWarningNoHide("Unable to verify study area selection: " + e.message);
+							$scope.consoleDebug("[rifc-dsub-studyarea.js] input: " +
+								JSON.stringify(input, null, 1));
+							$scope.consoleDebug("[rifc-dsub-studyarea.js] SelectStateService.getState(): " +
+								JSON.stringify(SelectStateService.getState(), null, 1));
+								
+                            SubmissionStateService.getState().studyTree = false;
+                            $scope.tree = false;
+						}
                     });
                 };
             }])

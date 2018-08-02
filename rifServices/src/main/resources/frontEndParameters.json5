@@ -128,6 +128,12 @@ Comments:
 					brewerName:	"RdYlGn",
                     invalidScales: ["Constant"]
 			}
+		},
+		selectorBands: { // Study and comparison are selectors
+			weight: 3,
+			opacity: 0.8,
+			fillOpacity: 0,
+			bandColours: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
 		}
 	}
 }              

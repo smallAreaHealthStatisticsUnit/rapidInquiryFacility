@@ -44,7 +44,7 @@ Disease submission modal to run study from file
             <a class="modal_close" ng-click="close()"></a>
         </div> 
         <div class="txt-fld">
-            <input on-read-file="showContent($fileContent)" type="file" name='open file' class='fileOpener' id="setUpFile" accept='{{accept}}' />
+            <input on-read-file="showContent($fileContent, $fileName)" type="file" name='open file' class='fileOpener' id="setUpFile" accept='{{accept}}' />
         </div>    
         <div class="save-fld">
             <input type="button" value="Apply" ng-click="submit()">

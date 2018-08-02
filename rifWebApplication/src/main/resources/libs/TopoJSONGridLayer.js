@@ -436,6 +436,11 @@ Stack: undefined
 				var subLayerAdds=0;
 				var subLayerUpdates=0;
 				
+				if (data == undefined || data.features == undefined || sublayer == undefined) { 
+					// Attempt to get an invalid tile
+					return;
+				}
+				
                 if (!this._geojsons[sublayer]) {
                     this._geojsons[sublayer] = new this.geoJsonClass(null, this.options.layers[sublayer]).addTo(this._map);	
                     this.checkZoomConditions(this._map.getZoom());

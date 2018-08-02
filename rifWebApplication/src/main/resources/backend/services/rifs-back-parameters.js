@@ -37,7 +37,7 @@
 angular.module("RIF")
         .factory('ParametersService',
                 function () {
-                    //this is used for all front end parameters. They originare from the Middleware (when implemented)
+                    //this is used for all front end parameters. They originate from the Middle ware (when implemented)
                     var defaultParameters = {
 						usePouchDBCache: 			false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
 						debugEnabled:				false,	// Disable front end debugging
@@ -75,7 +75,7 @@ angular.module("RIF")
 							username: 	"",
 							password:	""
 						},
-						userMethods: {
+						userMethods: { // Define standard mapping methods
 							'AtlasRelativeRisk': {
 									description: 'Atlas Relative Risk',
 									breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
@@ -90,6 +90,12 @@ angular.module("RIF")
 									brewerName:	"RdYlGn",
 									invalidScales: ["Constant"]
 							}
+						},
+						selectorBands: { // Study and comparison are selectors
+							weight: 3,
+							opacity: 0.8,
+							fillOpacity: 0,
+							bandColours: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
 						}
 					};               
                     return {

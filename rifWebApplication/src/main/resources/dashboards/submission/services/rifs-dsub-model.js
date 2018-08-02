@@ -35,8 +35,10 @@
  * SERVICE storing results of the submission stage
  */
 angular.module("RIF")
-        .factory('ModelService', function (StudyAreaStateService, CompAreaStateService, StatsStateService,
-                SubmissionStateService, ParameterStateService, user) {
+        .factory('ModelService', ['StudyAreaStateService', 'CompAreaStateService', 'StatsStateService',
+                'SubmissionStateService', 'ParameterStateService', 'SelectStateService', 'user', '$rootScope', 'AlertService',
+				function (StudyAreaStateService, CompAreaStateService, StatsStateService,
+                SubmissionStateService, ParameterStateService, SelectStateService, user, $rootScope, AlertService) {
 
             var type = "disease_mapping_study";
             var areaType = "disease_mapping_study_area";
@@ -67,7 +69,9 @@ angular.module("RIF")
                                 "Maps",
                                 "Ratios and Rates"
                             ]
-                        }
+                        },
+						"study_selection": SelectStateService.getState().studySelection
+					
                     }
                 };
 
@@ -200,7 +204,7 @@ angular.module("RIF")
             _getAttr = function (v) {
                 return '<attr>' + v + '</attr></br>';
             };
-
+				
             return {
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
@@ -209,7 +213,7 @@ angular.module("RIF")
                 //return the job submission as formatted HTML
                 get_rif_job_submission_HTML: function () {
                     var modelJSON = updateModel();
-
+					
                     //Overview
                     var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(modelJSON.rif_job_submission.project.name) +
                             '<section>Project Description:</section>' + _getAttr(modelJSON.rif_job_submission.project.description) +
@@ -276,7 +280,10 @@ angular.module("RIF")
 //                    }
 //                    outputOptions = outputOptions.substring(0, outputOptions.length - 2);
 //                    project += '<section>Options:</section>' + _getAttr(outputOptions);
+
+					AlertService.consoleDebug('get_rif_job_submission_HTML(): ' + project);
+					
                     return project;
                 }
             };
-        });
+        }]);
