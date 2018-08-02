@@ -2775,25 +2775,26 @@ SELECT a.*, b.coa2011
 * "Green" display shapefile selection and centroids display when selected;  
 * Remove disabled AOI code and clear AOI button;
 * Fixed missing zoom to extent button;
+* Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
+* Check the following selection methods are saved to study selection:
+  * (e.g. by attribute: DB; bands 69, 63, 0);
+  * file names;
+  * geolevel select and list;
 
 * Risk analysis front end issues/todo:
-  * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
-  * Check the following selection methods are saved to study selection:
-    * (e.g. by attribute: DB; bands 69, 63, 0);
-	* file names;
-	* geolevel select and list;
   * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
   * Improve scaling in shapefile properties table, 40:60 split;
   * Issue if with selectionState if "cancel" button used - shape remains! Needs a transaction time so the shape tree can be pruned;
   * Separate in selectionState map display methods from maptable directive;
   * On-screen toggle between disease mapping and risk analysis doesn't work properly #52: 
-    https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/52; 
+    https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/52. Tested OK on RA front end branch (add_study_selection_to_json). 
+	Added tracer. 
 	
 * Database Changes (See TODO](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/TODO#database-issues):	 
   * Save/restore user selection methods to/from database;	
   * Save user print selection to/from database;	
   * The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
-  * rif40_homogeneity:
+  * *rif40_homogeneity*:
   
   | Column name      | Column description                                                                  |
   |------------------|-------------------------------------------------------------------------------------| 
