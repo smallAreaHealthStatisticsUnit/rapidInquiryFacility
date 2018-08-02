@@ -124,3 +124,9 @@ docs/tileMaker.html
 
 # R projects
 **/*.Rproj*
+
+# Jekyll stuff for GitHub Pages
+**/Gemfile*
+**/.jekyll-metadata
+**/.sass-cache
+**/_site
