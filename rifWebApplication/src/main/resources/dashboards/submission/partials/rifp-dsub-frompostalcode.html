@@ -1,0 +1,104 @@
+<!--
+/**
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * Copyright 2016 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ *
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+
+ * Peter Hambly
+ * @author phambly
+ */
+-->
+
+<!-- 
+HTML partial for ui-router
+Disease submission modal to open postal code
+-->
+<div class="msettings">
+    <div class="msettings-ct">
+        <div class="msettings-header">
+            <h2>{{modalHeader}}</h2> 
+            <a class="modal_close" ng-click="close()"></a>
+        </div> 
+
+		<div class="postal-code-box">
+		
+			<div ng-show="hasPostalGrid">
+				<div ng-show="hasPostalGrid" class="grid-postalcode" ng-mouseleave="mouseleave($event)" ui-grid="postalCodeGridOptions" ui-grid-resize-columns>
+					</br>
+				</div>
+			</div>
+			
+			<div class="bnd-fld">
+				<input ng-model="selectionMethod" type="radio" ng-checked="wgs84Checked" ng-value="1" id="byWGS84" ng-change="postalCodeRadioChange(selectionMethod)">
+				<label for="byWGS84">WGS84/GPS latitude/longitude</label><br>
+				<div ng-show="hasPostalCode">
+				  <input ng-model="selectionMethod" type="radio" ng-checked="postalCodeChecked" ng-value="2" id="byPostalCode" ng-change="postalCodeRadioChange(selectionMethod)">
+				  <label for="byPostalCode">Postal code</label><br>
+				</div>
+				<div ng-show="hasNationalGrid">
+				  <input ng-model="selectionMethod" type="radio" ng-checked="nationalGridChecked" ng-value="3" id="byNationalGrid" ng-change="postalCodeRadioChange(selectionMethod)">
+				  <label for="byNationalGrid">National coordinates</label><br>
+				</div>
+				</br>
+			
+				<div ng-show="isPostalCode">
+				Postal code:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="postcode" type="text" required ng-model="postcode" ng-change="postcodeChange(postcode)" ng-blur="checkPostcode()" uib-tooltip="Enter your national postal code" tooltip-placement="right">
+					</br>
+				</div>
+				<div ng-show="isWGS84">
+				WGS84 lat,long:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="wgs84" type="text" required ng-model="wgs84" ng-change="wgs84Change(wgs84)" ng-blur="checkWGS84()" uib-tooltip="Enter WGS84 latitude/longitude separated by comma" tooltip-placement="right">
+					</br>
+				</div>	
+				<div ng-show="isNationalGrid">
+				National grid X,Y:&nbsp;&nbsp;&nbsp;&nbsp;<input class="nationalGrid" type="text" required ng-model="nationalGridCoordinate" ng-change="nationalGridChange(nationalGridCoordinate)" ng-blur="checkNationalGrid()" uib-tooltip="Enter your national grid coordinate and numbers separated by comma" tooltip-placement="right">
+					</br>
+				</div>	
+				</br>			
+				<div ng-show="isPostalCode">
+				<h3>Circular buffer around postal code (metres)</h3>
+				</div>
+				<div ng-show="isWGS84">
+				<h3>Circular buffer around WGS84 Latitude/longitude (metres)</h3>
+				</div>
+				<div ng-show="isNationalGrid">
+				<h3>Circular buffer around national grid X/Y (metres)</h3>
+				</div>
+				</br>
+
+				<table id="breakstable">
+					<tr ng-repeat="i in possibleBands track by $index">
+						<td>Radius for band {{possibleBands[i - 1]}}:&nbsp;&nbsp;<input class="break" ng-model="bandAttr[$index]"></td> 
+					</tr>
+				</table>
+			</div>
+		</div>
+
+        <div class="save-fld">
+            <input type="button" value="Apply" ng-click="submit()">
+        </div>
+    </div>
+</div>

@@ -98,10 +98,14 @@
         <script src="libs/l.geosearch.provider.openstreetmap.js"></script>
         <link rel="stylesheet" href="libs/l.geosearch.css" />
         <script src="libs/leaflet-image.js"></script>        
+        <script src="libs/turf.min.js"></script>        
         <script src="libs/TopoJSONGridLayer.js"></script>
         <script src="libs/pouchdb.js"></script>
         <script src="libs/topoJSON.js"></script>
 
+		<!-- proj4 (rep-projection) -->
+        <script src="libs/proj4.js"></script>
+		
         <!-- save html2canvas -->
         <script src="libs/html2canvas.js"></script>
 
@@ -142,6 +146,7 @@
         <script src="dashboards/submission/controllers/rifc-dsub-status.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-trace.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-idlist.js"></script>
+        <script src="dashboards/submission/controllers/rifc-dsub-shapefileselect.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-studyareastate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-maptable.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-model.js"></script>       
@@ -149,9 +154,11 @@
         <script src="dashboards/submission/services/rifs-dsub-paramstate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-statsstate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-submissionstate.js"></script>
+        <script src="dashboards/submission/services/rifs-dsub-selectstate.js"></script>
         <script src="dashboards/submission/directives/rifd-dsub-maptable.js"></script>
         <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>  
         <script src="dashboards/submission/directives/rifd-dsub-risk.js"></script>  
+		<script src="dashboards/submission/directives/rifd-dsub-postal.js"></script>  
         <script src="dashboards/viewer/controllers/rifc-view-viewer.js"></script>
         <script src="dashboards/viewer/services/rifs-view-viewerstate.js"></script>
         <script src="dashboards/viewer/directives/rifd-view-d3distHisto.js"></script>
@@ -183,6 +190,8 @@
         <script src="utils/services/rifs-util-choro.js"></script>
         <script src="utils/services/rifs-util-JSON.js"></script>
         <script src="utils/services/rifs-util-maptools.js"></script>
+        <script src="utils/services/rifs-util-alert.js"></script>
+        <script src="utils/services/rifs-util-projection.js"></script>
         <script src="backend/services/rifs-back-requests.js"></script>
         <script src="backend/services/rifs-back-interceptor.js"></script>
         <script src="backend/services/rifs-back-parameters.js"></script>

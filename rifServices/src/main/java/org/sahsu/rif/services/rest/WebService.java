@@ -748,6 +748,66 @@ public class WebService {
 			result);
 	}
 	
+	protected Response getPostalCodeCapabilities(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String geographyName) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				Geography geography = Geography.newInstance(geographyName, "");
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getPostalCodeCapabilities(
+						user, geography);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getPostalCodeCapabilities error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+		}
+	
+	protected Response getPostalCodes(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String geographyName,
+			final String postcode) {
+			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				Geography geography = Geography.newInstance(geographyName, "");
+				Locale locale = servletRequest.getLocale();
+				if (locale == null) {
+					locale=Locale.US;
+				}
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getPostalCodes(
+						user, geography, postcode, locale);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getPostalCodes error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+		}
+		
 	protected Response getTileMakerCentroids(
 			final HttpServletRequest servletRequest,
 			final String userID,

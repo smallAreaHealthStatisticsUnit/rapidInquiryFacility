@@ -1,6 +1,7 @@
 package org.sahsu.rif.services.concepts;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.concepts.User;
@@ -12,6 +13,18 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final User user,
 			final Geography geography,
 			final GeoLevelSelect geoLevelSelect)
+					throws RIFServiceException;
+					
+	String getPostalCodes(
+			final User user,
+			final Geography geography,
+			final String postcode,
+			final Locale locale)
+					throws RIFServiceException;	
+					
+	String getPostalCodeCapabilities(
+			final User user,
+			final Geography geography)
 					throws RIFServiceException;
 
 	String getTileMakerTiles(

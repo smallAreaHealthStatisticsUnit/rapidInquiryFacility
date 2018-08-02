@@ -38,10 +38,12 @@
 angular.module("RIF")
         .controller('LoginCtrl', ['$scope', 'user', '$injector',
             'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
-            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService', 'ParametersService',
+            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService', 
+			'ParametersService', 'SelectStateService',
             function ($scope, user, $injector,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
-                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService, ParametersService) {
+                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService, 
+					ParametersService, SelectStateService) {
 						
 				setFrontEndParameters = function(username) {
 					var getFrontEndParameters=undefined;
@@ -188,6 +190,7 @@ angular.module("RIF")
                             ViewerStateService.resetState();
                             MappingStateService.resetState();
                             ExportStateService.resetState();
+							SelectStateService.resetState();
 
                             //initialise the taxonomy service
                             user.initialiseService().then(handleInitialise, handleInitialiseError);

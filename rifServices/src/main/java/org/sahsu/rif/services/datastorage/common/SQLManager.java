@@ -77,6 +77,9 @@ public interface SQLManager {
 	
 	void logSQLException(SQLException sqlException);
 	
+	boolean doesColumnExist(final Connection connection, final String schemaName, final String tableName, final String columnName)
+		throws Exception;
+	
 	boolean isUserBlocked(final User user);
 	
 	void logSuspiciousUserEvent(final User user);

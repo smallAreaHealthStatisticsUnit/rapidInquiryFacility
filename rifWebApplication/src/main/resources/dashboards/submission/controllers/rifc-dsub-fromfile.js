@@ -30,15 +30,17 @@
  * David Morley
  * @author dmorley
  */
-
+ 
 /* 
  * CONTROLLER for disease submission run study from file modal
  */
 angular.module("RIF")
         .controller('ModalRunFileCtrl', ['$q', 'user', '$scope', '$uibModal',
-            'StudyAreaStateService', 'CompAreaStateService', 'SubmissionStateService', 'StatsStateService', 'ParameterStateService',
+            'StudyAreaStateService', 'CompAreaStateService', 'SubmissionStateService', 'StatsStateService', 
+			'ParameterStateService', 'SelectStateService',
             function ($q, user, $scope, $uibModal,
-                    StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, ParameterStateService) {
+                    StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, 
+					ParameterStateService, SelectStateService) {
 
                 // Magic number for the always-included first method (see rifp-dsub-stats.html).
                 const FIXED_NO_SMOOTHING_METHOD_POSITION  = -1;
@@ -77,7 +79,7 @@ angular.module("RIF")
                     }
                     //has a non-empty object been uploaded?
                     if (angular.isUndefined(rifJob) || rifJob === null) {
-                        return "Not a valid or recognised RIF job";
+                        return "Not a valid or recognized RIF job";
                     }
 
                     //JSON headers
@@ -91,22 +93,70 @@ angular.module("RIF")
                         thisHeaders.push(rifJob[i]);
                     }
 
-                    //Expected headers present for RIF study
-                    var expectedHeaders = ['submitted_by', 'job_submission_date', 'project', studyType, 
-						'calculation_methods', 'rif_output_options'];
-                    if (thisHeaders.length < expectedHeaders.length) {
-                        return "Not a recognised RIF job, not all expected headers (" + thisHeaders.length + 
-							"/" + expectedHeaders.length + ") found";
-                    } else {
-                        for (var i = 0; i < rifJob.length; i++) {
-                            if (thisHeaders[i] !== expectedHeaders[i]) {
-                                return "Expected header not found " + expectedHeaders[i];
-                            }
-                        }
-                    }
+                    //Expected headers present for RIF study; boolean is mandatory
+                    var expectedHeaders = {
+						submitted_by: true,
+						job_submission_date: true, 
+						project: true, 
+						calculation_methods: true, 
+						rif_output_options: true, 
+						study_selection: false
+					};
+					expectedHeaders[studyType]=true;
+					
+					// Check for missing
+					var headerMissingCount = 0;
+					var missingHeaders = undefined;
+					for (var header in expectedHeaders) {
+                        if (!rifJob[header]) {
+							if (!expectedHeaders[header]) { // Not mandatory
+								$scope.showWarning(header + " non mandatory header is missing"); 
+							}
+							else if (!missingHeaders) {
+								headerMissingCount++;
+								missingHeaders = header;
+							}
+							else {
+								headerMissingCount++;
+								missingHeaders+=", " + header;
+							}
+						}
+					}
+					if (headerMissingCount > 0) {
+						$scope.consoleDebug("[rifc-dsub-fromfile.js] Not a recognized RIF job, " +
+							headerMissingCount + " expected header(s) not found: " + missingHeaders + 
+							"; rifJob: " + JSON.stringify(rifJob, null, 2) 
+							);
+						return "Not a recognized RIF job, " +
+							headerMissingCount + " expected header(s) not found: " + missingHeaders;
+					}
+					
+					// Check for extra
+					var headerExtraCount = 0;
+					var extraHeaders = undefined;
+					for (var header in rifJob) {
+                        if (!expectedHeaders[header]) {
+							if (!missingHeaders) {
+								headerExtraCount++;
+								extraHeaders = header;
+							}
+							else {
+								headerExtraCount++;
+								extraHeaders+=", " + header;
+							}
+						}
+					}
+					if (headerMissingCount > 0) {
+						$scope.consoleDebug("[rifc-dsub-fromfile.js] Not a recognized RIF job, " +
+							headerExtraCount + " extra header(s) found: " + extraHeaders + 
+							"; rifJob: " + JSON.stringify(rifJob, null, 2) 
+							);
+						return "Not a recognized RIF job, " +
+							headerExtraCount + " extra header(s) found: " + extraHeaders;
+					}
+
 					if (rifJob[studyType] == undefined) {
 						$scope.consoleDebug("[rifc-dsub-fromfile.js] No " + studyType + " object found." + 
-//							"; thisHeaders: " + JSON.stringify(thisHeaders) +
 							"; rifJob: " + JSON.stringify(rifJob, null, 2) 
 							);
 						
@@ -436,6 +486,30 @@ angular.module("RIF")
                     }
                 }
 
+                function uploadStudySelection() {
+					try {	
+						SelectStateService.getState().studyType=studyType;
+						if (rifJob.study_selection) {
+							//set StudySelection
+							SelectStateService.setStudySelection(rifJob.study_selection, studyType);
+							return true;
+						} else {
+							if (SelectStateService.getState().studyType == 'disease_mapping_study') {
+								SelectStateService.resetState();
+							}
+							else if (SelectStateService.getState().studyType == 'risk_analysis_study') {
+								SelectStateService.initialiseRiskAnalysis();
+							}
+							else {
+								return "Invalid SelectStateService.getState().studyType: " + SelectStateService.getState().studyType;
+							}
+							return true; // Optional for backward compatibility
+						}	
+                    } catch (e) {
+                        return "Could not upload and check study selection: " + (e.message||"(no message)");
+                    }
+                }
+				
                 /*
                  * All tests passed so commit changes to states
                  */
@@ -493,6 +567,37 @@ angular.module("RIF")
 							}
 							SubmissionStateService.getState().statsTree = true;
 						}	
+						
+						if (SelectStateService.getState().studySelection.comparisonSelectAt == undefined) {
+							SelectStateService.getState().studySelection.comparisonSelectAt = 
+								CompAreaStateService.getState().selectAt;
+						}
+						if (SelectStateService.getState().studySelection.studySelectAt === undefined) {
+							SelectStateService.getState().studySelection.studySelectAt = 
+								StudyAreaStateService.getState().selectAt;
+						}					
+//						if (SelectStateService.getState().studySelection.studySelectedAreas === undefined  &&
+//						    studyType === "disease_mapping_study") {
+//							SelectStateService.getState().studySelection.studySelectedAreas = 
+//								StudyAreaStateService.getState().studySelectedAreas;
+//						}
+//						if (SelectStateService.getState().studySelection.comparisonSelectedAreas === undefined) {
+//							SelectStateService.getState().studySelection.comparisonSelectedAreas = 
+//								StudyAreaStateService.getState().comparisonSelectedAreas;
+//						}
+						
+						try {
+							if (SelectStateService.getState().studySelection) {
+								var r=SelectStateService.verifyStudySelection();
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] verifyStudySelection() OK: " +
+									JSON.stringify(r));
+							}
+						}
+						catch (e) {
+							fromFileErrorCount++;
+							return "Unable to verify study selection: " + e.message;
+						}							
+
                     } catch (e) {
                         return "Could not set study state: " + (e.message||"(no message)");
                     }
@@ -501,7 +606,7 @@ angular.module("RIF")
                 function fromFileError() {
 					fromFileErrorCount++;
 					if (fromFileErrorCount < 2) {
-						$scope.showError("Could not upload saved study file");
+						$scope.showError("Could not upload saved study file: " + $scope.fileName);
 					}
                 }
 
@@ -509,12 +614,20 @@ angular.module("RIF")
                     $scope.modalHeader = "Open study from file";
                     $scope.accept = ".json";
 
-                    $scope.showContent = function ($fileContent) {
+                    $scope.showContent = function ($fileContent, $fileName) {
                         $scope.content = $fileContent.toString();
+						$scope.fileName = $fileName;
                     };
 
                     $scope.uploadFile = function () {
 
+						//reset all submission states to default
+						SubmissionStateService.resetState();
+						StudyAreaStateService.resetState();
+						SelectStateService.resetState();
+						CompAreaStateService.resetState();
+						ParameterStateService.resetState();
+						SelectStateService.resetState();
                         $scope.consoleDebug("[rifc-dsub-fromfile.js] Starting upload...");
 
 						// Create promises
@@ -536,6 +649,8 @@ angular.module("RIF")
                         var p8 = d8.promise;
                         var d9 = $q.defer();
                         var p9 = d9.promise;
+                        var d10 = $q.defer();
+                        var p10 = d10.promise;
 						
                         //check initial file structure
                         d1.resolve(uploadCheckStructure());
@@ -589,8 +704,15 @@ angular.module("RIF")
 								p9.then(function (value) {
 									return value;
 								}, fromFileError);
-								                        //resolve all the promises
-								$q.all([p2, p3, p4, p5, p6, p7, p8, p9]).then(function (result) {
+								
+								//check studySelection
+								d10.resolve(uploadStudySelection());
+								p10.then(function (value) {
+									return value;
+								}, fromFileError);
+								
+								//resolve all the promises
+								$q.all([p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function (result) {
 									var bPass = true;
 									var errorCount=0;
 									for (var i = 0; i < result.length; i++) {
@@ -603,11 +725,11 @@ angular.module("RIF")
 									if (bPass) {
 										//All tests passed
 										confirmStateChanges();
-										$scope.showSuccess("RIF study opened from file");
+										$scope.showSuccess("RIF " + StudyAreaStateService.getState().type + " study opened from file: " + $scope.fileName);
 										$scope.$parent.resetState();
 									}
 									else {
-										$scope.showError("RIF study opened from file failed with " +
+										$scope.showError("RIF study opened from file: " + $scope.fileName + " failed with " +
 											errorCount + " error(s)");
 									}
 								});
@@ -630,7 +752,7 @@ angular.module("RIF")
 							}
 							if (bPass) {
 								//All tests passed
-								$scope.consoleDebug("[rifc-dsub-fromfile.js] RIF study parsed from file");
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] RIF study parsed from file: " + $scope.fileName);
 								$scope.$parent.resetState();
 							}
 							else {

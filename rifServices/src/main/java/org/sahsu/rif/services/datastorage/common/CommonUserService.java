@@ -2,6 +2,7 @@ package org.sahsu.rif.services.datastorage.common;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.concepts.User;
@@ -949,7 +950,7 @@ public class CommonUserService implements UserService {
 				//Audit failure of operation
 				logException(
 					user,
-					"getTileMakerTiles",
+					"getTileMakerCentroids",
 					rifServiceException);			
 			}
 			finally {
@@ -962,6 +963,167 @@ public class CommonUserService implements UserService {
 			return result;	
 		}
 	
+	@Override
+	public String getPostalCodeCapabilities(
+			final User _user,
+			final Geography _geography)
+			throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			Geography geography
+				= Geography.createCopy(_geography);
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getPostalCodeCapabilities",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getPostalCodeCapabilities",
+					"geography",
+					geography);			
+				
+				//Check for security violations
+				validateUser(user);
+				geography.checkSecurityViolations();
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.getPostalCodeCapabilities",
+						user.getUserID(),
+						user.getIPAddress(),
+						geography.getDisplayName());
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getPostalCodeCapabilities(
+						connection,
+						geography);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getPostalCodes",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}
+	
+	@Override
+	public String getPostalCodes(
+			final User _user,
+			final Geography _geography,
+			final String postcode,
+			final Locale locale)
+			throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			Geography geography
+				= Geography.createCopy(_geography);
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getPostalCodes",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getPostalCodes",
+					"geography",
+					geography);	
+				fieldValidationUtility.checkNullMethodParameter(
+					"getPostalCodes",
+					"postcode",
+					postcode);		
+				
+				//Check for security violations
+				validateUser(user);
+				geography.checkSecurityViolations();
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.getPostalCodes",
+						user.getUserID(),
+						user.getIPAddress(),
+						geography.getDisplayName(),
+						postcode);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getPostalCodes(
+						connection,
+						geography,
+						postcode,
+						locale);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getPostalCodes",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}
+		
 	@Override
 	public String getTileMakerTiles(
 			final User _user,

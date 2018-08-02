@@ -35,8 +35,10 @@
  * CONTROLLER for the main 'tree' page
  */
 angular.module("RIF")
-        .controller('SumbmissionCtrl', ['$scope', 'user', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService',
-            function ($scope, user, $state, SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService) {
+        .controller('SumbmissionCtrl', ['$scope', 'user', '$state', 'SubmissionStateService', 
+			'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 'SelectStateService', 
+            function ($scope, user, $state, SubmissionStateService, 
+				StudyAreaStateService, CompAreaStateService, ParameterStateService, SelectStateService) {
                 /*
                  * STUDY, GEOGRAPHY AND FRACTION DROP-DOWNS
                  * Calls to API returns a chain of promises
@@ -45,7 +47,8 @@ angular.module("RIF")
                 $scope.geographies = [];
 
                 //Get geographies
-                user.getGeographies(user.currentUser).then(handleGeographies, handleError); //1ST PROMISE
+                user.getGeographies(user.currentUser).then(handleGeographies,  reason => {
+					handleError(reason, "unable to get geographies"); }); //1ST PROMISE
                 function handleGeographies(res) {
                     $scope.geographies.length = 0;
                     for (var i = 0; i < res.data[0].names.length; i++) {
@@ -60,13 +63,15 @@ angular.module("RIF")
                     SubmissionStateService.getState().geography = $scope.geography;
                     //Fill health themes drop-down
                     $scope.healthThemes = [];
-                    user.getHealthThemes(user.currentUser, $scope.geography).then(handleHealthThemes, handleError); //2ND PROMISE
+                    user.getHealthThemes(user.currentUser, $scope.geography).then(handleHealthThemes, reason => {
+						handleError(reason, "unable to get health themes"); }); //2ND PROMISE
                 }
                 $scope.geographyChange = function () {
                     SubmissionStateService.getState().geography = $scope.geography;
                     //reset states using geography
                     StudyAreaStateService.resetState();
                     CompAreaStateService.resetState();
+                    SelectStateService.resetState();
                     ParameterStateService.resetState();
                     SubmissionStateService.getState().comparisonTree = false;
                     SubmissionStateService.getState().studyTree = false;
@@ -92,7 +97,8 @@ angular.module("RIF")
                 $scope.healthThemeChange = function () {
                     if ($scope.healthTheme) {
                         SubmissionStateService.getState().healthTheme = $scope.healthTheme;
-                        user.getNumerator(user.currentUser, $scope.geography, $scope.healthTheme.description).then(handleFractions, handleError); //3RD PROMISE
+                        user.getNumerator(user.currentUser, $scope.geography, $scope.healthTheme.description).then(handleFractions,  reason => {
+							handleError(reason, "unable to get numerator/denominator pair"); }); //3RD PROMISE
                     } else {
                         $scope.fractions.length = 0;
                     }
@@ -141,8 +147,9 @@ angular.module("RIF")
 					}	
                 };
 
-                function handleError(e) {
-                    $scope.showError("Could not retrieve your project information from the database");
+                function handleError(e, reason) {
+                    $scope.showError("Could not retrieve your project information from the database: " + reason);
+					$scope.consoleDebug("[rifc-dsub-main.js] handleError: " + (JSON.stringify(e) || "(no error message)"));
                 }
 
                 /*

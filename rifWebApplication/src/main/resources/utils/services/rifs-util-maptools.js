@@ -35,6 +35,8 @@
 
 /*
  * SERVICE to add tool icons to leaflet containers
+ *
+ * Icons are defined in: ..\..\css\rifx-css-leaflet.css
  */
 angular.module("RIF")
         .factory('mapTools',
@@ -45,10 +47,17 @@ angular.module("RIF")
                         '<button type="button" class="btn btn-clear" title="Clear selection" ng-click="clear()"></button>',
                         '<button type="button" class="btn btn-zoomExtent" title="Zoom to full extent" ng-click="zoomToExtent()"></button>',
                         '<button type="button" class="btn btn-zoomSelected" title="Zoom to selection" ng-click="zoomToSelection()"></button>',
-                        '<button type="button" class="btn btn-centroids" title="Show-hide centroids" ng-click="showCentroids()"></button>',
+                        '<button type="button" class="btn btn-addPostalCode" title="Select by postal code/WGS84/grid coordinates" postal-code></button>',
                         '<button type="button" class="btn btn-addAOI" title="Select by shapefile" risk-analysis></button>',
-                        '<button type="button" class="btn btn-removeAOI" title="Clear shapefile" ng-click="clearAOI()"></button>',
-                        '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid="areamap"></button>'
+                        '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid="areamap"></button>',
+                        '<div ng-switch on=bShowHideCentroids>' +
+							'<button type="button" class="btn btn-centroids" title="Show centroids" id="showHideCentroidsTrue" ng-click="showCentroids()" ng-switch-when="true"></button>' +
+							'<button type="button" class="btn btn-centroids" title="Hide centroids" id="showHideCentroidsFalse" ng-click="showCentroids()" ng-switch-when="false"></button>' +
+						'</div>',
+                        '<div ng-switch on=bShowHideSelectionShapes>' +
+							'<button type="button" class="btn btn-shapes" title="Show selction shapes" id="showHideSelectionShapesTrue" ng-click="showShapes()" ng-switch-when="true"></button>' +
+							'<button type="button" class="btn btn-shapes" title="Hide selction shapes" id="showHideSelectionShapesFalse" ng-click="showShapes()" ng-switch-when="false"></button>' +
+						'</div>'
                     ];
 
                     var basicMapTools = [

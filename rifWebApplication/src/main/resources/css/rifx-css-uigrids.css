@@ -37,11 +37,24 @@
     width: 30%;
     height: 90%;
     float: left;
-    position: absolute;
 }
 .grid-status {
     margin: 5px;
     height: 95%;
+}
+
+.grid-shapefile { 
+    position: relative;
+    float: right;
+    width: 45%;
+    height: 30%;
+}
+
+.grid-postalcode { 
+    position: relative;
+    float: right;
+    width: 45%;
+    height: 30%;
 }
 
 .grid-ICD { 

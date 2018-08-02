@@ -100,14 +100,13 @@ angular.module("RIF")
  
 			/*
 			 * Function: 	callRifFrontEndLogger()
-			 * Parameters: 	username,
-			 *				messageType,
+			 * Parameters: 	messageType,
 			 *				message, 
 			 *				errorMessage,
 			 *				errorStack,
 			 *				relativeTime
 			 * Returns: 	Nothing
-			 * Description:	Call rifFrontEndLogger servicw log log to middleware
+			 * Description:	Call rifFrontEndLogger service log to middleware
 			 */
 			function callRifFrontEndLogger(
 				messageType,
@@ -120,30 +119,59 @@ angular.module("RIF")
 				var end = new Date();
 				var actualTime = end.toLocaleDateString() + " " + end.toLocaleTimeString();
 
-				user.rifFrontEndLogger(user.currentUser, 
-					messageType,
-					browser.name + "; v" + browser.version,
-					message, 
-					errorMessage,
-					errorStack,
-					actualTime,
-//					actualTime.toDateString() + "; " + actualTime.toTimeString(),
-					relativeTime).then(function (res) {
-						if (res.data[0].result != "OK") {
+				try {
+					user.rifFrontEndLogger(user.currentUser, 
+						messageType,
+						browser.name + "; v" + browser.version,
+						message.substring(300), // Limit to 300 characters
+						errorMessage.substring(300), // Limit to 300 characters
+						errorStack,
+						actualTime,
+	//					actualTime.toDateString() + "; " + actualTime.toTimeString(),
+						relativeTime).then(function (res) {
+							if (res.data[0].result != "OK") {
+								if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+									if (isIE()) {
+										if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+											console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
+												"\n" + message); // IE safe
+										}
+									}
+									else {
+										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
+												"\n" + message); // IE safe
+									}
+								}  	
+							}
+						}, function (err) {
 							if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 								if (isIE()) {
 									if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
-											"\n" + message); // IE safe
+										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + 
+											err.mesage);
 									}
 								}
-								else {
-									console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
-											"\n" + message); // IE safe
-								}
-							}  	
+							}
+							else {
+								console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + 
+									err.mesage);
+							}
+						});
+				}
+				catch (err) {
+					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+						if (isIE()) {
+							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+								console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + 
+									err.mesage);
+							}
 						}
-					});
+					}
+					else {
+						console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + 
+							err.mesage);
+					}	
+				}
 			}
 			
 			/*
@@ -277,6 +305,51 @@ angular.module("RIF")
 					elapsed);				
 			}
 
+			/*
+			 * Function:	rifMessage listener
+			 * Parameters:	Event, data object:
+			 *					Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
+			 * Description:	Call rifMessage()
+			 * Usage:		$rootScope.$broadcast('rifMessage', { messageLevel: "DEBUG", msg: "Test message" });
+			 */			
+			$scope.$on('rifMessage', function (event, data) {
+				 if (data.messageLevel && data.msg) {
+					rifMessage(data.messageLevel, data.msg, data.rifHide || true, data.rifError);			 
+				 }
+				 else {
+					$scope.consoleError("rifMessage has incorrect data: " + JSON.stringify(data), data.rifError);
+				 }
+			});
+			
+			/*
+			 * Function:	consoleMessage listener
+			 * Parameters:	Event, data object:
+			 *					Level [DEBUG/INFO/ERROR], message, rif Error object [optional] 
+			 * Description:	Call rifMessage()
+			 * Usage:		$rootScope.$broadcast('rifMessage', { messageLevel: "DEBUG", msg: "Test message" });
+			 */			
+			$scope.$on('consoleMessage', function (event, data) {
+				if (data.messageLevel && data.msg) {
+					if (data.messageLevel.toUpperCase() == "DEBUG") {
+						$scope.consoleDebug(data.msg, data.rifError);	
+					}	
+					else if (data.messageLevel.toUpperCase() == "INFO") {
+						$scope.consoleLog(data.msg, data.rifError);	
+					}	
+					else if (data.messageLevel.toUpperCase() == "ERROR") {
+						$scope.consoleError(data.msg, data.rifError);	
+					}	
+					else {
+						$scope.consoleError("consoleMessage has incorrect messageLevel: " + JSON.stringify(data), data.rifError);
+					}	
+				}
+				else if (data.msg == undefined) { // Do nothing
+				}
+				else {
+					$scope.consoleError("consoleMessage has incorrect data: " + JSON.stringify(data), data.rifError);
+				}
+			});
+						
 			/*
 			 * Function:	rifMessage()
 			 * Parameters:	Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
