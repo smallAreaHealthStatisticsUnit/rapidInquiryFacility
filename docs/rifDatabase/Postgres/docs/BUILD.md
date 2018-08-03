@@ -96,9 +96,7 @@ The directory structure is *rifDatabase\Postgres\*:
 * example_data    - Example extracts and results creating as part of SAHSUland build
 * logs            - Logs from psql_scripts runs
 * PLpgsql         - PL/pgsql scripts
-* psql_scripts    - PSQL scripts; **Postgres database build directory**. The
-                    [README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/README.md)
-					describes the build process in detail.
+* psql_scripts    - PSQL scripts; **Postgres database build directory**. The [README](../README.md) describes the build process in detail.
 * sahsuland       - SAHSUland creation psql scripts
 * sahsuland\data  - SAHSUland data
 * shapefiles      - Postgres psql SQL scripts derived from shapefiles, creation scripts
@@ -205,8 +203,7 @@ If you enable PL/R then the directories R_library (in $PGDATA/R_Library) and $R_
 * Make sure psql and make run correctly on the command line (see the Windows notes). Check logon to psql with a password for:
   * postgres
 * Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *npm install pg pg-native topojson*; *make install topojson*.
-  The [Node.js install dialog]
-(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/Node/Node%20Install.md) is provided as an example.
+  The [Node.js install dialog](Node_Install.md) is provided as an example.
   **If the toposjon node.js does not run correctly then node is not properly installed**.
   The requirement for Node will be removed.
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
@@ -531,7 +528,7 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
  	  * *v4_0_alter_6.sql*: R support [optional script if PL/R integration is enabled with *USE_PLR=Y*].
  	  * *v4_0_alter_7.sql*: Support for taxonomies/ontologies (e.g. ICD9, 10); removed previous table based support.
                             Modify t_rif40_inv_conditions to remove SQL injection risk.
- 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/TestHarness/db_test_harness/README.md)
+ 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](../../TestHarness/db_test_harness/README.md)
  	  * *v4_0_alter_9.sql*: Misc integration fixes
 
 		  1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles;
@@ -673,7 +670,7 @@ Makefiles have the following limitations:
 
 #### 2.3.2.3 Help
 
-The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/Make%20Help.md):
+The Makefile has [help](Make%20Help.md):
 
 ```C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>make help
 Debug level set to default: 0
