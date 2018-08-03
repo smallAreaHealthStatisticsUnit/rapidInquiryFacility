@@ -2780,7 +2780,8 @@ SELECT a.*, b.coa2011
   * (e.g. by attribute: DB; bands 69, 63, 0);
   * file names;
   * geolevel select and list;
-
+* Merge *Add study selection to json #54*. One issue with SQL Server: *warning: You must enter a valid Postal Code* with validated postcode. 
+  Also need to run validation if you click in the other fields.
 * Risk analysis front end issues/todo:
   * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
   * Improve scaling in shapefile properties table, 40:60 split;
@@ -2789,6 +2790,8 @@ SELECT a.*, b.coa2011
   * On-screen toggle between disease mapping and risk analysis doesn't work properly #52: 
     https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/52. Tested OK on RA front end branch (add_study_selection_to_json). 
 	Added tracer. 
+  * SQL Server: *warning: You must enter a valid Postal Code* with validated postcode. 
+    Also need to run validation if you click in the other fields.
 	
 * Database Changes (See TODO](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/TODO#database-issues):	 
   * Save/restore user selection methods to/from database;	
