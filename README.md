@@ -13,7 +13,7 @@ It is designed to help epidemiologists and public health researchers to rapidly 
 
 The documentation is now available as a [GitHub Pages site](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/).
 
-If you want to contribute to the documentation, the source files are in the `[/docs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/master/docs)` directory in  this project.
+If you want to contribute to the documentation, the source files are in the [/docs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/master/docs) directory in  this project.
 
 ### Wiki
 
