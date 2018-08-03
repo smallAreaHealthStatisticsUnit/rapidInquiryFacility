@@ -1361,8 +1361,7 @@ Grant appropriate read, write and execute access to these directories for Tomcat
 
 ### 4.3.2 R ODBC
 
-This is only required for SQL Server ports of the RIF. All Postgres ports use R JDBC. We have been forced to use *RODBC* on SQL
-Server due to an *RJDBC* error:
+This is only required for SQL Server ports of the RIF. All Postgres ports use R JDBC. We have been forced to use *RODBC* on SQL Server due to an *RJDBC* error:
 ```
 saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data
 stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not

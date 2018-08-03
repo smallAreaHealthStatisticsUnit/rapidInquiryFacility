@@ -239,8 +239,6 @@ This section is a series of links to howto guides on the Postgres databas
 
 ### 6.1.1 Building the RIF Postgres database
 
-See: [Building the RIF Postgres database from github](/rifDatabase/Postgres/docs/BUILD.md)
-
 Port specific install notes:
 
   * [Windows install notes](/rifDatabase/Postgres/docs/windows.md)
@@ -250,11 +248,15 @@ Port specific install notes:
 
 Detailed build instructions for Postgres:
 
-  * [Postgres build process detail](/rifDatabase/Postgres/docs/BUILD.md)
+  * [Building the RIF Postgres database from github](/rifDatabase/Postgres/docs/BUILD.md)
 
 ### 6.1.2 Installing the RIF Postgres Database
 
-See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/production/windows_install_from_pg_dump.md)
+See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/production/windows_install_from_pg_dump)
+
+### 6.1.3 Extra Configuration
+
+You need to set some [configuration parameters](Extra_Postgres_config) for Postgres.
 
 ## 6.2 Microsoft SQL Server
 
