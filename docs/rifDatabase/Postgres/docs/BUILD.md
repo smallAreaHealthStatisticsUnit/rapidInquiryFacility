@@ -96,8 +96,8 @@ The directory structure is *rifDatabase\Postgres\*:
 * example_data    - Example extracts and results creating as part of SAHSUland build
 * logs            - Logs from psql_scripts runs
 * PLpgsql         - PL/pgsql scripts
-* psql_scripts    - PSQL scripts; **Postgres database build directory**. The [README](../README.md) describes the build process in detail.
-* sahsuland       - SAHSUland creation psql scripts
+* psql_scripts    - PSQL scripts; **Postgres database build directory**. The present document describes the build process in detail.
+* sahsuland       - SAHSUland creation psql scripts`
 * sahsuland\data  - SAHSUland data
 * shapefiles      - Postgres psql SQL scripts derived from shapefiles, creation scripts
 * shapefiles\data - Shapefiles
