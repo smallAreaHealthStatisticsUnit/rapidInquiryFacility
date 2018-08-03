@@ -21,16 +21,12 @@ For Linux there will be similar commands using `apt-get` or `yum`, depending on 
 Rather than trying to emulate the Windows `java_build.bat` script, I just did this manually, with the relevant Maven commands:
 
 ```
-mvn clean install -Dmaven.test.skip=true
+mvn clean install
 ```
 
-in the root gives us `rifServices.war` and `taxonomyservices.war`. For the webapp you currently have to run the same command in the `rifWebApplication` directory, and it doesn't create a complete WAR file. But more on that later.
+in the root gives us `rifServices.war` and `taxonomyservices.war`, and `RIF40.war` in the `target` directories of the corresponding projects: `rifServices`, `taxonomyServices`, and `rifWebApplication`.
 
-I installed the two WAR files using the Tomcat Manager application. I had to increase the maximum allowed size of WAR file in Tomcat, as `rifServices.war` is bigger than the default maximum, and so wouldn't deploy. This means editing `web.xml` in the manager app. I doubled the maximum from 50 to 100MB.
-
-For the webapp I emulated what I have on Windows by creating a `RIF40` directory in Tomcat's `webapps` directory, and copying into it the contents of the generated `WEB-INF` directory.
-
-That is unsatisfactory, but works for now.
+I installed the three WAR files using the Tomcat Manager application. I had to increase the maximum allowed size of WAR file in Tomcat, as `rifServices.war` is bigger than the default maximum, and so wouldn't deploy. This means editing `web.xml` in the manager app. I doubled the maximum from 50 to 100MB.
 
 ## Configuring the Database
 
@@ -40,7 +36,7 @@ The config file `postgresql.conf` was in `/usr/local/var/postgres/`. I ran:
 initdb /usr/local/var/postgres/ -E utf8
 ```
 
-as recommended [for example, here](https://mjanja.ch/2016/04/using-homebrews-postgresql-mac-os-x/). That reported an error, saying the directory already existed and was not empty. I'm not quite sure with the Homebrew run had created it or if I had previously run the above command and forgotten, but the database cluster was installed in that directory. 
+as recommended [for example, here](https://mjanja.ch/2016/04/using-homebrews-postgresql-mac-os-x/). That reported an error, saying the directory already existed and was not empty. I'm not quite sure with the Homebrew run had created it or if I had previously run the above command and forgotten, but the database cluster was installed in that directory.
 
 The next step was to create a script
 
