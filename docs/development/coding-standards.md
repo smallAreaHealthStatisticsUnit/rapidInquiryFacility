@@ -13,7 +13,7 @@ On that second point, tidying up as well as improving old code as you touch it i
 
 ### Boilerplate
 
-Many files still contain huge chunks of unnecessary boilerplate comments, firstly reiterating the licence and then having a lot of nonsense about code organisation. Feel free to remove these as you find them. Just keep anything that actually provides information.
+Many files still contain huge chunks of unnecessary boilerplate comments, firstly reiterating the licence, and then having a lot of nonsense about code organisation. Feel free to remove these as you find them. Just keep anything that actually provides information.
 
 ## R
 

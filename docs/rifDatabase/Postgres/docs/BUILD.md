@@ -670,9 +670,10 @@ Makefiles have the following limitations:
 
 #### 2.3.2.3 Help
 
-The Makefile has [help](Make%20Help.md):
+The Makefile has [help](Make%20Help):
 
-```C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>make help
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>make help
 Debug level set to default: 0
 Makefile:366: warning: overriding commands for target `../production/sahsuland.dump'
 Makefile:358: warning: ignoring old commands for target `../production/sahsuland.dump'

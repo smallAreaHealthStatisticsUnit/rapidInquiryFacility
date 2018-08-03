@@ -103,7 +103,9 @@ With all that set up, start Tomcat and try running a study.
 
 ### Installing ODBC
 
-This whole section is no longer necessary. Database access is now done using JDBC via the RJDBC package (see issue #35). I'm keeping this section for now, for historical reference.
+**Note:** This whole section is no longer necessary. Database access is now done using JDBC via the RJDBC package (see [issue #35](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/35)). _Unless_ you’re using SQL Server, which is unlikely on a Mac. SQL Server DB access still needs ODBC at present.
+
+I'm keeping the section here for now, for historical reference.
 
 The RIF's R scripts connect to the database via ODBC. Originally Windows only, it turns out that this technology is now available for Unix-based platforms, including the Mac.
 
