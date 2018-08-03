@@ -73,7 +73,7 @@ Typically this is used to allow remote postgres administrator user authenticatio
 
 ## 2.1 Database Development Environment
 
-Current three databases are used: *sahsuland*, *sahsuland_dev* and *sahusland_empty*. The installer database *sahsuland* is kept stable for long periods,
+Currently three databases are used: *sahsuland*, *sahsuland_dev* and *sahusland_empty*. The installer database *sahsuland* is kept stable for long periods,
 *sahsuland_dev* is the working database. The development database *sahusland_dev* is built from psql scripts which create and
 populate the database ojects. Then alter scripts not under development and then run and the database tested. The database is then
 exported and then imported into *sahsuland*. The *sahsuland_dev* database can then be enhanced with the alter scripts under development.
@@ -91,7 +91,7 @@ be re-run.
 
 The directory structure is *rifDatabase\Postgres\*:
 
-* conf            - Exmaples of varaious configuration files
+* conf            - Examples of various configuration files
 * etc             - Postgres psql logon script (.psqlrc)
 * example_data    - Example extracts and results creating as part of SAHSUland build
 * logs            - Logs from psql_scripts runs
@@ -191,7 +191,7 @@ If you type make in the *rapidInquiryFacility* directory make will build the mid
 
 #### 2.3.1.1 Configuring make
 
-**Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose
+**Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may lose
 your changes.** Instead, in the GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts build directory,
 copy *Makefile.local.example* to *Makefile.local* and edit *Makefile.local*. Beware
 of your choice of editor on especially Windows. The RIF is developed on Windows and Linux at the same time so
