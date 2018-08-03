@@ -27,79 +27,77 @@ RIF40 Postgres database build from Github
         - [2.3.2.4.2 Authentication Setup (hba.conf)](#23242-authentication-setup-hbaconf)
         - [2.3.2.4.3 Proxy User Setup (ident.conf)](#23243-proxy-user-setup-identconf)
 
-# 1. Postgres Requirements 
+# 1. Postgres Requirements
 
 The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database backend.
 
-WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which 
+WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which
 is a post 9.2 option. It has *NOT* yet been tested on Postgres 10.
 
 It is possible to install Windows Postgres RIF using pg_dump and scripts. This could also be used for MacOS and Linux with shell scripts instead.
 
 * Uses *pg_dump* and Powershell
-* Does **NOT** need *make* or *Node.js* 
+* Does **NOT** need *make* or *Node.js*
 
-See: [Windows Postgres Install using pg_dump and scripts](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows_install_from_pg_dump.md)
+See: [Windows Postgres Install using pg_dump and scripts](windows_install_from_pg_dump.md)
 
 The database build creates the production database dump file ```sahsuland.dump``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production* used to create production databases.
 
 ## 1.1 Memory Requirements
- 
-Approximately: 
 
-* Windows 10 seems to need 6-8GB to function in normal use; 
-* The database needs 1-2 GB (SQL server will automatically; Postgres will run in less); 
-* R needs 1-2 GB (depends on study size; may need more); 
+Approximately:
+
+* Windows 10 seems to need 6-8GB to function in normal use;
+* The database needs 1-2 GB (SQL server will automatically; Postgres will run in less);
+* R needs 1-2 GB (depends on study size; may need more);
 * The Middleware 2-3GB;
 * The front end 1-2GB.
- 
+
 16GB recommended. If you process large geographies using the Node.js tilemaker 48-64GB is recommended.
 
 # 2. Postgres Setup
 
 Postgres is usually setup in one of four ways:
- 
+
 * 1 Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
 * 2 Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
-* 3 Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
+* 3 Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS
     connectivity) for psql and secure LDAP for Java connectivity.
-* 4 Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
+* 4 Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for
     psql and secure LDAP for Java connectivity.
 
 The front and and middleware require username and password authentications; so method 4 must not be used.
-  
-Postgres also can proxy users (see ident.conf examples in the bottom of the build notes. 
+
+Postgres also can proxy users (see ident.conf examples in the bottom of the build notes.
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
 ## 2.1 Database Development Environment
 
-Current three databases are used: *sahsuland*, *sahsuland_dev* and *sahusland_empty*. The installer database *sahsuland* is kept stable for long periods, 
-*sahsuland_dev* is the working database. The development database *sahusland_dev* is built from psql scripts which create and 
-populate the database ojects. Then alter scripts not under development and then run and the database tested. The database is then 
+Currently three databases are used: *sahsuland*, *sahsuland_dev* and *sahusland_empty*. The installer database *sahsuland* is kept stable for long periods,
+*sahsuland_dev* is the working database. The development database *sahusland_dev* is built from psql scripts which create and
+populate the database ojects. Then alter scripts not under development and then run and the database tested. The database is then
 exported and then imported into *sahsuland*. The *sahsuland_dev* database can then be enhanced with the alter scripts under development.
 *sahusland_empty* is used to test data loading and contains no health data, only the *sahsuland* geography.
 
 The middleware always runs against *sahsuland*.
 
-After the move from the SAHSU private network to the main 
-Imperial network the database structure is only modified by alter scripts so that the SAHSU Private network 
-and Microsoft SQL Server Ports can be kept up to date. Alter scripts are designed to be run more than once without 
+After the move from the SAHSU private network to the main
+Imperial network the database structure is only modified by alter scripts so that the SAHSU Private network
+and Microsoft SQL Server Ports can be kept up to date. Alter scripts are designed to be run more than once without
 side effects, although they must be run in numeric order.
 
-Once the RIF is in production alter scripts will be setup to only be able to complete successfully once and cannot then 
+Once the RIF is in production alter scripts will be setup to only be able to complete successfully once and cannot then
 be re-run.
 
 The directory structure is *rifDatabase\Postgres\*:
 
-* conf            - Exmaples of varaious configuration files
+* conf            - Examples of various configuration files
 * etc             - Postgres psql logon script (.psqlrc)
 * example_data    - Example extracts and results creating as part of SAHSUland build
 * logs            - Logs from psql_scripts runs
 * PLpgsql         - PL/pgsql scripts
-* psql_scripts    - PSQL scripts; **Postgres database build directory**. The 
-                    [README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/README.md) 
-					describes the build process in detail.
-* sahsuland       - SAHSUland creation psql scripts
+* psql_scripts    - PSQL scripts; **Postgres database build directory**. The present document describes the build process in detail.
+* sahsuland       - SAHSUland creation psql scripts`
 * sahsuland\data  - SAHSUland data
 * shapefiles      - Postgres psql SQL scripts derived from shapefiles, creation scripts
 * shapefiles\data - Shapefiles
@@ -111,30 +109,30 @@ The *sahsuland* example data is contatined in *rifDatabase\*:
 
 These duretories are shared with the SQL Serer port.
 
-The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using make and Node.js. 
+The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using make and Node.js.
 
-## 2.2 Tool Chain 
+## 2.2 Tool Chain
 
 ### 2.2.1 Windows
 
 * Install [MinGW](https://sourceforge.net/projects/mingw/files/latest/download?source=files) with the full development environment and add *c:\MinGW\msys\1.0\bin* to path
 * Install [Python 2.7](https://www.python.org/downloads/) **not Python 3.n**
-* Install a C/C++ compiler, suitable for use by Node.js. I used Microsoft Visual Studio 2012 
-  under an Academic licence. The dependency on Node.js will be reduced by replacing the current 
+* Install a C/C++ compiler, suitable for use by Node.js. I used Microsoft Visual Studio 2012
+  under an Academic licence. The dependency on Node.js will be reduced by replacing the current
   program with Node.js web services available for use by the wider RIF community.
-* Install 64 bit [Node.js](https://nodejs.org/en/download/). The 32 bit node will run into memory limitation problems will vary large 
-  shapefiles. node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at: 
+* Install 64 bit [Node.js](https://nodejs.org/en/download/). The 32 bit node will run into memory limitation problems will vary large
+  shapefiles. node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at:
   (https://github.com/mbostock/topojson/wiki/Installation). Node.js is available from: (http://nodejs.org/)
-* The RIF calls R directly from Java using JRI and therefore does not need PLR. If Postgres/R integration is required: 
-  install R; integrate R into Postgres [optional R integration](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md).
+* The RIF calls R directly from Java using JRI and therefore does not need PLR. If Postgres/R integration is required:
+  install R; integrate R into Postgres [optional R integration](plr.md).
    * Create the PL/R local R_library (in $PGDATA/R_Library), e.g: *C:/Program Files/PostgreSQL/9.3/data/R_library*
-   * Create the Postgres etc directory (e.g. *C:\Program Files\PostgreSQL\9.3\etc*) and grant the ability to write 
+   * Create the Postgres etc directory (e.g. *C:\Program Files\PostgreSQL\9.3\etc*) and grant the ability to write
      files (full control on Windows) to the username(s) running db_setup. This is so the build can install the psqlrc file.
-* Install Postgres 9.3.5+ or 9.4.1+ and PostGIS 2.1.3+ (See port specific install notes). Building will fail on Postgres 9.2 or 
-  below as PL/pgsql GET STACKED DIAGNOSTICS is used; PostGIS before 2.1.3 has bugs that will cause 
+* Install Postgres 9.3.5+ or 9.4.1+ and PostGIS 2.1.3+ (See port specific install notes). Building will fail on Postgres 9.2 or
+  below as PL/pgsql GET STACKED DIAGNOSTICS is used; PostGIS before 2.1.3 has bugs that will cause
   shapefile simplification to fail (both the original PostGIS version and the newer TileMaker Node.js version).
-  
-  * Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload. 
+
+  * Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload.
   * Install Postgres
   * The Postgres installer then runs stack builder to download and install the additional packages. The following additional packages need to be installed:
 
@@ -165,22 +163,22 @@ Type "help" for help.
 cmd.exe /c chcp 1252
 ```
 * Or: modify the cmd shortcut to run *cmd.exe /k chcp 1252*
- 
+
 ### 2.2.2 Unixen
 
-Unix builds are not currently supported. For more information see: 
+Unix builds are not currently supported. For more information see:
 
-* [Linux install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/linux_repo.md)
-* [MACoS install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/macos_repo.md)
-* [Linux install from source notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/linux_source.md)
+* [Linux install from repository notes](linux_repo.md)
+* [MACoS install from repository notes](macos_repo.md)
+* [Linux install from source notes](linux_source.md)
 
 
 ## 2.3 Building the Database
 
 ### 2.3.1 Pre Build Tests
 
-Run up a shell/command tool, *not* in the Postgres build directory (psql_scripts). The Window sizing needs to be at least 
-132 columns wide and 50 rows high; preferably with a multi thousand line buffer. Otherwiser psql scripts may require <ENTER> 
+Run up a shell/command tool, *not* in the Postgres build directory (psql_scripts). The Window sizing needs to be at least
+132 columns wide and 50 rows high; preferably with a multi thousand line buffer. Otherwiser psql scripts may require <ENTER>
 on scrolling:
 
 * Type *make* in the directory *rapidInquiryFacility\rifDatabase\Postgres*. Check make works correctly:
@@ -193,54 +191,53 @@ If you type make in the *rapidInquiryFacility* directory make will build the mid
 
 #### 2.3.1.1 Configuring make
 
-**Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose 
-your changes.** Instead, in the GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts build directory, 
-copy *Makefile.local.example* to *Makefile.local* and edit *Makefile.local*. Beware 
-of your choice of editor on especially Windows. The RIF is developed on Windows and Linux at the same time so 
-you will have files with both Linux <CR> and Windows <CRLF> semantics. Windows Notepad in particular 
+**Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may lose
+your changes.** Instead, in the GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts build directory,
+copy *Makefile.local.example* to *Makefile.local* and edit *Makefile.local*. Beware
+of your choice of editor on especially Windows. The RIF is developed on Windows and Linux at the same time so
+you will have files with both Linux <CR> and Windows <CRLF> semantics. Windows Notepad in particular
 does not understand Linux files.
 
 If you enable PL/R then the directories R_library (in $PGDATA/R_Library) and $R_HOME/share/extension must exist
 
 * Make sure psql and make run correctly on the command line (see the Windows notes). Check logon to psql with a password for:
   * postgres
-* Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *npm install pg pg-native topojson*; *make install topojson*. 
-  The [Node.js install dialog]
-(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/Node/Node%20Install.md) is provided as an example.
-  **If the toposjon node.js does not run correctly then node is not properly installed**. 
+* Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *npm install pg pg-native topojson*; *make install topojson*.
+  The [Node.js install dialog](Node_Install.md) is provided as an example.
+  **If the toposjon node.js does not run correctly then node is not properly installed**.
   The requirement for Node will be removed.
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
 
 ### 2.3.2 Build control using make
 
-The RIF database is built using GNU make for ease of portability. The RIF is built from the directory 
+The RIF database is built using GNU make for ease of portability. The RIF is built from the directory
 *GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts*.
 
 #### 2.3.2.1 Setup
 
 ##### 2.3.2.1.1 User setup
 
-Make **MUST NOT** be run as an administrator but a normal user (completely the oppposite of the SQL Server port!). Beware: you must *NOT* have power user privilege. 
+Make **MUST NOT** be run as an administrator but a normal user (completely the oppposite of the SQL Server port!). Beware: you must *NOT* have power user privilege.
 
 For make to work it needs to be able to logon as following users:
 
-* postgres     - The database administrator. You will have set this password when you or the installer created 
+* postgres     - The database administrator. You will have set this password when you or the installer created
                  the Postgres cluster.
 * rif40        - The schema owner. You choose this password (see ENCRYPTED_RIF40_PASSWORD below)
 * &lt;user login&gt; - Your user login. This must be in lowercase and without spaces. The username (TESTUSER) may be set in Makefile.local
 * notarifuser  - A security test user
 
-The password for all users must be set in your local .pgpass/pgpass.conf files. See [Postgres documentation](https://www.postgresql.org/docs/9.6/static/libpq-pgpass.html) for its location on various ports. 
-The postgres user password must be correct in the .pgpass/pgpass.conf file and in Makefile.local or you may be locked out of postgres. 
+The password for all users must be set in your local .pgpass/pgpass.conf files. See [Postgres documentation](https://www.postgresql.org/docs/9.6/static/libpq-pgpass.html) for its location on various ports.
+The postgres user password must be correct in the .pgpass/pgpass.conf file and in Makefile.local or you may be locked out of postgres.
 The accounts apart from postgres are created by *db_create.sql*.
 
 **IMPORTANT**
 
 * By default *&lt;user login&gt;* and *notarifuser* passwords are the same as the username. It is advisable to set
-  the *rif40* password to *rif40* for the moment as the middleware still uses hard coded passwords. This will be removed. 
+  the *rif40* password to *rif40* for the moment as the middleware still uses hard coded passwords. This will be removed.
 * The *&lt;user login&gt;* password can be set using TESTPASSWORD in Makefile.local
 * By default Postgres uses MD5 authentication; the user password is idependent of the Windows password unless you set up
-  operating system, Kerberos or LDAP authentication 
+  operating system, Kerberos or LDAP authentication
 * Before you build the database only the administrator account *postgres* is setup!.
 
 E.g. C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf:
@@ -253,22 +250,22 @@ localhost:5432:*:notarifuser:<password>
 
 See *Configuration File Examples* below.
 
-Set the following Postgres environment variables using the system control panel: *Control Panel\All Control Panel Items\System:*. This is 
+Set the following Postgres environment variables using the system control panel: *Control Panel\All Control Panel Items\System:*. This is
 well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings*, *Environment variables* and modify the *System Variables*.
 
 * Make sure Postgres, MSys and the Java development kit are on the path
-* Add: 
+* Add:
   ```PGUSER=&lt;user login&gt;```
   ```PGDATABASE=sahsuland```
   and if required PGHOST and PGPORT to the user environment
-  
 
-Create as Administrator a directory for a system wide *psql* logon script (plsqrc) in Postgres 
-  
+
+Create as Administrator a directory for a system wide *psql* logon script (plsqrc) in Postgres
+
 ```C:\Program Files\PostgreSQL\9.6\etc```
 
 This needs to be set so your database creation user can wruite file to this directory.
-   
+
 Once you have setup the *pgpass* file and the Postgres environment, check you can logon using psql as the database adminstrator account; *postgres*.
 ```
 psql -d postgres -U postgres
@@ -279,9 +276,9 @@ Type "help" for help.
 postgres=#
 ```
 
-**IT IS STRONGLY ADVISED TO LEAVE THIS WINDOW OPEN SO YOU CANNOT LOCK YOURSELF OUT OF THE DATABASE IF YOU SET IT UP WRONG**. 
+**IT IS STRONGLY ADVISED TO LEAVE THIS WINDOW OPEN SO YOU CANNOT LOCK YOURSELF OUT OF THE DATABASE IF YOU SET IT UP WRONG**.
 
-This scripts do check the setup is correct; but this could fail. It is possible to login to postgres as postgres without a password using the administrator or 
+This scripts do check the setup is correct; but this could fail. It is possible to login to postgres as postgres without a password using the administrator or
 root accounts. If you lock yourself out the hba.conf file will need the following line temporary added at the top of the file:
 
 ```
@@ -296,7 +293,7 @@ host  all   all  127.0.0.1/32  trust
 psql -U postgres -d postgres
 ALTER USER postgres PASSWORD <new password>;
 ```
-See [fixing windows code page errors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/BUILD.md#2211-fixing-windows-code-page-errors) 
+See [fixing windows code page errors](BUILD.md#2211-fixing-windows-code-page-errors)
 if you get a code page error.
 
 Makefile.local is used to set:
@@ -313,7 +310,7 @@ SELECT 'md5'||md5('Imperial1234'||'rif40') AS password;
 (1 row)
 ```
 
-The database creation script *db_create.sql* check tyo see of the current Postgres adminstrator (*postgres*) password is the 
+The database creation script *db_create.sql* check tyo see of the current Postgres adminstrator (*postgres*) password is the
 same as set in the Makefile, and will abort database creation if it is not.
 ```
 psql:db_create.sql:147: INFO:  db_create.sql() User check: postgres
@@ -327,7 +324,7 @@ You can change the password direct using the encrypted hash; ***beware this can 
 ALTER USER postgres ENCRYPTED PASSWORD 'md5a210d9711fa5ffb4f170c60676c8a63e';
 ```
 
-Once *db_create.sql* has created the user accounts, each is tested in turn to check that the .pgpass/pgpass.conf 
+Once *db_create.sql* has created the user accounts, each is tested in turn to check that the .pgpass/pgpass.conf
 file is setup correctly.
 
 **See next section for Makefile.local example**
@@ -350,17 +347,17 @@ Typical example (Makefile.local.example):
 #
 # Copyright:
 #
-# The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
-# that rapidly addresses epidemiological and public health questions using 
-# routinely collected health and population data and generates standardised 
-# rates and relative risks for any given health outcome, for specified age 
+# The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU
+# that rapidly addresses epidemiological and public health questions using
+# routinely collected health and population data and generates standardised
+# rates and relative risks for any given health outcome, for specified age
 # and year ranges, for any given geographical area.
 #
 # Copyright 2014 Imperial College London, developed by the Small Area
-# Health Statistics Unit. The work of the Small Area Health Statistics Unit 
-# is funded by the Public Health England as part of the MRC-PHE Centre for 
-# Environment and Health. Funding for this project has also been received 
-# from the Centers for Disease Control and Prevention.  
+# Health Statistics Unit. The work of the Small Area Health Statistics Unit
+# is funded by the Public Health England as part of the MRC-PHE Centre for
+# Environment and Health. Funding for this project has also been received
+# from the Centers for Disease Control and Prevention.
 #
 # This file is part of the Rapid Inquiry Facility (RIF) project.
 # RIF is free software: you can redistribute it and/or modify
@@ -374,8 +371,8 @@ Typical example (Makefile.local.example):
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
-# to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+# along with RIF. If not, see <http://www.gnu.org/licenses/>; or write
+# to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301 USA
 #
 # Author:
@@ -392,7 +389,7 @@ Typical example (Makefile.local.example):
 #
 # ENCRYPTED_POSTGRES/RIF40_PASSWORD hash comes from PGAdmin III or psql
 #
-# Postgres MD5 password format is: 
+# Postgres MD5 password format is:
 #
 # 'md5'||md5('password'||'username'); e.g. to set the rif40 password to: Imperial1234, use psql:
 #
@@ -488,7 +485,7 @@ Parameters:
 * The `db_setup` target is normally used to build a new database from scratch or to re-create a database. Creates the following databases:
   * sahsuland_empty: A empty database with the *SAHSULAND* geography and no data. For testing the data loader.
   * sahsuland_dev: A complete database created from scripts complete with the *SAHSULAND* exmaple data.
-  * sahusland: A production database creared from a script and an export. Eventually a scriot will be create install sahsulabd from the 
+  * sahusland: A production database creared from a script and an export. Eventually a scriot will be create install sahsulabd from the
     export.
 
 * Use clean aswell to force rebuild
@@ -502,10 +499,10 @@ Parameters:
 	pg_dump: creating ACL "rif_studies.TABLE s5_extract"
 	pg_dump: creating ACL "rif_studies.TABLE s5_map"
 	make[1]: Leaving directory `/c/Users/phamb/Documents/GitHub/rapidInquiryFacility/rifDatabase/Postgres/psql_scripts'
-	SAHSULAND and SAHSULAND_DEV setup completed OK  
+	SAHSULAND and SAHSULAND_DEV setup completed OK
   ```
   and the production database dumnp file ```sahsuland.sql``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production*.
-  
+
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean db_setup
 ```
@@ -516,12 +513,12 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
 * Clean build targets (log files); local make target: clean
 * Run local make target: *db_create*; parameters: *PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all*
   * Run psql script *db_create.sql*; log: *db_create.rpt*
-* Install required Node.js locally (in directory *../Node*) make target: *install*	
+* Install required Node.js locally (in directory *../Node*) make target: *install*
 * Run local make target: *sahsuland_dev*; parameters: *PGDATABASE=sahsuland_dev*
   * Run local make target to create **sahsuland_dev**:
     * Run local make target: *clean*
 	* Run local make target: *$(PLR_DIRS)*
-	* Run main **sahsuland_dev** creation psql script: *v4_0_create_sahsuland.sql*; log: *v4_0_create_sahsuland.rpt* 
+	* Run main **sahsuland_dev** creation psql script: *v4_0_create_sahsuland.sql*; log: *v4_0_create_sahsuland.rpt*
 	* Run test scripts not dependent on alter scripts (in directory *test_scripts*) make target: *no_alter*; *parameters: DEBUG_LEVEL=1 ECHO=all*
 	  **This is the build state at the point the SQL Server port was started**.
 	* Run alter scripts (in directory *alter_scripts*) make targets: *clean all*; parameters: *DEBUG_LEVEL=1 ECHO=all*
@@ -531,10 +528,10 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
  	  * *v4_0_alter_6.sql*: R support [optional script if PL/R integration is enabled with *USE_PLR=Y*].
  	  * *v4_0_alter_7.sql*: Support for taxonomies/ontologies (e.g. ICD9, 10); removed previous table based support.
                             Modify t_rif40_inv_conditions to remove SQL injection risk.
- 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/TestHarness/db_test_harness/README.md)
+ 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](../../TestHarness/db_test_harness/README.md)
  	  * *v4_0_alter_9.sql*: Misc integration fixes
 
-		  1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; 
+		  1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles;
 			 use rif40_geolevels lookup_table/tile_table
 		  2. Make RIF40_TABLES.THEME nullable for denominators
 		  3. INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
@@ -545,57 +542,57 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
 		  6. rif40_GetAdjacencyMatrix.sql: change ST_Touches() to ST_Intersects() to fix missing adjacencies caused by small slivers
 		  7. Add t_rif40_study_status/rif40_study_status
 		  8. Add stats_method to rif40_studies
-	  
+
 	  Under development [not run by *db_setup*; use *make dev* to build]:
-	  
+
 	  * *v4_0_alter_3.sql*: Range partitioning (e.g. by year).
  	  * *v4_0_alter_4.sql*: Hash partitioning (e.g. by study_id) [will require PostGres 11]
-	  
+
       Paritioning is a native feature in Postgres 10; so once this is stable (e.g. 10.2) we can convert to partitioning using SQL.
- 	  
+
 	  Completed alter script logs are named *v4_0_alter_N.&lt;database&gt;_rpt*; and renamed to *v4_0_alter_N.&lt;database&gt;_rpt.err* on error.
 	  This gives make a dependency so it can re-run.
-	  
+
 	* Run test scripts (in directory *test_scripts*) make targets: *clean all*; parameters: *DEBUG_LEVEL=1 ECHO=all*
-	  Test scripts that **do not** require alter scripts to be run (*no_alter* target above): 
+	  Test scripts that **do not** require alter scripts to be run (*no_alter* target above):
 	  * *test_1_sahsuland_geography.sql*: Test sahsuland geography is setup correctly.
 	  * *test_2_ddl_checks.sql*: Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
 	  * *test_3_user_setup.sql*:Check &lt;test user&gt; is setup correctly.
-	  
+
 	  Test scripts that **do** require alter scripts to be run:
 	  * *test_8_triggers.sql*: Test trest harness, load and run trigger tests.
 	  * *test_6_middleware_1.sql*: Middleware tests 1 for *v4_0_alter_1.sql*.
 	  * *test_4_study_id_1.sql*: This creates the standard study_id 1.
 	  * *test_5_clone_delete_test.sql*: Clone delete test for standard study_id 1.
 	  * *test_7_middleware_2.sql*: Test 7: Middleware tests 2 for *v4_0_alter_2.sql*
-	  
+
 	  Completed alter script logs are named *&lt;script&gt;.&lt;database&gt;_rpt*; and renamed to *&lt;script&gt;.&lt;database&gt;_rpt.err* on error.
 	  This gives make a dependency so it can re-run.
-	  
+
 	  There is no concept of test scripts for alter scripts under development.
-	  
+
 	  Test scripts are run in sequence apart from test 8 which is run first to test the test harness.
-	  
+
   * Run local make target: *v4_0_vacuum_analyse_dev*
-    * Run psql script to *VACUUM ANALYZE* the *sahsuland_dev* database *v4_0_vacuum_analyse.sql*; log: *v4_0_vacuum_analyse.rpt*  
+    * Run psql script to *VACUUM ANALYZE* the *sahsuland_dev* database *v4_0_vacuum_analyse.sql*; log: *v4_0_vacuum_analyse.rpt*
 * Run local make target: *sahsuland_dev_dump*; parameters: *PGDATABASE=sahsuland_dev*
-  * Dump *sahsuland_dev* database using *pg_dump* in custom format, excluding UK geography tables, 
+  * Dump *sahsuland_dev* database using *pg_dump* in custom format, excluding UK geography tables,
     parameters: -U postgres -w -F custom -T '\*x_uk\*' -T '\*.x_ew01\*' -v sahsuland_dev > ../install/sahsuland_dev.dump
-    **This is used to create the *sahsuland* database**.	
-* Run in *../install* *pg_restore*; log; *pg_restore.rpt*; parameters: *-d sahsuland -U postgres -v ../install/sahsuland_dev.dump* 
-* Run alter scripts (in directory alter_scripts) make targets: *clean all*; parameters: *PGDATABASE=sahsuland*		
+    **This is used to create the *sahsuland* database**.
+* Run in *../install* *pg_restore*; log; *pg_restore.rpt*; parameters: *-d sahsuland -U postgres -v ../install/sahsuland_dev.dump*
+* Run alter scripts (in directory alter_scripts) make targets: *clean all*; parameters: *PGDATABASE=sahsuland*
 * Run Node.js program (in directory *../Node*) make target: *topojson_convert*; parameters: *PGDATABASE=sahsuland*
   This runs the Node.js program *topojson_convert.js* to convert GeoJSON to TopoJSON. This will be replaced by a web service.
 * Run local make targets: *clean v4_0_vacuum_analyse_dev*; parameters: *PGDATABASE=sahsuland*
     * Run psql script to *VACUUM ANALYZE* the *sahsuland* database *v4_0_vacuum_analyse.sql*; log: *v4_0_vacuum_analyse.rpt*
-* Run test scripts (in directory *test_scripts*) make targets: *test_scripts clean all*; parameters: *PGDATABASE=sahsuland*	
+* Run test scripts (in directory *test_scripts*) make targets: *test_scripts clean all*; parameters: *PGDATABASE=sahsuland*
 * Run local make target: *sahsuland_dump*
-  * Dump *sahsuland* database using *pg_dump* in custom format, excluding UK geography tables, 
+  * Dump *sahsuland* database using *pg_dump* in custom format, excluding UK geography tables,
     parameters: *-U postgres -w -F custom -T '\*x_uk\*' -T '\*.x_ew01\*' -v sahsuland > ../install/sahsuland.dump*
-    **This is used as the *sahsuland* database* installer.**	
+    **This is used as the *sahsuland* database* installer.**
 * Run Entity Relationship Diagrams build (in directory *../../ERD*) make target: *dbms_tools*
   <ADD>
-	
+
 End of a successful db_setup make run:
 ```
 pg_dump: setting owner and privileges for FK CONSTRAINT table_or_view_name_hide_fk
@@ -635,13 +632,13 @@ CONTEXT:  PL/pgSQL function inline_code_block line 53 at RAISE
 ```
 
 ##### 2.3.2.1.5 Other build targets
-   
+
 * To build or rebuild the sahsuland_dev development database. This is normally used for regression testing:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_dev
 ```
    **Note that this does not apply the alter scripts under development**
-   
+
 * To build or rebuild sahsuland_empty
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_empty
@@ -661,21 +658,22 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make dev
 ```
-   **Patching will be improved so that scripts are only run once; at present all patch scripts are run and 
+   **Patching will be improved so that scripts are only run once; at present all patch scripts are run and
      designed to be run multiple times**
 
 #### 2.3.2.2 Porting limitations
 
 Makefiles have the following limitations:
 
-* Full dependency tracking for SQL scripts has not yet been implemented; you are advised to do a *make clean* 
+* Full dependency tracking for SQL scripts has not yet been implemented; you are advised to do a *make clean*
   or *make devclean* before building as in the below examples or nothing much may happen.
-  
+
 #### 2.3.2.3 Help
 
-The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/Make%20Help.md):
+The Makefile has [help](Make%20Help):
 
-```C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>make help
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>make help
 Debug level set to default: 0
 Makefile:366: warning: overriding commands for target `../production/sahsuland.dump'
 Makefile:358: warning: ignoring old commands for target `../production/sahsuland.dump'
@@ -764,7 +762,7 @@ findstr "#-" Makefile
 #-          e.g. make recurse alter_1.rpt
 #-
 ```
- 
+
 #### 2.3.2.4 Configuration File Examples
 
 If you are running locally only (e.g. on a laptop) you do *NOT* need to edit the configuration files.
@@ -801,9 +799,9 @@ Fields separated by TAB.
   * local: UDP
   * host: TCP/IP
   * hostssl: TCP/IP with TLS
-* DATABASE: Database name      
-* USER: Username           
-* ADDRESS: Host/address mask                
+* DATABASE: Database name
+* USER: Username
+* ADDRESS: Host/address mask
 * METHOD:
   * Non mappable:
 	  * trust: Allow with authentication (useful if you have locked yourself out by chnaginbg hte password!
@@ -813,16 +811,16 @@ Fields separated by TAB.
 	  * krb5: Kerberos 5 (**OBSOLETED: use GSSAPI**)
 	  * ldap: directory services
 	  * radius: RADIUS authentication
-	  
+
   * Mappable using ident.conf (i.e. support proxying):
 	  * ident: Identification Protocol as described in RFC 1413 (**INSECURE: DO NOT USE**)
-	  * peer: Peer authentication is only available on operating systems providing the getpeereid() function, 
-			  the SO_PEERCRED socket parameter, or similar mechanisms. Currently that includes Linux, most flavors 
+	  * peer: Peer authentication is only available on operating systems providing the getpeereid() function,
+			  the SO_PEERCRED socket parameter, or similar mechanisms. Currently that includes Linux, most flavors
 			  of BSD including OS X, and Solaris.
-	  * gss: GSSAPI/Kerberos			  
-	  * pam: Linux PAM (Pluggable authentication modules)  
-	  * sspi: Windows native autentiation (NTLM V2) 
-	  * cert: Uses SSL client certificates to perform authentication. It is therefore only available for SSL connections. 
+	  * gss: GSSAPI/Kerberos
+	  * pam: Linux PAM (Pluggable authentication modules)
+	  * sspi: Windows native autentiation (NTLM V2)
+	  * cert: Uses SSL client certificates to perform authentication. It is therefore only available for SSL connections.
 
 ```
 # PostgreSQL Client Authentication Configuration File
@@ -908,7 +906,7 @@ host    all             postgres      ::1/128                 md5
 hostssl all		 postgres     146.179.138.xxx 	  255.255.255.255    md5
 #
 # Allow local connections as schema owner (usually use a proxy)
-# 
+#
 #hostssl    sahsuland	   pop             127.0.0.1/32            md5
 #hostssl    sahsuland	   pop             ::1/128                 md5
 #hostssl    sahsuland	   gis             127.0.0.1/32            md5
@@ -932,25 +930,25 @@ hostssl	sahsuland_dev	all	 	146.179.138. xxx	255.255.255.255	sspi 	map=sahsuland
 #
 # b) LDAP (to be fixed – need to use different server
 #
-# hostssl	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapurl="ldaps:// xxx.ic.ac.uk/basedn;cn=;,o=Imperial College,c=GB" 
-# 
+# hostssl	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapurl="ldaps:// xxx.ic.ac.uk/basedn;cn=;,o=Imperial College,c=GB"
+#
 # No LDAP URLs or username map on Windows
 #
-# 2014-03-12 13:44:24 GMT LOG: 00000: LDAP login failed for user "cn=pch,o=Imperial College,c=GB" on server " xxx.ic.ac.uk": Invalid Credentials 2014-03-12 13:44:24 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321 
+# 2014-03-12 13:44:24 GMT LOG: 00000: LDAP login failed for user "cn=pch,o=Imperial College,c=GB" on server " xxx.ic.ac.uk": Invalid Credentials 2014-03-12 13:44:24 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321
 #
-#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix="uid=" ldapsuffix=",ou=phs,o=Imperial College,c=GB"	
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix="uid=" ldapsuffix=",ou=phs,o=Imperial College,c=GB"
 #
-# 2014-03-12 13:50:33 GMT LOG: 00000: LDAP login failed for user "pch@IC.AC.UK" on server " xxx.ic.ac.uk": Invalid DN Syntax 2014-03-12 13:50:33 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321 
+# 2014-03-12 13:50:33 GMT LOG: 00000: LDAP login failed for user "pch@IC.AC.UK" on server " xxx.ic.ac.uk": Invalid DN Syntax 2014-03-12 13:50:33 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321
 #
-#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix="@IC.AC.UK"	
-#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix=",o=Imperial College,c=GB"	
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix="@IC.AC.UK"
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix=",o=Imperial College,c=GB"
 #
 # Other databases
-# 
+#
 hostssl	traffic		all	 	127.0.0.1/32 		sspi
 hostssl	traffic		all	 	::1/128 		sspi
 hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
-#	
+#
 #host    all             all             127.0.0.1/32            md5
 #host    all             all             ::1/128                 md5
 # Allow replication connections from localhost, by a user with the
@@ -965,8 +963,8 @@ You **MUST** read the Postgres manuals before editing this file.
 
 One line per per system user and map, fields separated by TAB in the order:
 
-* MAPNAME: map name in hba.conf (not all authentication types can proxy - e.g. md5 cannot!)       
-* SYSTEM-USERNAME: account name to proxy for         
+* MAPNAME: map name in hba.conf (not all authentication types can proxy - e.g. md5 cannot!)
+* SYSTEM-USERNAME: account name to proxy for
 * PG-USERNAME: account name to authenticate as
 
 ```
