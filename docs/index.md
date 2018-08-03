@@ -305,6 +305,7 @@ Currently there are eight manuals:
 
 This section is a series of links to developer documentation
 
+* [Coding Standards](development/coding-standards) -- see this for our preferences for code formatting, and so on.
 * [RIF Re-development](/The-RIF-re-development)
 * [RIF design documentation on Sourceforge](http://rapidinquiryfacility.sourceforge.net/index.html)
 * [Database Design](/Database-design)
