@@ -1,6 +1,5 @@
-Welcome to the rapidInquiryFacility wiki!
-=========================================
-
+Welcome to the Rapid Inquiry Facility Documentation Site
+========================================
 # Contents
 
 - [1. What is the RIF?](#1-what-is-the-rif)
@@ -289,8 +288,8 @@ See: [RIF Data Loader Manual](/Documentation/RIF%20Data%20Loader%20Manual.pdf)
 
 Currently there are eight manuals:
 
-- [RIF 4.0 Manual](/Documentation/RIF%20v4%200%20Manual.pdf)
-- [RIF 4.0 Data Loader Manual](/Documentation/RIF%20Data%20Loader%20Manual.pdf)
+- [RIF 4.0 Manual](/standalone/RIF_v40_Manual.pdf)
+- [RIF 4.0 Data Loader Manual](/standalone/RIF_Data_Loader_Manual.pdf)
 - [RIF Web Application and Middleware Installation](/rifWebApplication/Readme.md)
 - [Windows Postgres Install using pg_dump and scripts](/rifDatabase/Postgres/production/windows_install_from_pg_dump.md)
 - [SQL Server Production Database Installation](/rifDatabase/SQLserver/production/INSTALL.md)

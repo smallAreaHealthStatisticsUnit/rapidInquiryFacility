@@ -1347,7 +1347,7 @@ This setup will support:
 
 ## 4.3 Setup R
 
-**Note:** Much of the information below is specific to setting up on Windows. You can get information on setting up on a Mac -- which will also be helpful for setting up on other Unixes -- [here](R_setup_on_Mac).
+**Note:** Much of the information below is specific to setting up on Windows. You can get information on setting up on a Mac -- which will also be helpful for setting up on other Unixes -- [here](../R_setup_on_Mac).
 
 ### 4.3.1 R and Printing Output Directories
 
