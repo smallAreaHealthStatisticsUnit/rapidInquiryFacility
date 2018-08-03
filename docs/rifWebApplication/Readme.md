@@ -348,14 +348,13 @@ The shortcuts created then need to be modified to run as an Administrator (right
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/setting_runas_administrator.png?raw=true "Make a shortcut run as an administrator")
 
-When running Tomcat at the command line on Windows 10 the new Unix like copy paste functionality will prevent
-the buffer from scrolling and thence cause tomcat to hang. This can be alleviated by typing <enter> or
-<return> in the log window and fixed by changing the properties of the log window (right click on tomcat in the top left corner of the Java logging window,
+When running Tomcat at the command line on Windows 10 the new Unix like copy paste functionality will prevent the buffer from scrolling and thence cause tomcat to hang. This can be alleviated by typing `<enter>` or
+`<return>` in the log window and fixed by changing the properties of the log window (right click on tomcat in the top left corner of the Java logging window,
 select properties; In options unset "quick edit mode", "insert mode", "filter clipboard contents on paste" and "enable line wrapping selection"):
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat_console_properties.png?raw=true "Windows 10 Tomcat console window properties")
 
-Tomcat can be stopped using "control-C" if R has not been run or using stop_rif.bat.
+Tomcat can be stopped using "control-C" if R has not been run or using `stop_rif.bat`.
 
 * When further instructions tell you to stop and start tomcat you will need to use the configure Tomcat application (tomcat8w) or the services panel
 
@@ -363,39 +362,38 @@ Tomcat can be stopped using "control-C" if R has not been run or using stop_rif.
 
 This section introduces RIF logging. You do not need to do anything!
 
-The RIF middleware now uses Log4j version 2 for logging. The configuration file *log4j2.xml* (example in:
+The RIF middleware now uses Log4j version 2 for logging. The configuration file `log4j2.xml` (example in:
 *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*) sets up five loggers:
 
-  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
-  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the *rifServices* middleware: RIF_middleware.log
-  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyservices* middleware: TaxonomyLogger.log
-  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the *rifServices* front end logger: FrontEndLogger.log
-  5. "Other" for all other logger output not the above: Other.log
+  1. The tomcat logger: `org.apache.catalina.core.ContainerBase.[Catalina].[localhost]` used by the middleware: tomcat.log
+  2. The middleware logger: `rifGenericLibrary.util.RIFLogger` used by the *rifServices* middleware: `RIF_middleware.log`
+  3. The taxonomy services logger: `rifGenericLibrary.util.TaxonomyLogger` used by the *taxonomyservices* middleware: `TaxonomyLogger.log`
+  4. The front end (RIF web application) logger: `rifGenericLibrary.util.FrontEndLogger` used by the *rifServices* front end logger: `FrontEndLogger.log`
+  5. "Other" for all other logger output not the above: `Other.log`
 
 Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
 
-Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log```; where:
+Logs go to STDOUT and `%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log`, where:
 
-* ```<Log name>``` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
-* ```<YYYY>``` is the year;
-* ```<MM>``` is the numeric month;
-* ```<DD>``` is the numeric day and;
-* ```<N>``` is the log sequence number.
+* `<Log name>` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+* `<YYYY>` is the year;
+* `<MM>` is the numeric month;
+* `<DD>` is the numeric day and;
+* `<N>` is the log sequence number.
 
-Log4j has a bug in it where if more than one service logs to the same log source the log files will not rotate. Therefore if you have a RIF without (<13/4/2018)
-a separate *TaxonomyLogger* you must upgrade *log4j2.xml* to add the TaxonomyLogger.
+Log4j has a bug in it where if more than one service logs to the same log source the log files will not rotate. Therefore if you have a RIF without (13/4/2018)
+a separate *TaxonomyLogger* you must upgrade `log4j2.xml` to add the TaxonomyLogger.
 
 Log4j also tends to change the date one day in arrears; i..e it will start on the correct day and then be one day behind. Changing to SL4J, which is a much
 more modern logger would probably fix these issues but Tomcat is built with log4j. This means to use log4j a custom Tomcat would be required with all the
 support difficulties this would entail.
 
-Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
-messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
+Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find messages not using `rifGenericLibrary.util.RIFLogger`. You can change this.
 
-Logs are rotated everyday or every 100 MB in the year/month specific directory. Note the roll-over occurs with the first
-message received after the time/size condition is met (i.e. don't expect it to occur at midnight)
+Logs are rotated everyday or every 100 MB in the year/month specific directory. Note the roll-over occurs with the first message received after the time/size condition is met (i.e. don't expect it to occur at midnight)
 
 Typical log entry:
+
 ```
 14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
 PGSQLAbstractSQLManager logSQLQuery >>>
@@ -413,7 +411,7 @@ ORDER BY
 
 As an example a stripped down RIF middleware only configuration file (**DO NOT USE!**):
 
-```xml
+```
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="debug" monitorInterval="30" name="RIF Services Default">
   <Properties>
@@ -465,6 +463,7 @@ As an example a stripped down RIF middleware only configuration file (**DO NOT U
 ```
 
 R stdout/stderroutput always appears on the console and cannot be redirected:
+
 ```
 Rengine.eval(rm(list=ls())): BEGIN Thread[http-nio-8080-exec-8,5,main]
 Rengine.eval(rm(list=ls())): END (OK)Thread[http-nio-8080-exec-8,5,main]
@@ -486,11 +485,10 @@ Logging output within the application is controlled in three ways:
 1. The logging level. This should be WARN, DEBUG or INFO. INFO is normally sufficient
 2. INFO logging is controlled by class using the properties file; these are searched for in the order:
 
-   * *%CATALINA_HOME%\conf\RIFLogger.properties*
-   * *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFLogger.properties*
+   * `%CATALINA_HOME%\conf\RIFLogger.properties`
+   * `%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFLogger.properties`
 
-   The source is in: rapidInquiryFacility\rifServices\src\main\resources\RIFLogger.properties*. Note that
-   most database later classes have Postgres and SQLServer versions so have two entries.
+The source is in: rapidInquiryFacility\rifServices\src\main\resources\RIFLogger.properties*. Note that most database later classes have Postgres and SQLServer versions so have two entries.
 
 ```
 #
@@ -511,16 +509,16 @@ rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource=true
 rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyRetrievalService=false
 
 rifServices.dataStorageLayer.pg.PGSQLRIFContextManager=true
-
 ...
 
 ```
 3. SQL Query INFO logging is controlled by query name using the properties file; these are searched for in the order:
 
-   * *%CATALINA_HOME%\conf\AbstractSQLManager.properties*
-   * *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\AbstractSQLManager.properties*
+   * `%CATALINA_HOME%\conf\AbstractSQLManager.properties`
+   * `%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\AbstractSQLManager.properties`
 
-   The source is in: rapidInquiryFacility\rifGenericLibrary\src\main\resources\AbstractSQLManager.properties*
+The source is in: `rapidInquiryFacility\rifGenericLibrary\src\main\resources\AbstractSQLManager.properties`
+
 ```
 # MS/PGSQL AbstractSQLManager.logSQLQuery logging enabler/disabler by queryName
 # To enable queryName must be set to TRUE (any case)
@@ -570,7 +568,7 @@ configuration in the previous section (which is a subset).
 * Create an environment overrides file for catalina.bat as %CATALINA_HOME%\bin\setenv.bat. A copy is provided in:
   %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Copy this file to *%CATALINA_HOME%\bin*.
 
-	```bat
+```bat
 	REM Tomcat log4j2 setup
 	REM
 	REM Add this script to %CATALINA_HOME%\bin
@@ -600,7 +598,7 @@ configuration in the previous section (which is a subset).
 	REM set LOGGING_CONFIG="-Dlog4j.configurationFile=%CATALINA_HOME%\conf\log4j2.xml"
 	REM
 	REM EOf
-	```
+```
 
 * Add the following files to *%CATALINA_HOME%\lib*:
   * log4j-api-2.9.0.jar
@@ -608,7 +606,7 @@ configuration in the previous section (which is a subset).
   * log4j-jul-2.9.0.jar
 
   If you use Maven to build the Middleware, these files are in subdirectories below
-  *%USER%\.m2\repository\org\apache\logging\log4j\<log4j module>\2.9.0* where <log4j module is log4j-api etc.
+  `%USER%\.m2\repository\org\apache\logging\log4j\<log4j module>\2.9.0` where `<log4j module>` is log4j-api etc.
 
   SAHSU will normally supply these JAR files (in the log4j directory) together with the war files (in the tomcat webapps directory).
 
@@ -626,7 +624,7 @@ configuration in the previous section (which is a subset).
 Debugging logging faults:
 
 * Adding  -Dlog4j2.debug=true to the CATALINA_OPTS environment variable if tomcat exceptions/does not start
-* Use ```catalina.bat run`` if there is no output from te script and the Java windows disappears immediately
+* Use `catalina.bat run` if there is no output from te script and the Java windows disappears immediately
 * Set the configuration status to **debug**
 
 ### 1.3.6 Tomcat Logging File (Log4j2.xml)
