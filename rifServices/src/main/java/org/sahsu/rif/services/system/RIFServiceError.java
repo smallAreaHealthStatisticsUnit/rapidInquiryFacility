@@ -72,6 +72,9 @@ public enum RIFServiceError {
 		
 	DB_UNABLE_TO_MAINTAIN_DEBUG,
 			
+	/* Schema version cecks in BaseSQLManager.java failed */
+	DB_SCHEMA_VERSION_CHECK_FAILED,
+			
 	/** The db unable check geo level area exists. */
 	DB_UNABLE_CHECK_GEO_LEVEL_AREA_EXISTS,
 	
