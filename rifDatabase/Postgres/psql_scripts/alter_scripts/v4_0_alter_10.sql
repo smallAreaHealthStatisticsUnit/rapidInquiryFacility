@@ -54,6 +54,8 @@
 -- Working directory: c:/Users/Peter/Documents/GitHub/rapidInquiryFacility/rifDatabase/Postgres/psql_scripts
 -- psql -U rif40 -d sahsuland -w -e -P pager=off -f alter_scripts/v4_0_alter_10.sql
 --
+-- The middleware must be down for this to run
+--
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
@@ -65,8 +67,9 @@
 * Alter 10: Risk Analysis Enhancements
 
  1. Save/restore user selection methods to/from database (rif40_studies.select_state);	
- 2. Save user print selection to/from database (rif40_studies.print_state);	
+ 2. Save user print selection to/from database (rif40_studies.print_state), export_date;	
  3. The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
+    [Issue 21](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/21)
  4. Add table t_rif40_homogeneity, view rif40_homogeneity:
   
   | Column name      | Column description                                                                  |
@@ -82,6 +85,9 @@
   | linearity_p      | the p-value for the linearity test                                                  | 
   | explt5           | the number of bands in the study which have an expected number of cases less than 1 | 
   
+ 5. Add unique keys to description files on rif tables/projects/health themes to protect against the middleware using them as a key;
+ 6. Add default background layer support for geography (so sahsuland has no background);
+ 
  */
 BEGIN;
 
@@ -136,10 +142,12 @@ BEGIN
 };';
 
 --
--- 2. Save user print selection to/from database (rif40_studies.print_state);	
+-- 2. Save user print selection to/from database (rif40_studies.print_state), export date;	
 --
 	ALTER TABLE t_rif40_studies ADD COLUMN print_state JSON NULL;
-	COMMENT ON COLUMN t_rif40_studies.print_state IS 'RIF Study print state: what the user selected (see: rifs-util-printstate.js):';
+	ALTER TABLE t_rif40_studies ADD COLUMN export_date timestamp without time zone NULL; -- Export date;
+	COMMENT ON COLUMN t_rif40_studies.print_state IS 'RIF Study print state: what the user selected (see: rifs-util-printstate.js)';
+	COMMENT ON COLUMN t_rif40_studies.export_date IS 'RIF Study export date';
 EXCEPTION
 	WHEN duplicate_column THEN
 		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
@@ -185,7 +193,8 @@ CREATE OR REPLACE VIEW rif40_studies AS
     pj.description AS project_description,
     c.stats_method,
 	c.select_state,
-	c.print_state
+	c.print_state,
+	c.export_date
    FROM t_rif40_studies c
      LEFT JOIN rif40_study_shares s ON c.study_id = s.study_id AND s.grantee_username::name = "current_user"()
      LEFT JOIN ( SELECT i2.study_id,
@@ -289,6 +298,7 @@ COMMENT ON COLUMN rif40_studies.select_state IS 'RIF Study selection state: what
 	showHideSelectionShapes: true
 };';
 COMMENT ON COLUMN rif40_studies.print_state IS 'RIF Study print state: what the user selected (see: rifs-util-printstate.js)';
+COMMENT ON COLUMN rif40_studies.export_date IS 'RIF Study export date';
 
 -- Function: rif40_trg_pkg.trgf_rif40_studies()
 
@@ -330,7 +340,8 @@ BEGIN
 				project,
 				stats_method,
 				select_state,
-				print_state)
+				print_state,
+				export_date)
 			VALUES(
 				coalesce(NEW.username, "current_user"()),
 				coalesce(NEW.study_id, (nextval('rif40_study_id_seq'::regclass))::integer),
@@ -358,7 +369,8 @@ BEGIN
 				NEW.project /* no default value */,
 				COALESCE(NEW.stats_method, 'NONE'),
 				NEW.select_state,
-				NEW.print_state);
+				NEW.print_state,
+				NEW.export_date);
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_studies',
 				'Cannot INSERT: User % must have rif_user or rif_manager role, NEW.username (%) must be USER or NULL', USER::VARCHAR, NEW.username::VARCHAR);
@@ -396,7 +408,8 @@ BEGIN
 			       project=NEW.project,
 				   stats_method=NEW.stats_method,
 				   select_state=NEW.select_state,
-				   print_state=NEW.print_state
+				   print_state=NEW.print_state,
+				   export_date=NEW.export_date
 			 WHERE study_id=OLD.study_id;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_studies',
@@ -441,6 +454,7 @@ COMMENT ON TRIGGER trg_rif40_studies ON rif40_studies IS 'INSTEAD OF trigger for
  
 --
 -- 3. The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
+--    [Issue 21](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/21)
 --
 -- Function: rif40_trg_pkg.trgf_rif40_inv_conditions()
 
@@ -708,16 +722,48 @@ COMMENT ON COLUMN rif40_homogeneity.homogeneity_p IS 'the chi2-value for the hom
 COMMENT ON COLUMN rif40_homogeneity.linearity_chi2 IS 'the number of bands in the study which have an expected number of cases less than 1';
 COMMENT ON COLUMN rif40_homogeneity.linearity_p IS 'the chi2-value for the linearity test';
 COMMENT ON COLUMN rif40_homogeneity.explt5 IS 'the chi2-value for the linearity test';		
-		
+
+--
+-- 5. Add unique keys to description files on rif tables/projects/health themes to protect against the middleware using them as a key;
+--
+CREATE UNIQUE INDEX IF NOT EXISTS rif40_geographies_desc ON rif40_geographies(description);
+CREATE UNIQUE INDEX IF NOT EXISTS rif40_health_study_themes_desc ON rif40_health_study_themes(description);
+UPDATE rif40_outcome_groups 
+   SET outcome_group_description = 'SAHSULAND Single ICD'
+ WHERE outcome_group_name = 'SAHSULAND_ICD' AND outcome_group_description = 'Single ICD';
+CREATE UNIQUE INDEX IF NOT EXISTS rif40_outcome_groups_desc ON rif40_outcome_groups(outcome_group_description);
+CREATE UNIQUE INDEX IF NOT EXISTS rif40_outcomes_desc ON rif40_outcomes(outcome_description);
+CREATE UNIQUE INDEX IF NOT EXISTS rif40_predefined_groups_desc ON rif40_predefined_groups(predefined_group_description);
+CREATE UNIQUE INDEX IF NOT EXISTS rif40_tables_desc ON rif40_tables(description);
+CREATE UNIQUE INDEX IF NOT EXISTS t_rif40_geolevels_desc ON t_rif40_geolevels(description);
+CREATE UNIQUE INDEX IF NOT EXISTS t_rif40_parameters_desc ON t_rif40_parameters(param_description);
+CREATE UNIQUE INDEX IF NOT EXISTS t_rif40_projects_desc ON t_rif40_projects(description);
+ 
+--
+-- 6. Add default background layer support for geography (so sahsuland has no background);
+--
+DO LANGUAGE plpgsql $$
+BEGIN
+	ALTER TABLE rif40_geographies ADD COLUMN map_background VARCHAR(200) DEFAULT 'OpenStreetMap Mapnik' NULL;
+	UPDATE rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND';
+	COMMENT ON COLUMN rif40_geographies.map_background IS 'RIF geography map background';
+EXCEPTION
+	WHEN duplicate_column THEN
+		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
+END;
+$$;
+ 
 --
 -- Testing stop
 --
+/*
 DO LANGUAGE plpgsql $$
 BEGIN
 	RAISE EXCEPTION 'Stop processing';
 END;
 $$;
-
+ */
+ 
 END;
 --
 --  Eof 
