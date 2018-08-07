@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
+import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -39,7 +40,245 @@ public class ResultsQueryManager extends BaseSQLManager {
 		getTilesQueryFormatter.setFunctionName("rif40_get_geojson_tiles");
 		getTilesQueryFormatter.setNumberOfFunctionParameters(9);
 	}
+					
+	String getMapBackground(
+			final Connection connection,
+			final Geography geography)
+					throws RIFServiceException {
+		String result="{}";
+		
+		SelectQueryFormatter getMapBackgroundQueryFormatter1 =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 
+		getMapBackgroundQueryFormatter1.setDatabaseSchemaName("rif40");
+		getMapBackgroundQueryFormatter1.addSelectField("map_background");
+		getMapBackgroundQueryFormatter1.addFromTable("rif40_geographies");
+		getMapBackgroundQueryFormatter1.addWhereParameter("geography");
+
+		logSQLQuery("getMapBackground", getMapBackgroundQueryFormatter1, geography.getName().toUpperCase());
+	
+		PreparedStatement statement1 = null;
+		ResultSet resultSet1 = null;
+
+		try {
+			statement1 = connection.prepareStatement(getMapBackgroundQueryFormatter1.generateQuery());
+			statement1.setString(1, geography.getName().toUpperCase());
+			resultSet1 = statement1.executeQuery();
+		
+			if (!resultSet1.next()) {
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					"getMapBackground query 1; expected 1 row, got none for geography: " + geography.getName().toUpperCase());
+			}
+			String mapBackground = resultSet1.getString(1);
+			if (mapBackground == null) {
+				mapBackground="OpenStreetMap Mapnik"; // Default
+			}
+			connection.commit();
+	
+			JSONObject getMapBackground = new JSONObject();		
+			getMapBackground.put("geography", geography.getName().toUpperCase());
+			getMapBackground.put("mapBackground", mapBackground);
+			result=getMapBackground.toString();	
+			
+			return result;
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetMapBackground",
+					geography.getName().toUpperCase());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		}  finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement1);
+			SQLQueryUtility.close(resultSet1);
+		}	
+	}	
+					
+	String getSelectState(
+			final Connection connection,
+			final String studyID)
+					throws RIFServiceException {
+						
+		String result="{}";
+		
+		SelectQueryFormatter getSelectStateQueryFormatter1 =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+
+		getSelectStateQueryFormatter1.setDatabaseSchemaName("rif40");
+		getSelectStateQueryFormatter1.addSelectField("select_state");
+		getSelectStateQueryFormatter1.addFromTable("rif40_studies");
+		getSelectStateQueryFormatter1.addWhereParameter("study_id");
+
+		logSQLQuery("getSelectState", getSelectStateQueryFormatter1, studyID);
+	
+		PreparedStatement statement1 = null;
+		ResultSet resultSet1 = null;		
+
+		try {
+			statement1 = connection.prepareStatement(getSelectStateQueryFormatter1.generateQuery());
+			statement1.setString(1, studyID);
+			resultSet1 = statement1.executeQuery();
+		
+			if (!resultSet1.next()) {
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					"getSelectState query 1; expected 1 row, got none for study_id: " + studyID);
+			}
+			String selectState = resultSet1.getString(1);
+			if (selectState == null) {
+				selectState="{}"; // Default
+			}
+			connection.commit();
+	
+			JSONObject getSelectState = new JSONObject();		
+			getSelectState.put("study_id", studyID);
+			getSelectState.put("select_state", selectState);
+			result=getSelectState.toString();	
+			
+			return result;
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetSelectState",
+					studyID);
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		}  finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement1);
+			SQLQueryUtility.close(resultSet1);
+		}
+	}		
+					
+	String getPrintState(
+			final Connection connection,
+			final String studyID)
+					throws RIFServiceException {
+		String result="{}";
+		
+		SelectQueryFormatter getPrintStateQueryFormatter1 =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+
+		getPrintStateQueryFormatter1.setDatabaseSchemaName("rif40");
+		getPrintStateQueryFormatter1.addSelectField("print_state");
+		getPrintStateQueryFormatter1.addFromTable("rif40_studies");
+		getPrintStateQueryFormatter1.addWhereParameter("study_id");
+
+		logSQLQuery("getPrintState", getPrintStateQueryFormatter1, studyID);
+	
+		PreparedStatement statement1 = null;
+		ResultSet resultSet1 = null;		
+
+		try {
+			statement1 = connection.prepareStatement(getPrintStateQueryFormatter1.generateQuery());
+			statement1.setString(1, studyID);
+			resultSet1 = statement1.executeQuery();
+		
+			if (!resultSet1.next()) {
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					"getPrintState query 1; expected 1 row, got none for study_id: " + studyID);
+			}
+			String printState = resultSet1.getString(1);
+			if (printState == null) {
+				printState="{}"; // Default
+			}
+			connection.commit();
+	
+			JSONObject getPrintState = new JSONObject();		
+			getPrintState.put("study_id", studyID);
+			getPrintState.put("print_state", printState);
+			result=getPrintState.toString();	
+			
+			return result;
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetPrintState",
+					studyID);
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		}  finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement1);
+			SQLQueryUtility.close(resultSet1);
+		}
+	}		
+					
+	String setPrintState(
+			final Connection connection,
+			final String studyID,
+			final String printStateText)
+					throws RIFServiceException {
+		String result="{}";
+		
+		UpdateQueryFormatter setPrintStateQueryFormatter1 =
+				UpdateQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+
+		setPrintStateQueryFormatter1.setDatabaseSchemaName("rif40");
+		setPrintStateQueryFormatter1.addUpdateField("print_state");
+		setPrintStateQueryFormatter1.setUpdateTable("rif40_studies");
+		setPrintStateQueryFormatter1.addWhereParameter("study_id");
+
+		logSQLQuery("setPrintState", setPrintStateQueryFormatter1, printStateText, studyID);
+	
+		PreparedStatement statement1 = null;
+		int rc;		
+
+		try {
+			statement1 = connection.prepareStatement(setPrintStateQueryFormatter1.generateQuery());
+			statement1.setString(1, printStateText);
+			statement1.setString(2, studyID);
+			rc = statement1.executeUpdate();
+		
+			if (rc != 1) { 
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_UPDATE_FAILED,
+					"setPrintState query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " update");
+			}
+			connection.commit();
+	
+			JSONObject setPrintState = new JSONObject();		
+			setPrintState.put("study_id", studyID);
+			setPrintState.put("print_state", printStateText);
+			result=setPrintState.toString();	
+			
+			return result;
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToSetPrintState",
+					studyID);
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		}  finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement1);
+		}
+	}
+					
 	String getPostalCodeCapabilities(
 			final Connection connection, 
 			final Geography geography) throws RIFServiceException {

@@ -280,6 +280,39 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studySubmission/pg/getJsonFile?userID=dwmorley&studyID=46
                     return $http.get(servicesConfig.studySubmissionURL + 'getJsonFile?userID=' + username + '&studyID=' + studyID);
                 };     
+
+				// Get map background
+				self.getMapBackground = function (username, geography) {
+                    //http://localhost:8080/rifServices/studySubmission/pg/getMapBackground?userID=dwmorley&geography=sahsuland
+                    return $http.get(servicesConfig.studySubmissionURL + 'getMapBackground?userID=' + username + '&geography=' + geography);
+                };   		
+				// Get JSON study select state
+				self.getSelectState = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studySubmission/pg/getSelectState?userID=dwmorley&studyID=46
+                    return $http.get(servicesConfig.studySubmissionURL + 'getSelectState?userID=' + username + '&studyID=' + studyID);
+                };   		
+				// Get JSON study print state
+				self.getPrintState = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studySubmission/pg/getPrintState?userID=dwmorley&studyID=46
+                    return $http.get(servicesConfig.studySubmissionURL + 'getPrintState?userID=' + username + '&studyID=' + studyID);
+                }; 
+				// Set JSON study print state
+				self.setprintState = function (username, studyID, printState) {
+					var blob = new Blob([JSON.stringify(printState)], {
+                        type: "text/plain"
+                    });
+
+                    var formData = new FormData();
+                    formData.append("userID", username);
+                    formData.append("studyID", studyID);
+                    formData.append("fileField", blob, "printState.txt");
+                    formData.append("fileFormat", "JSON");
+
+                    return $http.post(servicesConfig.studySubmissionURL + "setprintState/", formData, {
+                        transformRequest: angular.identity,
+                        headers: {'Content-Type': undefined}
+                    });
+                };  				
 				
 				//Middleware logger for front end
                self.rifFrontEndLogger = function (

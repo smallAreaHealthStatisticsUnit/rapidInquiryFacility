@@ -3,6 +3,7 @@ package org.sahsu.rif.generic.datastorage.pg;
 import java.util.ArrayList;
 
 import org.sahsu.rif.generic.datastorage.AbstractSQLQueryFormatter;
+import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
 
 
 /**
@@ -69,8 +70,8 @@ import org.sahsu.rif.generic.datastorage.AbstractSQLQueryFormatter;
  *
  */
 
-public final class PGSQLUpdateQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+public final class PGSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter 
+	implements UpdateQueryFormatter {
 
 	// ==========================================
 	// Section Constants

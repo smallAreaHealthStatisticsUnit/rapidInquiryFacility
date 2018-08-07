@@ -3,6 +3,7 @@ package org.sahsu.rif.generic.datastorage.ms;
 import java.util.ArrayList;
 
 import org.sahsu.rif.generic.datastorage.AbstractSQLQueryFormatter;
+import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
 
 /**
  *
@@ -68,7 +69,8 @@ import org.sahsu.rif.generic.datastorage.AbstractSQLQueryFormatter;
  *
  */
 
-public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter {
+public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter 
+	implements UpdateQueryFormatter {
 
 	// ==========================================
 	// Section Constants
