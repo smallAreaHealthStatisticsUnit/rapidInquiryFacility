@@ -745,13 +745,19 @@ CREATE UNIQUE INDEX IF NOT EXISTS t_rif40_projects_desc ON t_rif40_projects(desc
 DO LANGUAGE plpgsql $$
 BEGIN
 	ALTER TABLE rif40_geographies ADD COLUMN map_background VARCHAR(200) DEFAULT 'OpenStreetMap Mapnik' NULL;
-	UPDATE rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND';
 	COMMENT ON COLUMN rif40_geographies.map_background IS 'RIF geography map background';
 EXCEPTION
 	WHEN duplicate_column THEN
 		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
 END;
 $$;
+
+UPDATE rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND' AND map_background IS NULL;
+UPDATE rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND' AND map_background IS NOT NULL;
+
+SELECT geography, map_background
+  FROM rif40_geographies
+ ORDER BY 1;
  
 --
 -- Testing stop
