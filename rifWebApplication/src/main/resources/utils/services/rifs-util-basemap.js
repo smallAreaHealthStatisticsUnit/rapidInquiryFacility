@@ -152,7 +152,7 @@ angular.module("RIF")
                     basemaps.push({name: "Esri WorldShadedRelief", tile: L.tileLayer(window.location.protocol + '//server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
                             attribution: 'Tiles &copy; Esri &mdash; Source: Esri'
                         })});
-                    basemaps.push({name: "Esri WorldPhysical ", tile: L.tileLayer(window.location.protocol + '//server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
+                    basemaps.push({name: "Esri WorldPhysical", tile: L.tileLayer(window.location.protocol + '//server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
                             attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service'
                         })});
                     basemaps.push({name: "Esri OceanBasemap", tile: L.tileLayer(window.location.protocol + '//server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
@@ -243,6 +243,8 @@ angular.module("RIF")
                             return noBaseMap[map];
                         },
 						setDefaultMapBackground: function(geography, callback) {
+							
+							// WARNING: The name is validated as constraint check map_background_ck on rif40_geographies.map_background
 							user.getMapBackground(user.currentUser, geography).then(function (res) {
 								var mapBackground=res.data;
 								var found=false;
@@ -266,7 +268,9 @@ angular.module("RIF")
 									};
 								}
 								else if (mapBackground && mapBackground.mapBackground) {
+									var basemapsList = [];
 									for (var i = 0; i < basemaps.length; i++) {
+										basemapsList.push(basemaps[i].name);
 										if (basemaps[i].name == mapBackground.mapBackground) {
 											found=true;
 									
@@ -303,6 +307,7 @@ angular.module("RIF")
 								}
 								
 								if (callback && typeof(callback) == "function") {
+//									AlertService.consoleDebug("[rifs-util-basemap.js]: basemapsList: " + JSON.stringify(basemapsList));
 									callback();
 								}
                             }, function (err) {

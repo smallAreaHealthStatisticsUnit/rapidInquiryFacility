@@ -752,7 +752,18 @@ IF NOT EXISTS (SELECT column_name
 		@level2type=N'COLUMN',@level2name=N'map_background', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_geographies';	
 END;
 GO
- 
+
+ALTER TABLE rif40_geographies ADD CONSTRAINT map_background_ck CHECK (map_background IN (
+		'OpenStreetMap Mapnik','OpenStreetMap BlackAndWhite','OpenTopoMap','Humanitarian OpenStreetMap','Thunderforest OpenCycleMap',
+		'Thunderforest Transport','Thunderforest TransportDark','Thunderforest Landscape','Thunderforest SpinalMap','Thunderforest Outdoors',
+		'Thunderforest Pioneer','Thunderforest Mobile Atlas','Thunderforest Neighbourhood','OpenMapSurfer Roads','OpenMapSurfer Grayscale',
+		'Hydda Full','Hydda Base','Stamen Toner','Stamen TonerBackground','Stamen TonerLite','Stamen Watercolor','Esri WorldStreetMap',
+		'Esri DeLorme','Esri WorldTopoMap','Esri WorldImagery','Esri WorldTerrain','Esri WorldShadedRelief','Esri WorldPhysical',
+		'Esri OceanBasemap','Esri NatGeoWorldMap','Esri WorldGrayCanvas','CartoDB Positron','CartoDB PositronNoLabels',
+		'CartoDB PositronOnlyLabels','CartoDB DarkMatter','CartoDB DarkMatterNoLabels','CartoDB DarkMatterOnlyLabels',
+		'HikeBike HikeBike','HikeBike HillShading','NASAGIBS ViirsEarthAtNight2012','OSM UK Postcodes','Code-Point Open UK Postcodes'));
+GO
+		
 UPDATE rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND' AND map_background IS NULL;
 GO
 UPDATE rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND' AND map_background IS NOT NULL;
