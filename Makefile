@@ -115,8 +115,8 @@ doc:
 	$(COPY) "Documentation\RIF v4 0 Manual.pdf" "docs\RIF_v40_Manual.pdf"
 	$(COPY) "Documentation\RIF Data Loader Manual.pdf" "docs\RIF_Data_Loader_Manual.pdf"
 	$(GRIP) docs\README.md --export docs\index.html
-	$(7ZIP) a -r docs.7z "docs\\*"
-	$(7ZIP) l docs.7z
+#	$(7ZIP) a -r docs.7z "docs\\*"
+#	$(7ZIP) l docs.7z
 	
 taxonomyservice:	
 	$(MAVEN) --version

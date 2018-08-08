@@ -1,6 +1,5 @@
-Welcome to the rapidInquiryFacility wiki!
-=========================================
-
+Welcome to the Rapid Inquiry Facility Documentation Site
+========================================
 # Contents
 
 - [1. What is the RIF?](#1-what-is-the-rif)
@@ -240,8 +239,6 @@ This section is a series of links to howto guides on the Postgres databas
 
 ### 6.1.1 Building the RIF Postgres database
 
-See: [Building the RIF Postgres database from github](/rifDatabase/Postgres/docs/BUILD.md)
-
 Port specific install notes:
 
   * [Windows install notes](/rifDatabase/Postgres/docs/windows.md)
@@ -251,11 +248,15 @@ Port specific install notes:
 
 Detailed build instructions for Postgres:
 
-  * [Postgres build process detail](/rifDatabase/Postgres/docs/BUILD.md)
+  * [Building the RIF Postgres database from github](/rifDatabase/Postgres/docs/BUILD.md)
 
 ### 6.1.2 Installing the RIF Postgres Database
 
-See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/production/windows_install_from_pg_dump.md)
+See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/production/windows_install_from_pg_dump)
+
+### 6.1.3 Extra Configuration
+
+You need to set some [configuration parameters](Extra_Postgres_config) for Postgres.
 
 ## 6.2 Microsoft SQL Server
 
@@ -289,8 +290,8 @@ See: [RIF Data Loader Manual](/Documentation/RIF%20Data%20Loader%20Manual.pdf)
 
 Currently there are eight manuals:
 
-- [RIF 4.0 Manual](/Documentation/RIF%20v4%200%20Manual.pdf)
-- [RIF 4.0 Data Loader Manual](/Documentation/RIF%20Data%20Loader%20Manual.pdf)
+- [RIF 4.0 Manual](/standalone/RIF_v40_Manual.pdf)
+- [RIF 4.0 Data Loader Manual](/standalone/RIF_Data_Loader_Manual.pdf)
 - [RIF Web Application and Middleware Installation](/rifWebApplication/Readme.md)
 - [Windows Postgres Install using pg_dump and scripts](/rifDatabase/Postgres/production/windows_install_from_pg_dump.md)
 - [SQL Server Production Database Installation](/rifDatabase/SQLserver/production/INSTALL.md)
@@ -306,6 +307,7 @@ Currently there are eight manuals:
 
 This section is a series of links to developer documentation
 
+* [Coding Standards](development/coding-standards) -- see this for our preferences for code formatting, and so on.
 * [RIF Re-development](/The-RIF-re-development)
 * [RIF design documentation on Sourceforge](http://rapidinquiryfacility.sourceforge.net/index.html)
 * [Database Design](/Database-design)
