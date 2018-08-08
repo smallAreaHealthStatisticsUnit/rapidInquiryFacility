@@ -1027,17 +1027,33 @@ angular.module("RIF")
 						
                         //Set the user defined basemap
                         $scope.renderMap = function (mapID) {
+							LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback);
+                        };
+					
+						function setBaseMapCallback(err) {
+							if (err) { // LeafletBaseMapService.setDefaultMapBackground had error
+								alertScope.consoleLog("[rifd-dsub-maptable.js] LeafletBaseMapService.setDefaultMapBackground had error: " + 
+									err);
+							}
+							
                             $scope.areamap.removeLayer($scope.thisLayer);
                             if (!LeafletBaseMapService.getNoBaseMap("areamap")) {
-                                $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
+								var newBaseMap = LeafletBaseMapService.getCurrentBaseMapInUse("areamap");
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + newBaseMap);
+                                $scope.thisLayer = LeafletBaseMapService.setBaseMap(newBaseMap);
                                 $scope.thisLayer.addTo($scope.areamap);
+								LeafletBaseMapService.setNoBaseMap("areamap", false);
                             }
+							else {
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: NONE");
+								LeafletBaseMapService.setNoBaseMap("areamap", true);
+							}
                             //hack to refresh map
                             setTimeout(function () {
                                 $scope.areamap.invalidateSize();
                             }, 50);
-                        };
-
+						}
+						
                         function renderFeature(feature) {
                             for (var i = 0; i < $scope.selectedPolygon.length; i++) {
                                 if ($scope.selectedPolygon[i].id === feature) {

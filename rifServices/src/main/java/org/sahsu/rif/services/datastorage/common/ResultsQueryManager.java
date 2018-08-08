@@ -72,7 +72,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 			}
 			String mapBackground = resultSet1.getString(1);
 			if (mapBackground == null) {
-				mapBackground="OpenStreetMap Mapnik"; // Default
+				mapBackground="NONE"; // Default is: OpenStreetMap Mapnik
 			}
 			connection.commit();
 	
