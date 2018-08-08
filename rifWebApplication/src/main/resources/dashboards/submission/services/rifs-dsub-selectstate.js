@@ -102,7 +102,20 @@ angular.module("RIF")
 								Object.keys(newStudySelection).join(", "));
 						}	
 
-						
+						// Initialise if not set
+						if (newStudySelection.comparisonShapes == undefined) {
+							newStudySelection.comparisonShapes = [];
+						}
+						if (newStudySelection.studyShapes == undefined) {
+							newStudySelection.studyShapes = [];
+						}
+						if (newStudySelection.fileList == undefined) {
+							newStudySelection.fileList = [];
+						}
+						if (newStudySelection.bandAttr == undefined) {
+							newStudySelection.bandAttr = [];
+						}
+							
 						if (newStudySelection.studySelectAt) {
 							if (!newStudySelection.studySelectedAreas) {
 								throw new Error("rifs-dsub-selectstate.js(): studySelectedAreas key not found, got: " +
