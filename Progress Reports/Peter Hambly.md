@@ -2792,23 +2792,34 @@ SELECT a.*, b.coa2011
 	Added tracer. 
   * SQL Server: *warning: You must enter a valid Postal Code* with validated postcode. 
     Also need to run validation if you click in the other fields.
-	
-* Database Changes (See TODO](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/TODO#database-issues):	 
-  * Save/restore user selection methods to/from database;	
-  * Save user print selection to/from database;	
-  * The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
-  * *rif40_homogeneity*:
   
-  | Column name      | Column description                                                                  |
-  |------------------|-------------------------------------------------------------------------------------| 
-  | study_id[PK][FK] | rif40_studies.study_id                                                              | 
-  | inv_id[PK][FK]   | rif40_investigations.inv_id                                                         | 
-  | adjusted[PK]     | 0 or 1 indicating adjusted/unadjusted results                                       | 
-  | genders[PK]      | 1, 2 or 3, indicating Males, Females or Both                                        | 
-  | homogeneity_dof  | the number of degrees of freedom                                                    | 
-  | homogeneity_chi2 | the chi2-value for the homogeneity test                                             | 
-  | homogeneity_p    | the p-value for the homogeneity test                                                | 
-  | linearity_chi2   | the chi2-value for the linearity test                                               | 
-  | linearity_p      | the p-value for the linearity test                                                  | 
-  | explt5           | the number of bands in the study which have an expected number of cases less than 1 | 
+#### 6th to 10th August
+
+* Alter 10 risk analysis database changes. (See TODO](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/TODO#database-issues):	 
+  1. Save/restore user selection methods to/from database;	
+  2. Save user print selection to/from database;	
+  3. The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
+  4. *rif40_homogeneity*:
   
+	| Column name      | Column description                                                                  |
+	|------------------|-------------------------------------------------------------------------------------| 
+	| study_id[PK][FK] | rif40_studies.study_id                                                              | 
+	| inv_id[PK][FK]   | rif40_investigations.inv_id                                                         | 
+	| adjusted[PK]     | 0 or 1 indicating adjusted/unadjusted results                                       | 
+	| genders[PK]      | 1, 2 or 3, indicating Males, Females or Both                                        | 
+	| homogeneity_dof  | the number of degrees of freedom                                                    | 
+	| homogeneity_chi2 | the chi2-value for the homogeneity test                                             | 
+	| homogeneity_p    | the p-value for the homogeneity test                                                | 
+	| linearity_chi2   | the chi2-value for the linearity test                                               | 
+	| linearity_p      | the p-value for the linearity test                                                  | 
+	| explt5           | the number of bands in the study which have an expected number of cases less than 1 | 
+  
+  5. Add unique keys to description files on rif tables/projects/health themes to protect against the middleware using them as a key;
+  6. Add default background layer support for geography (so sahsuland has no background);  
+* Alter 10 new REST calls:
+  * getMapBackground
+  * getSelectState
+  * getPrintState
+  * setPrintState  
+* Set map background by geography, constrain map background filed; parse testeing study_selection in middleware 
+   
