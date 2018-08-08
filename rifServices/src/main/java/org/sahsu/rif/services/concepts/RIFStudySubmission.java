@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 
+import org.json.JSONObject;
+
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
@@ -103,6 +105,9 @@ public final class RIFStudySubmission
 	
 	/** The rif output options. */
 	private ArrayList<RIFOutputOption> rifOutputOptions;
+	
+	private JSONObject studySelection;
+	
 	   
 // ==========================================
 // Section Construction
@@ -120,6 +125,7 @@ public final class RIFStudySubmission
 		rifOutputOptions.add(RIFOutputOption.MAPS);
 		rifOutputOptions.add(RIFOutputOption.POPULATION_HOLES);
 		rifOutputOptions.add(RIFOutputOption.RATIOS_AND_RATES);
+		studySelection = null;
 
 	}
 
@@ -132,7 +138,15 @@ public final class RIFStudySubmission
     	RIFStudySubmission rifStudySubmission = new RIFStudySubmission();	
     	return rifStudySubmission;
     }
-    
+	
+    /* studySelection get/set methods */
+	public void setStudySelection(JSONObject studySelection) {
+		this.studySelection = studySelection;
+	}
+	public JSONObject getStudySelection() {
+		return(studySelection);
+	}
+	
     /**
      * Creates the copy.
      *

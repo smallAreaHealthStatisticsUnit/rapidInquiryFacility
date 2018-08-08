@@ -1376,7 +1376,19 @@ getParameter("p 1")     yes     c d
 			InputStream xmlInputStream
 				= new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
 			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="+xml+"==");
-			return getRIFSubmissionFromXMLSource(xmlInputStream);
+			RIFStudySubmission riftudySubmission =  getRIFSubmissionFromXMLSource(xmlInputStream);
+			
+			// Parse out study_selection to avoid using the XML parser
+			JSONObject rifJobSubmission = jsonObject.optJSONObject("rif_job_submission");
+			if (rifJobSubmission != null) {
+				JSONObject studySelection = rifJobSubmission.optJSONObject("study_selection");
+				if (studySelection != null) {
+					rifLogger.info(this.getClass(), "ARWS - study_selection: " + studySelection.toString(2));	
+					riftudySubmission.setStudySelection(studySelection);
+				}
+			}
+				
+			return riftudySubmission;
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
