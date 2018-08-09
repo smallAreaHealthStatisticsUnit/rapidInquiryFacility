@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.sahsu.rif.services.util.Json5Parse;
+
 import org.geotools.feature.DefaultFeatureCollection;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -321,45 +323,17 @@ public class RIFMapsParameters {
 		BufferedReader reader = new TomcatFile(
 				new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
 
-		String jsonText=null;
-		// This regex can cause stack overflows!!!!
-
-		StringBuffer sb = new StringBuffer();
-		String line = null;
-		while ((line = reader.readLine()) != null) {
-			sb.append(line.replaceAll("//.*", "") + lineSeparator); // Remove single line comments
-		} // This could theoretically cause a stack overflow; but it is very, very unlikely...
-			
-		jsonText=sb.toString();
-		jsonText=removeCstyleComments(jsonText);					// Remove C style comments
+		Json5Parse json5Parse = new Json5Parse(reader);
+		String jsonText = json5Parse.toString();
+		
 		rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + jsonText);
 		
-		jsonText=jsonText.replace(lineSeparator, "");				// Remove line separators
-		
-		JSONObject json = new JSONObject(jsonText);	
+		JSONObject json = json5Parse.toJson(); // Check it parses OK
 		
 		parseJson(json); // Call internal RIF parser
 
 	}
-	
-	/**
-	 * Remove C style comments (this comment) from JSON text string (pre parse)
-	 *
-	 * @param: JSONObject json
-	 */	
-	private String removeCstyleComments(final String jsonText) {
-			
-        String text = jsonText;
-		String comment = "";
-        int index = 0;
-        while( index != -1) {
-            comment = text.substring(text.indexOf("/*"),text.indexOf("*/")+2);
-            text = text.replace(comment, "");
 
-            index = text.indexOf("/*");
-        }
-        return text;
-	}
 
 	/**
 	 * Parse JSON from frontEndParameters JSON5 file
