@@ -769,6 +769,8 @@ GO
 UPDATE rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND' AND map_background IS NOT NULL;
 GO
 
+:r ..\sahsuland_dev\rif40\table_triggers\t_rif40_studies_trigger.sql
+
 SELECT geography, map_background
   FROM rif40_geographies
  ORDER BY 1;

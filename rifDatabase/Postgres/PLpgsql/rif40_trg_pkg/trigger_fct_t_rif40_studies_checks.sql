@@ -193,8 +193,9 @@ IF USER = NEW.username (i.e. not initial RIF40 INSERT) THEN
 	direct_stand_owner	VARCHAR(30);
 	direct_stand_table	VARCHAR(30);
 --
-	study_state_only_flag 	BOOLEAN:=FALSE;
-	ig_state_only_flag 	BOOLEAN:=FALSE;
+	study_state_only_flag 		BOOLEAN:=FALSE;
+	ig_state_only_flag 			BOOLEAN:=FALSE;
+	printselectstate_only_flag	BOOLEAN:=FALSE;
 --
 	kerberos_update BOOLEAN:=FALSE;
 --
@@ -257,31 +258,8 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 	   coalesce(NEW.authorised_on::text, '') = coalesce(OLD.authorised_on::text, '') AND
 	   coalesce(NEW.authorised_notes::text, '') = coalesce(OLD.authorised_notes::text, '') AND
 	   coalesce(NEW.audsid::text, '') = coalesce(OLD.audsid::text, '') AND
-/*
-	   NEW.study_id = OLD.study_id AND
-	   NEW.username = OLD.username AND
-	   NEW.geography = OLD.geography AND
-	   NEW.project = OLD.project AND
-	   NEW.study_name = OLD.study_name AND
-	   NEW.extract_table = OLD.extract_table AND
-	   NEW.map_table = OLD.map_table AND
-	   NEW.study_date = OLD.study_date AND
-	   NEW.study_type = OLD.study_type AND
-	   NEW.comparison_geolevel_name = OLD.comparison_geolevel_name AND
-	   NEW.study_geolevel_name = OLD.study_geolevel_name AND
-	   NEW.denom_tab = OLD.denom_tab AND
-	   NEW.direct_stand_tab = OLD.direct_stand_tab AND
-	   NEW.year_start = OLD.year_start AND
-	   NEW.year_stop = OLD.year_stop AND
-	   NEW.max_age_group = OLD.max_age_group AND
-	   NEW.min_age_group = OLD.min_age_group AND
-	   NEW.suppression_value = OLD.suppression_value AND
-	   NEW.extract_permitted = OLD.extract_permitted AND
-	   NEW.transfer_permitted = OLD.transfer_permitted AND
-	   NEW.authorised_by = OLD.authorised_by AND
-	   NEW.authorised_on = OLD.authorised_on AND
-	   NEW.authorised_notes = OLD.authorised_notes AND
-	   NEW.audsid = OLD.audsid AND       */
+	   coalesce(NEW.print_state::text, '') = coalesce(OLD.print_state::text, '') AND
+	   coalesce(NEW.select_state::text, '') = coalesce(OLD.select_state::text, '') AND
  	 	  NEW.study_state != OLD.study_state THEN
 		study_state_only_flag:=TRUE;
 	END IF;
@@ -290,34 +268,7 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 -- Determine if the IG state only has changed
 --
 	IF TG_OP = 'UPDATE' AND
-/*
-	   NEW.study_id = OLD.study_id AND
-	   NEW.username = OLD.username AND
-	   NEW.geography = OLD.geography AND
-	   NEW.project = OLD.project AND
-	   NEW.study_name = OLD.study_name AND
-	   NEW.extract_table = OLD.extract_table AND
-	   NEW.map_table = OLD.map_table AND
-	   NEW.study_date = OLD.study_date AND
-	   NEW.study_type = OLD.study_type AND
-	   NEW.study_state = OLD.study_state AND
-	   NEW.comparison_geolevel_name = OLD.comparison_geolevel_name AND
-	   NEW.study_geolevel_name = OLD.study_geolevel_name AND
-	   NEW.denom_tab = OLD.denom_tab AND
-	   NEW.direct_stand_tab = OLD.direct_stand_tab AND
-	   NEW.year_start = OLD.year_start AND
-	   NEW.year_stop = OLD.year_stop AND
-	   NEW.max_age_group = OLD.max_age_group AND
-	   NEW.min_age_group = OLD.min_age_group AND
-	   NEW.suppression_value = OLD.suppression_value AND
-	   NEW.audsid = OLD.audsid AND (
-	 	   NEW.extract_permitted != OLD.extract_permitted OR
-		   NEW.transfer_permitted != OLD.transfer_permitted OR
-		   NEW.authorised_by != OLD.authorised_by OR
-		   NEW.authorised_on != OLD.authorised_on OR
-		   NEW.authorised_notes != OLD.authorised_notes) THEN  */
-
-           coalesce(NEW.study_id::text, '') = coalesce(OLD.study_id::text, '') AND
+       coalesce(NEW.study_id::text, '') = coalesce(OLD.study_id::text, '') AND
 	   coalesce(NEW.username::text, '') = coalesce(OLD.username::text, '') AND
 	   coalesce(NEW.geography::text, '') = coalesce(OLD.geography::text, '') AND
 	   coalesce(NEW.project::text, '') = coalesce(OLD.project::text, '') AND
@@ -348,6 +299,45 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 
 		ig_state_only_flag:=TRUE;
 	END IF;
+	
+
+--
+-- Determine if the select/print state only has changed
+--
+	IF TG_OP = 'UPDATE' AND
+       coalesce(NEW.study_id::text, '') = coalesce(OLD.study_id::text, '') AND
+	   coalesce(NEW.username::text, '') = coalesce(OLD.username::text, '') AND
+	   coalesce(NEW.geography::text, '') = coalesce(OLD.geography::text, '') AND
+	   coalesce(NEW.project::text, '') = coalesce(OLD.project::text, '') AND
+	   coalesce(NEW.study_name::text, '') = coalesce(OLD.study_name::text, '') AND
+	   coalesce(NEW.extract_table::text, '') = coalesce(OLD.extract_table::text, '') AND
+	   coalesce(NEW.map_table::text, '') = coalesce(OLD.map_table::text, '') AND
+	   coalesce(NEW.study_date::text, '') = coalesce(OLD.study_date::text, '') AND
+	   coalesce(NEW.study_type::text, '') = coalesce(OLD.study_type::text, '') AND
+	   coalesce(NEW.comparison_geolevel_name::text, '') = coalesce(OLD.comparison_geolevel_name::text, '') AND
+	   coalesce(NEW.study_geolevel_name::text, '') = coalesce(OLD.study_geolevel_name::text, '') AND
+	   coalesce(NEW.denom_tab::text, '') = coalesce(OLD.denom_tab::text, '') AND
+	   coalesce(NEW.direct_stand_tab::text, '') = coalesce(OLD.direct_stand_tab::text, '') AND
+/*
+Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
+
+	   coalesce(NEW.year_start::text, '') = coalesce(OLD.year_start::text, '') AND
+	   coalesce(NEW.year_stop::text, '') = coalesce(OLD.year_stop::text, '') AND
+	   coalesce(NEW.max_age_group::text, '') = coalesce(OLD.max_age_group::text, '') AND
+	   coalesce(NEW.min_age_group::text, '') = coalesce(OLD.min_age_group::text, '') AND
+ */
+	   coalesce(NEW.suppression_value::text, '') = coalesce(OLD.suppression_value::text, '') AND
+	   coalesce(NEW.extract_permitted::text, '') = coalesce(OLD.extract_permitted::text, '') AND
+	   coalesce(NEW.transfer_permitted::text, '') = coalesce(OLD.transfer_permitted::text, '') AND
+	   coalesce(NEW.authorised_by::text, '') = coalesce(OLD.authorised_by::text, '') AND
+	   coalesce(NEW.authorised_on::text, '') = coalesce(OLD.authorised_on::text, '') AND
+	   coalesce(NEW.authorised_notes::text, '') = coalesce(OLD.authorised_notes::text, '') AND	   
+	   coalesce(NEW.audsid::text, '') = coalesce(OLD.audsid::text, '') AND (      
+	   coalesce(NEW.print_state::text, '') != coalesce(OLD.print_state::text, '') OR
+	   coalesce(NEW.select_state::text, '') != coalesce(OLD.select_state::text, '') ) THEN  
+
+		printselectstate_only_flag:=TRUE;
+	END IF;	
 --
 -- Check for update of study_id
 --
@@ -413,14 +403,20 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 -- Verify state change
 --
 				NEW.study_state:=rif40_sm_pkg.rif40_verify_state_change(NEW.study_id, OLD.study_state, NEW.study_state);
-			ELSE
+			ELSIF printselectstate_only_flag THEN			
+				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_studies_checks', 
+					'[20202] T_RIF40_STUDIES study % UPDATE select/printstate changes allowed on T_RIF40_STUDIES by user: %',
+					NEW.study_id::VARCHAR	/* Study id */,
+					USER::VARCHAR 			/* username */);
+					
+			ELSE -- This implies you cannot IG authorise yourself!
 				PERFORM rif40_log_pkg.rif40_error(-20202, 'trigger_fct_t_rif40_studies_checks', 
 					'T_RIF40_STUDIES study % non state change UPDATE not allowed on T_RIF40_STUDIES by user: %',
 					NEW.study_id::VARCHAR	/* Study id */,
 					USER::VARCHAR 		/* username */);
 			END IF;
 		ELSE
-			IF c5_rec.rif_manager = 1 THEN
+			IF c5_rec.rif_manager = 1 THEN 
 --
 -- Only allow IG changes
 --

@@ -47,6 +47,15 @@ public interface UpdateQueryFormatter extends QueryFormatter {
 	 */
 	public void addUpdateField(
 		final String updateField);
+		
+	/**
+	 * Adds the insert field.
+	 *
+	 * @param insertField: the insert field
+	 * @param cast: apply cast to the insert field
+	 */
+	public void addUpdateField(
+		final String updateField, final String cast);
 	
 	
 	/**

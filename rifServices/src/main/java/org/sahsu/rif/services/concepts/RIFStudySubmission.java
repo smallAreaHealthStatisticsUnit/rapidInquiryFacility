@@ -187,6 +187,8 @@ public final class RIFStudySubmission
     	
     	cloneRIFStudySubmission.setCalculationMethods(clonedCalculationMethods);
    
+		cloneRIFStudySubmission.setStudySelection(originalRIFStudySubmission.getStudySelection());
+		
     	/*
     	ArrayList<RIFOutputOption> originalRIFOutputOptions
     		= originalRIFStudySubmission.getRIFOutputOptions();

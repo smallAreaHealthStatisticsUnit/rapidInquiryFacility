@@ -150,6 +150,8 @@ BEGIN
 		and a.authorised_on=b.authorised_on
 		and a.authorised_notes=b.authorised_notes
 		and a.audsid=b.audsid
+		and a.print_state=b.print_state
+		and a.select_state=b.select_state
 		FOR XML PATH(''));
 	
 	DECLARE @is_ig_update VARCHAR(MAX) = ( 
@@ -168,11 +170,38 @@ BEGIN
 		and a.denom_tab=b.denom_tab
 		and a.suppression_value=b.suppression_value
 		and a.audsid=b.audsid
+		and a.print_state=b.print_state
+		and a.select_state=b.select_state
 		and (a.extract_permitted!=b.extract_permitted
 		or a.transfer_permitted!=b.transfer_permitted
 		or a.authorised_by!=b.authorised_by
 		or a.authorised_on!=b.authorised_on
 		or a.authorised_notes!=b.authorised_notes)
+		FOR XML PATH(''));	
+		
+	DECLARE @is_printselectstate VARCHAR(MAX) = ( 
+		SELECT a.study_id
+		FROM inserted a, deleted b
+		where a.study_id=b.study_id
+		and a.geography=b.geography
+		and a.project=b.project
+		and a.study_name=b.study_name
+		and a.extract_table=b.extract_table
+		and a.map_table=b.map_table
+		and a.study_date=b.study_date
+		and a.study_type=b.study_type
+		and a.comparison_geolevel_name=b.comparison_geolevel_name
+		and a.study_geolevel_name=b.study_geolevel_name
+		and a.denom_tab=b.denom_tab
+		and a.suppression_value=b.suppression_value
+		and a.audsid=b.audsid
+		and a.extract_permitted=b.extract_permitted
+		and a.transfer_permitted=b.transfer_permitted
+		and a.authorised_by=b.authorised_by
+		and a.authorised_on=b.authorised_on
+		and a.authorised_notes=b.authorised_notes 
+		and (a.print_state!=b.print_state
+		or  a.select_state!=b.select_state)
 		FOR XML PATH(''));
 
 	IF @is_state_change IS NOT NULL AND @is_ig_update IS NOT NULL 
@@ -211,6 +240,37 @@ BEGIN
 			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'UPDATE state changes allowed on T_RIF40_STUDIES by user';
 	END;
 	
+	IF @is_printselectstate IS NOT NULL
+    BEGIN
+
+	--check if new username = old username for the study
+		DECLARE @not_first_user2 VARCHAR(max) = (
+			SELECT a.study_id, a.username as new_user, b.username as original_user
+			FROM inserted a, deleted b
+			WHERE a.study_id=b.study_id
+			and a.username != b.username
+			FOR XML PATH(''));
+		IF @not_first_user2 IS NOT NULL
+		BEGIN
+			IF @has_studies_check = 0 AND SUSER_SNAME()='RIF40'
+			BEGIN
+				EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 't_rif40_studies insert/update allowed during build';
+			END;
+			ELSE
+			BEGIN TRY
+				rollback;
+				DECLARE @err_msg4a VARCHAR(MAX) = formatmessage(51016, @not_first_user);
+				THROW 51016, @err_msg4a, 1;
+			END TRY
+			BEGIN CATCH
+				EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_studies_checks]';
+				THROW 51016, @err_msg4a, 1;
+			END CATCH;
+		END;
+		ELSE	
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'UPDATE print/select state changes allowed on T_RIF40_STUDIES by user';
+	END;
+	
 	IF @is_ig_update IS NOT NULL
 	BEGIN
 		--only rif_manager can make IG changes
@@ -237,7 +297,7 @@ BEGIN
 		END
 	END
 	
-	IF @is_state_change IS NULL AND @is_ig_update IS NULL
+	IF @is_state_change IS NULL AND @is_ig_update IS NULL AND @is_printselectstate IS NULL
 	BEGIN TRY
 
 		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @state_change;

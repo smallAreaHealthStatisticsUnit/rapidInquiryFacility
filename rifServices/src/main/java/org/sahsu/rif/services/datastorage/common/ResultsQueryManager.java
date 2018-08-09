@@ -18,6 +18,7 @@ import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
@@ -123,7 +124,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 		try {
 			statement1 = connection.prepareStatement(getSelectStateQueryFormatter1.generateQuery());
-			statement1.setString(1, studyID);
+			statement1.setInt(1, Integer.parseInt(studyID));
 			resultSet1 = statement1.executeQuery();
 		
 			if (!resultSet1.next()) {
@@ -183,7 +184,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 		try {
 			statement1 = connection.prepareStatement(getPrintStateQueryFormatter1.generateQuery());
-			statement1.setString(1, studyID);
+			statement1.setInt(1, Integer.parseInt(studyID));
 			resultSet1 = statement1.executeQuery();
 		
 			if (!resultSet1.next()) {
@@ -233,7 +234,12 @@ public class ResultsQueryManager extends BaseSQLManager {
 				UpdateQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 
 		setPrintStateQueryFormatter1.setDatabaseSchemaName("rif40");
-		setPrintStateQueryFormatter1.addUpdateField("print_state");
+		if (rifDatabaseProperties.getDatabaseType() == DatabaseType.POSTGRESQL) { // Supports JSON natively
+			setPrintStateQueryFormatter1.addUpdateField("print_state", "JSON");
+		}
+		else { // SQL Server doesn't yet
+			setPrintStateQueryFormatter1.addUpdateField("print_state");
+		}		
 		setPrintStateQueryFormatter1.setUpdateTable("rif40_studies");
 		setPrintStateQueryFormatter1.addWhereParameter("study_id");
 
@@ -245,7 +251,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 		try {
 			statement1 = connection.prepareStatement(setPrintStateQueryFormatter1.generateQuery());
 			statement1.setString(1, printStateText);
-			statement1.setString(2, studyID);
+			statement1.setInt(2, Integer.parseInt(studyID));
 			rc = statement1.executeUpdate();
 		
 			if (rc != 1) { 

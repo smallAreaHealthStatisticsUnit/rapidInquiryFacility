@@ -764,10 +764,12 @@ $$;
 UPDATE rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND' AND map_background IS NULL;
 UPDATE rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND' AND map_background IS NOT NULL;
 
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_studies_checks.sql
+
 SELECT geography, map_background
   FROM rif40_geographies
  ORDER BY 1;
- 
+
 --
 -- Testing stop
 --

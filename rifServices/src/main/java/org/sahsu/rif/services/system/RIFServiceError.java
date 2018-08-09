@@ -197,6 +197,8 @@ public enum RIFServiceError {
 	
 	NON_EXISTENT_NUMERATOR_TABLE,
 	
+	UPDATE_SELECTSTATE_FAILED,
+	
 	/** The year range interval too high. */
 	YEAR_RANGE_INTERVAL_TOO_HIGH,
 
