@@ -746,14 +746,14 @@ DO LANGUAGE plpgsql $$
 BEGIN
 	ALTER TABLE rif40_geographies ADD COLUMN map_background VARCHAR(200) DEFAULT 'OpenStreetMap Mapnik' NULL;
 	ALTER TABLE rif40_geographies ADD CONSTRAINT map_background_ck CHECK (map_background IN (
-		"OpenStreetMap Mapnik","OpenStreetMap BlackAndWhite","OpenTopoMap","Humanitarian OpenStreetMap","Thunderforest OpenCycleMap",
-		"Thunderforest Transport","Thunderforest TransportDark","Thunderforest Landscape","Thunderforest SpinalMap","Thunderforest Outdoors",
-		"Thunderforest Pioneer","Thunderforest Mobile Atlas","Thunderforest Neighbourhood","OpenMapSurfer Roads","OpenMapSurfer Grayscale",
-		"Hydda Full","Hydda Base","Stamen Toner","Stamen TonerBackground","Stamen TonerLite","Stamen Watercolor","Esri WorldStreetMap",
-		"Esri DeLorme","Esri WorldTopoMap","Esri WorldImagery","Esri WorldTerrain","Esri WorldShadedRelief","Esri WorldPhysical",
-		"Esri OceanBasemap","Esri NatGeoWorldMap","Esri WorldGrayCanvas","CartoDB Positron","CartoDB PositronNoLabels",
-		"CartoDB PositronOnlyLabels","CartoDB DarkMatter","CartoDB DarkMatterNoLabels","CartoDB DarkMatterOnlyLabels",
-		"HikeBike HikeBike","HikeBike HillShading","NASAGIBS ViirsEarthAtNight2012","OSM UK Postcodes","Code-Point Open UK Postcodes"));
+		'OpenStreetMap Mapnik','OpenStreetMap BlackAndWhite','OpenTopoMap','Humanitarian OpenStreetMap','Thunderforest OpenCycleMap',
+		'Thunderforest Transport','Thunderforest TransportDark','Thunderforest Landscape','Thunderforest SpinalMap','Thunderforest Outdoors',
+		'Thunderforest Pioneer','Thunderforest Mobile Atlas','Thunderforest Neighbourhood','OpenMapSurfer Roads','OpenMapSurfer Grayscale',
+		'Hydda Full','Hydda Base','Stamen Toner','Stamen TonerBackground','Stamen TonerLite','Stamen Watercolor','Esri WorldStreetMap',
+		'Esri DeLorme','Esri WorldTopoMap','Esri WorldImagery','Esri WorldTerrain','Esri WorldShadedRelief','Esri WorldPhysical',
+		'Esri OceanBasemap','Esri NatGeoWorldMap','Esri WorldGrayCanvas','CartoDB Positron','CartoDB PositronNoLabels',
+		'CartoDB PositronOnlyLabels','CartoDB DarkMatter','CartoDB DarkMatterNoLabels','CartoDB DarkMatterOnlyLabels',
+		'HikeBike HikeBike','HikeBike HillShading','NASAGIBS ViirsEarthAtNight2012','OSM UK Postcodes','Code-Point Open UK Postcodes'));
 	COMMENT ON COLUMN rif40_geographies.map_background IS 'RIF geography map background';
 EXCEPTION
 	WHEN duplicate_column THEN

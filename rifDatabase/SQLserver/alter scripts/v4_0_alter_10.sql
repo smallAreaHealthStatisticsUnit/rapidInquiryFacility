@@ -99,8 +99,6 @@ GO
  6. Add default background layer support for geography (so sahsuland has no background);
  
  */
-BEGIN TRANSACTION;
-GO
 
 IF NOT EXISTS (SELECT column_name
                  FROM information_schema.columns
@@ -275,7 +273,16 @@ ALTER VIEW [rif40].[rif40_studies] AS
   (s.grantee_username IS NOT NULL AND s.grantee_username <> '')
 GO
 
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Study selection state: what the user selected (see: rifs-dsub-selectstate.js):
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_studies';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = 'select_state' AND [object_id] = OBJECT_ID(@tableName)))
+BEGIN
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Study selection state: what the user selected (see: rifs-dsub-selectstate.js):
 
 {
 	studyType: "risk_analysis_study",
@@ -318,12 +325,11 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Study sele
 	showHideCentroids: false,
 	showHideSelectionShapes: true
 };' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'select_state'
-GO
 
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Study print state: what the user selected (see: rifs-util-printstate.js)' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'print_state'
-GO
 
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Study export date' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'export_date'
+END;
 GO
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON rif40.rif40_studies TO rif_user;
@@ -753,6 +759,11 @@ IF NOT EXISTS (SELECT column_name
 END;
 GO
 
+IF NOT EXISTS (SELECT constraint_name
+                 FROM information_schema.table_constraints
+                WHERE table_schema    = 'rif40'
+                  AND table_name      = 'rif40_geographies'
+                  AND constraint_name = 'map_background_ck')
 ALTER TABLE rif40_geographies ADD CONSTRAINT map_background_ck CHECK (map_background IN (
 		'OpenStreetMap Mapnik','OpenStreetMap BlackAndWhite','OpenTopoMap','Humanitarian OpenStreetMap','Thunderforest OpenCycleMap',
 		'Thunderforest Transport','Thunderforest TransportDark','Thunderforest Landscape','Thunderforest SpinalMap','Thunderforest Outdoors',
@@ -770,11 +781,6 @@ UPDATE rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND'
 GO
 
 :r ..\sahsuland_dev\rif40\table_triggers\t_rif40_studies_trigger.sql
-
-SELECT geography, map_background
-  FROM rif40_geographies
- ORDER BY 1;
-GO
  
 --
 -- Testing stop
@@ -782,8 +788,12 @@ GO
 /*
 ROLLBACK;
  */
- 
-COMMIT;
+COMMIT TRANSACTION;
+GO
+
+SELECT geography, map_background
+  FROM rif40_geographies
+ ORDER BY 1;
 GO
 
 --
