@@ -151,7 +151,6 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		
 			JSONObject json = json5Parse.toJson(); // Check it parses OK
 			JSONObject parametersJson = json.optJSONObject("parameters");
-			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + parametersJson.toString(2));
 			if (parametersJson == null) {
 				throw new RIFServiceException(
 					RIFServiceError.JSON_PARSE_ERROR,
@@ -164,6 +163,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					"updatePrintState json parse error: missing \"mappingDefaults\" key for rif40_studies.study_id: " + studyID + " update");
 			}
 			String printSelectionText=printSelectionJson.toString();
+			rifLogger.info(getClass(), "Retrieve printSelection from FrontEnd Parameters: " + printSelectionJson.toString(2));
 			logSQLQuery("updateSelectState", updateSelectStateFormatter1, printSelectionText, studyID);
 		
 			statement1 = connection.prepareStatement(updateSelectStateFormatter1.generateQuery());

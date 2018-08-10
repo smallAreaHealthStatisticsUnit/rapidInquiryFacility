@@ -1141,8 +1141,8 @@ public class RifZipFile {
 			throws Exception {
 		SQLGeneralQueryFormatter rif40StudiesQueryFormatter = new SQLGeneralQueryFormatter();		
 		
-		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab,");
-		rif40StudiesQueryFormatter.addQueryLine(0, "       study_name, description, year_start, year_stop");
+		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT study_id, extract_table, map_table, denom_tab,");
+		rif40StudiesQueryFormatter.addQueryLine(0, "       study_name, description, year_start, year_stop, select_state, print_state");
 		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
 		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 

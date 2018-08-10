@@ -145,7 +145,7 @@ public class RifGeospatialOutputs {
 					throws Exception {
 						
 	if (rifMaps == null) {
-			rifMaps = new RIFMaps(rifServiceStartupOptions, manager);
+			rifMaps = new RIFMaps(rifServiceStartupOptions, manager, rif40Studies);
 		}						
 		
 		String studyID = rifStudySubmission.getStudyID();

@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.sun.rowset.CachedRowSetImpl;
+
 import org.sahsu.rif.services.util.Json5Parse;
+import org.sahsu.rif.services.datastorage.common.SQLManager;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.json.JSONArray;
@@ -14,6 +17,8 @@ import org.json.JSONObject;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.system.files.TomcatBase;
 import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.services.system.RIFServiceError;
+import org.sahsu.rif.generic.system.RIFServiceException;
 
 /**
  *
@@ -247,10 +252,10 @@ public class RIFMapsParameters {
      * Constructor.
      * 
      */
-	public RIFMapsParameters() {
+	public RIFMapsParameters(final SQLManager manager, final CachedRowSetImpl rif40Studies) {
 		try {
 			setupDefaultMapParameters();
-			retrieveFrontEndParameters();
+			retrieveFrontEndParameters(manager, rif40Studies);
 		}		
 		catch(StackOverflowError stackOverflowError) {
 			rifLogger.warning(this.getClass(), 
@@ -317,21 +322,50 @@ public class RIFMapsParameters {
 	/**
 	 * Retrieve front end parameters
 	 */	
-	private void retrieveFrontEndParameters() 
+	private void retrieveFrontEndParameters(final SQLManager manager, final CachedRowSetImpl rif40Studies) 
 			throws Exception {
-				
+
+		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");
+		String printState=manager.getColumnFromResultSet(rif40Studies, "print_state");
+		
 		BufferedReader reader = new TomcatFile(
 				new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
 
 		Json5Parse json5Parse = new Json5Parse(reader);
-		String jsonText = json5Parse.toString();
 		
-		rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + jsonText);
-		
-		JSONObject json = json5Parse.toJson(); // Check it parses OK
-		
-		parseJson(json); // Call internal RIF parser
+		JSONObject frontEndJson = json5Parse.toJson(); // Check it parses OK
+		JSONObject parametersJson = frontEndJson.optJSONObject("parameters");
+		JSONObject printStateJson = null;
 
+		rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + frontEndJson.toString(2));
+			
+		if (parametersJson == null) {
+			throw new RIFServiceException(
+				RIFServiceError.JSON_PARSE_ERROR,
+				"retrieveFrontEndParameters json parse error: missing \"parameters\" key for rif40_studies.study_id: " + studyID + " update");
+		}
+		printStateJson = parametersJson.optJSONObject("mappingDefaults");
+		if (printStateJson == null) {
+			throw new RIFServiceException(
+				RIFServiceError.JSON_PARSE_ERROR,
+				"retrieveFrontEndParameters json parse error: missing \"mappingDefaults\" key for rif40_studies.study_id: " + studyID + " update");
+		}
+			
+		if (printState != null) {
+			printStateJson = new JSONObject(printState); // Check it parses OK
+			if (printStateJson == null) {
+				throw new RIFServiceException(
+					RIFServiceError.JSON_PARSE_ERROR,
+					"retrieveFrontEndParameters json parse error unable to pare print_state for rif40_studies.study_id: " + studyID + " update" +
+					"; print_state: " + printState);
+			}			
+			rifLogger.info(getClass(), "Use database print state: " + printStateJson.toString(2) + " from rif40_studies.study_id: " + studyID);
+			parseJson(printStateJson, studyID); // Call internal RIF parser
+		}
+		else {
+			rifLogger.info(getClass(), "Use FrontEnd Parameters print state: " + printStateJson.toString(2));
+			parseJson(frontEndJson, studyID); // Call internal RIF parser
+		}
 	}
 
 
@@ -340,84 +374,73 @@ public class RIFMapsParameters {
 	 *
 	 * @param: JSONObject json
 	 */		
-	private void parseJson(final JSONObject json) {
-		try {
-			JSONObject parameters=json.getJSONObject("parameters");	
-			try {
-				JSONObject mappingDefaults=parameters.getJSONObject("mappingDefaults");
+	private void parseJson(final JSONObject printStateJson, final String studyID) {
 				
-				Iterator<String> keys = mappingDefaults.keys();
-				while (keys.hasNext()) {
-					String mapName = keys.next();
-					JSONObject mapOptions = mappingDefaults.optJSONObject(mapName);
-					
-					/* 
-					'diseasemap1': {
-						method: 	'quantile', 
-						feature:	'smoothed_smr',
-						intervals: 	9,
-						invert:		true,
-						brewerName:	"PuOr"
-					} 
-					*/
-					
-					if (mapOptions != null) {
-						String method=mapOptions.optString("method");
-						String feature=mapOptions.optString("feature");
-						int intervals=(int)mapOptions.optLong("intervals");
-						String invertString=mapOptions.optString("invert");
-						boolean invert=false;
-						if (invertString.toUpperCase().equals("TRUE")) {
-							invert=true;
-						}
-						String brewerName=mapOptions.optString("brewerName");
-						JSONArray breaksArray = mapOptions.optJSONArray("breaks");
-						if (breaksArray != null) { // User defined
-							intervals=(breaksArray.length()-1);
-							double[] breaks = new double[intervals+1];
-							for (int i = 0; i < breaksArray.length(); i++) {
-								breaks[i]=breaksArray.getDouble(i);
-							}
-							try {					
-								RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
-									feature						/* resultsColumn */,	
-									method						/* User style name */, 
-									brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-									breaks						/* Breaks */, 
-									invert						/* invert */);	
-								rifMapsParameters.put(mapName, rifMapsParameter);
-								rifMapsParameter.parameterLog(mapName);
-							}
-							catch (Exception exception) {
-								rifLogger.warning(this.getClass(), 
-									"Unable to parse user defined mapOptions from: " + mapOptions.toString(2));
-							}							
-						}
-						else { // Predefined 
-							try {					
-								RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
-									feature						/* resultsColumn */,	
-									method						/* Classifier function name */, 
-									brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-									intervals					/* numberOfBreaks */, 
-									invert						/* invert */);	
-								rifMapsParameters.put(mapName, rifMapsParameter);
-								rifMapsParameter.parameterLog(mapName);
-							}
-							catch (Exception exception) {
-								rifLogger.warning(this.getClass(), 
-									"Unable to parse predefined mapOptions from: " + mapOptions.toString(2));
-							}							
-						}
-					}	
+		Iterator<String> keys = printStateJson.keys();
+		while (keys.hasNext()) {
+			String mapName = keys.next();
+			JSONObject mapOptions = printStateJson.optJSONObject(mapName);
+			
+			/* 
+			'diseasemap1': {
+				method: 	'quantile', 
+				feature:	'smoothed_smr',
+				intervals: 	9,
+				invert:		true,
+				brewerName:	"PuOr"
+			} 
+			*/
+			
+			if (mapOptions != null) {
+				String method=mapOptions.optString("method");
+				String feature=mapOptions.optString("feature");
+				int intervals=(int)mapOptions.optLong("intervals");
+				String invertString=mapOptions.optString("invert");
+				boolean invert=false;
+				if (invertString.toUpperCase().equals("TRUE")) {
+					invert=true;
 				}
-			}
-			catch (JSONException exception) {
-				rifLogger.warning(this.getClass(), "Unable to parse mappingDefaults from: " + parameters.toString(2));
-			}
-		}
-		catch (JSONException exception) {
-			rifLogger.warning(this.getClass(), "Unable to parse parameters from: " + json.toString(2));
+				String brewerName=mapOptions.optString("brewerName");
+				JSONArray breaksArray = mapOptions.optJSONArray("breaks");
+				if (breaksArray != null) { // User defined
+					intervals=(breaksArray.length()-1);
+					double[] breaks = new double[intervals+1];
+					for (int i = 0; i < breaksArray.length(); i++) {
+						breaks[i]=breaksArray.getDouble(i);
+					}
+					try {					
+						RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
+							feature						/* resultsColumn */,	
+							method						/* User style name */, 
+							brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+							breaks						/* Breaks */, 
+							invert						/* invert */);	
+						rifMapsParameters.put(mapName, rifMapsParameter);
+						rifMapsParameter.parameterLog(mapName);
+					}
+					catch (Exception exception) {
+						rifLogger.warning(this.getClass(), 
+							"Unable to parse user defined mapOptions from: " + mapOptions.toString(2));
+					}							
+				}
+				else { // Predefined 
+					try {					
+						RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
+							feature						/* resultsColumn */,	
+							method						/* Classifier function name */, 
+							brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+							intervals					/* numberOfBreaks */, 
+							invert						/* invert */);	
+						rifMapsParameters.put(mapName, rifMapsParameter);
+						rifMapsParameter.parameterLog(mapName);
+					}
+					catch (Exception exception) {
+						rifLogger.warning(this.getClass(), 
+							"Unable to parse predefined mapOptions from: " + mapOptions.toString(2) +
+							"; for rif40_studies.study_id: " + studyID);
+					}							
+				}
+			}	
 		}
 	}
 }		
