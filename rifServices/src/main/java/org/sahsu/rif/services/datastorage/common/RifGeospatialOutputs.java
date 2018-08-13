@@ -83,7 +83,7 @@ public class RifGeospatialOutputs {
 	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 	
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = null;
-	private static RIFMaps rifMaps = null;
+	private RIFMaps rifMaps = null;
 	private static int roundDP=3;
 	
 	private final SQLManager manager;
@@ -144,7 +144,7 @@ public class RifGeospatialOutputs {
 			final Locale locale)
 					throws Exception {
 						
-	if (rifMaps == null) {
+		if (rifMaps == null) {
 			rifMaps = new RIFMaps(rifServiceStartupOptions, manager, rif40Studies);
 		}						
 		

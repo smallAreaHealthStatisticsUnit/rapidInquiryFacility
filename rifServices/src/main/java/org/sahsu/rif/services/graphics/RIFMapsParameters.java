@@ -326,7 +326,7 @@ public class RIFMapsParameters {
 			throws Exception {
 
 		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");
-		String printState=manager.getColumnFromResultSet(rif40Studies, "print_state");
+		String printState=manager.getColumnFromResultSet(rif40Studies, "print_state", true /* allowNulls */, false /*  allowNoRows */);
 		
 		BufferedReader reader = new TomcatFile(
 				new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
@@ -337,7 +337,7 @@ public class RIFMapsParameters {
 		JSONObject parametersJson = frontEndJson.optJSONObject("parameters");
 		JSONObject printStateJson = null;
 
-		rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + frontEndJson.toString(2));
+//		rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + frontEndJson.toString(2));
 			
 		if (parametersJson == null) {
 			throw new RIFServiceException(
@@ -359,20 +359,21 @@ public class RIFMapsParameters {
 					"retrieveFrontEndParameters json parse error unable to pare print_state for rif40_studies.study_id: " + studyID + " update" +
 					"; print_state: " + printState);
 			}			
-			rifLogger.info(getClass(), "Use database print state: " + printStateJson.toString(2) + " from rif40_studies.study_id: " + studyID);
-			parseJson(printStateJson, studyID); // Call internal RIF parser
+			rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; use database print state: " + printStateJson.toString(2));
 		}
 		else {
-			rifLogger.info(getClass(), "Use FrontEnd Parameters print state: " + printStateJson.toString(2));
-			parseJson(frontEndJson, studyID); // Call internal RIF parser
+			rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; use FrontEnd Parameters print state: " + printStateJson.toString(2));
 		}
+		parseJson(printStateJson, studyID); // Call internal RIF parser
 	}
 
 
 	/**
-	 * Parse JSON from frontEndParameters JSON5 file
+	 * Parse JSON from frontEndParameters/database print_state JSON5 file
 	 *
 	 * @param: JSONObject json
+	 *
+	 * Expecting three keys: viewermap, diseasemap1, diseasemap2
 	 */		
 	private void parseJson(final JSONObject printStateJson, final String studyID) {
 				
