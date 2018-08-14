@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Calendar;
 
 import org.json.JSONObject;
+import org.json.JSONException;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
@@ -65,19 +66,19 @@ public class ResultsQueryManager extends BaseSQLManager {
 			statement1 = connection.prepareStatement(getMapBackgroundQueryFormatter1.generateQuery());
 			statement1.setString(1, geography.getName().toUpperCase());
 			resultSet1 = statement1.executeQuery();
-		
+				
 			if (!resultSet1.next()) {
 				throw new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
 					"getMapBackground query 1; expected 1 row, got none for geography: " + geography.getName().toUpperCase());
 			}
 			String mapBackground = resultSet1.getString(1);
-			if (mapBackground == null) {
+			if (mapBackground == null || mapBackground.length() == 0) {
 				mapBackground="NONE"; // Default is: OpenStreetMap Mapnik
-			}
+			}			
 			connection.commit();
 	
-			JSONObject getMapBackground = new JSONObject();		
+			JSONObject getMapBackground = new JSONObject();
 			getMapBackground.put("geography", geography.getName().toUpperCase());
 			getMapBackground.put("mapBackground", mapBackground);
 			result=getMapBackground.toString();	
@@ -132,15 +133,22 @@ public class ResultsQueryManager extends BaseSQLManager {
 					RIFServiceError.DATABASE_QUERY_FAILED,
 					"getSelectState query 1; expected 1 row, got none for study_id: " + studyID);
 			}
-			String selectState = resultSet1.getString(1);
-			if (selectState == null) {
-				selectState="{}"; // Default
+			String selectStateStr = resultSet1.getString(1);
+			JSONObject selectState;
+			JSONObject getSelectState = new JSONObject();
+			getSelectState.put("study_id", studyID);
+			if (selectStateStr != null && selectStateStr.length() > 0) {
+				try {
+					selectState = new JSONObject(selectStateStr);
+					getSelectState.put("select_state", selectState);
+				}
+				catch (JSONException jsonException) {
+					throw new RIFServiceException(
+						RIFServiceError.JSON_PARSE_ERROR,
+						jsonException.getMessage() + "; in: select_state=" + selectStateStr);
+				}
 			}
 			connection.commit();
-	
-			JSONObject getSelectState = new JSONObject();		
-			getSelectState.put("study_id", studyID);
-			getSelectState.put("select_state", selectState);
 			result=getSelectState.toString();	
 			
 			return result;
@@ -192,15 +200,22 @@ public class ResultsQueryManager extends BaseSQLManager {
 					RIFServiceError.DATABASE_QUERY_FAILED,
 					"getPrintState query 1; expected 1 row, got none for study_id: " + studyID);
 			}
-			String printState = resultSet1.getString(1);
-			if (printState == null) {
-				printState="{}"; // Default
+			String printStateStr = resultSet1.getString(1);
+			JSONObject getPrintState = new JSONObject();	
+			getPrintState.put("study_id", studyID);
+			JSONObject printState;
+			if (printStateStr != null && printStateStr.length() > 0) {
+				try {
+					printState = new JSONObject(printStateStr);
+					getPrintState.put("print_state", printState);
+				}
+				catch (JSONException jsonException) {
+					throw new RIFServiceException(
+						RIFServiceError.JSON_PARSE_ERROR, 
+						jsonException.getMessage() + "; in: print_state=" + printStateStr);
+				}
 			}
 			connection.commit();
-	
-			JSONObject getPrintState = new JSONObject();		
-			getPrintState.put("study_id", studyID);
-			getPrintState.put("print_state", printState);
 			result=getPrintState.toString();	
 			
 			return result;

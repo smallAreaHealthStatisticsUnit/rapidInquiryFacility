@@ -20,6 +20,8 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.json.JSONException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -106,7 +108,7 @@ public class GetStudyJSON {
 		rifStudiesQueryFormatter.addQueryLine(0, "       max_age_group,min_age_group,study_geolevel_name,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       map_table,suppression_value,extract_permitted,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       transfer_permitted,authorised_by,authorised_on,authorised_notes,");
-		rifStudiesQueryFormatter.addQueryLine(0, "       covariate_table,project,project_description,stats_method");
+		rifStudiesQueryFormatter.addQueryLine(0, "       covariate_table,project,project_description,stats_method,print_state,select_state");
 		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");	
 		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");	
 		PreparedStatement statement = manager.createPreparedStatement(connection,
@@ -183,10 +185,16 @@ public class GetStudyJSON {
 				}
 				else if (name.equals("username") ) {
 					additionalData.put("extracted_by", value);	
+					rif_job_submission.put("submitted_by", value);	
 				}
 				else if (name.equals("study_date") ) {
-					dateTimeValue=resultSet.getTimestamp(i, calendar);
-					additionalData.put("job_submission_date", df.format(dateTimeValue));	
+					if (value != null && value.length() > 0) {
+						dateTimeValue=resultSet.getTimestamp(i, calendar);
+						rif_job_submission.put("job_submission_date", df.format(dateTimeValue));	
+					}
+					else {
+						rif_job_submission.put("job_submission_date", "ONKNOWN");	
+					}
 				}
 				else if (name.equals("authorised_on") ) {
 					dateTimeValue=resultSet.getTimestamp(i, calendar);
@@ -273,6 +281,28 @@ public class GetStudyJSON {
 					calculation_methods.put("calculation_method", calculation_method);	
 					rif_job_submission.put("calculation_methods", calculation_methods);
 				}
+				else if (name.equals("print_state") ) {
+					if (value != null && value.length() > 0) {
+						try {
+							JSONObject printState = new JSONObject(value);
+							rif_job_submission.put("print_selection", printState);
+						}
+						catch (JSONException jsonException) {
+							throw new JSONException(jsonException.getMessage() + "; in: " + name + "=" + value);
+						}
+					}
+				}
+				else if (name.equals("select_state") ) {
+					if (value != null && value.length() > 0) {
+						try {
+							JSONObject selectState = new JSONObject(value);
+							rif_job_submission.put("study_selection", selectState);	
+						}
+						catch (JSONException jsonException) {
+							throw new JSONException(jsonException.getMessage() + "; in: " + name + "=" + value);
+						}
+					}						
+				}
 				else { 
 					additionalData.put(name, value);	
 				}
@@ -318,10 +348,15 @@ public class GetStudyJSON {
 				rif_job_submission.put("other_taxonomy_error", otherTaxonomyErrorObject);
 			}
 		}
-		catch (Exception exception) {
+		catch (SQLException sqlException) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifStudiesQueryFormatter.generateQuery(),
-				exception);
-			throw exception;
+				sqlException);
+			throw sqlException;
+		}
+		catch (JSONException jsonException) {
+			rifLogger.error(this.getClass(), "Error in JSON parse: ",
+				jsonException);
+			throw jsonException;
 		}
 		finally {
 			closeStatement(statement);
