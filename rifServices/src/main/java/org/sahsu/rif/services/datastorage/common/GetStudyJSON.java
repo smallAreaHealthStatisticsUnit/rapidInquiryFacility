@@ -100,6 +100,7 @@ public class GetStudyJSON {
 		int columnCount = 0;
 		JSONObject rif_job_submission = new JSONObject();
 		JSONObject additionalData = new JSONObject();
+		boolean isDiseaseMappingStudy=false;
 		
 		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username,study_id,extract_table,study_name,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       summary,description,other_notes,study_date,");
@@ -129,8 +130,9 @@ public class GetStudyJSON {
 			JSONObject rif_output_options = new JSONObject();
 			JSONObject investigations = new JSONObject();
 			JSONArray investigation = new JSONArray();
-			JSONObject disease_mapping_study_area = new JSONObject();
+			JSONObject study_area = new JSONObject();
 			JSONObject comparison_area = new JSONObject();
+			JSONObject selectState = null;
 			
 			String geographyName=null;
 			String comparisonGeolevelName = null;
@@ -221,6 +223,7 @@ public class GetStudyJSON {
 					switch(Integer.parseInt(value)) {
 						case 1: // disease mapping
 							study_type.put("study_type", "Disease Mapping");	
+							isDiseaseMappingStudy=true;
 							break;
 						case 11: 
 							study_type.put("study_type", "Risk Analysis (many areas, one band)");
@@ -295,7 +298,7 @@ public class GetStudyJSON {
 				else if (name.equals("select_state") ) {
 					if (value != null && value.length() > 0) {
 						try {
-							JSONObject selectState = new JSONObject(value);
+							selectState = new JSONObject(value);
 							rif_job_submission.put("study_selection", selectState);	
 						}
 						catch (JSONException jsonException) {
@@ -308,14 +311,24 @@ public class GetStudyJSON {
 				}
 			}
 			rif_job_submission.put("project", rif_project);	
-			addStudyAreas(disease_mapping_study_area, studyGeolevelName, comparisonGeolevelName, geographyName);
-			study_type.put("disease_mapping_study_area", disease_mapping_study_area);
-			addComparisonAreas(comparison_area, studyGeolevelName, comparisonGeolevelName, geographyName);
+			addStudyAreas(study_area, studyGeolevelName, comparisonGeolevelName, geographyName, selectState);
+			if (isDiseaseMappingStudy) {
+				study_type.put("disease_mapping_study_area", study_area);
+			}
+			else {
+				study_type.put("risk_analysis_study_area", study_area);
+			}
+			addComparisonAreas(comparison_area, studyGeolevelName, comparisonGeolevelName, geographyName, selectState);
 			study_type.put("comparison_area", comparison_area);
 			addInvestigations(investigation, geographyName);
 			investigations.put("investigation", investigation);
 			study_type.put("investigations", investigations);
-			rif_job_submission.put("disease_mapping_study", study_type);
+			if (isDiseaseMappingStudy) {
+				rif_job_submission.put("disease_mapping_study", study_type);
+			}
+			else {
+				rif_job_submission.put("risk_analysis_study", study_type);
+			}
 			rif_job_submission.put("rif_output_options", rif_output_options);
 			addAdditionalTables(additionalData, "rif40_study_status");
 			addSqlLog(additionalData);
@@ -1107,13 +1120,14 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	 *	
 	 * View for data: RIF40_STUDY_AREAS
 	 *
-     * @param disease_mapping_study_areas (required)
+     * @param study_areas (required)
      * @param studyGeolevelName (required)
      * @param comparisonGeolevelName (required)
      * @param geographyName (required)
+     * @param selectState (required)
      */		
-	private void addStudyAreas(JSONObject disease_mapping_study_areas, 
-		String studyGeolevelName, String comparisonGeolevelName, String geographyName)
+	private void addStudyAreas(JSONObject study_areas, 
+		String studyGeolevelName, String comparisonGeolevelName, String geographyName, JSONObject selectState)
 					throws Exception {
 		JSONObject studyGeolevel = getLookupTableName(connection, studyGeolevelName, geographyName);
 		
@@ -1168,11 +1182,30 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 				geo_levels.put("geolevel_to_view", studyName);
 				geo_levels.put("geolevel_to_map", studyName);
 				geo_levels.put("geolevel_area", "");
-				geo_levels.put("geolevel_select", studyName);
+				
+				String studySelectAt=studyGeolevelName;
+				if (selectState != null) {
+					studySelectAt=selectState.optString("studySelectAt");
+					if (studySelectAt == null) {
+						studySelectAt=studyGeolevelName;
+					}
+				}		
+				JSONObject geolevelSelect=new JSONObject();			
+				geolevelSelect.put("name", studySelectAt);
+				geo_levels.put("geolevel_select", geolevelSelect);
+				
 				mapArea2.put("map_area", mapAreaArray);
-				disease_mapping_study_areas.put("geo_levels", geo_levels);
-				disease_mapping_study_areas.put("study_geolevel", studyGeolevel);
-				disease_mapping_study_areas.put("map_areas", mapArea2);
+				study_areas.put("geo_levels", geo_levels);
+				study_areas.put("study_geolevel", studyGeolevel);
+				
+				JSONArray studySelectedAreas=selectState.optJSONArray("studySelectedAreas");
+				if (studySelectedAreas == null) {
+					mapArea2.put("map_area", mapAreaArray);
+				}
+				else {	
+					mapArea2.put("map_area", studySelectedAreas);
+				}
+				study_areas.put("map_areas", mapArea2);
 			}
 			else {
 				throw new Exception("addStudyAreas(): expected 1+ rows, got none");
@@ -1197,9 +1230,10 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      * @param studyGeolevelName (required)
      * @param comparisonGeolevelName (required)
      * @param geographyName (required)
+     * @param selectState (required)
      */		
 	private void addComparisonAreas(JSONObject comparison_areas, 
-		String studyGeolevelName, String comparisonGeolevelName, String geographyName)
+		String studyGeolevelName, String comparisonGeolevelName, String geographyName, JSONObject selectState)
 					throws Exception {
 		JSONObject comparisonGeolevel = getLookupTableName(connection, comparisonGeolevelName, geographyName);
 		
@@ -1254,10 +1288,28 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 				geo_levels.put("geolevel_to_view", compName);
 				geo_levels.put("geolevel_to_map", compName);
 				geo_levels.put("geolevel_area", "");
-				geo_levels.put("geolevel_select", compName);
-				mapArea2.put("map_area", mapAreaArray);
+				
+				String comparisonSelectAt=comparisonGeolevelName;
+				if (selectState != null) {
+					comparisonSelectAt=selectState.optString("comparisonSelectAt");
+					if (comparisonSelectAt == null) {
+						comparisonSelectAt=comparisonGeolevelName;
+					}
+				}
+				JSONObject geolevelSelect=new JSONObject();			
+				geolevelSelect.put("name", comparisonSelectAt);
+				geo_levels.put("geolevel_select", geolevelSelect);
+					
 				comparison_areas.put("geo_levels", geo_levels);
 				comparison_areas.put("comparison_geolevel", comparisonGeolevel);
+				
+				JSONArray comparisonSelectedAreas=selectState.optJSONArray("comparisonSelectedAreas");
+				if (comparisonSelectedAreas == null) {
+					mapArea2.put("map_area", mapAreaArray);
+				}
+				else {	
+					mapArea2.put("map_area", comparisonSelectedAreas);
+				}				
 				comparison_areas.put("map_areas", mapArea2);
 			}
 			else {

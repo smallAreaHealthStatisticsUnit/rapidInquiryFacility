@@ -158,9 +158,9 @@ angular.module("RIF")
 						// Also defined in rifs-util-leafletdraw.js
 
                         //selectedPolygon array synchronises the map <-> table selections  
-                        $scope.selectedPolygon = $scope.input.selectedPolygon;
-                        //total for display
-                        $scope.selectedPolygonCount = $scope.selectedPolygon.length;
+                        $scope.selectedPolygon = $scope.input.selectedPolygon;                       
+                        $scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
+						
                         //band colour look-up for selected districts
                         $scope.possibleBands = $scope.input.bands;
                         $scope.currentBand = 1; //from dropdown
@@ -244,7 +244,7 @@ angular.module("RIF")
 									shapesLayerAreaList=Object.keys(shapesLayerAreas); 
 									shapesLayerAreaList.sort(function(a, b){return b - a}); 
 									// Sort into descended list so the smallest areas are in front
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] sorted areas: " + shapesLayerAreaList.length + 
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] sorted shape areas: " + shapesLayerAreaList.length + 
 										"; " + JSON.stringify(shapesLayerAreaList));
 									if ($scope.areaNameList == undefined) {
 										$scope.createAreaNameList();
@@ -704,7 +704,7 @@ angular.module("RIF")
 								
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideCentroid: " + SelectStateService.getState().showHideCentroids +
 								 "; $scope.bShowHideCentroids: " + $scope.bShowHideCentroids + 
-								 "; centroidMarkers: " + centroidMarkers + 
+//								 "; centroidMarkers: " + JSON.stringify(centroidMarkers) + 
 								 "; $scope.areamap.hasLayer(centroidMarkers): " + $scope.areamap.hasLayer(centroidMarkers));
 								if (SelectStateService.getState().showHideCentroids) {
 									$scope.bShowHideCentroids = true;
@@ -736,6 +736,7 @@ angular.module("RIF")
                                         return;
                                     }                                  
                                     //populate the table
+									var foundCount=0;
                                     for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
                                         var thisPoly = res.data.objects.collection.geometries[i];
                                         var bFound = false;
@@ -743,6 +744,7 @@ angular.module("RIF")
                                             if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
                                                 res.data.objects.collection.geometries[i].properties.band = $scope.selectedPolygon[j].band;
                                                 bFound = true;
+												foundCount++;
                                                 break;
                                             }
                                         }
@@ -752,6 +754,13 @@ angular.module("RIF")
                                     }
                                     $scope.gridOptions.data = ModalAreaService.fillTable(res.data);
                                     $scope.totalPolygonCount = res.data.objects.collection.geometries.length;
+									
+									if (foundCount != $scope.selectedPolygon.length) {
+                                        alertScope.showError("Could not match polygons from database with selected polygons list");
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
+											"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
+											"; $scope.selectedPolygon.length: " + $scope.selectedPolygon.length);
+									}
                                 });
                             }).then(function () {
 								// Add back selected shapes
@@ -807,7 +816,6 @@ angular.module("RIF")
 							
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + SelectStateService.getState().showHideSelectionShapes +
 								 "; $scope.bShowHideSelectionShapes: " + $scope.bShowHideSelectionShapes + 
-								 "; $scope.shapes: " + $scope.shapes + 
 								 "; $scope.areamap.hasLayer($scope.shapes): " + $scope.areamap.hasLayer($scope.shapes));
 								if (SelectStateService.getState().showHideSelectionShapes) {
 									$scope.bShowHideSelectionShapes = true;
@@ -1090,14 +1098,21 @@ angular.module("RIF")
                             }
                             //Update table selection
                             $scope.gridApi.selection.clearSelectedRows();
+							var foundCount=0;
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
                                 $scope.gridOptions.data[i].band = 0;
                                 for (var j = 0; j < $scope.selectedPolygon.length; j++) {
                                     if ($scope.gridOptions.data[i].area_id === $scope.selectedPolygon[j].id) {
+										foundCount++;
                                         $scope.gridOptions.data[i].band = $scope.selectedPolygon[j].band;
                                     }
                                 }
                             }
+							alertScope.consoleLog("[rifd-dsub-maptable.js] newNames: " + newNames.length +
+								"; oldNames: " + oldNames.length +
+								"; foundCount: " + foundCount +
+								"; $scope.gridOptions.data: " + $scope.gridOptions.data.length);
+		
                             //Update the area counter
                             $scope.selectedPolygonCount = newNames.length;
 
@@ -1210,23 +1225,30 @@ angular.module("RIF")
 						$scope.createAreaNameList = function () { // Not from latlngList - not in scope when restored
 							var studySelectedAreas=SelectStateService.getState().studySelection.studySelectedAreas;
 							if (studySelectedAreas) {
-								$scope.areaNameList = {};
+								newAreaNameList = {};
 								
 								for (var i = 0; i < studySelectedAreas.length; i++) {              									
 									// Update areaNameList for debug
 									if (studySelectedAreas[i].band && studySelectedAreas[i].band != -1) {
-										if ($scope.areaNameList[studySelectedAreas[i].band]) {
-											$scope.areaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
+										if (newAreaNameList[studySelectedAreas[i].band]) {
+											newAreaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
 										}
 										else {
-											$scope.areaNameList[studySelectedAreas[i].band] = [];
-											$scope.areaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
+											newAreaNameList[studySelectedAreas[i].band] = [];
+											newAreaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
 										}
 									}
 								}
 							}
+							if ($scope.areaNameList == undefined) {
+								$scope.areaNameList = {};
+							}
 							alertScope.consoleLog("[rifd-dsub-maptable.js] createAreaNameList(); studySelectedAreas: " + studySelectedAreas.length +
-								"; areaNameList: " + $scope.areaNameList.length);
+								"; old areaNameList: " + Object.keys($scope.areaNameList).length +
+								"; new areaNameList: " + Object.keys(newAreaNameList).length +
+								"; " + JSON.stringify(newAreaNameList));
+								
+							$scope.areaNameList = newAreaNameList;
 						}
 							
                         // selection event fired from service
@@ -1592,6 +1614,8 @@ angular.module("RIF")
 										var thisPolyID = latLng.id;
 										var bFound = false;
 										
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] latlngList.forEach(" +
+											itemsProcessed + ")");
 										// Selects the correct polygons
 										for (var i = 0; i < $scope.selectedPolygon.length; i++) {
 											if ($scope.selectedPolygon[i].id === thisPolyID) { // Found
@@ -1613,7 +1637,11 @@ angular.module("RIF")
 												break;
 											}
 										}
-										
+																				
+//										alertScope.consoleDebug("[rifd-dsub-maptable.js] latlngList.forEach(" +
+//											itemsProcessed + ") bFound: " + bFound + 
+//											"; latLng: " + JSON.stringify(latLng));
+											
 										if (!bFound) {
 											if (shape.band === -1) {
 												$scope.selectedPolygon.push({

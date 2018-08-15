@@ -111,10 +111,13 @@ angular.module("RIF")
                     });
                 };
             }])
-        .controller('ModalComparisonAreaInstanceCtrl', function ($scope, $uibModalInstance, CompAreaStateService) {
+        .controller('ModalComparisonAreaInstanceCtrl', ['$scope', '$uibModalInstance', 'CompAreaStateService', 'AlertService', 
+				function ($scope, $uibModalInstance, CompAreaStateService, AlertService) {
             $scope.input = {};
             $scope.input.name = "ComparisionAreaMap";
             $scope.input.selectedPolygon = CompAreaStateService.getState().polygonIDs;
+			AlertService.consoleDebug("[rifc-dsub-comparea.js] selectedPolygon[" + $scope.input.selectedPolygon.length + "]: " +
+				JSON.stringify($scope.input.selectedPolygon));
             $scope.input.selectAt = CompAreaStateService.getState().selectAt;
             $scope.input.studyResolution = CompAreaStateService.getState().studyResolution;
             $scope.input.center = CompAreaStateService.getState().center;
@@ -129,4 +132,4 @@ angular.module("RIF")
             $scope.submit = function () {
                 $uibModalInstance.close($scope.input);
             };
-        });
+        }]);
