@@ -120,23 +120,29 @@ angular.module("RIF")
 							if (!newStudySelection.studySelectedAreas) {
 								throw new Error("rifs-dsub-selectstate.js(): studySelectedAreas key not found, got: " +
 									Object.keys(newStudySelection).join(", "));
-							}			
-							else if (newStudySelection.studySelectedAreas.length < 1) {
+							}	
+							if (newStudySelection.comparisonSelectAt) {
+								if (!newStudySelection.comparisonSelectedAreas) {
+									throw new Error("rifs-dsub-selectstate.js(): comparisonSelectedAreas key not found, got: " +
+										Object.keys(newStudySelection).join(", "));
+								}								
+							}						
+							if (newStudySelection.studySelectedAreas.length == 0 &&
+							    newStudySelection.comparisonSelectedAreas.length == 0) { // Pre alter 10 study
+								throw new Error("upload no longer supported for pre-alter 10 studies");
+								// This is because studySelectAt and t he selectedPolygon array are probably incompatible 
+								// (i.e. at different geolevels)
+							}							
+							else if (newStudySelection.studySelectedAreas.length <1) {
+								AlertService.consoleDebug("[rrifs-dsub-selectstate.js] newStudySelection: " + JSON.stringify(newStudySelection, 1));
 								throw new Error("at least one study area required");
-							}								
+							}						
+//							else if (newStudySelection.comparisonSelectedAreas.length < 1) { // Not necessarily; may be derived from older study
+//								throw new Error("at least one comparison area required");
+//							}					
 						}
 						else {
 							throw new Error("rifs-dsub-selectstate.js(): studySelectAt not found");
-						}
-						
-						if (newStudySelection.comparisonSelectAt) {
-							if (!newStudySelection.comparisonSelectedAreas) {
-								throw new Error("rifs-dsub-selectstate.js(): comparisonSelectedAreas key not found, got: " +
-									Object.keys(newStudySelection).join(", "));
-							}		
-//							else if (newStudySelection.comparisonSelectedAreas.length < 1) { // Not necessarily; may be derived from older study
-//								throw new Error("at least one comparison area required");
-//							}									
 						}
 							
 						if (newStudyType == "disease_mapping_study") {

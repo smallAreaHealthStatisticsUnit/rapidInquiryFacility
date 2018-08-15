@@ -1198,12 +1198,17 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 				study_areas.put("geo_levels", geo_levels);
 				study_areas.put("study_geolevel", studyGeolevel);
 				
-				JSONArray studySelectedAreas=selectState.optJSONArray("studySelectedAreas");
-				if (studySelectedAreas == null) {
-					mapArea2.put("map_area", mapAreaArray);
+				if (selectState != null) {
+					JSONArray studySelectedAreas=selectState.optJSONArray("studySelectedAreas");
+					if (studySelectedAreas == null) {
+						mapArea2.put("map_area", mapAreaArray);
+					}
+					else {	
+						mapArea2.put("map_area", studySelectedAreas);
+					}
 				}
-				else {	
-					mapArea2.put("map_area", studySelectedAreas);
+				else {
+					mapArea2.put("map_area", mapAreaArray);
 				}
 				study_areas.put("map_areas", mapArea2);
 			}
@@ -1303,12 +1308,17 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 				comparison_areas.put("geo_levels", geo_levels);
 				comparison_areas.put("comparison_geolevel", comparisonGeolevel);
 				
-				JSONArray comparisonSelectedAreas=selectState.optJSONArray("comparisonSelectedAreas");
-				if (comparisonSelectedAreas == null) {
-					mapArea2.put("map_area", mapAreaArray);
+				if (selectState != null) {
+					JSONArray comparisonSelectedAreas=selectState.optJSONArray("comparisonSelectedAreas");
+					if (comparisonSelectedAreas == null) {
+						mapArea2.put("map_area", mapAreaArray);
+					}
+					else {	
+						mapArea2.put("map_area", comparisonSelectedAreas);
+					}	
 				}
-				else {	
-					mapArea2.put("map_area", comparisonSelectedAreas);
+				else {
+					mapArea2.put("map_area", mapAreaArray);
 				}				
 				comparison_areas.put("map_areas", mapArea2);
 			}
