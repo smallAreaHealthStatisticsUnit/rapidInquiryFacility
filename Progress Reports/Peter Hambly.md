@@ -2765,7 +2765,7 @@ SELECT a.*, b.coa2011
   
 #### 30th July to 3rd August
 
-* Regression and fix test pull #47 (Change database access in R to use RJDBC) and add_study_selection_to_json:
+* Regression and fix test pull #47 (Change database access in R to use RJDBC) and merge branch add_study_selection_to_json:
   * Had to use *RODBC* on SQL Server due to *RJDBC* error:
     ``` 
 	saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
@@ -2824,4 +2824,10 @@ SELECT a.*, b.coa2011
 * Set map background by geography, constrain map background filed; parse testeing study_selection in middleware;
 * Added select/print (initialisation) state update via study submission; test alter 10 on SQL Server;
 
+#### 13th to 17th August
+ 
+* Print state testing
+* Study download/reload testing
+* Disable DB upload for pre alter 10 studies, test getSelectState, refactor SelectState service to make common
+ 
 TODO: Add notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   
