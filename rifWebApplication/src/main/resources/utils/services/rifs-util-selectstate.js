@@ -35,8 +35,8 @@
  * SERVICE to store state of selection modal
  */
 angular.module("RIF")
-        .factory('SelectStateService', ['$rootScope', 'AlertService',
-                function ($rootScope, AlertService) {
+        .factory('SelectStateService', ['$rootScope', 'AlertService', 'user',
+                function ($rootScope, AlertService, user) {
 
                     var s = {
                         studyType: "disease_mapping_study",
@@ -130,7 +130,7 @@ angular.module("RIF")
 							if (newStudySelection.studySelectedAreas.length == 0 &&
 							    newStudySelection.comparisonSelectedAreas.length == 0) { // Pre alter 10 study
 								throw new Error("upload no longer supported for pre-alter 10 studies");
-								// This is because studySelectAt and t he selectedPolygon array are probably incompatible 
+								// This is because studySelectAt and the selectedPolygon array are probably incompatible 
 								// (i.e. at different geolevels)
 							}							
 							else if (newStudySelection.studySelectedAreas.length <1) {
@@ -185,6 +185,21 @@ angular.module("RIF")
 						return r;
 					}
 					
+					function getStudySelection2(mapID, studyId, getStudySelectionCallback) {
+						
+						var dbStudySelection;
+						user.getSelectState(user.currentUser, studyId).then(function (res) {
+							if (getStudySelectionCallback && typeof(getStudySelectionCallback) == "function") {
+								getStudySelectionCallback(undefined /* no error */, mapID, dbStudySelection);
+							}
+							else {
+								throw new Error("rifs-dsub-selectstate.js(): invalid callback for map: " + mapID + "; studyId: " + studyId);
+							}
+						}, function (err) {
+							getStudySelectionCallback((err || "unknown error in getSelectState REST call") /* error */, mapID, dbStudySelection);
+						}
+					}
+					
                     return {
                         getState: function () {
 							if (s.studySelection && !s.studySelection.riskAnalysisDescription) {
@@ -237,6 +252,9 @@ angular.module("RIF")
 						},
 						getriskAnalysisDesription: function() {
 							return getriskAnalysisDesription2();
+						},
+						getStudySelection: function(mapID, studyId, getStudySelectionCallback) {
+							getStudySelection2(mapID, studyId, getStudySelectionCallback);
 						}
                     };
                 }]);

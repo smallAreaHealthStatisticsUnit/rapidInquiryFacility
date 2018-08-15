@@ -38,9 +38,9 @@
 /* global L */
 angular.module("RIF")
         .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'ChoroService', 'ColorBrewerService', 
-            'MappingStateService', 'ViewerStateService', 'MappingService', 'ParametersService',
+            'MappingStateService', 'ViewerStateService', 'MappingService', 'ParametersService', 'SelectStateService',
             function ($scope, user, LeafletBaseMapService, ChoroService, ColorBrewerService,
-                    MappingStateService, ViewerStateService, MappingService, ParametersService) {
+                    MappingStateService, ViewerStateService, MappingService, ParametersService, SelectStateService) {
 
                 //Reference the parent scope, viewer or disease mapping
                 var parentScope = $scope.$parent;
@@ -152,7 +152,14 @@ angular.module("RIF")
                     'diseasemap2': {},
                     'viewermap': {}
                 });
-
+			
+				// selection shapee (usually risk analysis)
+                $scope.shapes = ({
+                    'diseasemap1': {},
+                    'diseasemap2': {},
+                    'viewermap': {}
+                });	
+				
                 //Legends and Infoboxes
                 $scope.legend = {
                     'diseasemap1': L.control({position: 'topright'}),
@@ -231,6 +238,28 @@ angular.module("RIF")
                     }
 				}
 
+				/* 
+				 * Add selection shapee (usually risk analysis)
+				 */
+				function addSelectedShapes(mapID) {
+					var selectedShapes;
+					if ($scope.studyID[mapID].study_id) {
+						SelectStateService.getStudySelection(mapID, $scope.studyID[mapID].study_id, 
+							function getStudySelectionCallback(err, mapID, selectedShapes) {		
+								// Add back selected shapes				
+								if (err) {
+									$scope.showError(err);
+								}
+								else if (selectedShapes) {
+									$scope.consoleLog("[rifc-util-mapping.js] mapID: " + mapID + 
+										"; selectedShapes: " + JSON.stringify(selectedShapes));
+								}
+								else {
+									$scope.consoleLog("[rifc-util-mapping.js] mapID: " + mapID + " no selected shapaes");
+								}
+							});
+					}
+				}			
 				
                 /*
                  * Tidy up on error
