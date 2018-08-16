@@ -189,15 +189,17 @@ angular.module("RIF")
 						
 						var dbStudySelection;
 						user.getSelectState(user.currentUser, studyId).then(function (res) {
+							
 							if (getStudySelectionCallback && typeof(getStudySelectionCallback) == "function") {
+								dbStudySelection=res.data.select_state;
 								getStudySelectionCallback(undefined /* no error */, mapID, dbStudySelection);
 							}
 							else {
 								throw new Error("rifs-dsub-selectstate.js(): invalid callback for map: " + mapID + "; studyId: " + studyId);
 							}
-						}, function (err) {
-							getStudySelectionCallback((err || "unknown error in getSelectState REST call") /* error */, mapID, dbStudySelection);
-						}
+						}, function (eer) {
+							getStudySelectionCallback("Error in getSelectState REST call" /* error */, mapID, dbStudySelection);
+						});
 					}
 					
                     return {
