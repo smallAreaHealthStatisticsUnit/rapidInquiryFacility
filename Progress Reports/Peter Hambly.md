@@ -2828,6 +2828,7 @@ SELECT a.*, b.coa2011
  
 * Print state testing
 * Study download/reload testing
-* Disable DB upload for pre alter 10 studies, test getSelectState, refactor SelectState service to make common
+* Disable DB upload for pre alter 10 studies, test getSelectState, refactor SelectState service to make common;
+* Add selected shapes (risk analysis definition shapefiles);
  
 TODO: Add notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   
