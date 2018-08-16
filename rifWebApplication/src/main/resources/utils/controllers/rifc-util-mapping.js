@@ -339,12 +339,6 @@ angular.module("RIF")
 										if (!$scope.map[mapID].hasLayer($scope.shapes[mapID])) {
 											$scope.consoleDebug("[rifc-util-mapping.js] add shapes layerGroup to map: " + mapID);
 											$scope.map[mapID].addLayer($scope.shapes[mapID]);
-//											if ($scope.info._map == undefined) { // Add back info control
-//												$scope.info.addTo($scope.areamap);
-//												$scope.consoleDebug("[rifc-util-mapping.js] add info control");
-//											}
-									
-//											$scope.bringShapesToFront(mapID);
 										}
 										
 										if ($scope.shapes[mapID].getLayers().length == 0) {
@@ -360,10 +354,6 @@ angular.module("RIF")
 										if ($scope.map[mapID].hasLayer($scope.shapes[mapID])) {
 											$scope.consoleDebug("[rifc-util-mapping.js] remove shapes layerGroup from map: " + mapID);
 											$scope.map[mapID].removeLayer($scope.shapes[mapID]);
-//											if ($scope.info._map) { // Remove info control
-//												$scope.info.remove();
-//												$scope.consoleDebug("[rifc-util-mapping.js] remove info control");
-//											}
 										}
 										$scope.bShowHideSelectionShapes[mapID] = false;
 									}	
@@ -379,19 +369,19 @@ angular.module("RIF")
 										var selectedShape=selectedShapes[i];
 										
 										// Shape info highlighter
-										/*
+								
 										function selectedShapesHighLightFeature(e, selectedShape) {
 											$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " selectedShapesHighLightFeature " + 
 												"(" + e.target._leaflet_id + "; " + JSON.stringify(e.target._latlng) + "): " +
 												(JSON.stringify(selectedShape.properties) || "no properties"));
-											$scope.info.update(selectedShape, e.target._latlng);
+//											$scope.shapeInfoUpdate(mapID, selectedShape, e.target._latlng);
 										}									
 										function selectedShapesResetFeature(e) {
 											$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " selectedShapesResetFeature " +  
 												"(" + e.target._leaflet_id + "; " + JSON.stringify(e.target._latlng) + "): " +
 												(JSON.stringify(selectedShape.properties) || "no properties"));
-											$scope.info.update(undefined, e.target._latlng);
-										} */		
+//											$scope.shapeInfoUpdate(mapID, undefined, e.target._latlng);
+										} 	
 										
 										if (selectedShape.circle) { // Represent circles as a point and a radius
 										
@@ -500,7 +490,7 @@ angular.module("RIF")
 
 											$scope.zoomToSelection(mapID); // Zoom to selection	
 											$timeout(function() {								
-												$scope.redrawMap(mapID);
+												$scope.refresh(mapID);
 											}, 100);			
 										}, 100);			
 									}); 
@@ -522,7 +512,80 @@ angular.module("RIF")
 						}
 					}
 				}			
-
+				
+				// method that we will use to update the control based on feature properties passed
+				$scope.shapeInfoUpdate = function (mapID, savedShape, latLng /* Of shape, not mouse! */) {
+					this._div=L.DomUtil.get('infobox');
+					
+					if (this._div) {
+						if (savedShape) {
+							var bandCount = {};
+							var studySelection=$scope.selectedPolygon;
+							if (studySelection) {
+								for (var i=0; i<studySelection.length; i++) {
+									var band=studySelection[i].band;
+									if (bandCount[band]) {
+										bandCount[band]++;
+									}
+									else {
+										bandCount[band]=1;
+									}
+								}
+							}
+							if (savedShape.circle) {
+								this._div.innerHTML = '<h4>Circle;</h4><b>Radius: ' + Math.round(savedShape.radius * 10) / 10 + 'm</b></br>' +
+									"<b>Lat: " + Math.round(savedShape.latLng.lat * 1000) / 1000 + // 100m precision
+									"; long: " +  Math.round(savedShape.latLng.lng * 1000) / 1000 +'</b></br>';
+							}
+							else {
+								var coordinates=savedShape.geojson.geometry.coordinates[0];												
+								if (savedShape.freehand) { // Shapefile		
+									savedShape=savedShape.coordinates;	
+								}	
+								
+								if (savedShape.freehand) {
+									this._div.innerHTML = '<h4>Freehand polygon</h4>';
+								}
+								else  {
+									this._div.innerHTML = '<h4>Shapefile polygon</h4>';
+								}
+								if (coordinates) {
+									this._div.innerHTML+='<b>' + coordinates.length + ' points</b></br>';
+								}
+							}
+							
+							if (savedShape.area) {
+								this._div.innerHTML+= '<b>area: ' + savedShape.area + ' square km</b><br />'
+							}
+								
+							for (var property in savedShape.properties) {
+								if (property == 'area') {
+									if (savedShape.area === undefined) {
+										this._div.innerHTML+= '<b>' + property + ': ' + savedShape.properties[property] + ' square km</b><br />'
+									}
+								}
+								else if (property != '$$hashKey') {
+									this._div.innerHTML+= '<b>' + property + ': ' + savedShape.properties[property] + '</b><br />';
+								}
+							}
+							this._div.innerHTML += '<b>Band: ' + (savedShape.band || "unknown") + '</b><br />';
+//							this._div.innerHTML += '<b>Areas selected: ' + (bandCount[savedShape.band] || 0) + '/' +
+//								latlngList.length +  '</b><br />';
+						}
+						else if ($scope.shapes[mapID].getLayers().length > 0) {
+							this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br>' +
+								'Hide selection shapes to mouse over area names</h4>';
+						}
+						else {
+							this._div.innerHTML = '<h4>Mouse over area names</h4>';
+						}
+//						this._div.innerHTML += '<b>Centroids: ' + $scope.centroid_type + '</b>';
+					}
+					else {
+						$scope.consoleError("[rifc-util-mapping.js] mapID: " + mapID + " shapeInfoUpdate() no infoBox element found");
+					}
+				};
+						
 				// Zoom to selection
 				$scope.zoomToSelection = function (mapID) {
 					var studyBounds = new L.LatLngBounds();
@@ -538,19 +601,6 @@ angular.module("RIF")
 							$scope.map[mapID].fitBounds(studyBounds);
 						}
 					}
-				};
-				
-				// Map redraw function with slight delay for leaflet
-				$scope.redrawMap = function(mapID) {
-					$scope.bringShapesToFront(mapID);
-							
-					$scope.map[mapID].whenReady(function() {
-						$timeout(function() {										
-								
-								$scope.consoleLog("[rifd-dsub-maptable.js] redraw map");
-								$scope.map[mapID].fitBounds($scope.map[mapID].getBounds()); // Force map to redraw after 0.5s delay
-							}, 500);	
-					});									
 				};
 						
 				// Bring shapes to front by descending band order; lowest in front (so mouseover/mouseout works!)
@@ -949,6 +999,16 @@ angular.module("RIF")
 							$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
 						}
 					}
+					
+					$scope.bringShapesToFront(mapID);
+							
+					$scope.map[mapID].whenReady(function() {
+						$timeout(function() {										
+								
+								$scope.consoleLog("[rifd-dsub-maptable.js] redraw map");
+								$scope.map[mapID].fitBounds($scope.map[mapID].getBounds()); // Force map to redraw after 0.5s delay
+							}, 500);	
+					});	
 					
                     //draw histogram [IT MUST BW HERE OR D3 GETS CONFUSED!]
 					callGetD3chart = function(mapID) {
@@ -1578,6 +1638,7 @@ angular.module("RIF")
                     function closureAddControl(m) {
                         return function () {
                             this._div = L.DomUtil.create('div', 'info');
+							this._div.id = "infobox";
                             this.update();
                             return this._div;
                         };
@@ -1612,12 +1673,19 @@ angular.module("RIF")
                             }
                         };
                     }
+					
                     //Area info box update
                     function closureInfoBox2Update(m) {
                         return function (poly) {
-                            if (poly === null) {
-                                this._div.innerHTML = "";
-                                this._div.style["display"] = "none";
+                            if (poly == undefined) {
+								if ($scope.shapes[m].getLayers().length > 0) {
+									this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br>' +
+										'Hide selection shapes to mouse over area names</h4>';
+								}
+								else {
+									this._div.innerHTML = '<h4>Mouse over area names</h4>';
+								}
+                                this._div.style["display"] = "inline";
                             } else {
                                 var results = null;
                                 for (var i = 0; i < $scope.tableData[m].length; i++) {
@@ -1634,12 +1702,18 @@ angular.module("RIF")
                                             'Observed: ' + results.observed + '</br>' +
                                             'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h5>';
                                 } else {
-                                    this._div.innerHTML = "";
-                                    this._div.style["display"] = "none";
+									if ($scope.shapes[m].getLayers().length > 0) {
+										this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br>' +
+											'Hide selection shapes to mouse over area names</h4>';
+									}
+									else {
+										this._div.innerHTML = '<h4>Mouse over area names</h4>';
+									}
+									this._div.style["display"] = "inline";
                                 }
                             }
                         };
-                    }
+                    };
 
                     //Add the controls
                     for (var i = 0; i < parentScope.myMaps.length; i++) {
