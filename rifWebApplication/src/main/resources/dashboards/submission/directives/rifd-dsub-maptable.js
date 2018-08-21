@@ -62,11 +62,95 @@ angular.module("RIF")
 						$scope.centroid_type="UNKNOWN";		
 						
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);		
-						$scope.areamap.createPane('shapes');
+						var shapes = $scope.areamap.createPane('shapes');
 						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups
-						
+						// returns a list of all elements under the cursor
+						// https://gist.github.com/Rooster212/4549f9ab0acb2fc72fe3
+						function elementsFromPoint(x,y) {
+							var elements = [], previousPointerEvents = [], current, i, d;
+
+							if(typeof document.elementsFromPoint === "function")
+								return document.elementsFromPoint(x,y);
+							if(typeof document.msElementsFromPoint === "function")
+								return document.msElementsFromPoint(x,y);
+							
+							// get all elements via elementFromPoint, and remove them from hit-testing in order
+							while ((current = document.elementFromPoint(x,y)) && elements.indexOf(current)===-1 && current != null) {
+								  
+								// push the element and its current style
+								elements.push(current);
+								previousPointerEvents.push({
+									value: current.style.getPropertyValue('pointer-events'),
+									priority: current.style.getPropertyPriority('pointer-events')
+								});
+								  
+								// add "pointer-events: none", to get to the underlying element
+								current.style.setProperty('pointer-events', 'none', 'important'); 
+							}
+
+							// restore the previous pointer-events values
+							for(i = previousPointerEvents.length; d=previousPointerEvents[--i]; ) {
+								elements[i].style.setProperty('pointer-events', d.value?d.value:'', d.priority); 
+							}
+							  
+							// return our results
+							return elements;
+						}
+
+						// Modified from: https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd
+						function shapesClickThrough(e) {
+							if (e._stopped) { 
+								alertScope("[rifd-dsub-maptable.js] shapesClickThrough " +  
+									"(" + e.target._leaflet_id + "): " + e.type + "; STOPPED");
+									L.DomEvent.stop(e);
+								return; 
+							}
+
+							var target = e.target;
+							var stopped;
+							var removed;
+							var ev = new MouseEvent(e.type, e)
+
+							removed = {node: target, display: target.style.display};
+							target.style.display = 'none';
+							var elementList = elementsFromPoint(e.clientX, e.clientY);
+							for (var k=0; k<elementList.length; k++) {
+								target=elementList[k];
+								if (target && target !== shapes) {												
+									stopped = !target.dispatchEvent(ev);
+									if (stopped || ev._stopped) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " + 										
+											"(" + e.target._leaflet_id + "; for: " + (e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + "; CALL STOP to: (" +
+											(target._leaflet_id || 'N/A') + ")");
+											L.DomEvent.stop(e);
+									}
+									else {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+											"(" + e.target._leaflet_id + "; for: " + (e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + "; PROPAGATE to: (" +
+											(target._leaflet_id || 'N/A') + ")");
+									}
+								}
+								else if (!target) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+										"(no target for: " + e.currentTarget._leaflet_id + "): " + e.type); 
+								}
+								else if (target === shapes) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+										"(target === shapes for: " + e.currentTarget._leaflet_id + "): " + e.type); 
+								}
+							}
+
+							removed.node.style.display = removed.display;
+						}
+						L.DomEvent.on(shapes, 'mouseover', function(e) {
+							shapesClickThrough(e)
+						});
+						L.DomEvent.on(shapes, 'mouseout', function(e) {
+							shapesClickThrough(e)
+						}); 
+										
 						SubmissionStateService.setAreaMap($scope.areamap);
-						$scope.bShowHideSelectionShapes=SelectStateService.getState().showHideSelectionShapes;
+						$scope.bShowHideSelectionShapes=(SelectStateService.getState().showHideSelectionShapes || true);
 						$scope.bShowHideCentroids=SelectStateService.getState().showHideCentroids;
                         $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
 
@@ -852,15 +936,17 @@ angular.module("RIF")
 									var selectedShape=selectedShapes[i];
 									function selectedShapesHighLightFeature(e, selectedShape) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesHighLightFeature " + 
-											"(" + e.target._leaflet_id + "; " + JSON.stringify(e.target._latlng) + "): " +
+											"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
+											"; " + JSON.stringify((e.target._latlng || e.latlng)) + "): " +
 											(JSON.stringify(selectedShape.properties) || "no properties"));
-										$scope.info.update(selectedShape, e.target._latlng);
+										$scope.info.update(selectedShape, (e.target._latlng || e.latlng));
 									}									
 									function selectedShapesResetFeature(e) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesResetFeature " +  
-											"(" + e.target._leaflet_id + "; " + JSON.stringify(e.target._latlng) + "): " +
+											"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
+											"; " + JSON.stringify((e.target._latlng || e.latlng)) + "): " +
 											(JSON.stringify(selectedShape.properties) || "no properties"));
-										$scope.info.update(undefined, e.target._latlng);
+										$scope.info.update(undefined, (e.target._latlng || e.latlng));
 									}		
 									
 									if (selectedShape.circle) { // Represent circles as a point and a radius
@@ -1671,6 +1757,7 @@ angular.module("RIF")
 								}
 							);
                         }; // End of makeDrawSelection()
+						
                         //remove drawn items event fired from service
                         $scope.$on('removeDrawnItems', function (event, data) {
                             removeMapDrawItems();
@@ -1683,6 +1770,8 @@ angular.module("RIF")
 						
 						$scope.info = L.control();
 						$scope.info.onAdd = function(map) {
+							
+							alertScope.consoleDebug("[rifd-dsub-maptable.js] create info <div>");
 							this._div = L.DomUtil.create('div', 'info');
 							this.update();
 							return this._div;
@@ -1754,6 +1843,28 @@ angular.module("RIF")
 									this._div.innerHTML = '<h4>Mouse over area names</h4>';
 								}
 								this._div.innerHTML += '<b>Centroids: ' + $scope.centroid_type + '</b>';
+							}
+							else {
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] no info <div>"); 
+								
+								if ($scope.shapes == undefined) {
+									alertScope.showError("[rifd-dsub-maptable.js] no shapes layerGroup");
+								}
+								else if ($scope.areamap.hasLayer($scope.shapes)) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
+									if ($scope.info._map == undefined) { // Add back info control
+										$scope.info.addTo($scope.areamap);
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] add info control");
+									}
+									
+									$scope.bShowHideSelectionShapes = true;
+									SelectStateService.getState().showHideSelectionShapes = true;
+									
+									$scope.bringShapesToFront();
+								}
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + 
+									SelectStateService.getState().showHideSelectionShapes);
+
 							}
 							
 /* The aim of this bit of code was to display the area. However "layer.fireEvent('mouseover');" breaks the selection and
