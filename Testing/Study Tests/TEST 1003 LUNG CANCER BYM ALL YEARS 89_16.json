@@ -112,7 +112,7 @@ Comments:
 		},		
 		"disease_mapping_study": {
 			"name": "1003 LUNG CANCER",
-			"description": "",
+			"description": "TEST 1003 LUNG CANCER BYM ALL YEARS 89_16",
 			"geography": {
 				"name": "SAHSULAND",
 				"description": "SAHSULAND"

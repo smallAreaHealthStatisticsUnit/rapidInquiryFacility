@@ -91,7 +91,7 @@ Comments:
 		},
 		"disease_mapping_study": {
 			"name": "1004 SEER LUNG 00 13",
-			"description": "",
+			"description": "TEST 1004",
 			"geography": {
 				"name": "USA_2014",
 				"description": "USA_2014"

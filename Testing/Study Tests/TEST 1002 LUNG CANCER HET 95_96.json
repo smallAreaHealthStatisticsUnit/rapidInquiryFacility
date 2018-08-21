@@ -78,7 +78,7 @@ Comments:
 		},
 		"disease_mapping_study": {
 			"name": "1002 LUNG CANCER",
-			"description": "",
+			"description": "TEST 1002 LUNG CANCER HET 95_96",
 			"geography": {
 				"name": "SAHSULAND",
 				"description": "SAHSULAND"
