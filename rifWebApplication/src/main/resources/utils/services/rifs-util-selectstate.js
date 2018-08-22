@@ -129,6 +129,8 @@ angular.module("RIF")
 							}						
 							if (newStudySelection.studySelectedAreas.length == 0 &&
 							    newStudySelection.comparisonSelectedAreas.length == 0) { // Pre alter 10 study
+								AlertService.consoleDebug("[rrifs-dsub-selectstate.js] newStudySelection: " +
+									JSON.stringify(newStudySelection, null, 1));
 								throw new Error("upload no longer supported for pre-alter 10 studies");
 								// This is because studySelectAt and the selectedPolygon array are probably incompatible 
 								// (i.e. at different geolevels)

@@ -111,10 +111,9 @@ angular.module("RIF")
 							input.selectedPolygon;
 						
 						try {
-							var r=SelectStateService.verifyStudySelection();
-//							$scope.consoleDebug("[rifc-dsub-studyarea.js] verifyStudySelection() " +
-//								SelectStateService.getState().studyType + " study area OK: " +
-//								JSON.stringify(r, null, 1));
+							if (SelectStateService.getState().studySelection.studySelectedAreas.length > 0) {
+								var r=SelectStateService.verifyStudySelection
+							}
 						}
 						catch (e) {
 							$scope.showWarningNoHide("Unable to verify study area selection: " + e.message);
