@@ -60,13 +60,14 @@ angular.module("RIF")
 							selectorBands=parameters.selectorBands
 						}		
 						$scope.centroid_type="UNKNOWN";		
-						
+						$scope.geoJSONLayers = [];
+								
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);		
 						var shapes = $scope.areamap.createPane('shapes');
 						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups
 						// returns a list of all elements under the cursor
 						// https://gist.github.com/Rooster212/4549f9ab0acb2fc72fe3
-						function elementsFromPoint(x,y) {
+/*						function elementsFromPoint(x,y) {
 							var elements = [], previousPointerEvents = [], current, i, d;
 
 							if(typeof document.elementsFromPoint === "function")
@@ -95,13 +96,13 @@ angular.module("RIF")
 							  
 							// return our results
 							return elements;
-						}
+						} */
 
 						// Modified from: https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd
-						function shapesClickThrough(e) {
+						function shapesClickThrough(e, map, geojsonLayers) {
 							if (e._stopped) { 
-								alertScope("[rifd-dsub-maptable.js] shapesClickThrough " +  
-									"(" + e.target._leaflet_id + "): " + e.type + "; STOPPED");
+//								alertScope("[rifd-dsub-maptable.js] shapesClickThrough " +  
+//									"(" + e.target._leaflet_id + "): " + e.type + "; STOPPED");
 									L.DomEvent.stop(e);
 								return; 
 							}
@@ -113,22 +114,54 @@ angular.module("RIF")
 
 							removed = {node: target, display: target.style.display};
 							target.style.display = 'none';
-							var elementList = elementsFromPoint(e.clientX, e.clientY);
+							
+/*						if (map) {
+								var layerPoint = map.latLngToLayerPoint(latlngList[0].latLng);
+								var containerPoint = map.latLngToContainerPoint(latlngList[0].latLng);
+								var mousePoint = map.mouseEventToContainerPoint(e);
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
+									"; latlngList[0]: " + JSON.stringify(latlngList[0]) + 
+									"; client: [" + e.clientX + "," + e.clientY + "]" + 
+//									"; layerPoint: [" + layerPoint.x + "," + layerPoint.y + "]" + 
+//									"; containerPoint: [" + containerPoint.x + "," + containerPoint.y + "]" +
+									"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
+							}
+							else {
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
+									"; latlngList[0]: " + JSON.stringify(latlngList[0]) + "; client: [" + e.clientX + "," + e.clientY + "]");
+							} */
+							
+							// Look for closest geoJSON layer. Mouse could be anywhere in the shape so centroids will not match					
+							var geojsonLayer=L.GeometryUtil.closestLayer(map, geojsonLayers, map.mouseEventToLatLng(e));
+							var properties;
+							var leafletId;
+							var leafletIdFound=false;
+							if (geojsonLayer) {
+								properties = geojsonLayer.layer.feature.properties;
+								leafletId = geojsonLayer.layer._leaflet_id;
+							}
+							
+							// This does not work as the geoJSON tile layer is blocking mouse clicks for some reason
+/*							var elementList = elementsFromPoint(e.clientX, e.clientY);
 							for (var k=0; k<elementList.length; k++) {
 								target=elementList[k];
-								if (target && target !== shapes) {												
+								if (target && target !== shapes && target._leaflet_id) { // Leaflet only targets												
 									stopped = !target.dispatchEvent(ev);
 									if (stopped || ev._stopped) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " + 										
-											"(" + e.target._leaflet_id + "; for: " + (e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + "; CALL STOP to: (" +
-											(target._leaflet_id || 'N/A') + ")");
-											L.DomEvent.stop(e);
+										L.DomEvent.stop(e);
 									}
-									else {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
-											"(" + e.target._leaflet_id + "; for: " + (e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + "; PROPAGATE to: (" +
-											(target._leaflet_id || 'N/A') + ")");
+									if (target._leaflet_id && leafletId && target._leaflet_id == leafletId) {
+										leafletIdFound=true;
 									}
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+										"(" + e.target._leaflet_id + "; for: " + (e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
+										"; PROPAGATE to: (" +
+										(target._leaflet_id || 'N/A') + ")" +
+										"; leafletIdFound: " + leafletIdFound); 
+								}
+								else if (!target._leaflet_id) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+										"(no target._leaflet_id for: " + e.currentTarget._leaflet_id + "): " + e.type); 
 								}
 								else if (!target) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
@@ -137,16 +170,41 @@ angular.module("RIF")
 								else if (target === shapes) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
 										"(target === shapes for: " + e.currentTarget._leaflet_id + "): " + e.type); 
-								}
-							}
+								} 
+							} */
 
+							if (!leafletIdFound) { // Did not propagate (clicks disabled by early 1.0 leaflet; may work with later versions)	
+								var mousePoint = map.mouseEventToContainerPoint(e);	
+								if (geojsonLayer && map && leafletId && properties) {
+//									map._layers[leafletId].fire(e.type);
+									// Do manually. This again does not work as you only get one click per entry/exit from a shape layer
+/*									if (e.type == 'mouseover') {
+                                        $scope.thisPolygon = properties.name;
+									}
+									else if (e.type == 'mouseout')  {
+                                        $scope.thisPolygon = "";
+									}
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough direct to geoJSON for: " + 
+										(e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
+										"; name: " + properties.name  +
+										"; leafletId: " + leafletId +
+										"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
+                                    $scope.$digest(); */
+								}
+								else {
+									alertScope.consoleError("[rifd-dsub-maptable.js] unable shapesClickThrough direct to geoJSON for: " + 
+										(e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
+										"; properties: " + JSON.stringify(properties)  +
+										"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
+								}
+							} 							
 							removed.node.style.display = removed.display;
 						}
 						L.DomEvent.on(shapes, 'mouseover', function(e) {
-							shapesClickThrough(e)
+							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
 						});
 						L.DomEvent.on(shapes, 'mouseout', function(e) {
-							shapesClickThrough(e)
+							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
 						}); 
 										
 						SubmissionStateService.setAreaMap($scope.areamap);
@@ -674,12 +732,14 @@ angular.module("RIF")
                             }).then(function () {
 								var latlngListDups=0;
                                 $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
-                                    attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
-                                    layers: {
+                                   attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+                                   interactive: true,
+								   layers: {
                                         default: {
                                             renderer: L.canvas(),
                                             style: style,
                                             onEachFeature: function (feature, layer) {
+												$scope.geoJSONLayers.push(layer);
                                                 //get as centroid marker layer. 
                                                 if (!bWeightedCentres) {
                                                     var p = layer.getBounds().getCenter();
@@ -687,7 +747,7 @@ angular.module("RIF")
 														latLng: L.latLng([p.lat, p.lng]), 
 														name: feature.properties.name, 
 														id: feature.properties.area_id,
-														bnand: -1
+														band: -1
 													});
 													feature.properties.latLng = L.latLng([p.lat, p.lng]);
                                                     var circle = new L.CircleMarker([p.lat, p.lng], {
@@ -718,6 +778,8 @@ angular.module("RIF")
 												feature.properties.circleId = latlngListById[feature.properties.area_id].circleId;
 												
                                                 layer.on('mouseover', function (e) {
+//													alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer " + e.type + ": " + 
+//														feature.properties.name + "; " + e.target._leaflet_id);
                                                     //if drawing then return
                                                     if ($scope.input.bDrawing) {
                                                         return;
@@ -782,7 +844,7 @@ angular.module("RIF")
                                                 });
                                             }
                                         }
-                                    }
+                                    } // End of layers definition
                                 });
                                 $scope.areamap.addLayer($scope.geoJSON);
 								
@@ -935,17 +997,17 @@ angular.module("RIF")
 								for (var i = 0; i < selectedShapes.length; i++) {
 									var selectedShape=selectedShapes[i];
 									function selectedShapesHighLightFeature(e, selectedShape) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesHighLightFeature " + 
-											"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
-											"; " + JSON.stringify((e.target._latlng || e.latlng)) + "): " +
-											(JSON.stringify(selectedShape.properties) || "no properties"));
+//										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesHighLightFeature " + 
+//											"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
+//											"; " + JSON.stringify((e.target._latlng || e.latlng)) + "): " +
+//											(JSON.stringify(selectedShape.properties) || "no properties"));
 										$scope.info.update(selectedShape, (e.target._latlng || e.latlng));
 									}									
 									function selectedShapesResetFeature(e) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesResetFeature " +  
-											"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
-											"; " + JSON.stringify((e.target._latlng || e.latlng)) + "): " +
-											(JSON.stringify(selectedShape.properties) || "no properties"));
+//										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesResetFeature " +  
+//											"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
+//											"; " + JSON.stringify((e.target._latlng || e.latlng)) + "): " +
+//											(JSON.stringify(selectedShape.properties) || "no properties"));
 										$scope.info.update(undefined, (e.target._latlng || e.latlng));
 									}		
 									

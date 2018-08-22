@@ -297,7 +297,7 @@ angular.module("RIF")
 									
 									// set shapes to show on top of markers but below pop-ups
 									if ($scope.map[mapID].getPane('shapes') == undefined) {
-										$scope.map[mapID].createPane('shapes');
+										var shapes = $scope.map[mapID].createPane('shapes');
 										$scope.map[mapID].getPane('shapes').style.zIndex = 650; 
 									}
 									
@@ -372,13 +372,15 @@ angular.module("RIF")
 								
 										function selectedShapesHighLightFeature(e, selectedShape) {
 											$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " selectedShapesHighLightFeature " + 
-												"(" + e.target._leaflet_id + "; " + JSON.stringify(e.target._latlng) + "): " +
+												"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
+												"; " + JSON.stringify(e.target._latlng) + "): " +
 												(JSON.stringify(selectedShape.properties) || "no properties"));
 //											$scope.shapeInfoUpdate(mapID, selectedShape, e.target._latlng);
 										}									
 										function selectedShapesResetFeature(e) {
 											$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " selectedShapesResetFeature " +  
-												"(" + e.target._leaflet_id + "; " + JSON.stringify(e.target._latlng) + "): " +
+												"(" + e.target._leaflet_id +  "; for: " + e.originalEvent.currentTarget._leaflet_id + 
+												"; " + JSON.stringify(e.target._latlng) + "): " +
 												(JSON.stringify(selectedShape.properties) || "no properties"));
 //											$scope.shapeInfoUpdate(mapID, undefined, e.target._latlng);
 										} 	
@@ -1235,14 +1237,21 @@ angular.module("RIF")
 												return($scope.child.transparency[mapID] - 0.3 > 0 ? $scope.child.transparency[mapID] - 0.3 : 0.1);
 											}()
 										});
+										
+										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
+											"(" + e.target._leaflet_id + "): " + e.type);
 										$scope.infoBox[mapID].update(layer.feature.properties.area_id, 
 											layer.feature.properties.name);
 									});
 									layer.on('mouseout', function (e) {
+										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
+											"(" + e.target._leaflet_id + "): " + e.type);
 										$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
 										$scope.infoBox[mapID].update(false);
 									});
 									layer.on('click', function (e) {
+										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
+											"(" + e.target._leaflet_id + "): " + e.type);
 										if (mapID === "viewermap") {
 											//Multiple selections
 											var thisPoly = e.target.feature.properties.area_id;
