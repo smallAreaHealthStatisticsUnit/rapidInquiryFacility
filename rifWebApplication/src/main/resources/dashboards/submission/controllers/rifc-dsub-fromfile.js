@@ -622,7 +622,12 @@ angular.module("RIF")
                 function fromFileError() {
 					fromFileErrorCount++;
 					if (fromFileErrorCount < 2) {
-						$scope.showError("Could not upload saved study file: " + $scope.fileName);
+						if ($scope.fileName) {
+							$scope.showError("Could not upload saved study file: " + $scope.fileName);
+						}
+						else {
+							$scope.showError("Could not upload saved study file: no file specified");
+						}
 					}
                 }
 
@@ -741,15 +746,15 @@ angular.module("RIF")
 									if (bPass) {
 										//All tests passed
 										if (confirmStateChanges()) {
-											$scope.showSuccess("RIF " + StudyAreaStateService.getState().type + " study opened from file: " + $scope.fileName);
+											$scope.showSuccess("RIF " + StudyAreaStateService.getState().type + " study opened from file: " + ($scope.fileName || 'N/A'));
 											$scope.$parent.resetState();
 										}
 										else {
-											$scope.showError("RIF study opened from file: " + $scope.fileName + " failed in state change setup");
+											$scope.showError("RIF study opened from file: " + ($scope.fileName || 'N/A') + " failed in state change setup");
 										}
 									}
 									else {
-										$scope.showError("RIF study opened from file: " + $scope.fileName + " failed with " +
+										$scope.showError("RIF study opened from file: " + ($scope.fileName || 'N/A') + " failed with " +
 											errorCount + " error(s)");
 									}
 								});
