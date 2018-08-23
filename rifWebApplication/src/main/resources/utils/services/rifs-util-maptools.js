@@ -67,7 +67,11 @@ angular.module("RIF")
                         '<button type="button" class="btn btn-zoomExtent" title="Zoom to full extent" zoom-extent mapid=\'XMAPX\'></button>',
                         '<button type="button" class="btn btn-zoomStudy" title="Zoom to study extent" zoom-study mapid=\'XMAPX\'></button>',
                         '<button type="button" class="btn btn-zoomSelected" title="Zoom to selection" zoom-selection-single mapid=\'XMAPX\'></button>',
-                        '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid=\'map.XMAPX\'></button>'
+                        '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid=\'map.XMAPX\'></button>',
+                        '<div ng-switch on=bShowHideSelectionShapes[\'XMAPX\']>' +
+							'<button type="button" class="btn btn-shapes" title="Show selction shapes" id="showHideSelectionShapesTrue" ng-click="showShapes(\'XMAPX\')" ng-switch-when="true"></button>' +
+							'<button type="button" class="btn btn-shapes" title="Hide selction shapes" id="showHideSelectionShapesFalse" ng-click="showShapes(\'XMAPX\')" ng-switch-when="false"></button>' +
+						'</div>'
                     ];
 
                     var extraMapTools = [
@@ -96,7 +100,7 @@ angular.module("RIF")
                     function basicTools(scope, map) {
                         var tmp = [];
                         for (var i = 0; i < basicMapTools.length; i++) {
-                            var html = basicMapTools[i].replace("XMAPX", map);
+                            var html = basicMapTools[i].replace(/XMAPX/g, map);
                             if (i === 5 && map === "viewermap") {
                                 html = html.replace("single", "multiple");
                             }

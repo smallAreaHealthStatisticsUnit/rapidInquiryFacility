@@ -274,11 +274,49 @@ angular.module("RIF")
 						$scope.geoJSON[mapID]={};
                     }
 				}
+							
+				// Show-hide shapes and associated info
+				$scope.showShapes = function (mapID) {
+					if ($scope.shapes[mapID] == undefined) {
+						$scope.showError("[rifc-util-mapping.js] no shapes layerGroup for map: " + mapID);
+					}
+					else if ($scope.map[mapID].hasLayer($scope.shapes[mapID])) {
+						$scope.map[mapID].removeLayer($scope.shapes[mapID]);
+						$scope.consoleDebug("[rifc-util-mapping.js] remove shapes layerGroup for map: " + mapID);
+//						if ($scope.info._map) { // Remove info control
+//							$scope.info.remove();
+//							$scope.consoleDebug("[rifc-util-mapping.js] remove info control");
+//						}
+						
+						$scope.bShowHideSelectionShapes[mapID] = false;
+						SelectStateService.getState().showHideSelectionShapes = false;
 
+					} 
+					else {
+						$scope.map[mapID].addLayer($scope.shapes[mapID]);
+						$scope.consoleDebug("[rifc-util-mapping.js] add shapes layerGroup for map: " + mapID);
+//						if ($scope.info._map == undefined) { // Add back info control
+//							$scope.info.addTo($scope.map[mapID]);
+//							$scope.consoleDebug("[rifc-util-mapping.js] add info control");
+//						}
+						
+						$scope.bShowHideSelectionShapes[mapID] = true;
+						SelectStateService.getState().showHideSelectionShapes = true;
+						
+						$scope.bringShapesToFront(mapID);
+					}
+					$scope.consoleDebug("[rifc-util-mapping.js] showHideSelectionShapes for map: " + mapID + "; " + 
+						SelectStateService.getState().showHideSelectionShapes);
+
+				};
+						
 				/* 
 				 * Add selection shapee (usually risk analysis)
 				 */
-				function addSelectedShapes(mapID) {
+				function addSelectedShapes(mapID) {		
+		
+					$scope.bShowHideSelectionShapes[mapID]=(SelectStateService.getState().showHideSelectionShapes || true);	
+				
 					var selectedShapes;
 					if ($scope.studyID[mapID].study_id) {
 						
@@ -1007,7 +1045,7 @@ angular.module("RIF")
 					$scope.map[mapID].whenReady(function() {
 						$timeout(function() {										
 								
-								$scope.consoleLog("[rifd-dsub-maptable.js] redraw map");
+								$scope.consoleLog("[rifc-util-mapping.js] redraw map");
 								$scope.map[mapID].fitBounds($scope.map[mapID].getBounds()); // Force map to redraw after 0.5s delay
 							}, 500);	
 					});	
