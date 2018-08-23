@@ -467,7 +467,8 @@ select {
     float: right;
     margin: 18px 10px 0px 50px;
     font-size: 18px !important;
-    color: #8DB6CD;
+    color: #FF7D40;
+    font-weight: bold;
 }
 
 #buttons .geoDropsMapping{	

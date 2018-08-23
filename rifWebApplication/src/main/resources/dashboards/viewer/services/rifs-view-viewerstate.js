@@ -38,10 +38,13 @@ angular.module("RIF")
         .factory('ViewerStateService',
                 function () {
                     //These are the relevant columns to display from the results table
-                    var validColumns = ["area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id",
+                    var diseaseMapValidColumns = ["area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id",
                         "posterior_probability",
                         "lower95", "upper95", "relative_risk",
                         "smoothed_smr", "smoothed_smr_lower95", "smoothed_smr_upper95",
+                        "_selected"];
+                    var riskAnalysisValidColumns = ["area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id",
+                        "lower95", "upper95", "relative_risk",
                         "_selected"];
                     var s = {
                         initial: true,
@@ -57,6 +60,9 @@ angular.module("RIF")
                         sex: {
                             'viewermap': null
                         },
+                        studyType: {
+                            'viewermap': "Disease Mapping"
+                        },
                         selected: {
                             'viewermap': []
                         },
@@ -71,7 +77,14 @@ angular.module("RIF")
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
                         getValidColumn: function (header) {
-                            if (validColumns.indexOf(header) !== -1) {
+							var validColumns;
+							if (s.studyType['viewermap'] == "Disease Mapping") {
+								validColumns = diseaseMapValidColumns;
+							}
+							if (s.studyType['viewermap'] == "Risk Analysis") {
+								validColumns = riskAnalysisValidColumns;
+							}
+                            if (validColumns && validColumns.indexOf(header) !== -1) {
                                 return true;
                             } else {
                                 return false;

@@ -57,6 +57,10 @@ angular.module("RIF")
                             'diseasemap1': null,
                             'diseasemap2': null
                         },
+                        studyType: {
+                            'diseasemap1': "Disease Mapping",
+                            'diseasemap2': "Disease Mapping"
+                        },
                         selected: {
                             'diseasemap1': null,
                             'diseasemap2': null

@@ -128,9 +128,6 @@ angular.module("RIF")
                 $scope.vSplit1 = ViewerStateService.getState().vSplit1;
                 $scope.hSplit1 = ViewerStateService.getState().hSplit1;
                 $scope.hSplit2 = ViewerStateService.getState().hSplit2;
-
-				$scope.studyType = "DISEASE MAPPING";
-				$scope.thisPolygon = "Unknown";
 				
                 $scope.getD3Frames = function () {
                     $scope.distHistoCurrentHeight = d3.select("#hSplit1").node().getBoundingClientRect().height;
@@ -176,7 +173,9 @@ angular.module("RIF")
                 $scope.sex = {
                     "viewermap": ViewerStateService.getState().sex['viewermap']
                 };
-
+                $scope.studyType = ViewerStateService.getState().studyType['viewermap'].toUpperCase();
+				$scope.thisPolygon = "Unknown";
+				
                 //attributes for d3
                 $scope.histoData = {
                     "viewermap": []

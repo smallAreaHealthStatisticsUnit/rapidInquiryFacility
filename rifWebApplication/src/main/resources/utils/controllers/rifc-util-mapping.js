@@ -195,7 +195,7 @@ angular.module("RIF")
                     'diseasemap1': [],
                     'diseasemap2': [],
                     'viewermap': []
-                }		
+                }	
 				
                 //Legends and Infoboxes
                 $scope.legend = {
@@ -882,7 +882,8 @@ angular.module("RIF")
 							if (res.data.smoothed_results[i].study_state === "S") { // New success
                                 var thisStudy = {
                                     "study_id": res.data.smoothed_results[i].study_id,
-                                    "name": res.data.smoothed_results[i].study_name
+                                    "name": res.data.smoothed_results[i].study_name,
+                                    "study_type": res.data.smoothed_results[i].study_type
                                 };
                                 $scope.studyIDs.push(thisStudy);
                             }
@@ -926,7 +927,13 @@ angular.module("RIF")
                 $scope.updateSex = function (mapID) {
                     if ($scope.studyID[mapID] !== null && angular.isDefined($scope.studyID[mapID])) {
                         //Store this study selection
-                        $scope.myService.getState().study[mapID] = $scope.studyID[mapID];
+                        $scope.myService.getState().study[mapID] = $scope.studyID[mapID]; // Set studyID in ViewerStateService or MappingStateService
+						$scope.myService.getState().studyType[mapID] = SelectStateService.getState().studyType;
+		
+						$scope.consoleDebug("[rifc-util-mapping.js] set myService - updateSex: " + 
+							"; studyID: " + JSON.stringify($scope.myService.getState().study[mapID]) +
+							"; studyType: " + $scope.myService.getState().studyType[mapID]);
+							
                         //Get the sexes for this study
 						if ($scope.studyID[mapID].study_id) {
 							user.getSexesForStudy(user.currentUser, $scope.studyID[mapID].study_id, mapID)
@@ -1470,9 +1477,13 @@ angular.module("RIF")
 						addSelectedShapes(mapID);
 					
                         //save study, sex selection
-                        $scope.myService.getState().sex[mapID] = $scope.sex[mapID];
-                        $scope.myService.getState().study[mapID] = $scope.$parent.studyID[mapID];
-                        //add the requested geography
+                        $scope.myService.getState().sex[mapID] = $scope.sex[mapID]; 
+                        $scope.myService.getState().study[mapID] = $scope.$parent.studyID[mapID]; // Set studyID in ViewerStateService or MappingStateService
+						$scope.myService.getState().studyType[mapID] = SelectStateService.getState().studyType;
+						$scope.consoleDebug("[rifc-util-mapping.js] set myService - sex: " + $scope.myService.getState().sex[mapID] +
+							"; studyID: " + JSON.stringify($scope.myService.getState().study[mapID]) +
+							"; studyType: " + $scope.myService.getState().studyType[mapID]);
+							
                         user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
 							function (res) {
 								$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
