@@ -2840,5 +2840,11 @@ SELECT a.*, b.coa2011
 * Created example UK 2011 census numerator/denominator tables to shut front end up!
 * Fix for spurious WARNING: Unable to verify study area selection: upload no longer supported for pre-alter 10 studies;
 * Improvements to file load messages;
+* Add showShapes button to viewer and diseasemap;
+* Make diseasemap just a map;
+* Start risk analysis support in viewer;
+* Misc logging and IE fixes. IE works, but only with a browser window - suspect proj4 library;
+
+
 	
 TODO: Add notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   
