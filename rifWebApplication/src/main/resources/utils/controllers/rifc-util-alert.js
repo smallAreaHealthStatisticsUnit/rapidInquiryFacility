@@ -133,13 +133,13 @@ angular.module("RIF")
 								if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 									if (isIE()) {
 										if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-											console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
-												"\n" + message); // IE safe
+											console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + // IE safe
+												"\n" + message); 
 										}
 									}
 									else {
-										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
-												"\n" + message); // IE safe
+										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + // IE safe
+												"\n" + message); 
 									}
 								}  	
 							}
@@ -147,13 +147,13 @@ angular.module("RIF")
 							if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 								if (isIE()) {
 									if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + 
+										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + // IE safe
 											err.mesage);
 									}
 								}
 							}
 							else {
-								console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + 
+								console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + // IE safe
 									err.mesage);
 							}
 						});
@@ -162,13 +162,13 @@ angular.module("RIF")
 					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 						if (isIE()) {
 							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-								console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + 
+								console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + // IE safe
 									err.mesage);
 							}
 						}
 					}
 					else {
-						console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + 
+						console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + // IE safe
 							err.mesage);
 					}	
 				}
@@ -273,13 +273,11 @@ angular.module("RIF")
 					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 						if (isIE()) {
 							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-								console.log("+" + elapsed + ": [ERROR]" + msg +
-									"\nStack: " + err.stack); // IE safe
+								console.log("+" + elapsed + ": [ERROR]" + msg + "\nStack: " + err.stack); // IE safe
 							}
 						}
 						else {
-							console.log("+" + elapsed + ": [ERROR] " + msg + 
-								"\nStack: " + err.stack); // IE safe
+							console.log("+" + elapsed + ": [ERROR] " + msg + "\nStack: " + err.stack); // IE safe
 						}
 					}  
 				}

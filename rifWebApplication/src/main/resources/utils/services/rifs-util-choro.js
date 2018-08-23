@@ -38,8 +38,8 @@
 /* global d3, ss, L, Infinity */
 
 angular.module("RIF")
-        .factory('ChoroService', ['ColorBrewerService', 'ParametersService',
-            function (ColorBrewerService, ParametersService) {
+        .factory('ChoroService', ['ColorBrewerService', 'ParametersService', 'AlertService', 
+            function (ColorBrewerService, ParametersService, AlertService) {
 
 				var defaultChoroScaleMethod = {
 					'viewermap': {
@@ -120,8 +120,9 @@ angular.module("RIF")
 								label: userMethod.description
 							});
 					}
-					console.log('defaultClassificationsList: ' + 
+					AlertService.consoleLog('defaultClassificationsList: ' + 
 						JSON.stringify(defaultClassificationsList, null, 2));
+				
 				}
 				
 				var choroScaleMethod = undefined;
@@ -421,13 +422,26 @@ angular.module("RIF")
                             for (var i = thisMap.range.length - 1; i >= 0; i--) {
                                 div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
                                 if (i === 0) { //first break
-                                    div.innerHTML += '<span>' + '<' + thisMap.breaks[i].toFixed(2) + '</span>';
+									if (thisMap.breaks[i]) {
+										div.innerHTML += '<span>' + '<' + thisMap.breaks[i].toFixed(2) + '</span>';
+									}
+									else {
+										AlertService.consoleError("[rifs-util-choro.js] first break, thisMap.breaks[i] does not exist; i: " + i);
+									}
                                 } else if (i === thisMap.range.length - 1) { //last break
 									if (thisMap.breaks[i - 1]) {
 										div.innerHTML += '<span>' + '&ge;' + thisMap.breaks[i - 1].toFixed(2) + '</span><br>';
 									}
+									else {
+										AlertService.consoleError("[rifs-util-choro.js] last break, thisMap.breaks[i - 1] does not exist; i: " + i);
+									}
                                 } else {
-                                    div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+									if (thisMap.breaks[i - 1]) {
+										div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+									}
+									else {
+										AlertService.consoleError("[rifs-util-choro.js] thisMap.breaks[i - 1] does not exist; i: " + i);
+									}
                                 }
                             }
                         }
