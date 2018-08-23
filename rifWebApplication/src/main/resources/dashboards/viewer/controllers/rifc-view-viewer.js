@@ -129,6 +129,9 @@ angular.module("RIF")
                 $scope.hSplit1 = ViewerStateService.getState().hSplit1;
                 $scope.hSplit2 = ViewerStateService.getState().hSplit2;
 
+				$scope.studyType = "DISEASE MAPPING";
+				$scope.thisPolygon = "Unknown";
+				
                 $scope.getD3Frames = function () {
                     $scope.distHistoCurrentHeight = d3.select("#hSplit1").node().getBoundingClientRect().height;
                     $scope.distHistoCurrentWidth = d3.select("#hSplit1").node().getBoundingClientRect().width;

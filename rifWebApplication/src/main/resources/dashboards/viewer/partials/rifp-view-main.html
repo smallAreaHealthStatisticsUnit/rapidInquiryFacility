@@ -42,14 +42,14 @@ HTML partial for ui-router Viewer
     </div>
     <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
     <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer</a>
-    <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping</a>
+    <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Mapping</a>
     <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Export</a>
     <a style="font-size:15px;" class="icon" ng-click="hamburger()">&#9776;</a>
 </div>
 
 <div id="buttons">
     <div class='geoDropsMapping'>
-        <div class="mappingPageLabel">VIEW RESULTS</div>
+        <div class="mappingPageLabel">{{studyType}} RESULTS</div>
         <div>
             <div>Study:</div>
             <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +              ": " +              s.name) for s in child.studyIDs'></select>
@@ -60,6 +60,7 @@ HTML partial for ui-router Viewer
         </div>
         <div id="studyInfo" get-study-info mapid="viewermap"></div>
     </div>
+    <div class="mappingPageAreaName">Area: {{thisPolygon}}</div>
 </div>
 <div ng-controller="leafletLayersCtrl" ui-layout="{flow : 'column'}">
 <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 

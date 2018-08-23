@@ -462,6 +462,14 @@ select {
     color: #8DB6CD;
 }
 
+#buttons .mappingPageAreaName {
+    text-align: right;
+    float: right;
+    margin: 18px 10px 0px 50px;
+    font-size: 18px !important;
+    color: #8DB6CD;
+}
+
 #buttons .geoDropsMapping{	
     width: auto;
     position: absolute;
