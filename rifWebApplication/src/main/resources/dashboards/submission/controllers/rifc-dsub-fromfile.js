@@ -602,8 +602,7 @@ angular.module("RIF")
 						try {
 							if (SelectStateService.getState().studySelection) {
 								var r=SelectStateService.verifyStudySelection();
-								$scope.consoleDebug("[rifc-dsub-fromfile.js] verifyStudySelection() OK: " +
-									JSON.stringify(r));
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] verifyStudySelection() OK.");
 							}
 						}
 						catch (e) {

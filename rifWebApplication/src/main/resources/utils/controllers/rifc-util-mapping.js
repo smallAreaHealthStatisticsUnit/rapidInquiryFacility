@@ -799,11 +799,11 @@ angular.module("RIF")
 					if ($scope.areaNameList[mapID] == undefined) {
 						$scope.areaNameList[mapID] = {};
 					}
-					$scope.consoleLog("[rifc-util-mapping.js] mapID: " + mapID + 
-						"; createAreaNameList(); studySelectedAreas: " + studySelectedAreas.length +
-						"; old areaNameList: " + Object.keys($scope.areaNameList).length +
-						"; new areaNameList: " + Object.keys(newAreaNameList).length +
-						"; " + JSON.stringify(newAreaNameList));
+//					$scope.consoleLog("[rifc-util-mapping.js] mapID: " + mapID + 
+//						"; createAreaNameList(); studySelectedAreas: " + studySelectedAreas.length +
+//						"; old areaNameList: " + Object.keys($scope.areaNameList).length +
+//						"; new areaNameList: " + Object.keys(newAreaNameList).length +
+//						"; " + JSON.stringify(newAreaNameList));
 						
 					$scope.areaNameList[mapID] = newAreaNameList;
 				}
@@ -1276,20 +1276,20 @@ angular.module("RIF")
 											}()
 										});
 										
-										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
-											"(" + e.target._leaflet_id + "): " + e.type);
+//										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
+//											"(" + e.target._leaflet_id + "): " + e.type);
 										$scope.infoBox[mapID].update(layer.feature.properties.area_id, 
 											layer.feature.properties.name);
 									});
 									layer.on('mouseout', function (e) {
-										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
-											"(" + e.target._leaflet_id + "): " + e.type);
+//										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
+//											"(" + e.target._leaflet_id + "): " + e.type);
 										$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
 										$scope.infoBox[mapID].update(false);
 									});
 									layer.on('click', function (e) {
-										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
-											"(" + e.target._leaflet_id + "): " + e.type);
+//										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
+//											"(" + e.target._leaflet_id + "): " + e.type);
 										if (mapID === "viewermap") {
 											//Multiple selections
 											var thisPoly = e.target.feature.properties.area_id;

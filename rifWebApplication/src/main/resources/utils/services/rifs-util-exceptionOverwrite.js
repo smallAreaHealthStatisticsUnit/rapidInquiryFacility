@@ -26,45 +26,17 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * Peter Hambly
  * @author phambly
  */
 
-/*
- * SERVICE for Alerts functions. Calls Alert conbtroller
+/* 
+ * SERVICE to override Angular exception handling and use the AlertService so it goes to the back end
  */
 angular.module("RIF")
-        .factory('AlertService', ['$rootScope',
-                function ($rootScope) {
-                    return {
-                        rifMessage: function (messageLevel, msg, rifHide, rifError) {
-                            $rootScope.$broadcast('rifMessage', { 
-								messageLevel: messageLevel, 
-								msg: msg,
-								rifHide: rifHide,
-								rifError: rifError
-							});
-                        },
-                        consoleDebug: function (msg, rifError) {
-                            $rootScope.$broadcast('consoleMessage', { 
-								messageLevel: "DEBUG", 
-								msg: msg
-							});
-                        },
-                        consoleLog: function (msg, rifError) {
-                            $rootScope.$broadcast('consoleMessage', { 
-								messageLevel: "INFO", 
-								msg: msg
-							});
-                        },
-                        consoleError: function (msg, rifError) {
-                            $rootScope.$broadcast('consoleMessage', { 
-								messageLevel: "ERROR", 
-								msg: msg,
-								rifError: rifError
-							});
-                        }
-                    };
-
-                }]);
+        .factory('$exceptionHandler', ['$log', 'AlertService', function($log, AlertService) {
+			return function myExceptionHandler(exception, cause) {
+				AlertService.consoleError(cause, exception);
+			};
+	}]);

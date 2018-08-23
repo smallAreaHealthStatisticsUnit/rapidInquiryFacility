@@ -133,8 +133,8 @@ angular.module("RIF")
             $scope.input = {};
             $scope.input.name = "StudyAreaMap";
             $scope.input.selectedPolygon = StudyAreaStateService.getState().polygonIDs;
-			AlertService.consoleDebug("[rifc-dsub-studyarea.js] selectedPolygon[" + $scope.input.selectedPolygon.length + "]: " +
-				JSON.stringify($scope.input.selectedPolygon));
+//			AlertService.consoleDebug("[rifc-dsub-studyarea.js] selectedPolygon[" + $scope.input.selectedPolygon.length + "]: " +
+//				JSON.stringify($scope.input.selectedPolygon));
             $scope.input.selectAt = StudyAreaStateService.getState().selectAt;
             $scope.input.studyResolution = StudyAreaStateService.getState().studyResolution;
             $scope.input.center = StudyAreaStateService.getState().center;

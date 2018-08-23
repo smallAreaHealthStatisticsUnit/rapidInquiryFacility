@@ -129,14 +129,14 @@ angular.module("RIF")
 							}						
 							if (newStudySelection.studySelectedAreas.length == 0 &&
 							    newStudySelection.comparisonSelectedAreas.length == 0) { // Pre alter 10 study
-								AlertService.consoleDebug("[rrifs-dsub-selectstate.js] newStudySelection: " +
+								AlertService.consoleDebug("[rifs-dsub-selectstate.js] newStudySelection: " +
 									JSON.stringify(newStudySelection, null, 1));
 								throw new Error("upload no longer supported for pre-alter 10 studies");
 								// This is because studySelectAt and the selectedPolygon array are probably incompatible 
 								// (i.e. at different geolevels)
 							}							
 							else if (newStudySelection.studySelectedAreas.length <1) {
-								AlertService.consoleDebug("[rrifs-dsub-selectstate.js] newStudySelection: " + JSON.stringify(newStudySelection, 1));
+								AlertService.consoleDebug("[rifs-dsub-selectstate.js] newStudySelection: " + JSON.stringify(newStudySelection, 1));
 								throw new Error("at least one study area required");
 							}						
 //							else if (newStudySelection.comparisonSelectedAreas.length < 1) { // Not necessarily; may be derived from older study
@@ -209,7 +209,7 @@ angular.module("RIF")
 							if (s.studySelection && !s.studySelection.riskAnalysisDescription) {
 								s.studySelection.riskAnalysisDescription=getriskAnalysisDesription2();
 							}
-//							AlertService.consoleDebug("[rrifs-dsub-selectstate.js] getState(): " + JSON.stringify(s, null, 1));
+//							AlertService.consoleDebug("[rifs-dsub-selectstate.js] getState(): " + JSON.stringify(s, null, 1));
                             return s;
                         },
                         resetState: function () {
@@ -221,7 +221,7 @@ angular.module("RIF")
 						setStudySelection: function(newStudySelection, newStudyType) { // Needs to verify
 							studySelection=verifyStudySelection2(newStudySelection, newStudyType);
 							s.studySelection=studySelection;
-							AlertService.consoleDebug("[rrifs-dsub-selectstate.js] setup study selection: " + newStudyType + 
+							AlertService.consoleDebug("[rifs-dsub-selectstate.js] setup study selection: " + newStudyType + 
 									"; studySelectAt: " + studySelection.studySelectAt +
 									"; studySelectedAreas: " + studySelection.studySelectedAreas.length +
 									", riskAnalysisType: " + studySelection.riskAnalysisType + 

@@ -39,8 +39,8 @@
  * Icons are defined in: ..\..\css\rifx-css-leaflet.css
  */
 angular.module("RIF")
-        .factory('mapTools',
-                function ($compile) {
+        .factory('mapTools', ['$compile', 'AlertService',
+                function ($compile, AlertService) {
                     var selectionMapTools = [
                         '<button ng-controller="BaseMapModalCtrl" ng-click="open(\'areamap\')" type="button" class="btn btn-basemap" title="Base map"></button>',
                         '<button type="button" class="btn btn-selectAll" title="Select all" ng-click="selectAll()"></button>',
@@ -139,6 +139,9 @@ angular.module("RIF")
                             onAdd: function () {
                                 var linkFunction = $compile(angular.element(html));
                                 var container = linkFunction(scope)[0];
+								if (linkFunction == undefined || container == undefined) {	
+									AlertService.consoleError("[rifs-util-maptools.js] unable to compile: " + html);
+								}
                                 return container;
                             }
                         });
@@ -167,4 +170,4 @@ angular.module("RIF")
                             return zoomToStudyTool(scope);
                         }
                     };
-                });
+                }]);

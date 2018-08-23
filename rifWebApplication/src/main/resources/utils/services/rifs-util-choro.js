@@ -454,8 +454,17 @@ angular.module("RIF")
 					}
 					else {
 						if (choroScope.consoleError) { // Should always be in scope
-							choroScope.consoleError("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
-								JSON.stringify(choroScope.input.methodObj));
+							if (choroScope.input.methodObj) {
+								choroScope.consoleError("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
+									JSON.stringify(choroScope.input.methodObj));
+							}
+							else if (choroScope.input) { // Not really and error - being called too early
+								choroScope.consoleLog("Error in renderSwatch() choroScope.input.methodObj not defined: " + 
+									JSON.stringify(choroScope.input));
+							}
+							else {
+								choroScope.consoleError("Error in renderSwatch() choroScope.input not defined");
+							}
 						}
 						else {
 							throw new Error("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
