@@ -77,68 +77,75 @@ angular.module("RIF")
                 //Set initial map panels and events
                 $timeout(function () {
                     //make maps
-                    for (var i in $scope.child.myMaps) {
-                        //initialise map
-                        var container = angular.copy($scope.child.myMaps[i]);
-						$scope.consoleDebug("[rifc-dmap-main.js] Create map: " +container);
-                        $scope.child.map[container] = L.map(container, {condensedAttributionControl: false}).setView([0, 0], 1);
+                    for (var map in $scope.child.myMaps) {
+						if ($scope.child.myMaps[map] && typeof $scope.child.myMaps[map] != 'function') {
+							//initialise map
+							var container = angular.copy($scope.child.myMaps[map]);
+							$scope.consoleDebug("[rifc-dmap-main.js] Create map: " + container);
+							$scope.child.map[container] = L.map(container, {condensedAttributionControl: false}).setView([0, 0], 1);
 
-                        //search box
-                        new L.Control.GeoSearch({
-                            provider: new L.GeoSearch.Provider.OpenStreetMap()
-                        }).addTo($scope.child.map[container]);
+							//search box
+							new L.Control.GeoSearch({
+								provider: new L.GeoSearch.Provider.OpenStreetMap()
+							}).addTo($scope.child.map[container]);
 
-                        //full screen control             
-                        $scope.child.map[container].addControl(new L.Control.Fullscreen());
-                        $scope.child.map[container].on('fullscreenchange', function () {
-                            setTimeout(function () {
-                                $scope.child.map[container].invalidateSize();
-                            }, 50);
-                        });
+							//full screen control             
+							$scope.child.map[container].addControl(new L.Control.Fullscreen());
+							$scope.child.map[container].on('fullscreenchange', function () {
+								setTimeout(function () {
+									$scope.child.map[container].invalidateSize();
+								}, 50);
+							});
 
-                        //slider
-                        var slider = L.control.slider(closureAddSliderControl(container), {
-                            id: slider,
-                            position: 'topleft',
-                            orientation: 'horizontal',
-                            min: 0,
-                            max: 1,
-                            step: 0.01,
-                            value: MappingStateService.getState().transparency[container],
-                            title: 'Transparency',
-                            logo: '',
-                            syncSlider: true
+							//slider
+							var slider = L.control.slider(closureAddSliderControl(container), {
+								id: slider,
+								position: 'topleft',
+								orientation: 'horizontal',
+								min: 0,
+								max: 1,
+								step: 0.01,
+								value: MappingStateService.getState().transparency[container],
+								title: 'Transparency',
+								logo: '',
+								syncSlider: true
 
-                        }).addTo($scope.child.map[container]);
+							}).addTo($scope.child.map[container]);
 
-                        //left map only tools (the linking controls)
-                        if (container === "diseasemap1") {
-                            var tools = mapTools.getExtraTools($scope.child);
-                            for (var i = 0; i < tools.length; i++) {
-                                new tools[i]().addTo($scope.child.map[container]);
-                            }
-                        }
-                        //Custom Toolbar
-                        var tools = mapTools.getBasicTools($scope.child, container);
-                        for (var i = 0; i < tools.length; i++) {
-                            new tools[i]().addTo($scope.child.map[container]);
-                        }
+							//left map only tools (the linking controls)
+							if (container === "diseasemap1") {
+								var tools = mapTools.getExtraTools($scope.child);
+								for (var i = 0; i < tools.length; i++) {
+									new tools[i]().addTo($scope.child.map[container]);
+								}
+							}
+							//Custom Toolbar
+							var tools = mapTools.getBasicTools($scope.child, container);
+							for (var i = 0; i < tools.length; i++) {
+								new tools[i]().addTo($scope.child.map[container]);
+							}
 
-                        //scalebar
-                        L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.child.map[container]);
+							//scalebar
+							L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.child.map[container]);
 
-                        //Attributions to open in new window
-                        L.control.condensedAttribution({
-                            prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
-                        }).addTo($scope.child.map[container]);
-                        
-                        $scope.child.map[container].doubleClickZoom.disable();
-                        $scope.child.map[container].keyboard.disable();
+							//Attributions to open in new window
+							L.control.condensedAttribution({
+								prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
+							}).addTo($scope.child.map[container]);
+							
+							$scope.child.map[container].doubleClickZoom.disable();
+							$scope.child.map[container].keyboard.disable();
 
-                        setTimeout(function () {
-                            $scope.child.map[container].invalidateSize();
-                        }, 50);
-                    }
+							setTimeout(function () {
+								if ($scope.child.map[container] && typeof $scope.child.map[container].invalidateSize === 'function') {
+									$scope.child.map[container].invalidateSize();
+								}
+							}, 50);
+						}
+						else {
+							$scope.consoleLog("[rifc-dmap-main.js] Unable to create map, the container is invalid");
+						}
+					}
 
                     //Fill study drop-downs
                     $scope.child.getStudies();

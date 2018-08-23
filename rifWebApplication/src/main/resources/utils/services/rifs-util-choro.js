@@ -423,7 +423,9 @@ angular.module("RIF")
                                 if (i === 0) { //first break
                                     div.innerHTML += '<span>' + '<' + thisMap.breaks[i].toFixed(2) + '</span>';
                                 } else if (i === thisMap.range.length - 1) { //last break
-                                    div.innerHTML += '<span>' + '&ge;' + thisMap.breaks[i - 1].toFixed(2) + '</span><br>';
+									if (thisMap.breaks[i - 1]) {
+										div.innerHTML += '<span>' + '&ge;' + thisMap.breaks[i - 1].toFixed(2) + '</span><br>';
+									}
                                 } else {
                                     div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
                                 }

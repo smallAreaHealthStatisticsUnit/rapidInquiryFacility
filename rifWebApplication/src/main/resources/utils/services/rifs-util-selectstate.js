@@ -215,7 +215,7 @@ angular.module("RIF")
                         resetState: function () {
                             s = angular.copy(diseaseMappingDefaults);
                         },
-						initialiseRiskAnalysis() {
+						initialiseRiskAnalysis: function() {
                             s = angular.copy(riskAnalysisDefaults);
 						},
 						setStudySelection: function(newStudySelection, newStudyType) { // Needs to verify
