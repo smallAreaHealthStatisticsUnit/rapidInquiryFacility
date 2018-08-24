@@ -2844,7 +2844,9 @@ SELECT a.*, b.coa2011
 * Make diseasemap just a map;
 * Start risk analysis support in viewer;
 * Misc logging and IE fixes. IE works, but only with a browser window - suspect proj4 library;
+* Added study type and new polygon name for viewer and mapper, de-dieased mapped; start of choropleth map risk analysis awareness
 
+#### 27th to 31st August
 
 	
 TODO: Add notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   
