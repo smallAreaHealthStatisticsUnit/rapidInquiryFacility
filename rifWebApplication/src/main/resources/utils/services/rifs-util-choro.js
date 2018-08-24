@@ -38,8 +38,8 @@
 /* global d3, ss, L, Infinity */
 
 angular.module("RIF")
-        .factory('ChoroService', ['ColorBrewerService', 'ParametersService', 'AlertService', 
-            function (ColorBrewerService, ParametersService, AlertService) {
+        .factory('ChoroService', ['ColorBrewerService', 'ParametersService', 'AlertService', 'ViewerStateService',
+            function (ColorBrewerService, ParametersService, AlertService, ViewerStateService) {
 
 				var defaultChoroScaleMethod = {
 					'viewermap': {
@@ -67,7 +67,7 @@ angular.module("RIF")
 							isDefault:		true
 					}
 				};
-                                       
+                      
 				var defaultClassificationsList = [ // Standard methods
 					{
 						id: 	'quantile',
@@ -86,6 +86,7 @@ angular.module("RIF")
 						label: 	'Standard Deviation'
 					}
 				];
+				var classificationsList=angular.copy(defaultClassificationsList);	
 				
                 //a default symbology
                 function symbology(mapID, choroScaleMethod) {
@@ -110,20 +111,6 @@ angular.module("RIF")
                 }
 				
 				var parameters=ParametersService.getParameters();
-				
-				if (parameters && parameters.userMethods) { // Add userMethods
-
-					for (var userMethodName in parameters.userMethods) {
-						var userMethod=parameters.userMethods[userMethodName]						
-						defaultClassificationsList.push({
-								id: userMethodName,
-								label: userMethod.description
-							});
-					}
-					AlertService.consoleLog('defaultClassificationsList: ' + 
-						JSON.stringify(defaultClassificationsList, null, 2));
-				
-				}
 				
 				var choroScaleMethod = undefined;
 				if (parameters && parameters.mappingDefaults) {
@@ -475,7 +462,7 @@ angular.module("RIF")
 									JSON.stringify(choroScope.input.methodObj));
 							}
 							else if (choroScope.input) { // Not really and error - being called too early
-								choroScope.consoleLog("Error in renderSwatch() choroScope.input.methodObj not defined: " + 
+								choroScope.consoleLog("WARNING: renderSwatch() being called too early choroScope.input.methodObj not defined: " + 
 									JSON.stringify(choroScope.input));
 							}
 							else {
@@ -616,12 +603,29 @@ angular.module("RIF")
 					return choroScope.input.thisMap;
 				}
 				
+				function checkuserMethods(map, studyType, userMethodName) {
+					if (studyType == "Disease Mapping") {
+						return true;
+					}
+					else if (studyType == "Risk Analysis") {
+						if (userMethodName == "AtlasRelativeRisk") {
+							return true;
+						}
+						else {
+							return false;
+						}
+					}
+					else {
+						throw new Error("Invalid studyType: " + studyType + " for map: " + mapID + "; userMethodName: " + userMethodName);
+					}	
+				}
+				
                 return {
                     getMaps: function (i) {
                         return maps[i];
                     },
 					getClassifications: function() {
-						return defaultClassificationsList;
+						return classificationsList;
 					},
                     getRenderFeatureMapping: function (scale, value, selected) {
                         return renderFeatureMapping(scale, value, selected);
@@ -647,7 +651,43 @@ angular.module("RIF")
 							ColorBrewerService);
 					},
                     resetState: function (map) {
+						if (map == undefined) {
+							throw new Error("Unable to reesetState, map is undefiuned");
+						}	
                         maps[map] = new symbology(map, choroScaleMethod);
-                    }
+                    },
+					setType: function (map, studyType) {				
+						var validColumnList=ViewerStateService.getValidColumnList(map, studyType);
+						
+						if (parameters && parameters.userMethods) { // Add userMethods
+
+							classificationsList=angular.copy(defaultClassificationsList);				
+							for (var userMethodName in parameters.userMethods) {
+								var userMethod=parameters.userMethods[userMethodName];
+								if (ViewerStateService.getValidColumn(validColumnList, studyType, userMethodName.feature)) {	
+									AlertService.consoleLog("classificationsList[" + JSON.stringify(userMethod) + "] for map: " + map + 
+										"; studyType: " + studyType +
+										"; add for validated feature: " + userMethodName.feature + "; " + userMethod.description);				
+									classificationsList.push({
+											id: userMethodName,
+											label: userMethod.description
+										});
+								}
+								else if (userMethodName.feature == undefined && checkuserMethods(map, studyType, userMethodName)) {
+									AlertService.consoleLog("classificationsList[" + userMethodName + "] for map: " + map + 
+										"; studyType: " + studyType +
+										"; add for undefined feature: " + userMethod.description);							
+									classificationsList.push({
+											id: userMethodName,
+											label: userMethod.description
+										});
+								}
+							}
+							AlertService.consoleLog("New classificationsList for map: " + map + 
+								"; studyType: " + studyType +
+								"; list: " + JSON.stringify(classificationsList, null, 2));
+						
+						}
+					}
                 };
             }]);

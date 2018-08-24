@@ -35,8 +35,8 @@
  * SERVICE to store state of viewer tab
  */
 angular.module("RIF")
-        .factory('ViewerStateService',
-                function () {
+        .factory('ViewerStateService', ['AlertService', 
+                function (AlertService) {
                     //These are the relevant columns to display from the results table
                     var diseaseMapValidColumns = ["area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id",
                         "posterior_probability",
@@ -76,14 +76,30 @@ angular.module("RIF")
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
-                        getValidColumn: function (header) {
+						getValidColumnList: function (mapID, studyType) {
+							if (studyType == "Disease Mapping") {
+								return diseaseMapValidColumns;
+							}
+							else if (studyType == "Risk Analysis") {
+								return riskAnalysisValidColumns;
+							}
+							else {
+								throw new Error("Invalid studyType: " + studyType + " for map: " + mapID);
+							}
+						},
+                        getValidColumn: function (header, studyType, mapID) {
 							var validColumns;
-							if (s.studyType['viewermap'] == "Disease Mapping") {
+							if (studyType == "Disease Mapping") {
 								validColumns = diseaseMapValidColumns;
 							}
-							if (s.studyType['viewermap'] == "Risk Analysis") {
+							else if (studyType == "Risk Analysis") {
 								validColumns = riskAnalysisValidColumns;
 							}
+							else {
+								throw new Error("Invalid studyType: " + studyType + " for map: " + mapID + "; column: " + header);
+							}
+//							AlertService.consoleDebug("[rifs-view-viewerstate.js] getValidColumn studyType: " + studyType + 
+//								" for map: " + mapID + "; column: " + header);
                             if (validColumns && validColumns.indexOf(header) !== -1) {
                                 return true;
                             } else {
@@ -103,4 +119,4 @@ angular.module("RIF")
                             s = angular.copy(defaults);
                         }
                     };
-                });
+                }]);

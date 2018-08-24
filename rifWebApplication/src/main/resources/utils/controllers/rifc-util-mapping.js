@@ -313,7 +313,7 @@ angular.module("RIF")
 				/* 
 				 * Add selection shapee (usually risk analysis)
 				 */
-				function addSelectedShapes(mapID) {		
+				function addSelectedShapes(mapID, addSelectedShapesCallback) {		
 				
 					var selectedShapes;
 					if ($scope.studyID[mapID].study_id) {
@@ -322,10 +322,11 @@ angular.module("RIF")
 							function getStudySelectionCallback(err, mapID, studySelection) {	
 							
 								$scope.bShowHideSelectionShapes[mapID]=(SelectStateService.getState().showHideSelectionShapes || true);		
+								ChoroService.resetState(mapID);
 								
 								// Add back selected shapes				
 								if (err) {
-									$scope.showError(err);
+									addSelectedShapesCallback(err);
 								}
 								else if (studySelection && studySelection.studyShapes) {
 									$scope.myService.getState().studyType[mapID] = "Disease Mapping";
@@ -347,11 +348,13 @@ angular.module("RIF")
 										};
 									} // Otherwise disease mapping
 									
-									$scope.consoleDebug("[rifc-util-mapping.js] set studyType for map: " + mapID + ": " + 
-										$scope.myService.getState().studyType[mapID] + 
-										"; studyID: " + JSON.stringify($scope.studyID[mapID], null, 1) + 
-										"; mappingDefaults: " + JSON.stringify($scope.parameters.mappingDefaults[mapID], null, 1));
-										
+									ChoroService.setType(mapID, $scope.myService.getState().studyType[mapID]);
+									// Will need to set print state here
+									
+									$scope.consoleDebug("[rifc-util-mapping.js] setup ChoroService, mapID: " + mapID + 
+										"; study_id: " + $scope.studyID[mapID].study_id +
+										"; Saved map state: " + JSON.stringify(ChoroService.getMaps(mapID), null, 2));
+
 									// Remove old layers
 									if ($scope.shapes[mapID].getLayers().length > 0) {
 										$scope.shapes[mapID].clearLayers();
@@ -545,6 +548,7 @@ angular.module("RIF")
 										}
 									} /* end of for add shapes to layer group loop */
 									
+						
 									$scope.map[mapID].whenReady(function() {
 										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + 
 											"; end addSelectedShapes(): shapes layerGroup has " +
@@ -558,6 +562,8 @@ angular.module("RIF")
 											}, 100);			
 										}, 100);			
 									}); 
+													
+									addSelectedShapesCallback();
 								}	
 								else {
 									$scope.consoleLog("[rifc-util-mapping.js] mapID: " + mapID + " no selected shapes");
@@ -565,15 +571,22 @@ angular.module("RIF")
 									if ($scope.shapes[mapID].getLayers().length > 0) {
 										$scope.shapes[mapID].clearLayers();
 									}
+									
+									$scope.$parent.studyType[mapID]="DISEASE MAPPING";
+									$scope.myService.getState().studyType[mapID] = "Disease Mapping";
+									ChoroService.resetState(mapID);
+									ChoroService.setType(mapID, $scope.myService.getState().studyType[mapID]);
+									// Will need to set print state here
+									addSelectedShapesCallback();
 								}
 							});
 					}
 					else {
-						$scope.consoleError("[rifc-util-mapping.js] mapID: " + mapID + " no studyID");
 						// Remove old layers
 						if ($scope.shapes[mapID].getLayers().length > 0) {
 							$scope.shapes[mapID].clearLayers();
 						}
+						addSelectedShapesCallback("[rifc-util-mapping.js] mapID: " + mapID + " no studyID");
 					}
 				}			
 				
@@ -1252,9 +1265,6 @@ angular.module("RIF")
 						}
 					};
 					savedMapState.maps=ChoroService.getMaps(mapID);
-//					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + 
-//						"; data rows: " + choroScope.tableData[mapID].length +
-//						"; Saved map state: " + JSON.stringify(savedMapState, null, 2));
 					
 				}
 				
@@ -1507,71 +1517,83 @@ angular.module("RIF")
 							"; studyID: " + JSON.stringify($scope.myService.getState().study[mapID]) +
 							"; studyType: " + $scope.myService.getState().studyType[mapID]);
 	
-						// Add selection shapee (usually risk analysis)
-						addSelectedShapes(mapID);
+						// Add selection shapes (usually risk analysis)
+						addSelectedShapes(mapID, addSelectedShapesCallback);
 						
-                        user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
-							function (res) {
-								$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
-								$scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
+						function addSelectedShapesCallback(err) {
+							if (err) {
+								$scope.showError(err);
+							}
+							else {
+								user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
+									function (res) {
+										$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
+										$scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
+					
+										$scope.consoleDebug("[rifc-util-mapping.js] set studyType for map: " + mapID + ": " + 
+											$scope.myService.getState().studyType[mapID] + 
+											"; studyID: " + JSON.stringify($scope.studyID[mapID], null, 1) + 
+											"; mappingDefaults: " + JSON.stringify($scope.parameters.mappingDefaults[mapID], null, 1));
 										
-								// Synchronised in on load
-								
-								getAttributeTable(mapID, // Needs study_id, sex
-									function getAttributeTableCallBack(msg) {
-										$scope.consoleDebug(msg);
+										// Synchronised in on load
+										
+										getAttributeTable(mapID, // Needs study_id, sex
+											function getAttributeTableCallBack(msg) {
+												$scope.consoleDebug(msg);
 
 
-									},
-									function getAttributeTableError(e) {
-										$scope.showError("Error fetching table data for mapID: " + mapID + "; " + e);
+											},
+											function getAttributeTableError(e) {
+												$scope.showError("Error fetching table data for mapID: " + mapID + "; " + e);
+											});
+											
+										$scope.createTopoJSONLayer(mapID);
+										$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
+											"; study: " + $scope.studyID[mapID].study_id);												
+										$scope.map[mapID].addLayer($scope.geoJSON[mapID]); // Add layer to map
+													
+										$scope.map[mapID].whenReady(function(e) {	
+											//pan events                            
+												$scope.map[mapID].on('zoomend', function (e) {
+													$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+												});
+												$scope.map[mapID].on('moveend', function (e) {
+													$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
+													$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
+												});
+											});
+										// End of create grid layer											
+
+									}, function (e) { //getGeographyAndLevelForStudy error handler
+										$scope.consoleError("[rifc-util-mapping.js] Unable to getGeographyAndLevelForStudy(): " + 
+											JSON.stringify(e));
+									}
+
+								// End of user.getGeographyAndLevelForStudy()
+								).then(function () { 
+									$scope.map[mapID].whenReady(function(e) { // BG tiles set
+
+										setMapCentreAndBounds(mapID,
+											function setMapCentreAndBoundsCallback(msg) {	// setMapCentreAndBoundsCallback
+												$scope.consoleDebug(msg); 
+												
+												$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+												$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
+												$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
+												$scope.consoleDebug("[rifc-util-mapping.js] add topoJsonGridLayer for mapID: " + mapID + 
+													"; study: " + $scope.studyID[mapID].study_id);		
+												$scope.consoleDebug("[rifc-util-mapping.js] initial setView for mapID: " + mapID + 
+														"; centre: " + JSON.stringify($scope.myService.getState().center[mapID]));		
+		 
+											}, function setMapCentreAndBoundsError(e) {	// setMapCentreAndBoundsError
+												$scope.consoleError(e); 
+											}
+										);
 									});
 									
-								$scope.createTopoJSONLayer(mapID);
-								$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
-									"; study: " + $scope.studyID[mapID].study_id);												
-								$scope.map[mapID].addLayer($scope.geoJSON[mapID]); // Add layer to map
-											
-								$scope.map[mapID].whenReady(function(e) {	
-									//pan events                            
-										$scope.map[mapID].on('zoomend', function (e) {
-											$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
-										});
-										$scope.map[mapID].on('moveend', function (e) {
-											$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
-											$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
-										});
-									});
-								// End of create grid layer											
-
-							}, function (e) { //getGeographyAndLevelForStudy error handler
-								$scope.consoleError("[rifc-util-mapping.js] Unable to getGeographyAndLevelForStudy(): " + 
-									JSON.stringify(e));
+								});								
 							}
-
-						// End of user.getGeographyAndLevelForStudy()
-                        ).then(function () { 
-							$scope.map[mapID].whenReady(function(e) { // BG tiles set
-
-								setMapCentreAndBounds(mapID,
-									function setMapCentreAndBoundsCallback(msg) {	// setMapCentreAndBoundsCallback
-										$scope.consoleDebug(msg); 
-										
-										$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
-										$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
-										$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
-										$scope.consoleDebug("[rifc-util-mapping.js] add topoJsonGridLayer for mapID: " + mapID + 
-											"; study: " + $scope.studyID[mapID].study_id);		
-										$scope.consoleDebug("[rifc-util-mapping.js] initial setView for mapID: " + mapID + 
-												"; centre: " + JSON.stringify($scope.myService.getState().center[mapID]));		
- 
-									}, function setMapCentreAndBoundsError(e) {	// setMapCentreAndBoundsError
-										$scope.consoleError(e); 
-									}
-								);
-							});
-							
-                        });
+						}			
                     }
 
                     //Sync or unsync map extents using https://github.com/jieter/Leaflet.Sync ONCE!
@@ -1685,7 +1707,7 @@ angular.module("RIF")
  *                            "lower95", "upper95", "relative_risk", "smoothed_smr", "smoothed_smr_lower95", "smoothed_smr_upper95"
  */
                                         for (var i in res.data.smoothed_results[0]) {
-                                            if (ViewerStateService.getValidColumn(i)) {
+                                            if (ViewerStateService.getValidColumn(i, $scope.myService.getState().studyType[mapID], mapID)) {
                                                 if (i !== "area_id" && // Valid Choropleth map features
 												    i !== "band_id" && 
 												    i !== "inv_id" && 
