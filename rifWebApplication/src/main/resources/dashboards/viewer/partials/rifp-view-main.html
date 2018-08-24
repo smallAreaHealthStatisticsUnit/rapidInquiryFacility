@@ -49,7 +49,7 @@ HTML partial for ui-router Viewer
 
 <div id="buttons">
     <div class='geoDropsMapping'>
-        <div class="mappingPageLabel">{{studyType}} RESULTS</div>
+        <div class="mappingPageLabel">{{studyType['viewermap']}}</div>
         <div>
             <div>Study:</div>
             <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +              ": " +              s.name) for s in child.studyIDs'></select>
@@ -60,7 +60,7 @@ HTML partial for ui-router Viewer
         </div>
         <div id="studyInfo" get-study-info mapid="viewermap"></div>
     </div>
-    <div class="mappingPageAreaName">Area: {{thisPolygon}}</div>
+    <div class="mappingPageAreaName">{{thisPolygon['viewermap']}}</div>
 </div>
 <div ng-controller="leafletLayersCtrl" ui-layout="{flow : 'column'}">
 <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 

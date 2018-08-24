@@ -170,7 +170,7 @@ angular.module("RIF")
 									r='Risk Analysis (many areas, one band)';
 									break;
 								case 12:
-									r='Risk Analysis (point sources, many areas, one to six bands';
+									r='Risk Analysis (point sources)';
 									break;
 								case 13:
 									r='Risk Analysis (exposure covariates)';
@@ -194,6 +194,15 @@ angular.module("RIF")
 							
 							if (getStudySelectionCallback && typeof(getStudySelectionCallback) == "function") {
 								dbStudySelection=res.data.select_state;
+								s=(dbStudySelection||defaults);
+								s.showHideSelectionShapes=true;
+								s.showHideCentroids=false;
+								if (dbStudySelection && dbStudySelection.riskAnalysisDescription && dbStudySelection.riskAnalysisType) {
+									s.studyType="risk_analysis_study";
+								} 
+								else {
+									s.studyType="disease_mapping_study";
+								}
 								getStudySelectionCallback(undefined /* no error */, mapID, dbStudySelection);
 							}
 							else {

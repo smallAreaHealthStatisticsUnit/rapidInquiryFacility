@@ -314,20 +314,44 @@ angular.module("RIF")
 				 * Add selection shapee (usually risk analysis)
 				 */
 				function addSelectedShapes(mapID) {		
-		
-					$scope.bShowHideSelectionShapes[mapID]=(SelectStateService.getState().showHideSelectionShapes || true);	
 				
 					var selectedShapes;
 					if ($scope.studyID[mapID].study_id) {
 						
 						SelectStateService.getStudySelection(mapID, $scope.studyID[mapID].study_id, 
-							function getStudySelectionCallback(err, mapID, studySelection) {		
+							function getStudySelectionCallback(err, mapID, studySelection) {	
+							
+								$scope.bShowHideSelectionShapes[mapID]=(SelectStateService.getState().showHideSelectionShapes || true);		
+								
 								// Add back selected shapes				
 								if (err) {
 									$scope.showError(err);
 								}
 								else if (studySelection && studySelection.studyShapes) {
-
+									$scope.myService.getState().studyType[mapID] = "Disease Mapping";
+									$scope.$parent.studyType[mapID]="DISEASE MAPPING";
+									if (ParametersService.getParameters()[mapID]) { // Reset mapping defaults
+										$scope.parameters.mappingDefaults[mapID]=ParametersService.getParameters()[mapID];
+									}
+									if (studySelection.riskAnalysisDescription && studySelection.riskAnalysisType) {
+										$scope.studyID[mapID].riskAnalysisDescription = studySelection.riskAnalysisDescription;
+//										$scope.$parent.studyType[mapID]=$scope.studyID[mapID].riskAnalysisDescription.toUpperCase();
+										$scope.$parent.studyType[mapID]="RISK ANALYSIS";
+										$scope.myService.getState().studyType[mapID] = "Risk Analysis";
+										$scope.parameters.mappingDefaults[mapID] = { // No Bayesian smoothing in risk analysis
+											method: 	'quantile', 
+											feature:	'relative_risk',
+											intervals: 	9,
+											invert:		true,
+											brewerName:	"PuOr"
+										};
+									} // Otherwise disease mapping
+									
+									$scope.consoleDebug("[rifc-util-mapping.js] set studyType for map: " + mapID + ": " + 
+										$scope.myService.getState().studyType[mapID] + 
+										"; studyID: " + JSON.stringify($scope.studyID[mapID], null, 1) + 
+										"; mappingDefaults: " + JSON.stringify($scope.parameters.mappingDefaults[mapID], null, 1));
+										
 									// Remove old layers
 									if ($scope.shapes[mapID].getLayers().length > 0) {
 										$scope.shapes[mapID].clearLayers();
@@ -927,9 +951,7 @@ angular.module("RIF")
                 $scope.updateSex = function (mapID) {
                     if ($scope.studyID[mapID] !== null && angular.isDefined($scope.studyID[mapID])) {
                         //Store this study selection
-                        $scope.myService.getState().study[mapID] = $scope.studyID[mapID]; // Set studyID in ViewerStateService or MappingStateService
-						$scope.myService.getState().studyType[mapID] = SelectStateService.getState().studyType;
-		
+                        $scope.myService.getState().study[mapID] = $scope.studyID[mapID]; // Set studyID in ViewerStateService or MappingStateService	
 						$scope.consoleDebug("[rifc-util-mapping.js] set myService - updateSex: " + 
 							"; studyID: " + JSON.stringify($scope.myService.getState().study[mapID]) +
 							"; studyType: " + $scope.myService.getState().studyType[mapID]);
@@ -1284,15 +1306,20 @@ angular.module("RIF")
 										});
 										
 //										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
-//											"(" + e.target._leaflet_id + "): " + e.type);
+//											"(" + e.target._leaflet_id + "): " + e.type + 
+//											"; area: " + layer.feature.properties.name||layer.feature.properties.area_id);
 										$scope.infoBox[mapID].update(layer.feature.properties.area_id, 
 											layer.feature.properties.name);
+										$scope.$parent.thisPolygon[mapID]=(layer.feature.properties.name||layer.feature.properties.area_id||"Unknown");
+										$scope.$parent.$digest();
 									});
 									layer.on('mouseout', function (e) {
 //										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
 //											"(" + e.target._leaflet_id + "): " + e.type);
 										$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
 										$scope.infoBox[mapID].update(false);
+										$scope.$parent.thisPolygon[mapID]="";
+										$scope.$parent.$digest();
 									});
 									layer.on('click', function (e) {
 //										$scope.consoleDebug("[rifc-util-mapping.js] mapID: " + mapID + " onEachFeature " +  
@@ -1472,18 +1499,17 @@ angular.module("RIF")
 							$scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
 							$scope.geoJSON[mapID]={};
                         }
-
-						// Add selection shapee (usually risk analysis)
-						addSelectedShapes(mapID);
 					
                         //save study, sex selection
                         $scope.myService.getState().sex[mapID] = $scope.sex[mapID]; 
                         $scope.myService.getState().study[mapID] = $scope.$parent.studyID[mapID]; // Set studyID in ViewerStateService or MappingStateService
-						$scope.myService.getState().studyType[mapID] = SelectStateService.getState().studyType;
 						$scope.consoleDebug("[rifc-util-mapping.js] set myService - sex: " + $scope.myService.getState().sex[mapID] +
 							"; studyID: " + JSON.stringify($scope.myService.getState().study[mapID]) +
 							"; studyType: " + $scope.myService.getState().studyType[mapID]);
-							
+	
+						// Add selection shapee (usually risk analysis)
+						addSelectedShapes(mapID);
+						
                         user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
 							function (res) {
 								$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
@@ -1720,7 +1746,7 @@ angular.module("RIF")
                                                     }
                                                 }
                                                 if (feature !== "" && !isNaN(Number(tmp))) {
-                                                    inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
+                                                    inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';	
                                                 }
                                             }
                                             return inner;

@@ -418,8 +418,8 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 			                            rifDatabaseProperties.getDatabaseType()
 					                            .convertDateToString() + " AS creation_date,");
 			queryFormatter.addQueryLine(2, "row_number() OVER(PARTITION BY study_id ORDER BY ith_update DESC) AS update_number,");
-			queryFormatter.addQueryLine(1, "message,");		
-			queryFormatter.addQueryLine(1, "trace");
+			queryFormatter.addQueryLine(2, "message,");
+			queryFormatter.addQueryLine(2, "trace");	
 			queryFormatter.addQueryLine(1, "FROM ");
 			queryFormatter.addQueryLine(2, statusTableName);
 			queryFormatter.addQueryLine(2, "),");	
@@ -428,8 +428,8 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 			queryFormatter.addQueryLine(2, "study_id,");
 			queryFormatter.addQueryLine(2, "study_state,");
 			queryFormatter.addQueryLine(2, "creation_date,");
-			queryFormatter.addQueryLine(1, "message,");		
-			queryFormatter.addQueryLine(1, "trace");
+			queryFormatter.addQueryLine(2, "message,");		
+			queryFormatter.addQueryLine(2, "trace");	
 			queryFormatter.addQueryLine(1, "FROM ");
 			queryFormatter.addQueryLine(2, "ordered_updates ");
 			queryFormatter.addQueryLine(1, "WHERE ");
@@ -441,7 +441,8 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 			queryFormatter.addQueryLine(1, "most_recent_updates.study_state,");
 			queryFormatter.addQueryLine(1, "creation_date,");		
 			queryFormatter.addQueryLine(1, "message,");		
-			queryFormatter.addQueryLine(1, "trace");
+			queryFormatter.addQueryLine(1, "trace,");
+			queryFormatter.addQueryLine(1, "CASE WHEN study_type = 1 THEN 'Disease Mapping' ELSE 'Risk Analysis' END AS study_type");
 			queryFormatter.addQueryLine(0, "FROM ");
 			queryFormatter.addQueryLine(1, rifStudiesTableName + ",");
 			queryFormatter.addQueryLine(1, "most_recent_updates");

@@ -173,8 +173,12 @@ angular.module("RIF")
                 $scope.sex = {
                     "viewermap": ViewerStateService.getState().sex['viewermap']
                 };
-                $scope.studyType = ViewerStateService.getState().studyType['viewermap'].toUpperCase();
-				$scope.thisPolygon = "Unknown";
+                $scope.studyType = {
+                    "viewermap": ""
+				};
+				$scope.thisPolygon = {
+                    "viewermap": ""
+				};
 				
                 //attributes for d3
                 $scope.histoData = {

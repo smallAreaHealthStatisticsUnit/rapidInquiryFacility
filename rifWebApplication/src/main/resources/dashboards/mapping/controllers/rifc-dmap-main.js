@@ -61,7 +61,14 @@ angular.module("RIF")
 				$scope.syncMapping2EventsDisabled=$scope.parameters.syncMapping2EventsDisabled||false;
 				$scope.disableMapLocking=$scope.parameters.disableMapLocking||false;		
 				$scope.disableSelectionLocking=$scope.parameters.disableSelectionLocking||false;		
-				
+                $scope.studyType = {
+                    "diseasemap1": "",
+                    "diseasemap2": ""
+				};
+				$scope.thisPolygon = {
+                    "diseasemap1": "",
+                    "diseasemap2": ""
+				};				
 				
                 //Transparency change function
                 function closureAddSliderControl(m) {
