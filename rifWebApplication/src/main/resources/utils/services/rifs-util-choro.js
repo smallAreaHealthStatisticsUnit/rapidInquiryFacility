@@ -212,7 +212,6 @@ angular.module("RIF")
                             scale = d3.scaleQuantize()
                                     .domain([mn, mx])
                                     .range(range);
-                            breaks = [];
                             var l = (mx - mn) / scale.range().length;
                             for (var i = 0; i < range.length; i++) {
                                 breaks.push(mn + (i * l));
@@ -243,7 +242,6 @@ angular.module("RIF")
                             var mean = d3.mean(domain);
                             var below_mean = mean - sd / 2;
                             var above_mean = mean + sd / 2;
-                            var breaks = [];
                             for (var i = 0; below_mean > mn && i < 2; i++) {
                                 breaks.push(below_mean);
                                 below_mean = below_mean - sd;
@@ -277,7 +275,6 @@ angular.module("RIF")
 										
 										var userMethod=parameters.userMethods[userMethodName]
 										var numBreaks=0; 
-										var breaks;
 										if (userMethod.breaks == undefined) {
 											if (choroScope.showWarning) { // Should always be in scope
 												choroScope.showWarning("No breaks are defined");
@@ -406,28 +403,43 @@ angular.module("RIF")
                         var div = L.DomUtil.create('div', 'info legend');
                         div.innerHTML += '<h4>' + attr.toUpperCase().replace("_", " ") + '</h4>';
                         if (!angular.isUndefined(thisMap.range)) {
+							
+							if (thisMap.breaks.length != (thisMap.range.length-1)) {
+								throw new Error("[rifs-util-choro.js] thisMap.breaks length error: " + i +
+									"; thisMap.breaks: " + JSON.stringify(thisMap.breaks) +
+									"; length: " + thisMap.breaks.length +
+									"; thisMap.range: " + JSON.stringify(thisMap.range) +
+									"; length: " + thisMap.range.length);
+							}
+							
                             for (var i = thisMap.range.length - 1; i >= 0; i--) {
                                 div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
                                 if (i === 0) { //first break
 									if (thisMap.breaks[i]) {
-										div.innerHTML += '<span>' + '<' + thisMap.breaks[i].toFixed(2) + '</span>';
+										div.innerHTML += '<span>&lt;' + thisMap.breaks[i].toFixed(2) + '</span>';
 									}
 									else {
-										AlertService.consoleError("[rifs-util-choro.js] first break, thisMap.breaks[i] does not exist; i: " + i);
+										div.innerHTML += '<span>&lt;0</span>';
 									}
                                 } else if (i === thisMap.range.length - 1) { //last break
 									if (thisMap.breaks[i - 1]) {
-										div.innerHTML += '<span>' + '&ge;' + thisMap.breaks[i - 1].toFixed(2) + '</span><br>';
+										div.innerHTML += '<span>&ge;' + thisMap.breaks[i - 1].toFixed(2) + '</span><br>';
 									}
 									else {
-										AlertService.consoleError("[rifs-util-choro.js] last break, thisMap.breaks[i - 1] does not exist; i: " + i);
+										div.innerHTML += '<span>&ge;0</span><br>';
 									}
                                 } else {
-									if (thisMap.breaks[i - 1]) {
-										div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+									if (thisMap.breaks[i - 1] && thisMap.breaks[i]) {
+										div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - &lt;' + thisMap.breaks[i].toFixed(2) + '</span><br>';
 									}
-									else {
-										AlertService.consoleError("[rifs-util-choro.js] thisMap.breaks[i - 1] does not exist; i: " + i);
+									else if (thisMap.breaks[i - 1]) {
+										div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - &lt;0</span><br>';	
+									}
+									else if (thisMap.breaks[i]) {						
+										div.innerHTML += '<span>0 - &lt;' + thisMap.breaks[i].toFixed(2) + '</span><br>';			
+									}
+									else { // This is surely a bug
+										div.innerHTML += '<span>0</span><br>';									
 									}
                                 }
                             }
