@@ -1072,6 +1072,12 @@ angular.module("RIF")
 					else {
 						//remove old legend and add new
 						$scope.legend[mapID].onAdd = ChoroService.getMakeLegend(thisMap[mapID], $scope.attr[mapID]);
+						
+						if (thisMap[mapID].breaks.length != (thisMap[mapID].range.length-1)) {
+							throw new Error("[rifc-util-mapping.js] " + mapID + " thisMap.breaks: " + thisMap[mapID].breaks.length +
+								" length != thisMap.range: " + thisMap[mapID].range.length + " -1 length");
+						}
+											
 						if ($scope.legend[mapID]._map) { //This may break in future leaflet versions
 							$scope.map[mapID].removeControl($scope.legend[mapID]);
 						}
@@ -1488,7 +1494,8 @@ angular.module("RIF")
                     if ($scope.studyID[mapID] === null || $scope.sex[mapID] === null) {
                         $scope.showError("Invalid study or sex code");
                         clearTheMapOnError(mapID);
-                    } else {
+                    } 
+					else {
 						$scope.initialRefresh[mapID]=false;
 						$scope.attributeDataLoaded[mapID]=false;
 						$scope.consoleDebug("[rifc-util-mapping.js] updateStudy for mapID: " + mapID + "; study: " + $scope.studyID[mapID].study_id + 
@@ -1524,7 +1531,12 @@ angular.module("RIF")
 							if (err) {
 								$scope.showError(err);
 							}
-							else {
+							else if ($scope.myService.getState().studyType[mapID] != $scope.myService.getState().studyType[mapID]) {
+								$scope.showError("StudyID: " + JSON.stringify($scope.myService.getState().study[mapID]) +
+									"; select state studyType: " + $scope.myService.getState().studyType[mapID] != " database: " + 
+									$scope.myService.getState().study[mapID].studyType);
+							}
+							else {						
 								user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
 									function (res) {
 										$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU

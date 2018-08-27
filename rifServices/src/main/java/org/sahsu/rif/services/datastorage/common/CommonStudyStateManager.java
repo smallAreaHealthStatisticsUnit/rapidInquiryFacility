@@ -383,7 +383,7 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 			
 			RIFResultTable rifResultTable = new RIFResultTable();
 			
-			String[] columnNames = new String[7];
+			String[] columnNames = new String[8];
 			columnNames[0] = "study_id";
 			columnNames[1] = "study_name";		
 			columnNames[2] = "study_description";
@@ -391,15 +391,17 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 			columnNames[4] = "date";
 			columnNames[5] = "message";
 			columnNames[6] = "trace";
+			columnNames[7] = "study_type";
 			
-			RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[7];
+			RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[8];
 			columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[1] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[3] = RIFResultTable.ColumnDataType.TEXT;		
 			columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[5] = RIFResultTable.ColumnDataType.TEXT;
-			columnDataTypes[6] = RIFResultTable.ColumnDataType.TEXT;		
+			columnDataTypes[6] = RIFResultTable.ColumnDataType.TEXT;
+			columnDataTypes[7] = RIFResultTable.ColumnDataType.TEXT;		
 
 			rifResultTable.setColumnProperties(columnNames, columnDataTypes);
 			
@@ -487,7 +489,7 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 				queryFormatter.addQueryLine(1, "trace");			
 				
 				int ithRecord = 0;
-				String[][] data = new String[expectedNumberOfStatusUpdates][7];
+				String[][] data = new String[expectedNumberOfStatusUpdates][8];
 				while (resultSet.next() ) {		
 					data[ithRecord][0] = resultSet.getString(1); //study ID
 					data[ithRecord][1] = resultSet.getString(2); //study name
@@ -531,6 +533,7 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 						// fix for Angular parse errors
 						// Error: JSON.parse: bad escaped character at line 1 column 2871 of the JSON data
 					}
+					data[ithRecord][7]=StringEscapeUtils.escapeJavaScript(resultSet.getString(8)); //study_type 
 					ithRecord++;
 				}
 				
