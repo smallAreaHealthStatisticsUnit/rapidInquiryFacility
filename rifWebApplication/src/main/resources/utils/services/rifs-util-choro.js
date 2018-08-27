@@ -475,14 +475,17 @@ angular.module("RIF")
 							}
 							else if (choroScope.input) { // Not really and error - being called too early
 								choroScope.consoleLog("WARNING: renderSwatch() being called too early choroScope.input.methodObj not defined: " + 
-									JSON.stringify(choroScope.input));
+									JSON.stringify(choroScope.input)); 
+
+//								throw new Error("renderSwatch() being called too early");
 							}
 							else {
-								choroScope.consoleError("Error in renderSwatch() choroScope.input not defined");
+								choroScope.consoleError("Error in renderSwatch() choroScope.input not defined", 
+									new Error("renderSwatch() choroScope.input not defined"));
 							}
 						}
 						else {
-							throw new Error("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
+							throw new Error("Error in renderSwatch() choroScope.iconsoleError not defined: " + 
 								JSON.stringify(choroScope.input.methodObj));
 						}
 					}	
@@ -664,12 +667,17 @@ angular.module("RIF")
 					},
                     resetState: function (map) {
 						if (map == undefined) {
-							throw new Error("Unable to reesetState, map is undefiuned");
+							throw new Error("Unable to reesetState, map is undefined");
 						}	
                         maps[map] = new symbology(map, choroScaleMethod);
                     },
 					setType: function (map, studyType) {				
 						var validColumnList=ViewerStateService.getValidColumnList(map, studyType);
+					
+						if (studyType == "Risk Analysis") {
+							maps['diseasemap1'] = maps['viewermap'];
+							maps['diseasemap2'] = maps['viewermap'];
+						}
 						
 						if (parameters && parameters.userMethods) { // Add userMethods
 
@@ -688,16 +696,16 @@ angular.module("RIF")
 								else if (userMethodName.feature == undefined && checkuserMethods(map, studyType, userMethodName)) {
 									AlertService.consoleLog("classificationsList[" + userMethodName + "] for map: " + map + 
 										"; studyType: " + studyType +
-										"; add for undefined feature: " + userMethod.description);							
+										"; add for undefined feature: " + JSON.stringify(userMethod));							
 									classificationsList.push({
 											id: userMethodName,
 											label: userMethod.description
 										});
 								}
 							}
-							AlertService.consoleLog("New classificationsList for map: " + map + 
-								"; studyType: " + studyType +
-								"; list: " + JSON.stringify(classificationsList, null, 2));
+//							AlertService.consoleLog("New classificationsList for map: " + map + 
+//								"; studyType: " + studyType +
+//								"; list: " + JSON.stringify(classificationsList, null, 2));
 						
 						}
 					}

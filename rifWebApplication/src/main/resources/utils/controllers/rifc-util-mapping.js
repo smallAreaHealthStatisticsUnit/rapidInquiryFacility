@@ -315,14 +315,18 @@ angular.module("RIF")
 				 */
 				function addSelectedShapes(mapID, addSelectedShapesCallback) {		
 				
+					if (!addSelectedShapesCallback || typeof addSelectedShapesCallback !== "function") { 
+						$scope.showError("No callback function for addSelectedShapes()");
+						throw new Error("No callback function for addSelectedShapes()");
+					}
+					
 					var selectedShapes;
 					if ($scope.studyID[mapID].study_id) {
 						
 						SelectStateService.getStudySelection(mapID, $scope.studyID[mapID].study_id, 
 							function getStudySelectionCallback(err, mapID, studySelection) {	
 							
-								$scope.bShowHideSelectionShapes[mapID]=(SelectStateService.getState().showHideSelectionShapes || true);		
-								ChoroService.resetState(mapID);
+								$scope.bShowHideSelectionShapes[mapID]=(SelectStateService.getState().showHideSelectionShapes || true);
 								
 								// Add back selected shapes				
 								if (err) {
@@ -562,7 +566,9 @@ angular.module("RIF")
 											}, 100);			
 										}, 100);			
 									}); 
-													
+												
+									ChoroService.setType(mapID, $scope.myService.getState().studyType[mapID]);
+									
 									addSelectedShapesCallback();
 								}	
 								else {
@@ -574,9 +580,10 @@ angular.module("RIF")
 									
 									$scope.$parent.studyType[mapID]="DISEASE MAPPING";
 									$scope.myService.getState().studyType[mapID] = "Disease Mapping";
-									ChoroService.resetState(mapID);
+//									ChoroService.resetState(mapID);
 									ChoroService.setType(mapID, $scope.myService.getState().studyType[mapID]);
 									// Will need to set print state here
+
 									addSelectedShapesCallback();
 								}
 							});
@@ -1065,7 +1072,9 @@ angular.module("RIF")
                         if ($scope.legend[mapID]._map) {
                             $scope.map[mapID].removeControl($scope.legend[mapID]);
                         }
-                        if (angular.isDefined($scope.geoJSON[mapID]._geojsons.default)) {
+                        if ($scope.geoJSON[mapID]._geojsons &&
+						    $scope.geoJSON[mapID]._geojsons.default && 
+							angular.isDefined($scope.geoJSON[mapID]._geojsons.default)) {
                             $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
                         }
                     }
@@ -1523,7 +1532,16 @@ angular.module("RIF")
 						$scope.consoleDebug("[rifc-util-mapping.js] set myService - sex: " + $scope.myService.getState().sex[mapID] +
 							"; studyID: " + JSON.stringify($scope.myService.getState().study[mapID]) +
 							"; studyType: " + $scope.myService.getState().studyType[mapID]);
-	
+
+						if (ChoroService.getMaps(mapID) && ChoroService.getMaps(mapID).features) {
+							var features=ChoroService.getMaps(mapID).features; // Save feature list
+							ChoroService.resetState(mapID);
+							ChoroService.getMaps(mapID).features=features;
+						}
+						else {
+							ChoroService.resetState(mapID);
+						}
+				
 						// Add selection shapes (usually risk analysis)
 						addSelectedShapes(mapID, addSelectedShapesCallback);
 						
@@ -1531,12 +1549,31 @@ angular.module("RIF")
 							if (err) {
 								$scope.showError(err);
 							}
-							else if ($scope.myService.getState().studyType[mapID] != $scope.myService.getState().studyType[mapID]) {
-								$scope.showError("StudyID: " + JSON.stringify($scope.myService.getState().study[mapID]) +
-									"; select state studyType: " + $scope.myService.getState().studyType[mapID] != " database: " + 
-									$scope.myService.getState().study[mapID].studyType);
-							}
-							else {						
+							else {	
+								if ($scope.myService.getState().studyType[mapID] == undefined) {
+									$scope.showError("studyType not defined for map: " + mapID);
+								}
+								else if ($scope.myService.getState().study[mapID].study_type == undefined) {
+									$scope.consoleError("addSelectedShapesCallback() study_type not defined for map: " + mapID + 
+										"; study: " + JSON.stringify($scope.myService.getState().study[mapID]));
+									$scope.showError("studyType not defined for map: " + mapID + 
+										"; study ID: " + $scope.myService.getState().study[mapID].study_id);
+								}
+								else if ($scope.myService.getState().studyType[mapID] != $scope.myService.getState().study[mapID].study_type) {
+									$scope.consoleError("addSelectedShapesCallback() study_type mismatch for map: " + mapID + 
+										"; study: " + JSON.stringify($scope.myService.getState().study[mapID]) +
+										"; select state for map: " + mapID + " studyType: " + $scope.myService.getState().studyType[mapID] +
+										"!=  database: " + $scope.myService.getState().study[mapID].studyType);	
+									$scope.showWarning("studyType mismatch for map: " + mapID + 
+										"; study ID: " + $scope.myService.getState().study[mapID].study_id);	
+								}
+								else {
+									$scope.consoleError("addSelectedShapesCallback() study_type OK for map: " + mapID + 
+										"; study: " + JSON.stringify($scope.myService.getState().study[mapID]) +
+										"; select state for map: " + mapID + " studyType: " + $scope.myService.getState().studyType[mapID] +
+										"==  database: " + $scope.myService.getState().study[mapID].studyType);	
+								}	
+								
 								user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
 									function (res) {
 										$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
@@ -1552,7 +1589,6 @@ angular.module("RIF")
 										getAttributeTable(mapID, // Needs study_id, sex
 											function getAttributeTableCallBack(msg) {
 												$scope.consoleDebug(msg);
-
 
 											},
 											function getAttributeTableError(e) {
