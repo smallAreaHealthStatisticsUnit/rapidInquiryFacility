@@ -2828,6 +2828,25 @@ SELECT a.*, b.coa2011
  
 * Print state testing
 * Study download/reload testing
-* Disable DB upload for pre alter 10 studies, test getSelectState, refactor SelectState service to make common
+* Disable DB upload for pre alter 10 studies, test getSelectState, refactor SelectState service to make common;
+* Add selected shapes (risk analysis definition shapefiles);
  
+#### 20th to 24th August
+
+* Experimented with mouse click through. Unable to get to work without adverse performance implications:
+  * TopoJSON grid layer blocks mouse clicks unless it is the in view pane;
+  * Using the mouse position to find the nearest TopoJSON grid layer does work, but you only get one mouse event per layer boundary cross. 
+    Would need to modify the map shape pane to transmit more events, this has performance implications;
+* Created example UK 2011 census numerator/denominator tables to shut front end up!
+* Fix for spurious WARNING: Unable to verify study area selection: upload no longer supported for pre-alter 10 studies;
+* Improvements to file load messages;
+* Add showShapes button to viewer and diseasemap;
+* Make diseasemap just a map;
+* Start risk analysis support in viewer;
+* Misc logging and IE fixes. IE works, but only with a browser window - suspect proj4 library;
+* Added study type and new polygon name for viewer and mapper, de-dieased mapped; start of choropleth map risk analysis awareness
+
+#### 27th to 31st August
+
+	
 TODO: Add notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   
