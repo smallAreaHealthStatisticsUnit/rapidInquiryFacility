@@ -2765,7 +2765,7 @@ SELECT a.*, b.coa2011
   
 #### 30th July to 3rd August
 
-* Regression and fix test pull #47 (Change database access in R to use RJDBC) and add_study_selection_to_json:
+* Regression and fix test pull #47 (Change database access in R to use RJDBC) and merge branch add_study_selection_to_json:
   * Had to use *RODBC* on SQL Server due to *RJDBC* error:
     ``` 
 	saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
@@ -2792,23 +2792,61 @@ SELECT a.*, b.coa2011
 	Added tracer. 
   * SQL Server: *warning: You must enter a valid Postal Code* with validated postcode. 
     Also need to run validation if you click in the other fields.
+  
+#### 6th to 10th August
+
+* Alter 10 risk analysis database changes. (See TODO](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/TODO#database-issues):	 
+  1. Save/restore user selection methods to/from database;	
+  2. Save user print selection to/from database;	
+  3. The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
+  4. *rif40_homogeneity*:
+  
+	| Column name      | Column description                                                                  |
+	|------------------|-------------------------------------------------------------------------------------| 
+	| study_id[PK][FK] | rif40_studies.study_id                                                              | 
+	| inv_id[PK][FK]   | rif40_investigations.inv_id                                                         | 
+	| adjusted[PK]     | 0 or 1 indicating adjusted/unadjusted results                                       | 
+	| genders[PK]      | 1, 2 or 3, indicating Males, Females or Both                                        | 
+	| homogeneity_dof  | the number of degrees of freedom                                                    | 
+	| homogeneity_chi2 | the chi2-value for the homogeneity test                                             | 
+	| homogeneity_p    | the p-value for the homogeneity test                                                | 
+	| linearity_chi2   | the chi2-value for the linearity test                                               | 
+	| linearity_p      | the p-value for the linearity test                                                  | 
+	| explt5           | the number of bands in the study which have an expected number of cases less than 1 | 
+  
+  5. Add unique keys to description files on rif tables/projects/health themes to protect against the middleware using them as a key;
+  6. Add default background layer support for geography (so sahsuland has no background);  
+* Alter 10 new REST calls:
+  * getMapBackground
+  * getSelectState
+  * getPrintState
+  * setPrintState  
+* Set map background by geography, constrain map background filed; parse testeing study_selection in middleware;
+* Added select/print (initialisation) state update via study submission; test alter 10 on SQL Server;
+
+#### 13th to 17th August
+ 
+* Print state testing
+* Study download/reload testing
+* Disable DB upload for pre alter 10 studies, test getSelectState, refactor SelectState service to make common;
+* Add selected shapes (risk analysis definition shapefiles);
+ 
+#### 20th to 24th August
+
+* Experimented with mouse click through. Unable to get to work without adverse performance implications:
+  * TopoJSON grid layer blocks mouse clicks unless it is the in view pane;
+  * Using the mouse position to find the nearest TopoJSON grid layer does work, but you only get one mouse event per layer boundary cross. 
+    Would need to modify the map shape pane to transmit more events, this has performance implications;
+* Created example UK 2011 census numerator/denominator tables to shut front end up!
+* Fix for spurious WARNING: Unable to verify study area selection: upload no longer supported for pre-alter 10 studies;
+* Improvements to file load messages;
+* Add showShapes button to viewer and diseasemap;
+* Make diseasemap just a map;
+* Start risk analysis support in viewer;
+* Misc logging and IE fixes. IE works, but only with a browser window - suspect proj4 library;
+* Added study type and new polygon name for viewer and mapper, de-dieased mapped; start of choropleth map risk analysis awareness
+
+#### 27th to 31st August
+
 	
-* Database Changes (See TODO](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/TODO#database-issues):	 
-  * Save/restore user selection methods to/from database;	
-  * Save user print selection to/from database;	
-  * The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
-  * *rif40_homogeneity*:
-  
-  | Column name      | Column description                                                                  |
-  |------------------|-------------------------------------------------------------------------------------| 
-  | study_id[PK][FK] | rif40_studies.study_id                                                              | 
-  | inv_id[PK][FK]   | rif40_investigations.inv_id                                                         | 
-  | adjusted[PK]     | 0 or 1 indicating adjusted/unadjusted results                                       | 
-  | genders[PK]      | 1, 2 or 3, indicating Males, Females or Both                                        | 
-  | homogeneity_dof  | the number of degrees of freedom                                                    | 
-  | homogeneity_chi2 | the chi2-value for the homogeneity test                                             | 
-  | homogeneity_p    | the p-value for the homogeneity test                                                | 
-  | linearity_chi2   | the chi2-value for the linearity test                                               | 
-  | linearity_p      | the p-value for the linearity test                                                  | 
-  | explt5           | the number of bands in the study which have an expected number of cases less than 1 | 
-  
+TODO: Add notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   

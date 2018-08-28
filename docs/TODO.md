@@ -640,47 +640,47 @@ These are issues that have been noted but do not affect the running of the RIF
 * USA_2014 integration: 
   * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names
     Tomcat error:
-```
+    ```
     AbstractSQLManager logSQLQuery 1rifServices.dataStorageLayer.pg.PGSQLRIFContextManager==
     ==========================================================
-QUERY NAME:checkGeoLevelViewExistsQuery
-PARAMETERS:
-        1:"GEOID"
-        2:"USA_2014"
-        3:"1"
+	QUERY NAME:checkGeoLevelViewExistsQuery
+	PARAMETERS:
+			1:"GEOID"
+			2:"USA_2014"
+			3:"1"
 
-SQL QUERY TEXT
-SELECT 1
-FROM
-   rif40_geolevels
-WHERE
-   geolevel_name=? AND
-   geography=?;
+	SQL QUERY TEXT
+	SELECT 1
+	FROM
+	   rif40_geolevels
+	WHERE
+	   geolevel_name=? AND
+	   geography=?;
 
-==========================================================
+	==========================================================
 
-rifGenericLibrary.system.RIFServiceException: Record "Area types" with value "GEOID" not found in the database.
-        at rifServices.dataStorageLayer.pg.PGSQLRIFContextManager.checkGeoLevelSelectExists(PGSQLRIFContextManager.java:1192)
-        at rifServices.dataStorageLayer.pg.PGSQLRIFContextManager.validateCommonMethodParameters(PGSQLRIFContextManager.
-```
-  This is caused by the wrong setup in rif40_geogrpaphies (i.e. tilemaker)
-```
-sahsuland=> select * from rif40_geographies;
- geography |               description                |   hierarchytable    | srid  | defaultcomparea  | defaultstudyarea | postal_population_table | postal_point_column | partition | max_geojson_digits |   geometrytable    |    tiletable    | minzoomlevel | maxzoomlevel |   adjacencytable
------------+------------------------------------------+---------------------+-------+------------------+------------------+-------------------------+---------------------+-----------+--------------------+--------------------+-----------------+--------------+--------------+---------------------
- SAHSULAND | SAHSU Example geography                  | HIERARCHY_SAHSULAND | 27700 | SAHSU_GRD_LEVEL1 | SAHSU_GRD_LEVEL3 |                         |                     |         1 |                  6 | GEOMETRY_SAHSULAND | TILES_SAHSULAND |            6 |           11 | ADJACENCY_SAHSULAND
- USA_2014  | US 2014 Census geography to county level | HIERARCHY_USA_2014  |  4269 | GEOID            | STATENS          |                         |                     |         1 |                  6 | GEOMETRY_USA_2014  | TILES_USA_2014  |            6 |            9 |
-(2 rows)
-```
+	rifGenericLibrary.system.RIFServiceException: Record "Area types" with value "GEOID" not found in the database.
+			at rifServices.dataStorageLayer.pg.PGSQLRIFContextManager.checkGeoLevelSelectExists(PGSQLRIFContextManager.java:1192)
+			at rifServices.dataStorageLayer.pg.PGSQLRIFContextManager.validateCommonMethodParameters(PGSQLRIFContextManager.
+    ```
+    This is caused by the wrong setup in rif40_geogrpaphies (i.e. tilemaker)
+    ```
+	sahsuland=> select * from rif40_geographies;
+	 geography |               description                |   hierarchytable    | srid  | defaultcomparea  | defaultstudyarea | postal_population_table | postal_point_column | partition | max_geojson_digits |   geometrytable    |    tiletable    | minzoomlevel | maxzoomlevel |   adjacencytable
+	-----------+------------------------------------------+---------------------+-------+------------------+------------------+-------------------------+---------------------+-----------+--------------------+--------------------+-----------------+--------------+--------------+---------------------
+	 SAHSULAND | SAHSU Example geography                  | HIERARCHY_SAHSULAND | 27700 | SAHSU_GRD_LEVEL1 | SAHSU_GRD_LEVEL3 |                         |                     |         1 |                  6 | GEOMETRY_SAHSULAND | TILES_SAHSULAND |            6 |           11 | ADJACENCY_SAHSULAND
+	 USA_2014  | US 2014 Census geography to county level | HIERARCHY_USA_2014  |  4269 | GEOID            | STATENS          |                         |                     |         1 |                  6 | GEOMETRY_USA_2014  | TILES_USA_2014  |            6 |            9 |
+	(2 rows)
+    ```
     Attempt at fix failed (trigger fault) 
-```
-UPDATE rif40_geographies
-   SET defaultcomparea  = 'CB_2014_US_STATE_500K'
- WHERE defaultcomparea  = 'GEOID' AND geography = 'USA_2014';
-UPDATE rif40_geographies
-   SET defaultstudyarea = 'CB_2014_US_COUNTY_500K'
- WHERE  geography = 'USA_2014';
-```
+	```
+	UPDATE rif40_geographies
+	   SET defaultcomparea  = 'CB_2014_US_STATE_500K'
+	 WHERE defaultcomparea  = 'GEOID' AND geography = 'USA_2014';
+	UPDATE rif40_geographies
+	   SET defaultstudyarea = 'CB_2014_US_COUNTY_500K'
+	 WHERE  geography = 'USA_2014';
+	```
   So the script was fixed, reload needed DELETE FROM rif40_covariates WHERE geography = 'USA_2014' adding.
   This was fixed from before; I appear to have used an older script!
   Also STATE was not a comparison are; this is probably a fault in the scripts. All flags should be set in *rif40_geolevels* 
