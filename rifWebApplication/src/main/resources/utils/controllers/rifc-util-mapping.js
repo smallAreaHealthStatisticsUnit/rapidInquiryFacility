@@ -1039,14 +1039,14 @@ angular.module("RIF")
 						LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback);
 					}
 					else {
-						alertScope.consoleLog("[rifc-util-mapping.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
+						$scope.consoleLog("[rifc-util-mapping.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
 							mapID);
 					}
 				};
 						
 				function setBaseMapCallback(err) {
 					if (err) { // LeafletBaseMapService.setDefaultMapBackground had error
-						alertScope.consoleLog("[rifc-util-mapping.js] WARNING LeafletBaseMapService.setDefaultMapBackground had error: " + 
+						$scope.consoleLog("[rifc-util-mapping.js] WARNING LeafletBaseMapService.setDefaultMapBackground had error: " + 
 							err);
 					}				
 							
