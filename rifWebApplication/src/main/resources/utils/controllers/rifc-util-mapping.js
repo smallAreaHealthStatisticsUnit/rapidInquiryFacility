@@ -1034,6 +1034,22 @@ angular.module("RIF")
                  */
                 //change the basemaps 
                 $scope.renderMap = function (mapID) {
+					var thisGeography = $scope.tileInfo[mapID].geography
+					if (thisGeography) {
+						LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback);
+					}
+					else {
+						alertScope.consoleLog("[rifc-util-mapping.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
+							mapID);
+					}
+				};
+						
+				function setBaseMapCallback(err) {
+					if (err) { // LeafletBaseMapService.setDefaultMapBackground had error
+						alertScope.consoleLog("[rifc-util-mapping.js] WARNING LeafletBaseMapService.setDefaultMapBackground had error: " + 
+							err);
+					}				
+							
 					var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse(mapID);
 					if ($scope.studyID[mapID].study_id) {
 						$scope.consoleDebug("[rifc-util-mapping.js] renderMap (basemap) for mapID: " + mapID + 
