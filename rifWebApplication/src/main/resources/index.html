@@ -191,7 +191,10 @@
         <script src="utils/services/rifs-util-JSON.js"></script>
         <script src="utils/services/rifs-util-maptools.js"></script>
         <script src="utils/services/rifs-util-alert.js"></script>
+		<!-- This causes a circular dependency error in newer firefoxes:
+		
         <script src="utils/services/rifs-util-exceptionOverwrite.js"></script>
+		-->
         <script src="utils/services/rifs-util-projection.js"></script>
         <script src="utils/services/rifs-util-selectstate.js"></script>
         <script src="backend/services/rifs-back-requests.js"></script>
