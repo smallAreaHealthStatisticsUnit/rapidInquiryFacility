@@ -535,21 +535,21 @@ angular.module("RIF")
 						StudyAreaStateService.getState().studyResolution = rifJob[studyType][studyAreaType].geo_levels.geolevel_to_map.name;
 						StudyAreaStateService.getState().polygonIDs = rifJob[studyType][studyAreaType].map_areas.map_area;
 						if (StudyAreaStateService.getState().polygonIDs.length == 0) {
-							throw new Exception("No study area polygons");
+							throw new Error("No study area polygons");
 						}
 						StudyAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (StudyAreaStateService.getState().polygonIDs.length !== 0) {
 							SubmissionStateService.getState().studyTree = true;
 						}
 						if (studyType === "risk_analysis_study") {
-							StudyAreaStateService.getState().type = "Risk Analysis";	
+							StudyAreaStateService.gsetState().type = "Risk Analysis";	
 						}
 						//Comparison area
 						CompAreaStateService.getState().selectAt = rifJob[studyType].comparison_area.geo_levels.geolevel_select.name;
 						CompAreaStateService.getState().studyResolution = rifJob[studyType].comparison_area.geo_levels.geolevel_to_map.name;
 						CompAreaStateService.getState().polygonIDs = rifJob[studyType].comparison_area.map_areas.map_area;
 						if (CompAreaStateService.getState().polygonIDs.length == 0) {
-							throw new Exception("No comparison area polygons");
+							throw new Error("No comparison area polygons");
 						}
 						CompAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (CompAreaStateService.getState().polygonIDs.length !== 0) {
