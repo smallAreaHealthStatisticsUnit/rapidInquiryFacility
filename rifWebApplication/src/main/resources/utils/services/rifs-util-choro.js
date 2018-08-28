@@ -652,7 +652,9 @@ angular.module("RIF")
                         return choroScale(method, domain, rangeIn, flip, map, oldRval, intervals, choroScope);
                     },
                     getMakeLegend: function (thisMap, attr) {
-                        return makeLegend(thisMap, attr);
+						var legend=makeLegend(thisMap, attr);
+						AlertService.consoleLog("getMakeLegend(): legend: " + JSON.stringify(legend, null, 1));
+                        return legend;
                     },
 					doRenderSwatch: function (
 						bOnOpen /* Called on modal open */, 

@@ -1092,27 +1092,39 @@ angular.module("RIF")
 						}
 						$scope.legend[mapID].addTo($scope.map[mapID]);
 						//force a redraw
-						if (angular.isDefined($scope.geoJSON[mapID]._geojsons.default)) {
-							$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
-						}
-					}
-					
-					$scope.bringShapesToFront(mapID);
-							
-					$scope.map[mapID].whenReady(function() {
-						$timeout(function() {										
+						
+						$scope.map[mapID].whenReady(function() {
+							$timeout(function() {					
+									if (angular.isDefined($scope.geoJSON[mapID]._geojsons.default)) {
+										$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+									}
+								}, 200);	
 								
-								$scope.consoleLog("[rifc-util-mapping.js] redraw map");
-								$scope.map[mapID].fitBounds($scope.map[mapID].getBounds()); // Force map to redraw after 0.5s delay
-							}, 500);	
-					});	
+								$scope.bringShapesToFront(mapID);
+										
+								$scope.map[mapID].whenReady(function() {
+									$timeout(function() {										
+											
+											$scope.consoleLog("[rifc-util-mapping.js] redraw map");
+											$scope.map[mapID].fitBounds($scope.map[mapID].getBounds()); // Force map to redraw after 0.2s delay
+										}, 200);	
+								});	
+						});	
+					}
 					
                     //draw histogram [IT MUST BW HERE OR D3 GETS CONFUSED!]
 					callGetD3chart = function(mapID) {
 						$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
-						$scope.getD3chart(mapID, $scope.attr[mapID]); // Crashes firefox	
 						
-						$scope.consoleDebug("[rifc-util-mapping.js] refresh completed for mapID: " + mapID);	
+						if ($scope.tableData[mapID].length == 0) {
+							$scope.consoleDebug("[rifc-util-mapping.js] map data not ready for mapID: " + mapID);	
+							setTimeout(callGetD3chart, 500, mapID);		
+						}
+						else {
+							$scope.getD3chart(mapID, $scope.attr[mapID]); // Crashes firefox	
+						
+							$scope.consoleDebug("[rifc-util-mapping.js] refresh completed for mapID: " + mapID);	
+						}
 					}
 					setTimeout(callGetD3chart, 500, mapID);		 
                 }; //End of refresh(0)
