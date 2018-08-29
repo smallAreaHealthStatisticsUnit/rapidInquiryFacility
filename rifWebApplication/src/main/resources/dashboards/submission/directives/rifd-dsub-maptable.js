@@ -41,10 +41,10 @@
 angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
-			'SelectStateService', 'ParametersService',
+			'SelectStateService', 'ParametersService', 'StudyAreaStateService',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService,
-					SelectStateService, ParametersService) {
+					SelectStateService, ParametersService, StudyAreaStateService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -569,13 +569,15 @@ angular.module("RIF")
                          */
                         $scope.studyTypeChanged = function () {
 							alertScope.consoleDebug("[rifd-dsub-maptable.js] studyTypeChanged(): " +
-								"; input.type: "+ $scope.input.type + 
-								"; SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType);
+								"; to input.type: "+ $scope.input.type + 
+								"; from SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType + 
+								"; and from SubmissionStateService.getState().studyType: " + StudyAreaStateService.getState().studyType);
 								
                             //clear selection
                             $scope.clear();
                             //offer the correct number of bands
                             SubmissionStateService.getState().studyType = $scope.input.type;
+							StudyAreaStateService.getState().studyType = $scope.input.type;
                             if ($scope.input.type === "Risk Analysis") {
                                 $scope.possibleBands = [1, 2, 3, 4, 5, 6];
                                 $scope.areamap.band = 6;
@@ -1182,6 +1184,7 @@ angular.module("RIF")
                         };
 						
                         //Set the user defined basemap
+						// Called from rifc-dmap-main.js
                         $scope.renderMap = function (mapID) {
 							LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback);
                         };
