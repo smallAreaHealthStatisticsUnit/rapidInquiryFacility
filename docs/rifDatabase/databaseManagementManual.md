@@ -1481,11 +1481,16 @@ Pre-built databases are supplied patched up to date.
 
 Scripts must be applied as follows:
 
-| Date            | Script            | Description                         |
-|-----------------|-------------------|-------------------------------------|
-| 30th June  2018 | v4_0_alter_10.sql | To be added (risk analysis changes) |
+| Date             | Script            | Description                         |
+|------------------|-------------------|-------------------------------------|
+| 29th August 2018 | v4_0_alter_10.sql | Risk analysis changes               |
 
 ## 6.1 Postgres
+
+E.g. for alter 10:
+
+* Working directory: ...rapidInquiryFacility/rifDatabase/Postgres/psql_scripts
+* Run: ```psql -U rif40 -d sahsuland -w -e -P pager=off -f alter_scripts/v4_0_alter_10.sql```
 
 Alter scripts *v4_0_alter_1.sql* to *v4_0_alter_9.sql* related to be original database development on Postgres
 and were not created on SQL Server. The scripts *v4_0_alter_3.sql* and *v4_0_alter_4.sql* enable partitioning by
@@ -1527,6 +1532,12 @@ Scripts are in the standard bundle in the directory *Database alter scripts\SQL 
 ```
 sqlcmd -U rif40 -P <rif40 password> -d <your database name> -b -m-1 -e -r1 -i <alter script name>
 ```
+
+E.g. for alter 10:
+
+* Working directory: ...rapidInquiryFacility/rifDatabase/SQLserver/alter scripts
+* Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i v4_0_alter_10.sql -v pwd="%cd%"```
+* Connect flags if required: -P <password> -S<myServerinstanceName>
 
 # 7. Tuning  
 
