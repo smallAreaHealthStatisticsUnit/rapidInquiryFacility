@@ -2178,6 +2178,11 @@ instructions if it is updated say to *RIF41*.
 * Restore *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* if you have modified it;
 * When you are satisfied with the patch remove the RIF40.old directory in *%CATALINA_HOME%\webapps*.
 
+The RIF web application may require you to patch the database. You will get messages on logon such as 
+**alter_10.sql (post 3rd August 2018 changes for risk analysis) not run** to tell you to run the alter scripts.
+
+See the database Management manual: [6 Patching](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual.html#6-patching)
+
 ## 6.2 RIF Middleware
 
 * If you have not already moved it then save the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*

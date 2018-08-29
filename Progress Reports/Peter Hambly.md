@@ -2854,6 +2854,19 @@ SELECT a.*, b.coa2011
 * Added support for default map background by geography for maps;
 * Leak test: PASSED!
 * Regression test to SQL Server;
-* Created pull request #55 (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/pull/55)
-	
-TODO: Add notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   
+* Created and merged pull request #55 (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/pull/55) for RA front end and DB;
+* Merged pull request #60 (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/pull/60) for RA middleware;
+* Suppressed: WARNING: studyType mismatch for map: viewermap; study ID: 448 rifc-util-alert.js:220:7
+  ```
+  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40\utils\controllers\rifc-util-mapping.js (1 hit)
+  Line 1594: 									$scope.showWarning("studyType mismatch for map: " + mapID + 
+  ```
+  Need to fix rif40_studies.study_type to be as per study_selection JSON;
+* Added notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   
+* Created and outstanding issues in priority order:
+  * On-screen toggle between disease mapping and risk analysis doesn't work properly #52;
+  * Front end mapping synchronisation fails sometimes when you change the study #57;
+  * Error handling ICD10 chapters and ranges as investigation conditions #58;
+  * Add support for risk analysis in map export #61;
+  * Cannot view error messages that disappear #59;
+  * studyType mismatch for map: viewermap; study ID: ... #62;

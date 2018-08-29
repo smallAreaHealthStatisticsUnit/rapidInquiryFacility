@@ -1481,9 +1481,11 @@ Pre-built databases are supplied patched up to date.
 
 Scripts must be applied as follows:
 
-| Date             | Script            | Description                         |
-|------------------|-------------------|-------------------------------------|
-| 29th August 2018 | v4_0_alter_10.sql | Risk analysis changes               |
+| Date            | Script            | Description                         |
+|-----------------|-------------------|-------------------------------------|
+| 3rd August 2018 | v4_0_alter_10.sql | Risk analysis changes               |
+
+You will get messages on logon such as **alter_10.sql (post 3rd August 2018 changes for risk analysis) not run** to tell you to run the alter scripts.
 
 ## 6.1 Postgres
 
