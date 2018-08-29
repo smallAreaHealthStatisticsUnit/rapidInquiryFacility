@@ -542,7 +542,7 @@ angular.module("RIF")
 							SubmissionStateService.getState().studyTree = true;
 						}
 						if (studyType === "risk_analysis_study") {
-							StudyAreaStateService.gsetState().type = "Risk Analysis";	
+							StudyAreaStateService.getState().type = "Risk Analysis";	
 						}
 						//Comparison area
 						CompAreaStateService.getState().selectAt = rifJob[studyType].comparison_area.geo_levels.geolevel_select.name;

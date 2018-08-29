@@ -354,10 +354,6 @@ angular.module("RIF")
 									
 									ChoroService.setType(mapID, $scope.myService.getState().studyType[mapID]);
 									// Will need to set print state here
-									
-									$scope.consoleDebug("[rifc-util-mapping.js] setup ChoroService, mapID: " + mapID + 
-										"; study_id: " + $scope.studyID[mapID].study_id +
-										"; Saved map state: " + JSON.stringify(ChoroService.getMaps(mapID), null, 2));
 
 									// Remove old layers
 									if ($scope.shapes[mapID].getLayers().length > 0) {
@@ -1220,6 +1216,8 @@ angular.module("RIF")
                     }
                 };
 				
+				// Render geoJSON map
+				// Called from $scope.geoJSON[mapID].on('load', ...) function
 				$scope.defaultRenderMap = function (mapID) {
 					
 					var choroScope = {
@@ -1611,6 +1609,10 @@ angular.module("RIF")
 											$scope.myService.getState().studyType[mapID] + 
 											"; studyID: " + JSON.stringify($scope.studyID[mapID], null, 1) + 
 											"; mappingDefaults: " + JSON.stringify($scope.parameters.mappingDefaults[mapID], null, 1));
+
+										$scope.consoleDebug("[rifc-util-mapping.js] setup ChoroService, mapID: " + mapID + 
+											"; study_id: " + $scope.studyID[mapID].study_id +
+											"; Saved map state: " + JSON.stringify(ChoroService.getMaps(mapID), null, 2));
 										
 										// Synchronised in on load
 										
