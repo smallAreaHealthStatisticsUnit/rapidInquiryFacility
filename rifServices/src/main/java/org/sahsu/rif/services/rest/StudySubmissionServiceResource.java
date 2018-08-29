@@ -1128,19 +1128,11 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			@FormDataParam("fileFormat") String fileFormat,
 			@FormDataParam("fileField") InputStream inputStream) {
 
-
 		return super.submitStudy(
 				servletRequest,
 				userID,
 				fileFormat,
 				inputStream);
-
-		//WebServiceResponseGenerator webServiceResponseGenerator
-		//	= getWebServiceResponseGenerator();
-
-		//return webServiceResponseGenerator.generateWebServiceResponse(
-		//	servletRequest,
-		//	"Testing getStuff method");
 	}
 
 

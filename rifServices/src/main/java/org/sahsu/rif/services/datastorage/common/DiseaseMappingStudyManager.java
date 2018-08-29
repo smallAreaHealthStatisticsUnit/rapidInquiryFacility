@@ -9,15 +9,15 @@ import java.util.ArrayList;
 
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.AbstractGeographicalArea;
+import org.sahsu.rif.services.concepts.AbstractStudy;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.ComparisonArea;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
 import org.sahsu.rif.services.concepts.GeoLevelView;
@@ -140,26 +140,26 @@ public final class DiseaseMappingStudyManager extends BaseSQLManager {
 		
 	}
 	
-	public void checkNonExistentItems(
-		final User user,
-		final Connection connection,
-		final DiseaseMappingStudy diseaseMappingStudy)
+	void checkNonExistentItems(
+			final User user,
+			final Connection connection,
+			final AbstractStudy study)
 		throws RIFServiceException {
 		
 		//check non-existent items in the Comparison and Study areas
-		Geography geography = diseaseMappingStudy.getGeography();
+		Geography geography = study.getGeography();
 		rifContextManager.checkGeographyExists(
 			connection, 
 			geography.getName());
-		DiseaseMappingStudyArea diseaseMappingStudyArea
-			= diseaseMappingStudy.getDiseaseMappingStudyArea();
+		AbstractStudyArea diseaseMappingStudyArea
+			= study.getStudyArea();
 
 		checkAreaNonExistentItems(
 			connection,
 			geography.getName(),
 			diseaseMappingStudyArea);
 		ComparisonArea comparisonArea
-			= diseaseMappingStudy.getComparisonArea();
+			= study.getComparisonArea();
 		checkAreaNonExistentItems(
 			connection,
 			geography.getName(),
@@ -175,7 +175,7 @@ public final class DiseaseMappingStudyManager extends BaseSQLManager {
 
 		//Check non-existent items in the investigations
 		ArrayList<Investigation> investigations
-			= diseaseMappingStudy.getInvestigations();
+			= study.getInvestigations();
 		for (Investigation investigation : investigations) {
 			investigationManager.checkNonExistentItems(
 				user,

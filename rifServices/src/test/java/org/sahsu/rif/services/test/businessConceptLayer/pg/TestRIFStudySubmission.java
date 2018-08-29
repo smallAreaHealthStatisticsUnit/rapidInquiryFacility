@@ -107,8 +107,8 @@ public final class TestRIFStudySubmission
 	 */
 	public TestRIFStudySubmission() {
 		generator = new SampleTestObjectGenerator();
-		masterRIFStudySubmission
-			= RIFStudySubmission.newInstance();
+		masterRIFStudySubmission =
+				RIFStudySubmission.newInstance();
 		masterRIFStudySubmission.addCalculationMethod(generator.createSampleHETMethod());
 		masterRIFStudySubmission.addCalculationMethod(generator.createSampleBYMMethod());	
 		masterRIFStudySubmission.setJobSubmissionTime(new Date());

@@ -1312,7 +1312,7 @@ getParameter("p 1")     yes     c d
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			
-			RIFStudySubmission rifStudySubmission = null;
+			RIFStudySubmission rifStudySubmission;
 			
 			String tmpFormat = "JSON";
 			rifLogger.info(this.getClass(), "ARWS-submitStudy122 fileFormat=="+format+"==");
@@ -1326,6 +1326,10 @@ getParameter("p 1")     yes     c d
 				rifStudySubmission
 					= getRIFSubmissionFromXMLSource(inputStream);
 			}
+
+			rifLogger.info(getClass(),"RIFStudySubmission created; type is " +
+			                          (rifStudySubmission.getStudy().isRiskAnalysis()
+					                           ? "Risk Analysis" : "Disease Mapping"));
 			
 			rifStudySubmission.checkErrors(AbstractRIFConcept.ValidationPolicy.RELAXED);
 
@@ -1369,6 +1373,8 @@ getParameter("p 1")     yes     c d
 				currentInputLine = reader.readLine();
 			}
 			reader.close();
+
+			rifLogger.info(getClass(), "JSON from UI: " + buffer.toString());
 			
 			JSONObject jsonObject = new JSONObject(buffer.toString());
 			
@@ -1395,11 +1401,10 @@ getParameter("p 1")     yes     c d
 			                                 ".getRIFSubmissionFromJSONSource error", exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage("webService.submitStudy.error.unableToConvertJSONToXML");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_PARSE_JSON_SUBMISSION,
-					errorMessage);
-			throw rifServiceException;
+
+			throw new RIFServiceException(
+				RIFServiceError.UNABLE_TO_PARSE_JSON_SUBMISSION,
+				errorMessage);
 		}
 		
 	}

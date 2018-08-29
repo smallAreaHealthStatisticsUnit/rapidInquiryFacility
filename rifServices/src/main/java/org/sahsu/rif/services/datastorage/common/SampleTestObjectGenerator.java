@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
 import org.sahsu.rif.services.concepts.AgeBand;
 import org.sahsu.rif.services.concepts.AgeGroup;
@@ -13,7 +14,6 @@ import org.sahsu.rif.services.concepts.CalculationMethodPrior;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.CovariateType;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
@@ -28,6 +28,7 @@ import org.sahsu.rif.services.concepts.Project;
 import org.sahsu.rif.services.concepts.RIFServiceInformation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.concepts.Sex;
+import org.sahsu.rif.services.concepts.StudyType;
 import org.sahsu.rif.services.concepts.YearInterval;
 import org.sahsu.rif.services.concepts.YearRange;
 
@@ -129,7 +130,8 @@ public final class SampleTestObjectGenerator {
 	
 
 	public RIFStudySubmission createSampleRIFJobSubmission() {
-		RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance();
+		RIFStudySubmission rifStudySubmission =
+				RIFStudySubmission.newInstance();
 		rifStudySubmission.setNewRecord(false);
 
 		rifStudySubmission.setJobSubmissionTime(new Date());
@@ -344,8 +346,8 @@ public final class SampleTestObjectGenerator {
 		comparisonArea.setGeoLevelToMap(geoLevelToMap);
 		diseaseMappingStudy.setComparisonArea(comparisonArea);
 	
-		DiseaseMappingStudyArea diseaseMappingStudyArea
-			= DiseaseMappingStudyArea.newInstance();
+		AbstractStudyArea diseaseMappingStudyArea =
+				AbstractStudyArea.newInstance(StudyType.DISEASE_MAPPING);
 		diseaseMappingStudyArea.setNewRecord(false);		
 
 		diseaseMappingStudyArea.addMapArea(mapArea1);
@@ -358,7 +360,7 @@ public final class SampleTestObjectGenerator {
 		diseaseMappingStudyArea.setGeoLevelArea(geoLevelArea);
 		diseaseMappingStudyArea.setGeoLevelView(geoLevelView);
 		diseaseMappingStudyArea.setGeoLevelToMap(geoLevelToMap);		
-		diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
+		diseaseMappingStudy.setStudyArea(diseaseMappingStudyArea);
 	
 		SampleTestObjectGenerator generator
 			= new SampleTestObjectGenerator();
@@ -549,7 +551,8 @@ public final class SampleTestObjectGenerator {
 	
 	public RIFStudySubmission createTypicalStudySubmission() {
 
-		RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance();
+		RIFStudySubmission rifStudySubmission =
+				RIFStudySubmission.newInstance();
 		rifStudySubmission.setNewRecord(false);
 
 		rifStudySubmission.setJobSubmissionTime(new Date());
@@ -573,8 +576,8 @@ public final class SampleTestObjectGenerator {
 	
 
 		//Set the study area
-		DiseaseMappingStudyArea diseaseMappingStudyArea
-			= DiseaseMappingStudyArea.newInstance();
+		AbstractStudyArea diseaseMappingStudyArea =
+				AbstractStudyArea.newInstance(StudyType.DISEASE_MAPPING);
 		diseaseMappingStudyArea.setNewRecord(false);		
 		GeoLevelSelect studyAreaGeoLevelSelect = GeoLevelSelect.newInstance("LEVEL2");
 		studyAreaGeoLevelSelect.setNewRecord(false);
@@ -588,7 +591,7 @@ public final class SampleTestObjectGenerator {
 		diseaseMappingStudyArea.setGeoLevelArea(studyAreaGeoLevelArea);
 		diseaseMappingStudyArea.setGeoLevelView(studyAreaGeoLevelView);
 		diseaseMappingStudyArea.setGeoLevelToMap(studyAreaGeoLevelToMap);		
-		diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
+		diseaseMappingStudy.setStudyArea(diseaseMappingStudyArea);
 
 		//Where to find out what levels the study area has?
 		MapArea mapArea1 = MapArea.newInstance(

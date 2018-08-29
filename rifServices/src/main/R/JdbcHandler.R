@@ -302,7 +302,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 	## We need to detect if the frame area_id is an integer and then add a cast
 	##
 	##================================================================================
-	
+
 	if (db_driver_prefix == "jdbc:postgresql") {
 		updateStmtPart0 <- paste(
 			"UPDATE ", mapTableName, " a SET ")
@@ -348,7 +348,6 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 			"a.genders=b.genders AND ")
 	}
 	
-
 	if (area_id_is_integer) {
 		if (db_driver_prefix == "jdbc:postgresql") {
 			updateMapTableSQLQuery <- paste0(updateStmtPart2,

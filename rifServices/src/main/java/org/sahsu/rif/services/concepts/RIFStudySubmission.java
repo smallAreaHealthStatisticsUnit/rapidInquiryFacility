@@ -14,82 +14,11 @@ import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-
-public final class RIFStudySubmission 
-	extends AbstractRIFConcept {
-	
-// ==========================================
-// Section Constants
-// ==========================================
+public final class RIFStudySubmission extends AbstractRIFConcept {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
-	
-// ==========================================
-// Section Properties
-// ==========================================
 
 	/** The job submission time. */
 	private Date jobSubmissionTime;
@@ -109,18 +38,15 @@ public final class RIFStudySubmission
 	private JSONObject studySelection;
 	
 	   
-// ==========================================
-// Section Construction
-// ==========================================
     /**
      * Instantiates a new RIF job submission.
  	*/
 	private RIFStudySubmission() {
+
     	jobSubmissionTime = new Date();
     	project = Project.newInstance();
-    	study = DiseaseMappingStudy.newInstance();
-		calculationMethods = new ArrayList<CalculationMethod>();
-		rifOutputOptions = new ArrayList<RIFOutputOption>();
+		calculationMethods = new ArrayList<>();
+		rifOutputOptions = new ArrayList<>();
 		rifOutputOptions.add(RIFOutputOption.DATA);
 		rifOutputOptions.add(RIFOutputOption.MAPS);
 		rifOutputOptions.add(RIFOutputOption.POPULATION_HOLES);
@@ -135,8 +61,8 @@ public final class RIFStudySubmission
      * @return the RIF job submission
      */
     public static RIFStudySubmission newInstance() {
-    	RIFStudySubmission rifStudySubmission = new RIFStudySubmission();	
-    	return rifStudySubmission;
+
+    	return new RIFStudySubmission();
     }
 	
     /* studySelection get/set methods */
@@ -162,7 +88,6 @@ public final class RIFStudySubmission
     	
     	RIFStudySubmission cloneRIFStudySubmission = new RIFStudySubmission();
 
-    	
     	Date originalJobSubmissionTime
     		= originalRIFStudySubmission.getJobSubmissionTime();
     	if (originalJobSubmissionTime != null) {
@@ -174,10 +99,9 @@ public final class RIFStudySubmission
     	Project originalProject = originalRIFStudySubmission.getProject();
     	cloneRIFStudySubmission.setProject(Project.createCopy(originalProject)); 	
     	
-    	DiseaseMappingStudy originalDiseaseMappingStudy
-    		= (DiseaseMappingStudy) originalRIFStudySubmission.getStudy();
-    	DiseaseMappingStudy cloneDiseaseMappingStudy
-    		= DiseaseMappingStudy.createCopy(originalDiseaseMappingStudy);
+    	AbstractStudy originalDiseaseMappingStudy = originalRIFStudySubmission.getStudy();
+    	AbstractStudy cloneDiseaseMappingStudy =
+			    AbstractStudy.createCopy(originalDiseaseMappingStudy);
     	cloneRIFStudySubmission.setStudy(cloneDiseaseMappingStudy);
     	
     	ArrayList<CalculationMethod> originalCalculationMethods
@@ -201,9 +125,6 @@ public final class RIFStudySubmission
 
     }
     
-// ==========================================
-// Section Accessors and Mutators
-// ==========================================
     /**
      * Adds the calculation method.
      *
@@ -225,18 +146,6 @@ public final class RIFStudySubmission
 		return calculationMethods;
 	}
 	
-	/**
-	 * Adds the rif output option.
-	 *
-	 * @param rifOutputOption the rif output option
-	 */
-/*
-	public void addRIFOutputOption(
-		final RIFOutputOption rifOutputOption) {
-		
-		rifOutputOptions.add(rifOutputOption);
-	}
-*/	
 	/**
 	 * Gets the RIF output options.
 	 *
@@ -299,15 +208,7 @@ public final class RIFStudySubmission
 
 		this.study = study;
 	}
-	
-	/**
-	 * Clear calculation methods.
-	 */
-	public void clearCalculationMethods() {
-		
-		calculationMethods.clear();
-	}
-	
+
 	/**
 	 * Clear rif output options.
 	 */
@@ -381,72 +282,6 @@ public final class RIFStudySubmission
 			anotherStudySubmission, 
 			differences);		
 	}
-	
-	/**
-	 * Checks for identical contents.
-	 *
-	 * @param otherRIFJobSubmission the other rif job submission
-	 * @return true, if successful
-	 */
-	public boolean hasIdenticalContents(
-		final RIFStudySubmission otherRIFJobSubmission) {
-
-		if (otherRIFJobSubmission == null) {
-			return false;
-		}
-		
-		ArrayList<CalculationMethod> otherCalculationMethods
-			= otherRIFJobSubmission.getCalculationMethods();
-		ArrayList<RIFOutputOption> otherRIFOutputOptions
-			= otherRIFJobSubmission.getRIFOutputOptions();
-		
-		//@TODO KLG - casting makes this code a bit vulnerable
-		
-		Project otherProject = otherRIFJobSubmission.getProject();
-		if (project == null) {
-			if (otherProject != null) {
-				return false;
-			}
-		}
-		else {
-			if (project.hasIdenticalContents(otherProject) == false) {
-				return false;
-			}			
-		}		
-		
-		DiseaseMappingStudy diseaseMappingStudy
-			= (DiseaseMappingStudy) study;
-		DiseaseMappingStudy otherDiseaseMappingStudy
-			= (DiseaseMappingStudy) otherRIFJobSubmission.getStudy();
-		if (diseaseMappingStudy == null) {
-			if (otherDiseaseMappingStudy != null) {
-				return false;
-			}
-		}
-		else {
-			if (diseaseMappingStudy.hasIdenticalContents(otherDiseaseMappingStudy) == false) {
-				return false;
-			}
-		}
-		
-		if (CalculationMethod.hasIdenticalContents(
-			calculationMethods, 
-			otherCalculationMethods) == false) {
-			
-			return false;
-		}
-		if (RIFOutputOption.hasIdenticalContents(
-			rifOutputOptions, 
-			otherRIFOutputOptions) == false) {
-			
-			return false;
-		}
-		
-		return super.hasIdenticalContents(otherRIFJobSubmission);
-	}
-// ==========================================
-// Section Errors and Validation
-// ==========================================
 
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {		
@@ -454,12 +289,7 @@ public final class RIFStudySubmission
 		super.checkSecurityViolations();
 		
 		project.checkSecurityViolations();
-		
-		//For now we only have disease mapping studies
-		//In future we will have risk analysis studies
-		DiseaseMappingStudy diseaseMappingStudy
-			= (DiseaseMappingStudy) study;
-		diseaseMappingStudy.checkSecurityViolations();
+		study.checkSecurityViolations();
 		
 		for (CalculationMethod calculationMethod : calculationMethods) {
 			calculationMethod.checkSecurityViolations();
@@ -470,28 +300,24 @@ public final class RIFStudySubmission
 		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {	
 		
-		ArrayList<String> errorMessages = new ArrayList<String>();
+		ArrayList<String> errorMessages = new ArrayList<>();
 		
 		String recordType = getRecordType();
-		DiseaseMappingStudy diseaseMappingStudy=null;
-		
+
 		if (study == null) {
-			String studyFieldName
-				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");
-			String errorMessage
-				= GENERIC_MESSAGES.getMessage(
-					"general.validation.emptyRequiredRecordField", 
+			String studyFieldName = RIFServiceMessages.getMessage("diseaseMappingStudy.label");
+			String errorMessage = GENERIC_MESSAGES.getMessage(
+					"general.validation.emptyRequiredRecordField",
 					recordType,
 					studyFieldName);
 			errorMessages.add(errorMessage);			
 		}
 		else {
 			try {
-				diseaseMappingStudy = (DiseaseMappingStudy) study;
-				diseaseMappingStudy.checkErrors(validationPolicy);
-			}
-			catch(RIFServiceException rifServiceException) {
-				rifLogger.debug(this.getClass(), "DiseaseMappingStudy.checkErrors(): " + 
+				study.checkErrors(validationPolicy);
+			} catch(RIFServiceException rifServiceException) {
+
+				rifLogger.debug(this.getClass(), "AbstractStudy.checkErrors(): " +
 					rifServiceException.getErrorMessages().size());
 				errorMessages.addAll(rifServiceException.getErrorMessages());
 			}
@@ -528,17 +354,16 @@ public final class RIFStudySubmission
 				catch(RIFServiceException rifServiceException) {
 					rifLogger.debug(this.getClass(), "CalculationMethod.checkErrors(): " + 
 						rifServiceException.getErrorMessages().size());
-					errorMessages.addAll(errorMessages);
 				}
 			}
 		}
 		
-		if (calculationMethodsAllNonNull == true) {
+		if (calculationMethodsAllNonNull) {
 			HashSet<String> uniqueCalculationMethodNames = new HashSet<String>();
 			for (CalculationMethod calculationMethod : calculationMethods) {
 				try {
 					String displayName = calculationMethod.getDisplayName();
-					if (uniqueCalculationMethodNames.contains(displayName) == true) {
+					if (uniqueCalculationMethodNames.contains(displayName)) {
 						String errorMessage
 							= RIFServiceMessages.getMessage(
 								"rifStudySubmission.error.duplicateCalculationMethod", 
@@ -592,8 +417,8 @@ public final class RIFStudySubmission
 					errorMessages.get(i));
 			}
 		}
-		else if (diseaseMappingStudy != null) {
-			rifLogger.info(this.getClass(), "JSON parse OK for " + diseaseMappingStudy.getName());
+		else if (study != null) {
+			rifLogger.info(this.getClass(), "JSON parse OK for " + study.getName());
 		}
 		else {
 			errorMessages.add("JSON parse OK but study object is null");
@@ -606,11 +431,6 @@ public final class RIFStudySubmission
 				errorMessages);
 	}
 	
-// ==========================================
-// Section Interfaces
-// ==========================================
-
-
 	@Override
 	public String getDisplayName() {
 		return study.getDisplayName();
@@ -619,13 +439,8 @@ public final class RIFStudySubmission
 
 	@Override
 	public String getRecordType() {
-		String recordType
-			= RIFServiceMessages.getMessage("rifStudySubmission.label");
-		return recordType;
+
+		return RIFServiceMessages.getMessage("rifStudySubmission.label");
 	}
 	
-// ==========================================
-// Section Override
-// ==========================================
-
 }

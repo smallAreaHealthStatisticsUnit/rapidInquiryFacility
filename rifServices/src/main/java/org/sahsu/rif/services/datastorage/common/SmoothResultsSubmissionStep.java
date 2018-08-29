@@ -15,8 +15,8 @@ import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -36,7 +36,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	private Logger log;	// Not used - uses RIFLogger
 	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
-	private static DatabaseType databaseType;
 
 	public SmoothResultsSubmissionStep() {
 		String logManagerName=System.getProperty("java.util.logging.manager");
@@ -189,36 +188,60 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
 				
-				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator + logMsg.toString());
+				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator +
+				                                logMsg.toString());
 
 				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
-				
 				adjCovSmoothJri.append(rifScriptPath);
-				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
-				performSmoothingActivity.append(rifScriptPath);
-				performSmoothingActivity.append("performSmoothingActivity.R");
 
-				if (rifStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER) { 
+				if (rifStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER) {
 					sourceRScript(rengine, rifScriptPath + "OdbcHandler.R");
 				}
-				else { 
+				else {
 					sourceRScript(rengine, rifScriptPath + "JdbcHandler.R");
 				}
-				sourceRScript(rengine, adjCovSmoothJri.toString());
-				sourceRScript(rengine, performSmoothingActivity.toString());
 
-				//RUN the actual smoothing
-				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
-				rengine.eval("returnValues <- runRSmoothingFunctions()");
-				REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
-				if (exitValueFromR != null) {
-					exitValue  = exitValueFromR.asInt();
+
+				// We do either Risk Analysis or Smoothing
+				REXP exitValueFromR;
+				if (studySubmission.getStudy().isRiskAnalysis()) {
+
+					rifLogger.info(getClass(), "Calling Risk Analysis R function");
+					sourceRScript(rengine, rifScriptPath + "performRiskAnal.R");
+					// rengine.eval("returnValues <- performRiskAnal");
+					/* TODO: that's the script name, not the name of a function in it; but
+					 * there doesn't at present appear to be a suitable one.
+					 */
+
+					// ========== Temp hack to let things run ===========
+					adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
+					performSmoothingActivity.append(rifScriptPath);
+					performSmoothingActivity.append("performSmoothingActivity.R");
+					sourceRScript(rengine, adjCovSmoothJri.toString());
+					sourceRScript(rengine, performSmoothingActivity.toString());
+					rengine.eval("returnValues <- runRSmoothingFunctions()");
+					// ==================================================
+				} else {
+
+					rifLogger.info(getClass(), "Calling Disease Mapping R function");
+					// Run the actual smoothing
+					adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
+					performSmoothingActivity.append(rifScriptPath);
+					performSmoothingActivity.append("performSmoothingActivity.R");
+					sourceRScript(rengine, adjCovSmoothJri.toString());
+					sourceRScript(rengine, performSmoothingActivity.toString());
+					rengine.eval("returnValues <- runRSmoothingFunctions()");
 				}
-				else {
+
+				exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
+				if (exitValueFromR != null) {
+					exitValue = exitValueFromR.asInt();
+				} else {
 					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
 					exitValue = 1;
 				}
+
 				REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
 				if (errorTraceFromR != null) {
 					String[] strArr=errorTraceFromR.asStringArray();
@@ -260,9 +283,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					rifMemoryManager.printThreadMemory();
 					if (exitValue != 0) {
 						try {
-//							rengine.eval("q(\"no\", " + exitValue + ")");	// Causes Java to quit
-//							rengine.destroy(); 								// causes thread to exit; 
-																			// rengine.end() then causes exception)
 							rengine.end();
 						}
 						catch(Exception error3) {
@@ -273,11 +293,9 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 							
 						}				
 
-						RIFServiceExceptionFactory rifServiceExceptionFactory
-						= new RIFServiceExceptionFactory();
-						RIFServiceException rifServiceException =
-							rifServiceExceptionFactory.createRScriptException(rErrorTrace);
-						throw rifServiceException;
+						RIFServiceExceptionFactory rifServiceExceptionFactory =
+								new RIFServiceExceptionFactory();
+						throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
 					}
 					else {	
 						try {

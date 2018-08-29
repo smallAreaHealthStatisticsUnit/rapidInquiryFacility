@@ -27,11 +27,11 @@ import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
+import org.sahsu.rif.services.concepts.AbstractStudy;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AgeGroup;
 import org.sahsu.rif.services.concepts.CalculationMethod;
 import org.sahsu.rif.services.concepts.ComparisonArea;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.Geography;
 import org.sahsu.rif.services.concepts.HealthCode;
 import org.sahsu.rif.services.concepts.Investigation;
@@ -216,7 +216,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		//KLG: TODO: Later on we should not rely on casting - it might
 		//be a risk analysis study
 		String result;
-		DiseaseMappingStudy diseaseMappingStudy = (DiseaseMappingStudy) studySubmission.getStudy();
+		AbstractStudy study = studySubmission.getStudy();
 		try {
 
 			Project project = studySubmission.getProject();
@@ -224,20 +224,20 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					connection,
 					user,
 					project,
-					diseaseMappingStudy,
+					study,
 					studySubmission);
 
 			addComparisonAreaToStudy(
 					connection,
-					diseaseMappingStudy);
+					study);
 
 			addStudyAreaToStudy(
 					connection,
-					diseaseMappingStudy);
+					study);
 
 			addInvestigationsToStudy(
 					connection,
-					diseaseMappingStudy);
+					study);
 
 			result = getCurrentStudyID(connection);
 			connection.commit();
@@ -251,7 +251,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			String errorMessage
 					= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
-					diseaseMappingStudy.getDisplayName());
+					study.getDisplayName());
 			RIFServiceException rifServiceException
 					= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
@@ -298,7 +298,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			final Connection connection,
 			final User user,
 			final Project project,
-			final DiseaseMappingStudy diseaseMappingStudy,
+			final AbstractStudy diseaseMappingStudy,
 			final RIFStudySubmission studySubmission)
 			throws SQLException, RIFServiceException {
 
@@ -345,8 +345,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			addStudyStatement.setString(ithQueryParameter++,
 			                            comparisonArea.getGeoLevelToMap().getName());
 
-			DiseaseMappingStudyArea diseaseMappingStudyArea =
-					diseaseMappingStudy.getDiseaseMappingStudyArea();
+			AbstractStudyArea diseaseMappingStudyArea =
+					diseaseMappingStudy.getStudyArea();
 			addStudyStatement.setString(ithQueryParameter++,
 			                            diseaseMappingStudyArea.getGeoLevelToMap().getName());
 
@@ -419,7 +419,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addInvestigationsToStudy(
 			final Connection connection,
-			final DiseaseMappingStudy diseaseMappingStudy)
+			final AbstractStudy study)
 			throws SQLException,
 			       RIFServiceException {
 
@@ -429,7 +429,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			//we assume that the study is valid and that the caller has 
 			//invoked rifStudySubmission.checkErrors();
 
-			ArrayList<Investigation> investigations = diseaseMappingStudy.getInvestigations();
+			ArrayList<Investigation> investigations = study.getInvestigations();
 			if (investigations.isEmpty()) {
 				return;
 			}
@@ -533,13 +533,13 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 				addCovariatesToStudy(
 						connection,
-						diseaseMappingStudy,
+						study,
 						investigation);
 
 				//now add health outcomes for this investigation
 				addHealthOutcomes(
 						connection,
-						diseaseMappingStudy,
+						study,
 						investigation);
 			}
 		} finally {
@@ -605,7 +605,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addStudyAreaToStudy(
 			final Connection connection,
-			final DiseaseMappingStudy diseaseMappingStudy)
+			final AbstractStudy diseaseMappingStudy)
 			throws SQLException,
 			       RIFServiceException {
 
@@ -613,8 +613,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		try {
 
 			Geography geography = diseaseMappingStudy.getGeography();
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-					= diseaseMappingStudy.getDiseaseMappingStudyArea();
+			AbstractStudyArea diseaseMappingStudyArea
+					= diseaseMappingStudy.getStudyArea();
 
 			ArrayList<MapArea> allMapAreas
 					= mapDataManager.getAllRelevantMapAreas(
@@ -654,7 +654,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addComparisonAreaToStudy(
 			final Connection connection,
-			final DiseaseMappingStudy diseaseMappingStudy)
+			final AbstractStudy diseaseMappingStudy)
 			throws SQLException,
 			       RIFServiceException {
 
@@ -702,7 +702,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addCovariatesToStudy(
 			final Connection connection,
-			final DiseaseMappingStudy diseaseMappingStudy,
+			final AbstractStudy study,
 			final Investigation investigation)
 			throws SQLException,
 			       RIFServiceException {
@@ -741,11 +741,11 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					addCovariateQueryFormatter);
 			int ithQueryParameter = 1;
 
-			Geography geography = diseaseMappingStudy.getGeography();
+			Geography geography = study.getGeography();
 			String geographyName = geography.getName();
 
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-					= diseaseMappingStudy.getDiseaseMappingStudyArea();
+			AbstractStudyArea diseaseMappingStudyArea
+					= study.getStudyArea();
 			String studyGeoLevelName
 					= diseaseMappingStudyArea.getGeoLevelToMap().getName();
 
@@ -807,7 +807,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addHealthOutcomes(
 			final Connection connection,
-			final DiseaseMappingStudy diseaseMappingStudy,
+			final AbstractStudy study,
 			final Investigation investigation)
 			throws SQLException,
 			       RIFServiceException {
@@ -826,7 +826,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("geography");
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("table_name");
 
-			Geography geography = diseaseMappingStudy.getGeography();
+			Geography geography = study.getGeography();
 			NumeratorDenominatorPair ndPair = investigation.getNdPair();
 
 			logSQLQuery(
@@ -917,9 +917,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 				connection,
 				project);
 
-		DiseaseMappingStudy diseaseMappingStudy
-				= (DiseaseMappingStudy) rifStudySubmission.getStudy();
-		diseaseMappingStudyManager.checkNonExistentItems(user, connection, diseaseMappingStudy);
+		AbstractStudy study = rifStudySubmission.getStudy();
+		diseaseMappingStudyManager.checkNonExistentItems(user, connection, study);
 
 		ArrayList<CalculationMethod> calculationMethods
 				= rifStudySubmission.getCalculationMethods();
