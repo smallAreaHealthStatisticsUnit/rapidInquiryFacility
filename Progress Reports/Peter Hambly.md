@@ -2844,9 +2844,16 @@ SELECT a.*, b.coa2011
 * Make diseasemap just a map;
 * Start risk analysis support in viewer;
 * Misc logging and IE fixes. IE works, but only with a browser window - suspect proj4 library;
-* Added study type and new polygon name for viewer and mapper, de-dieased mapped; start of choropleth map risk analysis awareness
+* Added study type and new polygon name for viewer and mapper, de-disease mapped; start of choropleth map risk analysis awareness
 
 #### 27th to 31st August
 
+* Added study type check between rif40_studies.study_type and rif40_studies.study_selection JSON study type;
+* Fix null breaks problems in Choropleth maps (0 was being interpreted as undefined!);
+* Fix synchronisation issues with legend and D3 charts;
+* Added support for default map background by geography for maps;
+* Leak test: PASSED!
+* Regression test to SQL Server;
+* Created pull request #55 (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/pull/55)
 	
 TODO: Add notes on "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run" message;   
