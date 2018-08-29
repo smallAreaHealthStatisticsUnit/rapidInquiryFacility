@@ -544,6 +544,8 @@ angular.module("RIF")
 						if (studyType === "risk_analysis_study") {
 							StudyAreaStateService.getState().type = "Risk Analysis";	
 						}
+						SubmissionStateService.getState().studyType = StudyAreaStateService.getState().type;
+						
 						//Comparison area
 						CompAreaStateService.getState().selectAt = rifJob[studyType].comparison_area.geo_levels.geolevel_select.name;
 						CompAreaStateService.getState().studyResolution = rifJob[studyType].comparison_area.geo_levels.geolevel_to_map.name;

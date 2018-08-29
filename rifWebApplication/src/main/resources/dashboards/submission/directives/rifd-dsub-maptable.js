@@ -569,15 +569,15 @@ angular.module("RIF")
                          */
                         $scope.studyTypeChanged = function () {
 							alertScope.consoleDebug("[rifd-dsub-maptable.js] studyTypeChanged(): " +
-								"; to input.type: "+ $scope.input.type + 
+								"to input.type: "+ $scope.input.type + 
 								"; from SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType + 
-								"; and from SubmissionStateService.getState().studyType: " + StudyAreaStateService.getState().studyType);
+								"; and from StudyAreaStateService.getState().type: " + StudyAreaStateService.getState().type);
 								
                             //clear selection
                             $scope.clear();
                             //offer the correct number of bands
                             SubmissionStateService.getState().studyType = $scope.input.type;
-							StudyAreaStateService.getState().studyType = $scope.input.type;
+							StudyAreaStateService.getState().type = $scope.input.type;
                             if ($scope.input.type === "Risk Analysis") {
                                 $scope.possibleBands = [1, 2, 3, 4, 5, 6];
                                 $scope.areamap.band = 6;
@@ -1399,7 +1399,9 @@ angular.module("RIF")
 //								"; new areaNameList: " + Object.keys(newAreaNameList).length +
 //								"; " + JSON.stringify(newAreaNameList));
 								
-							$scope.areaNameList = newAreaNameList;
+							if (newAreaNameList) {
+								$scope.areaNameList = newAreaNameList;
+							}
 						}
 							
                         // selection event fired from service
@@ -1765,8 +1767,8 @@ angular.module("RIF")
 										var thisPolyID = latLng.id;
 										var bFound = false;
 										
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] latlngList.forEach(" +
-											itemsProcessed + ")");
+//										alertScope.consoleDebug("[rifd-dsub-maptable.js] latlngList.forEach(" +
+//											itemsProcessed + ")");
 										// Selects the correct polygons
 										for (var i = 0; i < $scope.selectedPolygon.length; i++) {
 											if ($scope.selectedPolygon[i].id === thisPolyID) { // Found
