@@ -3,12 +3,14 @@ package org.sahsu.rif.services.test.businessConceptLayer.ms;
 import org.junit.Test;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
+import org.sahsu.rif.services.concepts.AbstractStudy;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
 import org.sahsu.rif.services.concepts.GeoLevelView;
 import org.sahsu.rif.services.concepts.MapArea;
+import org.sahsu.rif.services.concepts.StudyType;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.test.AbstractRIFTestCase;
 
@@ -79,8 +81,7 @@ import static org.junit.Assert.fail;
  *
  */
 
-public final class TestDiseaseMappingStudyArea
-		extends AbstractRIFTestCase {
+public final class TestDiseaseMappingStudyArea extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -90,7 +91,7 @@ public final class TestDiseaseMappingStudyArea
 	// Section Properties
 	// ==========================================
 	/** The master disease mapping study area. */
-	private DiseaseMappingStudyArea masterDiseaseMappingStudyArea;
+	private AbstractStudyArea masterStudyArea;
 	
 	// ==========================================
 	// Section Construction
@@ -108,14 +109,13 @@ public final class TestDiseaseMappingStudyArea
 		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent");
 		MapArea mapArea2 = MapArea.newInstance("222", "222", "Barnet");
 
-		masterDiseaseMappingStudyArea
-			= DiseaseMappingStudyArea.newInstance();
-		masterDiseaseMappingStudyArea.setGeoLevelSelect(geoLevelSelect);
-		masterDiseaseMappingStudyArea.setGeoLevelArea(geoLevelArea);
-		masterDiseaseMappingStudyArea.setGeoLevelView(geoLevelView);
-		masterDiseaseMappingStudyArea.setGeoLevelToMap(geoLevelToMap);
-		masterDiseaseMappingStudyArea.addMapArea(mapArea1);
-		masterDiseaseMappingStudyArea.addMapArea(mapArea2);		
+		masterStudyArea = AbstractStudyArea.newInstance(StudyType.DISEASE_MAPPING);
+		masterStudyArea.setGeoLevelSelect(geoLevelSelect);
+		masterStudyArea.setGeoLevelArea(geoLevelArea);
+		masterStudyArea.setGeoLevelView(geoLevelView);
+		masterStudyArea.setGeoLevelToMap(geoLevelToMap);
+		masterStudyArea.addMapArea(mapArea1);
+		masterStudyArea.addMapArea(mapArea2);		
 	}
 
 	
@@ -134,8 +134,8 @@ public final class TestDiseaseMappingStudyArea
 	@Test
 	public void acceptValidInstance_COMMON() {
 		try {
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -151,8 +151,8 @@ public final class TestDiseaseMappingStudyArea
 		
 		//no geo level select specified
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			diseaseMappingStudyArea.setGeoLevelSelect(null);
 			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
@@ -166,8 +166,8 @@ public final class TestDiseaseMappingStudyArea
 
 		//no geo level area specified
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			diseaseMappingStudyArea.setGeoLevelArea(null);
 			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
@@ -181,8 +181,8 @@ public final class TestDiseaseMappingStudyArea
 
 		//no geo level view specified
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			diseaseMappingStudyArea.setGeoLevelView(null);
 			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
@@ -196,8 +196,8 @@ public final class TestDiseaseMappingStudyArea
 		
 		//no geo level to map specified
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			diseaseMappingStudyArea.setGeoLevelToMap(null);
 			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
@@ -211,8 +211,8 @@ public final class TestDiseaseMappingStudyArea
 
 		//no disease mapping study area specified
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			diseaseMappingStudyArea.setMapAreas(null);
 			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
@@ -232,8 +232,8 @@ public final class TestDiseaseMappingStudyArea
 	public void rejectEmptyMapAreas_ERROR() {
 		
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			diseaseMappingStudyArea.clearMapAreas();
 			diseaseMappingStudyArea.checkErrors(getValidationPolicy());
 			fail();
@@ -252,8 +252,8 @@ public final class TestDiseaseMappingStudyArea
 	@Test
 	public void rejectDuplicateMapAreas_ERROR() {
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			
 			MapArea duplicateMapArea1 = MapArea.newInstance("111", "111", "Brent");
 			MapArea duplicateMapArea2 = MapArea.newInstance("222", "222", "Barnet");
@@ -280,8 +280,8 @@ public final class TestDiseaseMappingStudyArea
 		
 		//reject invalid geo level select
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(null, "");
 			diseaseMappingStudyArea.setGeoLevelSelect(geoLevelSelect);
@@ -297,8 +297,8 @@ public final class TestDiseaseMappingStudyArea
 		
 		//reject invalid geo level area
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			GeoLevelArea geoLevelArea
 				= GeoLevelArea.newInstance(null, "");			
 			diseaseMappingStudyArea.setGeoLevelArea(geoLevelArea);
@@ -314,8 +314,8 @@ public final class TestDiseaseMappingStudyArea
 		
 		//reject invalid geo level view
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			GeoLevelView geoLevelView
 				= GeoLevelView.newInstance(null, "");
 			diseaseMappingStudyArea.setGeoLevelView(geoLevelView);
@@ -331,8 +331,8 @@ public final class TestDiseaseMappingStudyArea
 
 		//reject invalid geo level to map
 		try {			
-			DiseaseMappingStudyArea diseaseMappingStudyArea
-				= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			AbstractStudyArea diseaseMappingStudyArea
+				= AbstractStudyArea.copy(masterStudyArea);
 			GeoLevelToMap geoLevelToMap
 				= GeoLevelToMap.newInstance(null, "");
 			diseaseMappingStudyArea.setGeoLevelToMap(geoLevelToMap);
@@ -352,8 +352,8 @@ public final class TestDiseaseMappingStudyArea
 	 */
 	@Test
 	public void rejectSecurityViolations_MALICIOUS() {
-		DiseaseMappingStudyArea maliciousDiseaseMappingArea
-			= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+		AbstractStudyArea maliciousDiseaseMappingArea
+			= AbstractStudyArea.copy(masterStudyArea);
 		maliciousDiseaseMappingArea.setIdentifier(getTestMaliciousValue());
 		try {
 			maliciousDiseaseMappingArea.checkSecurityViolations();
@@ -364,7 +364,7 @@ public final class TestDiseaseMappingStudyArea
 		}
 		
 		maliciousDiseaseMappingArea
-			= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			= AbstractStudyArea.copy(masterStudyArea);
 		GeoLevelSelect maliciousGeoLevelSelect
 			= GeoLevelSelect.newInstance(getTestMaliciousValue(), "");
 		maliciousDiseaseMappingArea.setGeoLevelSelect(maliciousGeoLevelSelect);
@@ -378,7 +378,7 @@ public final class TestDiseaseMappingStudyArea
 
 		
 		maliciousDiseaseMappingArea
-			= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			= AbstractStudyArea.copy(masterStudyArea);
 		GeoLevelArea maliciousGeoLevelArea
 			= GeoLevelArea.newInstance(getTestMaliciousValue(), "");
 		maliciousDiseaseMappingArea.setGeoLevelArea(maliciousGeoLevelArea);
@@ -392,7 +392,7 @@ public final class TestDiseaseMappingStudyArea
 		
 
 		maliciousDiseaseMappingArea
-			= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			= AbstractStudyArea.copy(masterStudyArea);
 		GeoLevelView maliciousGeoLevelView
 			= GeoLevelView.newInstance(getTestMaliciousValue(), "");
 		maliciousDiseaseMappingArea.setGeoLevelView(maliciousGeoLevelView);
@@ -405,7 +405,7 @@ public final class TestDiseaseMappingStudyArea
 		}
 		
 		maliciousDiseaseMappingArea
-			= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			= AbstractStudyArea.copy(masterStudyArea);
 		GeoLevelToMap maliciousGeoLevelToMap
 			= GeoLevelToMap.newInstance(getTestMaliciousValue(), "");
 		maliciousDiseaseMappingArea.setGeoLevelToMap(maliciousGeoLevelToMap);
@@ -418,7 +418,7 @@ public final class TestDiseaseMappingStudyArea
 		}
 	
 		maliciousDiseaseMappingArea
-			= DiseaseMappingStudyArea.copy(masterDiseaseMappingStudyArea);
+			= AbstractStudyArea.copy(masterStudyArea);
 		MapArea maliciousMapArea
 			= MapArea.newInstance("666", "666", getTestMaliciousValue());
 		maliciousDiseaseMappingArea.addMapArea(maliciousMapArea);

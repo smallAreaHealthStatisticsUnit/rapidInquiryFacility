@@ -12,9 +12,9 @@ import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.fileformats.AbstractXMLContentHandler;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.generic.fileformats.XMLUtility;
-import org.sahsu.rif.generic.presentation.HTMLUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
+import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.CalculationMethod;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.Project;
@@ -23,82 +23,10 @@ import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-/**
- *
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-
-final public class RIFStudySubmissionContentHandler 
+final public class RIFStudySubmissionContentHandler
 	extends AbstractXMLContentHandler {
 
-// ==========================================
-// Section Constants
-// ==========================================
-	
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
-	
-// ==========================================
-// Section Properties
-// ==========================================
 	
 	/** The current rif job submission. */
 	private RIFStudySubmission currentRIFJobSubmission;
@@ -108,15 +36,15 @@ final public class RIFStudySubmissionContentHandler
 	
 	/** The disease mapping study content handler. */
 	private DiseaseMappingStudyContentHandler diseaseMappingStudyContentHandler;
+
+	private final RiskAnalysisStudyContentHandler riskAnalysisStudyContentHandler;
 	
 	/** The calculation method content handler. */
 	private CalculationMethodContentHandler calculationMethodContentHandler; 
 	
 	/** The rif output option content handler. */
 	private RIFOutputOptionContentHandler rifOutputOptionContentHandler;
-// ==========================================
-// Section Construction
-// ==========================================
+
     /**
      * Instantiates a new RIF job submission content handler.
      */
@@ -125,6 +53,7 @@ final public class RIFStudySubmissionContentHandler
     	setSingularRecordName("rif_job_submission");
     	projectContentHandler = new ProjectContentHandler();
     	diseaseMappingStudyContentHandler = new DiseaseMappingStudyContentHandler();
+    	riskAnalysisStudyContentHandler = new RiskAnalysisStudyContentHandler();
     	calculationMethodContentHandler = new CalculationMethodContentHandler();
     	rifOutputOptionContentHandler = new RIFOutputOptionContentHandler();
     	
@@ -132,63 +61,17 @@ final public class RIFStudySubmissionContentHandler
     	ignoreXMLStartTag("job_submission_date");
     }
 
-	
-// ==========================================
-// Section Accessors and Mutators
-// ==========================================
-	
 	/**
 	 * Gets the RIF job submission.
 	 *
 	 * @return the RIF job submission
 	 */
-	public RIFStudySubmission getRIFJobSubmission() {
+	RIFStudySubmission getRIFJobSubmission() {
 		
 		return currentRIFJobSubmission;
 	}
-		
-	
-	/**
-	 * Write html.
-	 *
-	 * @param rifStudySubmission the rif job submission
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-	public void writeHTML(
-		final RIFStudySubmission rifStudySubmission) 
-		throws IOException {
 
-		HTMLUtility htmlUtility = getHTMLUtility();
-		
-		htmlUtility.beginDocument();
-				
-    	DiseaseMappingStudy diseaseMappingStudy
-    		= (DiseaseMappingStudy) rifStudySubmission.getStudy();
-    	Project project = rifStudySubmission.getProject();
-    	diseaseMappingStudyContentHandler.writeHTML(
-    		1, 
-    		diseaseMappingStudy,
-    		project,
-    		false);
-    	    	
-		ArrayList<CalculationMethod> calculationMethods
-			= new ArrayList<CalculationMethod>();
-		calculationMethodContentHandler.writeHTML(
-			1,
-			calculationMethods,
-			false);
-    	
-    	ArrayList<RIFOutputOption> rifOutputOptions
-    		= rifStudySubmission.getRIFOutputOptions();
-    	rifOutputOptionContentHandler.writeHTML(
-    		1, 
-    		rifOutputOptions,
-    		false);
-		
-		htmlUtility.endDocument();		
-	}
-	
-    /**
+	/**
      * Write xml.
      *
      * @param rifStudySubmission the rif job submission
@@ -238,27 +121,19 @@ final public class RIFStudySubmissionContentHandler
 		Project project = rifStudySubmission.getProject();
 		projectContentHandler.writeXML(project);
 		
-		DiseaseMappingStudy diseaseMappingStudy
-			= (DiseaseMappingStudy) rifStudySubmission.getStudy();
-		diseaseMappingStudyContentHandler.writeXML(diseaseMappingStudy);
+		AbstractStudy study = rifStudySubmission.getStudy();
+
+		if (study.getClass().isAssignableFrom(DiseaseMappingStudy.class)) {
+			diseaseMappingStudyContentHandler.writeXML(study);
+		} else {
+			riskAnalysisStudyContentHandler.writeXML(study);
+		}
+
 		calculationMethodContentHandler.writeXML(rifStudySubmission.getCalculationMethods());		
 		rifOutputOptionContentHandler.writeXML(rifStudySubmission.getRIFOutputOptions());
 		
 		xmlUtility.writeRecordEndTag(recordName);
 	}
-	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
-
-// ==========================================
-// Section Interfaces
-// ==========================================
-
-// ==========================================
-// Section Override
-// ==========================================
-
 
     @Override
 	public void initialise(
@@ -269,10 +144,10 @@ final public class RIFStudySubmissionContentHandler
 		super.initialise(outputStream, commentInjector);
 		projectContentHandler.initialise(outputStream, commentInjector);
 		diseaseMappingStudyContentHandler.initialise(outputStream, commentInjector);
+	    riskAnalysisStudyContentHandler.initialise(outputStream, commentInjector);
 		calculationMethodContentHandler.initialise(outputStream, commentInjector);
 		rifOutputOptionContentHandler.initialise(outputStream, commentInjector);
 	}
-
 
 	@Override
 	public void initialise(
@@ -282,10 +157,10 @@ final public class RIFStudySubmissionContentHandler
 		super.initialise(outputStream);
 		projectContentHandler.initialise(outputStream);
 		diseaseMappingStudyContentHandler.initialise(outputStream);
+		riskAnalysisStudyContentHandler.initialise(outputStream);
 		calculationMethodContentHandler.initialise(outputStream);
 		rifOutputOptionContentHandler.initialise(outputStream);
 	}
-	
 
 	@Override
 	public void startElement(
@@ -312,14 +187,16 @@ final public class RIFStudySubmissionContentHandler
 			//determine if a delegate handler can be assigned to do future processing
 			if (projectContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(projectContentHandler);
-			}
-			else if (diseaseMappingStudyContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+			} else if (diseaseMappingStudyContentHandler.isSingularRecordTypeApplicable(
+					qualifiedName)) {
 				assignDelegatedHandler(diseaseMappingStudyContentHandler);
-			}
-			else if (calculationMethodContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+			} else if (riskAnalysisStudyContentHandler.isSingularRecordTypeApplicable(
+					qualifiedName)) {
+				assignDelegatedHandler(riskAnalysisStudyContentHandler);
+			} else if (calculationMethodContentHandler.isPluralRecordTypeApplicable(
+					qualifiedName)) {
 				assignDelegatedHandler(calculationMethodContentHandler);
-			}
-			else if (rifOutputOptionContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+			} else if (rifOutputOptionContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(rifOutputOptionContentHandler);
 			}
 		
@@ -333,8 +210,8 @@ final public class RIFStudySubmissionContentHandler
 					localName, 
 					qualifiedName, 
 					attributes);
-			}
-			else if (equalsFieldName(qualifiedName, "job_submission_date")) {
+			} else if (equalsFieldName(qualifiedName, "job_submission_date")) {
+
 				String jobSubmissionTimePhrase
 					= getCurrentFieldValue();
 				Collator collator = GENERIC_MESSAGES.getCollator();
@@ -349,13 +226,11 @@ final public class RIFStudySubmissionContentHandler
 						currentRIFJobSubmission.setJobSubmissionTime(jobSubmissionTime);
 					}
 				}
-			}
-			else if (!isIgnoredStartTag(qualifiedName)) {
-				assert false;
+			} else {
+				assert isIgnoredStartTag(qualifiedName);
 			}
 		}
 	}
-	
 
 	@Override
 	public void endElement(
@@ -381,24 +256,24 @@ final public class RIFStudySubmissionContentHandler
 					Project project
 						= projectContentHandler.getProject();
 					currentRIFJobSubmission.setProject(project);
-				}
-				else if (currentDelegatedHandler == diseaseMappingStudyContentHandler) {
-					DiseaseMappingStudy diseaseMappingStudy
-						= diseaseMappingStudyContentHandler.getDiseaseMappingStudy();
-					currentRIFJobSubmission.setStudy(diseaseMappingStudy);
-				}
-				else if (currentDelegatedHandler == calculationMethodContentHandler) {
+				} else if (currentDelegatedHandler == diseaseMappingStudyContentHandler) {
+
+					AbstractStudy study = diseaseMappingStudyContentHandler.getStudy();
+					currentRIFJobSubmission.setStudy(study);
+				} else if (currentDelegatedHandler == riskAnalysisStudyContentHandler) {
+
+					AbstractStudy study = riskAnalysisStudyContentHandler.getStudy();
+					currentRIFJobSubmission.setStudy(study);
+				} else if (currentDelegatedHandler == calculationMethodContentHandler) {
+
 					ArrayList<CalculationMethod> calculationMethods
 						= calculationMethodContentHandler.getCalculationMethods();
 					currentRIFJobSubmission.setCalculationMethods(calculationMethods);
-				}
-				else if (currentDelegatedHandler == rifOutputOptionContentHandler) {
+				} else if (currentDelegatedHandler == rifOutputOptionContentHandler) {
+
 					ArrayList<RIFOutputOption> rifOutputOptions
 						= rifOutputOptionContentHandler.getRIFOutputOptions();
 					currentRIFJobSubmission.setRIFOutputOptions(rifOutputOptions);
-				}
-				else {
-					assert false;
 				}
 				
 				unassignDelegatedHandler();
