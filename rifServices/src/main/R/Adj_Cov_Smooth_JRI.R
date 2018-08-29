@@ -429,9 +429,6 @@ runRSmoothingFunctions <- function() {
 								if (!is.null(lerrorTrace2) && length(lerrorTrace2)-1 > 0) {
 									append(lerrorTrace, lerrorTrace2)
 								}
-								else {
-									lerrorTrace <<- lerrorTrace2
-								}
 							}
 						}
 						else {
