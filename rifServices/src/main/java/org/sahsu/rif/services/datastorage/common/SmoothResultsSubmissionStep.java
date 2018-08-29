@@ -36,7 +36,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	private Logger log;	// Not used - uses RIFLogger
 	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
-	private static DatabaseType databaseType;
 
 	public SmoothResultsSubmissionStep() {
 		String logManagerName=System.getProperty("java.util.logging.manager");
@@ -208,15 +207,24 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				REXP exitValueFromR;
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
-					log.info(getClass().getSimpleName() + "; calling Risk Analysis R function");
+					rifLogger.info(getClass(), "Calling Risk Analysis R function");
 					sourceRScript(rengine, rifScriptPath + "performRiskAnal.R");
-					rengine.eval("returnValues <- performRiskAnal");
+					// rengine.eval("returnValues <- performRiskAnal");
 					/* TODO: that's the script name, not the name of a function in it; but
 					 * there doesn't at present appear to be a suitable one.
 					 */
+
+					// ========== Temp hack to let things run ===========
+					adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
+					performSmoothingActivity.append(rifScriptPath);
+					performSmoothingActivity.append("performSmoothingActivity.R");
+					sourceRScript(rengine, adjCovSmoothJri.toString());
+					sourceRScript(rengine, performSmoothingActivity.toString());
+					rengine.eval("returnValues <- runRSmoothingFunctions()");
+					// ==================================================
 				} else {
 
-					log.info(getClass().getSimpleName() + "; calling Disease Mapping R function");
+					rifLogger.info(getClass(), "Calling Disease Mapping R function");
 					// Run the actual smoothing
 					adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
 					performSmoothingActivity.append(rifScriptPath);

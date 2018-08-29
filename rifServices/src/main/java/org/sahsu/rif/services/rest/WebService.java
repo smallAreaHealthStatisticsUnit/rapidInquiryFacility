@@ -1326,6 +1326,10 @@ getParameter("p 1")     yes     c d
 				rifStudySubmission
 					= getRIFSubmissionFromXMLSource(inputStream);
 			}
+
+			rifLogger.info(getClass(),"RIFStudySubmission created; type is " +
+			                          (rifStudySubmission.getStudy().isRiskAnalysis()
+					                           ? "Risk Analysis" : "Disease Mapping"));
 			
 			rifStudySubmission.checkErrors(AbstractRIFConcept.ValidationPolicy.RELAXED);
 
@@ -1369,6 +1373,8 @@ getParameter("p 1")     yes     c d
 				currentInputLine = reader.readLine();
 			}
 			reader.close();
+
+			rifLogger.info(getClass(), "JSON from UI: " + buffer.toString());
 			
 			JSONObject jsonObject = new JSONObject(buffer.toString());
 			
