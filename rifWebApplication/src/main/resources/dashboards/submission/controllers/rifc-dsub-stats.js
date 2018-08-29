@@ -35,8 +35,8 @@
  * CONTROLLER for disease submission stats options modal
  */
 angular.module("RIF")
-        .controller('ModalStatsCtrl', ['$scope', '$uibModal', 'StatsStateService', 'SubmissionStateService', 'user', '$window',
-            function ($scope, $uibModal, StatsStateService, SubmissionStateService, user, $window) {
+        .controller('ModalStatsCtrl', ['$scope', '$uibModal', 'StatsStateService', 'SubmissionStateService', 'AlertService', 'user', '$window',
+            function ($scope, $uibModal, StatsStateService, SubmissionStateService, AlertService, user, $window) {
                 $scope.tree = SubmissionStateService.getState().statsTree;
 
                 //get available methods
@@ -70,7 +70,17 @@ angular.module("RIF")
                     $window.open(baseUrl);
                 };
 
-                $scope.open = function () {
+                $scope.open = function () {				
+					$scope.defaultText="Indirectly standardised rates, Relative risk ratios, Empirical Bayes";
+					$scope.isDiseaseMapping=false;
+					if (SubmissionStateService.getState().studyType == "Disease Mapping") {
+						$scope.isDiseaseMapping=true;
+					}
+					
+					AlertService.consoleDebug("[rifc-dsub-stats.js] SubmissionStateService.getState().studyType: " + 
+						SubmissionStateService.getState().studyType +
+						"; $scope.isDiseaseMapping: " + $scope.isDiseaseMapping);
+												
                     var modalInstance = $uibModal.open({
                         animation: true,
                         templateUrl: 'dashboards/submission/partials/rifp-dsub-stats.html',
