@@ -8,9 +8,9 @@
     },
     "calculation_methods": {
       "calculation_method": {
-        "name": "bym_r_procedure",
-        "code_routine_name": "bym_r_procedure",
-        "description": "Besag, York and Mollie (BYM) model type",
+        "code_routine_name": "NONE",
+        "name": "NONE",
+        "description": "NONE",
         "parameters": {
           "parameter": []
         }
@@ -9166,7 +9166,7 @@
       "studySelectAt": "SAHSU_GRD_LEVEL4"
     },
     "risk_analysis_study": {
-      "name": "1002 LUNG CANCER",
+      "name": "1005 LUNG CANCER RA",
       "description": "TEST 1005 LUNG CANCER BYM 95 96 Risk Analysis 01 points",
       "geography": {
         "name": "SAHSULAND",
