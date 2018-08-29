@@ -457,9 +457,18 @@ select {
 }
 
 #buttons .mappingPageLabel {
-    margin: 18px 10px 0px 50px;
+    margin: 18px 10px 0px 10px;
     font-size: 18px !important;
     color: #8DB6CD;
+}
+
+#buttons .mappingPageAreaName {
+    text-align: right;
+    float: right;
+    margin: 18px 5px 0px 20px;
+    font-size: 18px !important;
+    color: #FF7D40;
+    font-weight: bold;
 }
 
 #buttons .geoDropsMapping{	

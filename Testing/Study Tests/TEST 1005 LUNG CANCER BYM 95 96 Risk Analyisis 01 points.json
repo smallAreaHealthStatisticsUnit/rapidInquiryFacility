@@ -9167,7 +9167,7 @@
     },
     "risk_analysis_study": {
       "name": "1002 LUNG CANCER",
-      "description": "",
+      "description": "TEST 1005 LUNG CANCER BYM 95 96 Risk Analysis 01 points",
       "geography": {
         "name": "SAHSULAND",
         "description": "SAHSULAND"
@@ -9175,7 +9175,7 @@
       "investigations": {
         "investigation": [
           {
-            "title": "TEST 1002",
+            "title": "TEST 1005",
             "health_theme": {
               "name": "cancers",
               "description": "covering various types of cancers"

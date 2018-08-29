@@ -1,13 +1,18 @@
 package org.sahsu.rif.services.rest;
 
+import java.io.InputStream;
+
 import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
@@ -15,6 +20,8 @@ import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.RIFStudyResultRetrievalAPI;
 import org.sahsu.rif.services.concepts.Sex;
+
+import com.sun.jersey.multipart.FormDataParam;
 
 /**
  * This class advertises API methods found in 
@@ -439,6 +446,62 @@ public class StudyResultRetrievalServiceResource extends WebService {
 				y);
 	}
 
+	@GET
+	@Produces({"application/json"})
+	@Path("/getMapBackground")
+	public Response getMapBackground(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName
+			) { 
+
+		return super.getMapBackground(servletRequest, userID, geographyName);
+	}	
+		
+	@GET
+	@Produces({"application/json"})
+	@Path("/getSelectState")
+	public Response getSelectState(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID
+			) { 
+
+		return super.getSelectState(servletRequest, userID, studyID);
+	}	
+		
+	@GET
+	@Produces({"application/json"})
+	@Path("/getPrintState")
+	public Response getPrintState(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID
+			) { 
+
+		return super.getPrintState(servletRequest, userID, studyID);
+	}	
+
+	@POST
+	@Produces({"application/json"})
+	@Path("/setPrintState")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response submitStudy(
+			@Context HttpServletRequest servletRequest,
+			@FormDataParam("userID") String userID,
+			@FormDataParam("studyID") String studyID,
+			@FormDataParam("fileFormat") String fileFormat,
+			@FormDataParam("fileField") InputStream inputStream) {
+
+		return super.setPrintState(
+				servletRequest,
+				userID,
+				studyID,
+				fileFormat,
+				inputStream);
+
+	}					
+									
 	@GET
 	@Produces({"application/json"})
 	@Path("/getPostalCodes")

@@ -43,7 +43,7 @@ HTML partial disease mapping
     </div>
     <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
     <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer</a>
-    <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping</a>
+    <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Mapping</a>
     <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Export</a>
     <a style="font-size:15px;" class="icon" ng-click="hamburger()">&#9776;</a>
 </div>
@@ -51,7 +51,7 @@ HTML partial disease mapping
 <div id="buttons">
     <div id='left'>
         <div class='geoDropsMapping'>
-            <div class="mappingPageLabel">LEFT DISPLAY</div>
+            <div class="mappingPageLabel">{{studyType['diseasemap1']}}</div>
             <div>
                 <div>Study:</div>
                 <select ng-change='child.updateSex("diseasemap1")' id='studySelect' ng-model='studyID["diseasemap1"]' ng-options='(s.study_id +        ": " +        s.name) for s in child.studyIDs'> 
@@ -63,11 +63,12 @@ HTML partial disease mapping
                 </select>
             </div>
             <div id="studyInfo" get-study-info mapid="diseasemap1"></div>
+			<div class="mappingPageAreaName">{{thisPolygon['diseasemap1']}}</div>
         </div>
     </div>
     <div id='right'>
         <div class='geoDropsMapping'>
-            <div class="mappingPageLabel">RIGHT DISPLAY</div>
+            <div class="mappingPageLabel">{{studyType['diseasemap2']}}</div>
             <div>
                 <div>Study:</div>
                 <select ng-change='child.updateSex("diseasemap2")' id='studySelect' ng-model='studyID["diseasemap2"]' ng-options='(s.study_id +        ": " +        s.name) for s in child.studyIDs'> 
@@ -79,6 +80,7 @@ HTML partial disease mapping
                 </select>
             </div>
             <div id="studyInfo" get-study-info mapid="diseasemap2"></div>
+			<div class="mappingPageAreaName">{{thisPolygon['diseasemap2']}}</div>
         </div>
     </div>        
 </div>

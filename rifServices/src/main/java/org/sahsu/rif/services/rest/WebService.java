@@ -748,6 +748,141 @@ public class WebService {
 			result);
 	}
 	
+	protected Response getMapBackground(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String geographyName) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				Geography geography = Geography.newInstance(geographyName, "");
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getMapBackground(
+						user, geography);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getMapBackground error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+	
+	protected Response getSelectState(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getSelectState(
+						user, studyID);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getSelectState error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+	
+	protected Response getPrintState(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getPrintState(
+						user, studyID);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getPrintState error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+
+	protected Response setPrintState(
+		final HttpServletRequest servletRequest,
+		final String userID,
+		final String studyID,
+		final String format,
+		final InputStream inputStream) {
+		
+		String result = "";
+
+		rifLogger.info(this.getClass(), "ARWS-setPrintState122 userID=="+userID+"==");
+		rifLogger.info(this.getClass(), "ARWS-setPrintState122 fileFormat=="+format+"==");
+		if (inputStream == null) {
+			rifLogger.info(this.getClass(), "ARWS-setPrintState123 nothing submitted for input study print state");
+		}
+		else {
+			rifLogger.info(this.getClass(), "ARWS-setPrintState123 something specified for the input file");
+		}
+		
+		try {
+			User user = createUser(servletRequest, userID);
+			
+			RIFStudySubmission rifStudySubmission = null;
+			
+			String tmpFormat = "JSON";
+			rifLogger.info(this.getClass(), "ARWS-setPrintState122 fileFormat=="+format+"==");
+			
+			// Convert inputStream to String
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			int length;
+			while ((length = inputStream.read(buffer)) != -1) {
+				baos.write(buffer, 0, length);
+			}
+			String printStateText = baos.toString("UTF-8");		
+
+			RIFStudyResultRetrievalAPI studyResultRetrievalService =
+					getRIFStudyResultRetrievalService();
+			studyResultRetrievalService.setPrintState(
+				user,
+				studyID,
+				printStateText);
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".setPrintState error", exception);
+			result
+				= serialiseException(
+					servletRequest,
+					exception);
+		}	
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);
+	}
+	
 	protected Response getPostalCodeCapabilities(
 			final HttpServletRequest servletRequest,
 			final String userID,
@@ -1241,7 +1376,19 @@ getParameter("p 1")     yes     c d
 			InputStream xmlInputStream
 				= new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
 			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="+xml+"==");
-			return getRIFSubmissionFromXMLSource(xmlInputStream);
+			RIFStudySubmission riftudySubmission =  getRIFSubmissionFromXMLSource(xmlInputStream);
+			
+			// Parse out study_selection to avoid using the XML parser
+			JSONObject rifJobSubmission = jsonObject.optJSONObject("rif_job_submission");
+			if (rifJobSubmission != null) {
+				JSONObject studySelection = rifJobSubmission.optJSONObject("study_selection");
+				if (studySelection != null) {
+					rifLogger.info(this.getClass(), "ARWS - study_selection: " + studySelection.toString(2));	
+					riftudySubmission.setStudySelection(studySelection);
+				}
+			}
+				
+			return riftudySubmission;
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +

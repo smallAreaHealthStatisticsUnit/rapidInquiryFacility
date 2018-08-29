@@ -72,12 +72,33 @@ public interface UserService {
 			GeoLevelToMap _geoLevelToMap)
 						throws RIFServiceException;
 
+	String getMapBackground(
+			User _user,
+			Geography _geography)
+					throws RIFServiceException;		
+					
+	String getSelectState(
+			User _user,
+			String studyID)
+					throws RIFServiceException;		
+					
+	String getPrintState(
+			User _user,
+			String studyID)
+					throws RIFServiceException;		
+					
+	String setPrintState(
+			User _user,
+			String studyID,
+			String printStateText)
+					throws RIFServiceException;	
+					
 	String getPostalCodes(
 			User _user,
 			Geography _geography,
 			String postcode,
 			Locale locale)
-								throws RIFServiceException;
+					throws RIFServiceException;
 
 	String getPostalCodeCapabilities(
 			User _user,

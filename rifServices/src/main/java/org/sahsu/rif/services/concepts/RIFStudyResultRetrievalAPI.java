@@ -15,12 +15,33 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final GeoLevelSelect geoLevelSelect)
 					throws RIFServiceException;
 					
+	String getMapBackground(
+			final User user,
+			final Geography geography)
+					throws RIFServiceException;		
+					
+	String getSelectState(
+			final User user,
+			final String studyID)
+					throws RIFServiceException;		
+					
+	String getPrintState(
+			final User user,
+			final String studyID)
+					throws RIFServiceException;		
+					
+	String setPrintState(
+			final User user,
+			final String studyID,
+			final String printStateText)
+					throws RIFServiceException;		
+					
 	String getPostalCodes(
 			final User user,
 			final Geography geography,
 			final String postcode,
 			final Locale locale)
-					throws RIFServiceException;	
+					throws RIFServiceException;		
 					
 	String getPostalCodeCapabilities(
 			final User user,

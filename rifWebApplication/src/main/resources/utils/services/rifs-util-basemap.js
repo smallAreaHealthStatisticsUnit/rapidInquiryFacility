@@ -37,10 +37,11 @@
 
 /* global L */
 angular.module("RIF")
-        .factory('LeafletBaseMapService',
-                function () {
+        .factory('LeafletBaseMapService', ['user', 'AlertService',
+                function (user, AlertService) {
 
-                    var defaultBaseMap = 'OpenStreetMap Mapnik';
+				    var defaultBaseMap = 'OpenStreetMap Mapnik';
+					
                     var thunderforestAPIkey = "f01dbbea1da44b649ee7f0ab6be56756";
 
                     //for disease mapping
@@ -151,7 +152,7 @@ angular.module("RIF")
                     basemaps.push({name: "Esri WorldShadedRelief", tile: L.tileLayer(window.location.protocol + '//server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
                             attribution: 'Tiles &copy; Esri &mdash; Source: Esri'
                         })});
-                    basemaps.push({name: "Esri WorldPhysical ", tile: L.tileLayer(window.location.protocol + '//server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
+                    basemaps.push({name: "Esri WorldPhysical", tile: L.tileLayer(window.location.protocol + '//server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
                             attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service'
                         })});
                     basemaps.push({name: "Esri OceanBasemap", tile: L.tileLayer(window.location.protocol + '//server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
@@ -240,6 +241,85 @@ angular.module("RIF")
                         },
                         getNoBaseMap: function (map) {
                             return noBaseMap[map];
-                        }
+                        },
+						setDefaultMapBackground: function(geography, callback) {
+							
+							// WARNING: The name is validated as constraint check map_background_ck on rif40_geographies.map_background
+							user.getMapBackground(user.currentUser, geography).then(function (res) {
+								var mapBackground=res.data;
+								var found=false;
+								if (mapBackground && mapBackground.mapBackground == "NONE") {
+									found=true;
+									AlertService.consoleDebug('[rifs-util-basemap.js]: mapBackground is NONE' +
+												" for geography: " + geography);
+									noBaseMap = {
+										areamap: true,
+										viewermap: true,
+										diseasemap1: true,
+										diseasemap2: true,
+										exportmap: true
+									};
+									baseMapInUse = {
+										areamap: defaultBaseMap,
+										viewermap: defaultBaseMap,
+										diseasemap1: defaultBaseMap,
+										diseasemap2: defaultBaseMap,
+										exportmap: defaultBaseMap
+									};
+								}
+								else if (mapBackground && mapBackground.mapBackground) {
+									var basemapsList = [];
+									for (var i = 0; i < basemaps.length; i++) {
+										basemapsList.push(basemaps[i].name);
+										if (basemaps[i].name == mapBackground.mapBackground) {
+											found=true;
+									
+											AlertService.consoleDebug('[rifs-util-basemap.js]: mapBackground is: ' + mapBackground.mapBackground +
+												" for geography: " + geography);
+											noBaseMap = {
+												areamap: false,
+												viewermap: false,
+												diseasemap1: false,
+												diseasemap2: false,
+												exportmap: false
+											};
+											baseMapInUse = {
+												areamap: mapBackground.mapBackground,
+												viewermap: mapBackground.mapBackground,
+												diseasemap1: mapBackground.mapBackground,
+												diseasemap2: mapBackground.mapBackground,
+												exportmap: mapBackground.mapBackground
+											};
+										}	
+									}
+								}
+								if (!found) {
+									if (mapBackground.mapBackground) {
+										AlertService.rifMessage("warning", "Default map background " + mapBackground.mapBackground + 
+											" not found in database for geography: " + geography);
+									}
+									else {
+										AlertService.rifMessage("warning", "No default map background found in database for geography: " + 
+											geography);
+									}
+									AlertService.consoleDebug('[rifs-util-basemap.js]: mapBackground not found; ' + JSON.stringify(mapBackground) +
+										" for geography: " + geography);
+								}
+								
+								if (callback && typeof(callback) == "function") {
+//									AlertService.consoleDebug("[rifs-util-basemap.js]: basemapsList: " + JSON.stringify(basemapsList));
+									callback();
+								}
+                            }, function (err) {
+								
+                                AlertService.rifMessage("warning", "Could not get default map background from database for geography: " + geography +
+									"; using OpenStreetMap Mapnik", err);	
+
+								if (callback && typeof(callback) == "function") {
+									callback((err || "Could not get default map background from database for geography: " + geography +
+										"; using OpenStreetMap Mapnik"));
+								}	
+							})
+						}
                     };
-                });
+                }]);

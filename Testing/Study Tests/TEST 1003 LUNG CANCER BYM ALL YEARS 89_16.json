@@ -89,9 +89,30 @@ Comments:
 		"rif_output_options": {
 			"rif_output_option": ["Data", "Maps", "Ratios and Rates"]
 		},
+		"study_selection": {
+			"studySelectedAreas": [{
+					"id": "01",
+					"gid": "01",
+					"label": "01",
+					"band": 1
+				}
+			],
+			"studyShapes": [],
+			"comparisonSelectedAreas": [{
+					"id": "01",
+					"gid": "01",
+					"label": "01",
+					"band": 1
+				}
+			],
+			"fileList": [],
+			"bandAttr": [],
+			"comparisonSelectAt": "SAHSU_GRD_LEVEL1",
+			"studySelectAt": "SAHSU_GRD_LEVEL1"
+		},		
 		"disease_mapping_study": {
 			"name": "1003 LUNG CANCER",
-			"description": "",
+			"description": "TEST 1003 LUNG CANCER BYM ALL YEARS 89_16",
 			"geography": {
 				"name": "SAHSULAND",
 				"description": "SAHSULAND"

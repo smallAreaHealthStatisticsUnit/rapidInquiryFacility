@@ -95,6 +95,14 @@ angular.module("RIF")
                         StudyAreaStateService.getState().transparency = input.transparency;
                         StudyAreaStateService.getState().type = input.type;
 						
+						if (SelectStateService.getState().studySelection == undefined) {
+							if (input.type == "Disease Mapping") {
+								SelectStateService.resetState();
+							}
+							else {
+								SelectStateService.ginitialiseRiskAnalysis();
+							}
+						}
 						if (SelectStateService.getState().studyType == "disease_mapping_study" && input.type == "Disease Mapping") {
 						}
 						else if (SelectStateService.getState().studyType == "risk_analysis_study" && input.type == "Risk Analysis") {
@@ -111,10 +119,9 @@ angular.module("RIF")
 							input.selectedPolygon;
 						
 						try {
-							var r=SelectStateService.verifyStudySelection();
-//							$scope.consoleDebug("[rifc-dsub-studyarea.js] verifyStudySelection() " +
-//								SelectStateService.getState().studyType + " study area OK: " +
-//								JSON.stringify(r, null, 1));
+							if (SelectStateService.getState().studySelection.studySelectedAreas.length > 0) {
+								var r=SelectStateService.verifyStudySelection
+							}
 						}
 						catch (e) {
 							$scope.showWarningNoHide("Unable to verify study area selection: " + e.message);
@@ -129,10 +136,13 @@ angular.module("RIF")
                     });
                 };
             }])
-        .controller('ModalStudyAreaInstanceCtrl', function ($scope, $uibModalInstance, StudyAreaStateService) {
+        .controller('ModalStudyAreaInstanceCtrl', ['$scope', '$uibModalInstance', 'StudyAreaStateService', 'AlertService', 
+				function ($scope, $uibModalInstance, StudyAreaStateService, AlertService) {
             $scope.input = {};
             $scope.input.name = "StudyAreaMap";
             $scope.input.selectedPolygon = StudyAreaStateService.getState().polygonIDs;
+//			AlertService.consoleDebug("[rifc-dsub-studyarea.js] selectedPolygon[" + $scope.input.selectedPolygon.length + "]: " +
+//				JSON.stringify($scope.input.selectedPolygon));
             $scope.input.selectAt = StudyAreaStateService.getState().selectAt;
             $scope.input.studyResolution = StudyAreaStateService.getState().studyResolution;
             $scope.input.center = StudyAreaStateService.getState().center;
@@ -152,4 +162,4 @@ angular.module("RIF")
             $scope.submit = function () {
                 $uibModalInstance.close($scope.input);
             };
-        });
+        }]);

@@ -35,13 +35,16 @@
  * SERVICE to store state of viewer tab
  */
 angular.module("RIF")
-        .factory('ViewerStateService',
-                function () {
+        .factory('ViewerStateService', ['AlertService', 
+                function (AlertService) {
                     //These are the relevant columns to display from the results table
-                    var validColumns = ["area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id",
+                    var diseaseMapValidColumns = ["area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id",
                         "posterior_probability",
                         "lower95", "upper95", "relative_risk",
                         "smoothed_smr", "smoothed_smr_lower95", "smoothed_smr_upper95",
+                        "_selected"];
+                    var riskAnalysisValidColumns = ["area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id",
+                        "lower95", "upper95", "relative_risk",
                         "_selected"];
                     var s = {
                         initial: true,
@@ -57,6 +60,9 @@ angular.module("RIF")
                         sex: {
                             'viewermap': null
                         },
+                        studyType: {
+                            'viewermap': "Disease Mapping"
+                        },
                         selected: {
                             'viewermap': []
                         },
@@ -70,8 +76,31 @@ angular.module("RIF")
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
-                        getValidColumn: function (header) {
-                            if (validColumns.indexOf(header) !== -1) {
+						getValidColumnList: function (mapID, studyType) {
+							if (studyType == "Disease Mapping") {
+								return diseaseMapValidColumns;
+							}
+							else if (studyType == "Risk Analysis") {
+								return riskAnalysisValidColumns;
+							}
+							else {
+								throw new Error("Invalid studyType: " + studyType + " for map: " + mapID);
+							}
+						},
+                        getValidColumn: function (header, studyType, mapID) {
+							var validColumns;
+							if (studyType == "Disease Mapping") {
+								validColumns = diseaseMapValidColumns;
+							}
+							else if (studyType == "Risk Analysis") {
+								validColumns = riskAnalysisValidColumns;
+							}
+							else {
+								throw new Error("Invalid studyType: " + studyType + " for map: " + mapID + "; column: " + header);
+							}
+//							AlertService.consoleDebug("[rifs-view-viewerstate.js] getValidColumn studyType: " + studyType + 
+//								" for map: " + mapID + "; column: " + header);
+                            if (validColumns && validColumns.indexOf(header) !== -1) {
                                 return true;
                             } else {
                                 return false;
@@ -90,4 +119,4 @@ angular.module("RIF")
                             s = angular.copy(defaults);
                         }
                     };
-                });
+                }]);

@@ -3,6 +3,7 @@ package org.sahsu.rif.generic.datastorage.ms;
 import java.util.ArrayList;
 
 import org.sahsu.rif.generic.datastorage.AbstractSQLQueryFormatter;
+import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
 
 /**
  *
@@ -68,7 +69,8 @@ import org.sahsu.rif.generic.datastorage.AbstractSQLQueryFormatter;
  *
  */
 
-public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter {
+public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter 
+	implements UpdateQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -85,6 +87,7 @@ public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter {
 	
 	/** The insert fields. */
 	private ArrayList<String> updateFields;
+	private ArrayList<String> updateFieldsCasts;
 
 	/** The where conditions. */
 	private ArrayList<String> whereConditions;
@@ -102,7 +105,8 @@ public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter {
 	public MSSQLUpdateQueryFormatter() {
 
 		orAllWhereConditions = false;
-		updateFields = new ArrayList<String>();		
+		updateFields = new ArrayList<String>();	
+		updateFieldsCasts = new ArrayList<String>();	
 		whereConditions = new ArrayList<String>();
 		whereLikeFieldNames = new ArrayList<String>();
 	}
@@ -142,8 +146,21 @@ public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter {
 		final String updateField) {
 		
 		updateFields.add(updateField);
+		updateFieldsCasts.add(null);
 	}
-	
+			
+	/**
+	 * Adds the insert field.
+	 *
+	 * @param insertField: the insert field
+	 * @param cast: apply cast to the insert field
+	 */
+	public void addUpdateField(
+		final String updateField, final String cast){
+		
+		updateFields.add(updateField);
+		updateFieldsCasts.add(cast);
+	}	
 	
 	/**
 	 * Adds the where join condition.
@@ -295,7 +312,13 @@ public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter {
 				addQueryPhrase(",");
 			}
 			addQueryPhrase(updateFields.get(i));
-			addQueryPhrase("=?");
+			String cast=updateFieldsCasts.get(i);
+			if (cast == null) {
+				addQueryPhrase("=?");
+			}
+			else {
+				addQueryPhrase("= CAST(? AS " + cast + ")");
+			}
 		}		
 		
 		ArrayList<String> allWhereConditions = new ArrayList<String>();

@@ -1,17 +1,27 @@
 package org.sahsu.rif.services.datastorage.common;
 
+import org.json.JSONObject;
+
+import org.sahsu.rif.services.system.files.TomcatBase;
+import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.services.util.Json5Parse;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
 
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.InsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
+import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -53,7 +63,149 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		this.mapDataManager = mapDataManager;
 		setEnableLogging(true);
 	}
+	
+	public	void updateSelectState(final Connection connection, final User user, final String studyID, final JSONObject studySelection) 
+		throws RIFServiceException {
+	
+		if (studySelection == null) {
+			throw new RIFServiceException(
+					RIFServiceError.UPDATE_SELECTSTATE_FAILED,
+					"updateSelectState studyID: " + studyID +
+					"; studySelection: is NULL");
+		}
+		
+		UpdateQueryFormatter updateSelectStateFormatter1 =
+			UpdateQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+			
+		String studySelectionText=studySelection.toString();
 
+		updateSelectStateFormatter1.setDatabaseSchemaName("rif40");
+		if (rifDatabaseProperties.getDatabaseType() == DatabaseType.POSTGRESQL) { // Supports JSON natively
+			updateSelectStateFormatter1.addUpdateField("select_state", "JSON");
+		}
+		else { // SQL Server doesn't yet
+			updateSelectStateFormatter1.addUpdateField("select_state");
+		}
+		updateSelectStateFormatter1.setUpdateTable("rif40_studies");
+		updateSelectStateFormatter1.addWhereParameter("study_id");
+
+		logSQLQuery("updateSelectState", updateSelectStateFormatter1, studySelectionText, studyID);
+	
+		PreparedStatement statement1 = null;
+		try {
+
+			statement1 = connection.prepareStatement(updateSelectStateFormatter1.generateQuery());
+			statement1.setString(1, studySelectionText);
+			statement1.setInt(2, Integer.parseInt(studyID));
+			int rc = statement1.executeUpdate();
+		
+			if (rc != 1) { 
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_UPDATE_FAILED,
+					"updateSelectState query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " update");
+			}
+
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"studySubmissionStep.unableToSetSelectState",
+					studyID, studySelection.toString(2));
+			throw new RIFServiceException(
+					RIFServiceError.UPDATE_SELECTSTATE_FAILED,
+					errorMessage);
+		} finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement1);
+		}
+	}
+	
+	public	void updatePrintState(final Connection connection, final User user, final String studyID) 
+		throws RIFServiceException {
+			
+		UpdateQueryFormatter updateSelectStateFormatter1 =
+			UpdateQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+		
+		updateSelectStateFormatter1.setDatabaseSchemaName("rif40");
+		if (rifDatabaseProperties.getDatabaseType() == DatabaseType.POSTGRESQL) { // Supports JSON natively
+			updateSelectStateFormatter1.addUpdateField("print_state", "JSON");
+		}
+		else { // SQL Server doesn't yet
+			updateSelectStateFormatter1.addUpdateField("print_state");
+		}
+		updateSelectStateFormatter1.setUpdateTable("rif40_studies");
+		updateSelectStateFormatter1.addWhereParameter("study_id");
+
+		JSONObject printSelectionJson = null;
+		PreparedStatement statement1 = null;
+		try {
+
+			BufferedReader reader = new TomcatFile(
+					new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
+
+			Json5Parse json5Parse = new Json5Parse(reader);
+			String jsonText = json5Parse.toString();
+		
+			JSONObject json = json5Parse.toJson(); // Check it parses OK
+			JSONObject parametersJson = json.optJSONObject("parameters");
+			if (parametersJson == null) {
+				throw new RIFServiceException(
+					RIFServiceError.JSON_PARSE_ERROR,
+					"updatePrintState json parse error: missing \"parameters\" key for rif40_studies.study_id: " + studyID + " update");
+			}
+			printSelectionJson = parametersJson.optJSONObject("mappingDefaults");
+			if (printSelectionJson == null) {
+				throw new RIFServiceException(
+					RIFServiceError.JSON_PARSE_ERROR,
+					"updatePrintState json parse error: missing \"mappingDefaults\" key for rif40_studies.study_id: " + studyID + " update");
+			}
+			String printSelectionText=printSelectionJson.toString();
+			rifLogger.info(getClass(), "Retrieve printSelection from FrontEnd Parameters: " + printSelectionJson.toString(2));
+			logSQLQuery("updateSelectState", updateSelectStateFormatter1, printSelectionText, studyID);
+		
+			statement1 = connection.prepareStatement(updateSelectStateFormatter1.generateQuery());
+			statement1.setString(1, printSelectionText);
+			statement1.setInt(2, Integer.parseInt(studyID));
+			int rc = statement1.executeUpdate();
+		
+			if (rc != 1) { 
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_UPDATE_FAILED,
+					"updatePrintState query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " update");
+			}
+
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"studySubmissionStep.unableToSetPrintState",
+					studyID, printSelectionJson.toString(2));
+			throw new RIFServiceException(
+					RIFServiceError.UPDATE_PRINTSTATE_FAILED,
+					errorMessage);
+		} catch(IOException ioException) {
+			//Record original exception, throw sanitised, human-readable version
+			rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".TomcatFile IO error", ioException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"studySubmissionStep.unableToSetPrintState",
+					studyID, printSelectionJson.toString(2));
+			throw new RIFServiceException(
+					RIFServiceError.UPDATE_PRINTSTATE_FAILED,
+					errorMessage);
+		} finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement1);
+		}
+	}
+		
 	String performStep(
 			final Connection connection, final User user, final RIFStudySubmission studySubmission)
 			throws RIFServiceException {

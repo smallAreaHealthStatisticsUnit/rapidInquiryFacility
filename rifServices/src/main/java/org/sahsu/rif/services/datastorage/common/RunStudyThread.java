@@ -177,7 +177,14 @@ public class RunStudyThread implements Runnable {
 				connection, 
 				user, 
 				studySubmission);
-		
+		    
+			createStudySubmissionStep.updateSelectState(
+				connection, 
+				user, studyID, studySubmission.getStudySelection());
+			createStudySubmissionStep.updatePrintState(
+				connection, 
+				user, studyID);
+			
 			String statusMessage
 				= RIFServiceMessages.getMessage(
 					"studyState.studyCreated.description");

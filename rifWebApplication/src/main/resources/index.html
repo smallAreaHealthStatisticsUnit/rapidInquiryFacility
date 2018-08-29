@@ -76,6 +76,7 @@
         <script src="libs/leaflet-slider.js"></script> 
         <link rel="stylesheet" href="libs/leaflet-slider.css"> 
         <script type="text/javascript" src="libs/leaflet-control-condended-attribution.js"></script> 
+        <script type="text/javascript" src="libs/leaflet.geometryutil.js"></script> 
 
         <!-- D3  v4 and D3 export -->
         <script src="libs/standalone/d3.v4.min.js"></script>
@@ -154,7 +155,6 @@
         <script src="dashboards/submission/services/rifs-dsub-paramstate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-statsstate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-submissionstate.js"></script>
-        <script src="dashboards/submission/services/rifs-dsub-selectstate.js"></script>
         <script src="dashboards/submission/directives/rifd-dsub-maptable.js"></script>
         <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>  
         <script src="dashboards/submission/directives/rifd-dsub-risk.js"></script>  
@@ -191,7 +191,12 @@
         <script src="utils/services/rifs-util-JSON.js"></script>
         <script src="utils/services/rifs-util-maptools.js"></script>
         <script src="utils/services/rifs-util-alert.js"></script>
+		<!-- This causes a circular dependency error in newer firefoxes:
+		
+        <script src="utils/services/rifs-util-exceptionOverwrite.js"></script>
+		-->
         <script src="utils/services/rifs-util-projection.js"></script>
+        <script src="utils/services/rifs-util-selectstate.js"></script>
         <script src="backend/services/rifs-back-requests.js"></script>
         <script src="backend/services/rifs-back-interceptor.js"></script>
         <script src="backend/services/rifs-back-parameters.js"></script>

@@ -406,6 +406,13 @@ angular.module("RIF")
 						}	
 						//terms
 						var inv = rifJob[studyType].investigations.investigation;
+						if (inv.length != 1) {
+							return "Found no/multiple .nvestigations, unable to check investigations";
+						}
+						
+						if (inv[0].health_codes.health_code.length == 0) {
+							return "Found no investigation health codes, unable to check investigations";
+						}
 						for (var j = 0; j < inv[0].health_codes.health_code.length; j++) {
 							tmpFullICDselection.push([inv[0].health_codes.health_code[j].code + '-' + inv[0].health_codes.health_code[j].name_space,
 								inv[0].health_codes.health_code[j].description]);
@@ -527,6 +534,9 @@ angular.module("RIF")
 						StudyAreaStateService.getState().selectAt = rifJob[studyType][studyAreaType].geo_levels.geolevel_select.name;
 						StudyAreaStateService.getState().studyResolution = rifJob[studyType][studyAreaType].geo_levels.geolevel_to_map.name;
 						StudyAreaStateService.getState().polygonIDs = rifJob[studyType][studyAreaType].map_areas.map_area;
+						if (StudyAreaStateService.getState().polygonIDs.length == 0) {
+							throw new Error("No study area polygons");
+						}
 						StudyAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (StudyAreaStateService.getState().polygonIDs.length !== 0) {
 							SubmissionStateService.getState().studyTree = true;
@@ -534,10 +544,15 @@ angular.module("RIF")
 						if (studyType === "risk_analysis_study") {
 							StudyAreaStateService.getState().type = "Risk Analysis";	
 						}
+						SubmissionStateService.getState().studyType = StudyAreaStateService.getState().type;
+						
 						//Comparison area
 						CompAreaStateService.getState().selectAt = rifJob[studyType].comparison_area.geo_levels.geolevel_select.name;
 						CompAreaStateService.getState().studyResolution = rifJob[studyType].comparison_area.geo_levels.geolevel_to_map.name;
 						CompAreaStateService.getState().polygonIDs = rifJob[studyType].comparison_area.map_areas.map_area;
+						if (CompAreaStateService.getState().polygonIDs.length == 0) {
+							throw new Error("No comparison area polygons");
+						}
 						CompAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (CompAreaStateService.getState().polygonIDs.length !== 0) {
 							SubmissionStateService.getState().comparisonTree = true;
@@ -589,24 +604,31 @@ angular.module("RIF")
 						try {
 							if (SelectStateService.getState().studySelection) {
 								var r=SelectStateService.verifyStudySelection();
-								$scope.consoleDebug("[rifc-dsub-fromfile.js] verifyStudySelection() OK: " +
-									JSON.stringify(r));
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] verifyStudySelection() OK.");
 							}
 						}
 						catch (e) {
 							fromFileErrorCount++;
-							return "Unable to verify study selection: " + e.message;
+							$scope.showError("Unable to verify study selection: " + e.message);
+							return false;
 						}							
 
                     } catch (e) {
-                        return "Could not set study state: " + (e.message||"(no message)");
+                        $scope.showError("Could not set study state: " + (e.message||"(no message)"));
+						return false;
                     }
+					return true;
                 }
 
                 function fromFileError() {
 					fromFileErrorCount++;
 					if (fromFileErrorCount < 2) {
-						$scope.showError("Could not upload saved study file: " + $scope.fileName);
+						if ($scope.fileName) {
+							$scope.showError("Could not upload saved study file: " + $scope.fileName);
+						}
+						else {
+							$scope.showError("Could not upload saved study file: no file specified");
+						}
 					}
                 }
 
@@ -724,12 +746,16 @@ angular.module("RIF")
 									}
 									if (bPass) {
 										//All tests passed
-										confirmStateChanges();
-										$scope.showSuccess("RIF " + StudyAreaStateService.getState().type + " study opened from file: " + $scope.fileName);
-										$scope.$parent.resetState();
+										if (confirmStateChanges()) {
+											$scope.showSuccess("RIF " + StudyAreaStateService.getState().type + " study opened from file: " + ($scope.fileName || 'N/A'));
+											$scope.$parent.resetState();
+										}
+										else {
+											$scope.showError("RIF study opened from file: " + ($scope.fileName || 'N/A') + " failed in state change setup");
+										}
 									}
 									else {
-										$scope.showError("RIF study opened from file: " + $scope.fileName + " failed with " +
+										$scope.showError("RIF study opened from file: " + ($scope.fileName || 'N/A') + " failed with " +
 											errorCount + " error(s)");
 									}
 								});

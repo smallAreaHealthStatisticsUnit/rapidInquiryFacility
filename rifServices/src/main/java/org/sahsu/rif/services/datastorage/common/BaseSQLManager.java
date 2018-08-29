@@ -870,14 +870,15 @@ public class BaseSQLManager implements SQLManager {
 			//for a user, we let the checks occur (set flag to false)
 			//for all other times, set the flag to true, to ignore checks
 
+			Connection currentConnection =null;
+				
 			//Establish read-only connections
 			for (int i = 0; i < POOLED_READ_ONLY_CONNECTIONS_PER_PERSON; i++) {
 				boolean isFirstConnectionForUser = false;
 				if (i == 0) {
 					isFirstConnectionForUser = true;
 				}
-				Connection currentConnection
-					= createConnection(
+				currentConnection = createConnection(
 						userID,
 						password,
 						isFirstConnectionForUser,
@@ -888,8 +889,7 @@ public class BaseSQLManager implements SQLManager {
 
 			//Establish write-only connections
 			for (int i = 0; i < POOLED_WRITE_CONNECTIONS_PER_PERSON; i++) {
-				Connection currentConnection
-					= createConnection(
+				currentConnection = createConnection(
 						userID,
 						password,
 						false,
@@ -904,6 +904,20 @@ public class BaseSQLManager implements SQLManager {
 			String banner = String.format("XXXXXXXXXXX %s XXXXXXXXXX",
 			                              rifDatabaseProperties.getDatabaseType().banner());
 			rifLogger.info(this.getClass(), banner);
+/*
+ * Schema version checks: 
+ *
+ * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
+ */ 
+			String errorMessage = schemaVersionChecks(currentConnection);
+			if (errorMessage != null) { // Failed 
+				throw new RIFServiceException(
+						RIFServiceError.DB_SCHEMA_VERSION_CHECK_FAILED,
+						errorMessage);
+			}
+			else {
+				rifLogger.info(this.getClass(), banner);
+			}
 		}
 		catch(ClassNotFoundException classNotFoundException) {
 			RIFServiceExceptionFactory exceptionFactory
@@ -934,6 +948,28 @@ public class BaseSQLManager implements SQLManager {
 
 	}
 
+/*
+ * Schema version checks: 
+ *
+ * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
+ */ 
+	private String schemaVersionChecks(Connection connection) throws RIFServiceException {
+	
+		String errorMessage = null;
+		
+		try {
+			if (!doesColumnExist(connection, "rif40", "t_rif40_studies", "select_state")) { // alter_10.sql has not been run
+				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter10NotRun");
+			}
+		}
+		catch (Exception exception) {		
+			errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.schemaVersionChecksFailed");
+			rifLogger.error(getClass(),	errorMessage, exception);
+		}
+		
+		return errorMessage;
+	}
+	
 	private Connection createConnection(
 		final String userID,
 		final String password,

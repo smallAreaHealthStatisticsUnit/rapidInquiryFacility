@@ -46,7 +46,7 @@ Disease submission modal stats (tree #4)
         <div class = "statsInfo">
             <div class='done' style='' id='statDone' ng-click="submit()"><a>Done</a> </div>
             <h2>Default</h2>
-            <p> Indirectly standardised rates, Relative risk ratios, Empirical Bayes </p>
+            <p> {{defaultText}} </p>
         </div>
         <div id="modelsList" class = "statsInfo">
             <h2>Optional Bayesian Smoothing</h2>
@@ -55,7 +55,7 @@ Disease submission modal stats (tree #4)
                     <input ng-model="input.checked" value="-1" type="radio" name="bayes" id="noMethod">
                     <label for="noMethod">Do not apply Bayesian smoothing</label> 
                 </div>
-                <div ng-repeat="i in methods track by $index" ng-init="methodIndex = $index">
+                <div ng-show="isDiseaseMapping" ng-repeat="i in methods track by $index" ng-init="methodIndex = $index">
                     <input ng-model="input.checked" value="{{$index}}" type="radio" name="bayes" id="{{i.codeRoutineName}}">
                     <label for="{{i.codeRoutineName}}">{{i.codeRoutineName}}: {{i.description}}</label>
                     <div ng-repeat="j in i.parameterProxies track by $index" ng-init="proxyIndex = $index">

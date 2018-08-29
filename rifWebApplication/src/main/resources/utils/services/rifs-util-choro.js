@@ -38,8 +38,8 @@
 /* global d3, ss, L, Infinity */
 
 angular.module("RIF")
-        .factory('ChoroService', ['ColorBrewerService', 'ParametersService',
-            function (ColorBrewerService, ParametersService) {
+        .factory('ChoroService', ['ColorBrewerService', 'ParametersService', 'AlertService', 'ViewerStateService',
+            function (ColorBrewerService, ParametersService, AlertService, ViewerStateService) {
 
 				var defaultChoroScaleMethod = {
 					'viewermap': {
@@ -67,7 +67,7 @@ angular.module("RIF")
 							isDefault:		true
 					}
 				};
-                                       
+                      
 				var defaultClassificationsList = [ // Standard methods
 					{
 						id: 	'quantile',
@@ -86,6 +86,7 @@ angular.module("RIF")
 						label: 	'Standard Deviation'
 					}
 				];
+				var classificationsList=angular.copy(defaultClassificationsList);	
 				
                 //a default symbology
                 function symbology(mapID, choroScaleMethod) {
@@ -110,19 +111,6 @@ angular.module("RIF")
                 }
 				
 				var parameters=ParametersService.getParameters();
-				
-				if (parameters && parameters.userMethods) { // Add userMethods
-
-					for (var userMethodName in parameters.userMethods) {
-						var userMethod=parameters.userMethods[userMethodName]						
-						defaultClassificationsList.push({
-								id: userMethodName,
-								label: userMethod.description
-							});
-					}
-					console.log('defaultClassificationsList: ' + 
-						JSON.stringify(defaultClassificationsList, null, 2));
-				}
 				
 				var choroScaleMethod = undefined;
 				if (parameters && parameters.mappingDefaults) {
@@ -224,7 +212,6 @@ angular.module("RIF")
                             scale = d3.scaleQuantize()
                                     .domain([mn, mx])
                                     .range(range);
-                            breaks = [];
                             var l = (mx - mn) / scale.range().length;
                             for (var i = 0; i < range.length; i++) {
                                 breaks.push(mn + (i * l));
@@ -255,7 +242,6 @@ angular.module("RIF")
                             var mean = d3.mean(domain);
                             var below_mean = mean - sd / 2;
                             var above_mean = mean + sd / 2;
-                            var breaks = [];
                             for (var i = 0; below_mean > mn && i < 2; i++) {
                                 breaks.push(below_mean);
                                 below_mean = below_mean - sd;
@@ -289,7 +275,6 @@ angular.module("RIF")
 										
 										var userMethod=parameters.userMethods[userMethodName]
 										var numBreaks=0; 
-										var breaks;
 										if (userMethod.breaks == undefined) {
 											if (choroScope.showWarning) { // Should always be in scope
 												choroScope.showWarning("No breaks are defined");
@@ -418,14 +403,44 @@ angular.module("RIF")
                         var div = L.DomUtil.create('div', 'info legend');
                         div.innerHTML += '<h4>' + attr.toUpperCase().replace("_", " ") + '</h4>';
                         if (!angular.isUndefined(thisMap.range)) {
+							
+							if (thisMap.breaks.length != (thisMap.range.length-1)) {
+								throw new Error("[rifs-util-choro.js] thisMap.breaks length error: " + i +
+									"; thisMap.breaks: " + JSON.stringify(thisMap.breaks) +
+									"; length: " + thisMap.breaks.length +
+									"; thisMap.range: " + JSON.stringify(thisMap.range) +
+									"; length: " + thisMap.range.length);
+							}
+							
                             for (var i = thisMap.range.length - 1; i >= 0; i--) {
                                 div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
                                 if (i === 0) { //first break
-                                    div.innerHTML += '<span>' + '<' + thisMap.breaks[i].toFixed(2) + '</span>';
+									if (thisMap.breaks[i]) {
+										div.innerHTML += '<span>&lt;' + thisMap.breaks[i].toFixed(2) + '</span>';
+									}
+									else {
+										div.innerHTML += '<span>&lt;0</span>';
+									}
                                 } else if (i === thisMap.range.length - 1) { //last break
-                                    div.innerHTML += '<span>' + '&ge;' + thisMap.breaks[i - 1].toFixed(2) + '</span><br>';
+									if (thisMap.breaks[i - 1]) {
+										div.innerHTML += '<span>&ge;' + thisMap.breaks[i - 1].toFixed(2) + '</span><br>';
+									}
+									else {
+										div.innerHTML += '<span>&ge;0</span><br>';
+									}
                                 } else {
-                                    div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+									if (thisMap.breaks[i - 1] && thisMap.breaks[i]) {
+										div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - &lt;' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+									}
+									else if (thisMap.breaks[i - 1]) {
+										div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - &lt;0</span><br>';	
+									}
+									else if (thisMap.breaks[i]) {						
+										div.innerHTML += '<span>0 - &lt;' + thisMap.breaks[i].toFixed(2) + '</span><br>';			
+									}
+									else { // This is surely a bug
+										div.innerHTML += '<span>0</span><br>';									
+									}
                                 }
                             }
                         }
@@ -454,11 +469,23 @@ angular.module("RIF")
 					}
 					else {
 						if (choroScope.consoleError) { // Should always be in scope
-							choroScope.consoleError("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
-								JSON.stringify(choroScope.input.methodObj));
+							if (choroScope.input.methodObj) {
+								choroScope.consoleError("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
+									JSON.stringify(choroScope.input.methodObj));
+							}
+							else if (choroScope.input) { // Not really and error - being called too early
+								choroScope.consoleLog("WARNING: renderSwatch() being called too early choroScope.input.methodObj not defined: " + 
+									JSON.stringify(choroScope.input)); 
+
+//								throw new Error("renderSwatch() being called too early");
+							}
+							else {
+								choroScope.consoleError("Error in renderSwatch() choroScope.input not defined", 
+									new Error("renderSwatch() choroScope.input not defined"));
+							}
 						}
 						else {
-							throw new Error("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
+							throw new Error("Error in renderSwatch() choroScope.iconsoleError not defined: " + 
 								JSON.stringify(choroScope.input.methodObj));
 						}
 					}	
@@ -591,12 +618,29 @@ angular.module("RIF")
 					return choroScope.input.thisMap;
 				}
 				
+				function checkuserMethods(map, studyType, userMethodName) {
+					if (studyType == "Disease Mapping") {
+						return true;
+					}
+					else if (studyType == "Risk Analysis") {
+						if (userMethodName == "AtlasRelativeRisk") {
+							return true;
+						}
+						else {
+							return false;
+						}
+					}
+					else {
+						throw new Error("Invalid studyType: " + studyType + " for map: " + mapID + "; userMethodName: " + userMethodName);
+					}	
+				}
+				
                 return {
                     getMaps: function (i) {
                         return maps[i];
                     },
 					getClassifications: function() {
-						return defaultClassificationsList;
+						return classificationsList;
 					},
                     getRenderFeatureMapping: function (scale, value, selected) {
                         return renderFeatureMapping(scale, value, selected);
@@ -608,7 +652,9 @@ angular.module("RIF")
                         return choroScale(method, domain, rangeIn, flip, map, oldRval, intervals, choroScope);
                     },
                     getMakeLegend: function (thisMap, attr) {
-                        return makeLegend(thisMap, attr);
+						var legend=makeLegend(thisMap, attr);
+						AlertService.consoleLog("getMakeLegend(): legend: " + JSON.stringify(legend, null, 1));
+                        return legend;
                     },
 					doRenderSwatch: function (
 						bOnOpen /* Called on modal open */, 
@@ -622,7 +668,48 @@ angular.module("RIF")
 							ColorBrewerService);
 					},
                     resetState: function (map) {
+						if (map == undefined) {
+							throw new Error("Unable to reesetState, map is undefined");
+						}	
                         maps[map] = new symbology(map, choroScaleMethod);
-                    }
+                    },
+					setType: function (map, studyType) {				
+						var validColumnList=ViewerStateService.getValidColumnList(map, studyType);
+					
+						if (studyType == "Risk Analysis") {
+							maps['diseasemap1'] = maps['viewermap'];
+							maps['diseasemap2'] = maps['viewermap'];
+						}
+						
+						if (parameters && parameters.userMethods) { // Add userMethods
+
+							classificationsList=angular.copy(defaultClassificationsList);				
+							for (var userMethodName in parameters.userMethods) {
+								var userMethod=parameters.userMethods[userMethodName];
+								if (ViewerStateService.getValidColumn(validColumnList, studyType, userMethodName.feature)) {	
+									AlertService.consoleLog("classificationsList[" + JSON.stringify(userMethod) + "] for map: " + map + 
+										"; studyType: " + studyType +
+										"; add for validated feature: " + userMethodName.feature + "; " + userMethod.description);				
+									classificationsList.push({
+											id: userMethodName,
+											label: userMethod.description
+										});
+								}
+								else if (userMethodName.feature == undefined && checkuserMethods(map, studyType, userMethodName)) {
+									AlertService.consoleLog("classificationsList[" + userMethodName + "] for map: " + map + 
+										"; studyType: " + studyType +
+										"; add for undefined feature: " + JSON.stringify(userMethod));							
+									classificationsList.push({
+											id: userMethodName,
+											label: userMethod.description
+										});
+								}
+							}
+//							AlertService.consoleLog("New classificationsList for map: " + map + 
+//								"; studyType: " + studyType +
+//								"; list: " + JSON.stringify(classificationsList, null, 2));
+						
+						}
+					}
                 };
             }]);

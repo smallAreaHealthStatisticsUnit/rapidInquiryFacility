@@ -52,7 +52,10 @@ angular.module("RIF")
                     });
                 };
             }])
-        .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, SubmissionStateService, user, ModelService) {
+        .controller('ModalRunInstanceCtrl', ['$scope', '$uibModalInstance', 'SubmissionStateService', 'user', 'ModelService', 
+					'SubmissionStateService', 'StudyAreaStateService', 'SelectStateService', 
+				function ($scope, $uibModalInstance, SubmissionStateService, user, ModelService,
+					SubmissionStateService, StudyAreaStateService, SelectStateService) {
             $scope.input = {};
             $scope.input.studyDescription = SubmissionStateService.getState().studyDescription;
             $scope.input.projectName = SubmissionStateService.getState().projectName;
@@ -105,6 +108,24 @@ angular.module("RIF")
                     $scope.showError("Study name [" + SubmissionStateService.getState().studyName + " is too long (20 char max)");
                     return;
                 }
+				
+				// Check study types
+				if (SubmissionStateService.getState().studyType != StudyAreaStateService.getState().type) {
+					$scope.consoleDebug("[rifc-dsub-runstudy.js]Study type mismatch: " +
+						"; SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType + " != " +
+						"; StudyAreaStateService.getState().type: " + StudyAreaStateService.getState().type);
+					$scope.showError("Study type mismatch");
+				}
+				else {
+					if ((SelectStateService.getState().studyType == "disease_mapping_study" &&
+						 SubmissionStateService.getState().studyType == "Disease Mapping") ||
+					    (SelectStateService.getState().studyType == "risk_analysis_study" &&
+					  	 SubmissionStateService.getState().studyType == "Risk Analysis")) {
+					 }
+					 else {
+						$scope.showError("Study selection type mismatch");
+					 }
+				}
 
                 //TODO: error if year params not set (if loaded from file)
 
@@ -121,4 +142,4 @@ angular.module("RIF")
                 SubmissionStateService.getState().projectName = $scope.input.projectName;
                 SubmissionStateService.getState().studyDescription = $scope.input.studyDescription;
             };
-        });
+        }]);

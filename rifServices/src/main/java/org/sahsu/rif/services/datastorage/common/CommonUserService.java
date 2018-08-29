@@ -962,7 +962,325 @@ public class CommonUserService implements UserService {
 
 			return result;	
 		}
-	
+
+	@Override
+	public String getMapBackground(
+			final User _user,
+			final Geography _geography)
+					throws RIFServiceException{
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			Geography geography
+				= Geography.createCopy(_geography);
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getMapBackground",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getMapBackground",
+					"geography",
+					geography);			
+				
+				//Check for security violations
+				validateUser(user);
+				geography.checkSecurityViolations();
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.getMapBackground",
+						user.getUserID(),
+						user.getIPAddress(),
+						geography.getDisplayName());
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getMapBackground(
+						connection,
+						geography);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getMapBackground",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}	
+					
+	@Override
+	public String getSelectState(
+			final User _user,
+			final String studyID)
+					throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getSelectState",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getSelectState",
+					"studyID",
+					studyID);
+				
+				//Check for security violations
+				validateUser(user);
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getSelectState", 
+					"studyID", 
+					studyID);		
+				
+				//Check for security violations
+				validateUser(user);
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.getSelectState",
+						user.getUserID(),
+						user.getIPAddress(),
+						studyID);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getSelectState(
+						connection,
+						studyID);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getSelectState",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}	
+					
+	@Override
+	public String getPrintState(
+			final User _user,
+			final String studyID)
+					throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getPrintState",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getPrintState",
+					"studyID",
+					studyID);
+				
+				//Check for security violations
+				validateUser(user);
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getPrintState", 
+					"studyID", 
+					studyID);		
+				
+				//Check for security violations
+				validateUser(user);
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.getPrintState",
+						user.getUserID(),
+						user.getIPAddress(),
+						studyID);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getPrintState(
+						connection,
+						studyID);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getPrintState",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}	
+					
+	@Override
+	public String setPrintState(
+			final User _user,
+			final String studyID,
+			final String printStateText)
+					throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"setPrintState",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"setPrintState",
+					"studyID",
+					studyID);
+				
+				//Check for security violations
+				validateUser(user);
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"setPrintState", 
+					"studyID", 
+					studyID);		
+				
+				//Check for security violations
+				validateUser(user);
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.setPrintState",
+						user.getUserID(),
+						user.getIPAddress(),
+						studyID);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.setPrintState(
+						connection,
+						studyID,
+						printStateText);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"setPrintState",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}
+					
 	@Override
 	public String getPostalCodeCapabilities(
 			final User _user,

@@ -112,7 +112,7 @@ public class RIFMaps {
 	private double coordinateDisplayFontSize=80.0;
 	
 	public RIFMaps(final RIFServiceStartupOptions rifServiceStartupOptions,
-			final SQLManager manager) {
+			final SQLManager manager, final CachedRowSetImpl rif40Studies) {
 		
 		this.manager = manager;
 		rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
@@ -141,7 +141,7 @@ public class RIFMaps {
 				rifLogger.info(this.getClass(), "Grids disabled: " + gridColor.toString() + "; background: " +
 					gridBackgroundColor.toString());
 			}
-			this.rifMapsParameters = new RIFMapsParameters();
+			this.rifMapsParameters = new RIFMapsParameters(manager, rif40Studies);
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 

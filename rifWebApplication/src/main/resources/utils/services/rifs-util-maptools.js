@@ -39,8 +39,8 @@
  * Icons are defined in: ..\..\css\rifx-css-leaflet.css
  */
 angular.module("RIF")
-        .factory('mapTools',
-                function ($compile) {
+        .factory('mapTools', ['$compile', 'AlertService',
+                function ($compile, AlertService) {
                     var selectionMapTools = [
                         '<button ng-controller="BaseMapModalCtrl" ng-click="open(\'areamap\')" type="button" class="btn btn-basemap" title="Base map"></button>',
                         '<button type="button" class="btn btn-selectAll" title="Select all" ng-click="selectAll()"></button>',
@@ -67,7 +67,11 @@ angular.module("RIF")
                         '<button type="button" class="btn btn-zoomExtent" title="Zoom to full extent" zoom-extent mapid=\'XMAPX\'></button>',
                         '<button type="button" class="btn btn-zoomStudy" title="Zoom to study extent" zoom-study mapid=\'XMAPX\'></button>',
                         '<button type="button" class="btn btn-zoomSelected" title="Zoom to selection" zoom-selection-single mapid=\'XMAPX\'></button>',
-                        '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid=\'map.XMAPX\'></button>'
+                        '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid=\'map.XMAPX\'></button>',
+                        '<div ng-switch on=bShowHideSelectionShapes[\'XMAPX\']>' +
+							'<button type="button" class="btn btn-shapes" title="Show selction shapes" id="showHideSelectionShapesTrue" ng-click="showShapes(\'XMAPX\')" ng-switch-when="true"></button>' +
+							'<button type="button" class="btn btn-shapes" title="Hide selction shapes" id="showHideSelectionShapesFalse" ng-click="showShapes(\'XMAPX\')" ng-switch-when="false"></button>' +
+						'</div>'
                     ];
 
                     var extraMapTools = [
@@ -96,7 +100,7 @@ angular.module("RIF")
                     function basicTools(scope, map) {
                         var tmp = [];
                         for (var i = 0; i < basicMapTools.length; i++) {
-                            var html = basicMapTools[i].replace("XMAPX", map);
+                            var html = basicMapTools[i].replace(/XMAPX/g, map);
                             if (i === 5 && map === "viewermap") {
                                 html = html.replace("single", "multiple");
                             }
@@ -135,6 +139,9 @@ angular.module("RIF")
                             onAdd: function () {
                                 var linkFunction = $compile(angular.element(html));
                                 var container = linkFunction(scope)[0];
+								if (linkFunction == undefined || container == undefined) {	
+									AlertService.consoleError("[rifs-util-maptools.js] unable to compile: " + html);
+								}
                                 return container;
                             }
                         });
@@ -163,4 +170,4 @@ angular.module("RIF")
                             return zoomToStudyTool(scope);
                         }
                     };
-                });
+                }]);

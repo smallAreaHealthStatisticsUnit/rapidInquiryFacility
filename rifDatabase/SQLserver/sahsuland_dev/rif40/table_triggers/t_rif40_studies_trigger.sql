@@ -150,29 +150,27 @@ BEGIN
 		and a.authorised_on=b.authorised_on
 		and a.authorised_notes=b.authorised_notes
 		and a.audsid=b.audsid
+		and a.print_state=b.print_state
+		and a.select_state=b.select_state
 		FOR XML PATH(''));
 	
 	DECLARE @is_ig_update VARCHAR(MAX) = ( 
 		SELECT a.study_id
 		FROM inserted a, deleted b
 		where a.study_id=b.study_id
-		and a.geography=b.geography
-		and a.project=b.project
-		and a.study_name=b.study_name
-		and a.extract_table=b.extract_table
-		and a.map_table=b.map_table
-		and a.study_date=b.study_date
-		and a.study_type=b.study_type
-		and a.comparison_geolevel_name=b.comparison_geolevel_name
-		and a.study_geolevel_name=b.study_geolevel_name
-		and a.denom_tab=b.denom_tab
-		and a.suppression_value=b.suppression_value
-		and a.audsid=b.audsid
-		and (a.extract_permitted!=b.extract_permitted
-		or a.transfer_permitted!=b.transfer_permitted
-		or a.authorised_by!=b.authorised_by
-		or a.authorised_on!=b.authorised_on
-		or a.authorised_notes!=b.authorised_notes)
+		and (COALESCE(a.extract_permitted, '')  != COALESCE(b.extract_permitted, '')
+		or   COALESCE(a.transfer_permitted, '') != COALESCE(b.transfer_permitted, '')
+		or   COALESCE(a.authorised_by, '')      != COALESCE(b.authorised_by, '')
+		or   COALESCE(a.authorised_on, '')      != COALESCE(b.authorised_on, '')
+		or   COALESCE(a.authorised_notes, '')   != COALESCE(b.authorised_notes, ''))
+		FOR XML PATH(''));	
+		
+	DECLARE @is_printselectstate VARCHAR(MAX) = ( 
+		SELECT a.study_id, b.print_state, b.select_state
+		FROM inserted a, deleted b
+		where a.study_id=b.study_id
+		and (COALESCE(a.print_state, '')  != COALESCE(b.print_state, '')
+		or   COALESCE(a.select_state, '') != COALESCE(b.select_state, ''))
 		FOR XML PATH(''));
 
 	IF @is_state_change IS NOT NULL AND @is_ig_update IS NOT NULL 
@@ -211,6 +209,11 @@ BEGIN
 			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'UPDATE state changes allowed on T_RIF40_STUDIES by user';
 	END;
 	
+	IF @is_printselectstate IS NOT NULL
+	BEGIN
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'UPDATE print/select state changes allowed on T_RIF40_STUDIES by user';
+	END;
+	
 	IF @is_ig_update IS NOT NULL
 	BEGIN
 		--only rif_manager can make IG changes
@@ -237,7 +240,9 @@ BEGIN
 		END
 	END
 	
-	IF @is_state_change IS NULL AND @is_ig_update IS NULL
+	-- This is trouble as is causes: Table name: [rif40].[t_rif40_studies] , UPDATE failed - non IG UPDATE not allowed on T_RIF40_STUDIES by user: (peter)
+	-- if you do not change the record. This may need changing in future
+	IF @is_state_change IS NULL AND @is_ig_update IS NULL AND @is_printselectstate IS NULL
 	BEGIN TRY
 
 		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @state_change;
