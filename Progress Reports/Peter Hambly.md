@@ -2870,3 +2870,16 @@ SELECT a.*, b.coa2011
   * Add support for risk analysis in map export #61;
   * Cannot view error messages that disappear #59;
   * studyType mismatch for map: viewermap; study ID: ... #62;
+  
+Also:
+
+* ICD9 support;
+* Manuals;
+* Print state support;
+* rif40_homeogeneity support
+* Sort (ex disease) map info boxen;
+* Hover support with shapes. I experimented with mouse click through but was unable to get to work without adverse performance implications:
+  * TopoJSON grid layer blocks mouse clicks unless it is the in view pane;
+  * Using the mouse position to find the nearest TopoJSON grid layer does work, but you only get one mouse event per layer boundary cross. 
+    Would need to modify the map shape pane to transmit more events, this has performance implications;
+* Fix IE logging **AGAIN**. IE works, but only with a browser window - suspect proj4 library;
