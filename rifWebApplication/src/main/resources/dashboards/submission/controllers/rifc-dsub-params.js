@@ -220,8 +220,13 @@ angular.module("RIF")
                     $scope.years.length = 0;
 
                     if (thisGeography !== "") {
-                        user.getAgeGroups(user.currentUser, thisGeography, thisNumerator).then(fillHandleAgeGroups, handleParameterError);
-                        user.getYearRange(user.currentUser, thisGeography, thisNumerator).then(fillHandleYears, handleParameterError);
+						if (thisNumerator !== "") {
+							user.getAgeGroups(user.currentUser, thisGeography, thisNumerator).then(fillHandleAgeGroups, handleParameterError);
+							user.getYearRange(user.currentUser, thisGeography, thisNumerator).then(fillHandleYears, handleParameterError);
+						}
+						else {
+							return "Cannot display available age groups and year ranges until you select a valid numerator";
+						}
                     } else {
                         return "Cannot display available age groups and year ranges until you select a valid geography";
                     }
