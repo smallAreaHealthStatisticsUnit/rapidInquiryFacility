@@ -1590,8 +1590,8 @@ angular.module("RIF")
 										"; study: " + JSON.stringify($scope.myService.getState().study[mapID]) +
 										"; select state for map: " + mapID + " studyType: " + $scope.myService.getState().studyType[mapID] +
 										"!=  database: " + $scope.myService.getState().study[mapID].studyType);	
-									$scope.showWarning("studyType mismatch for map: " + mapID + 
-										"; study ID: " + $scope.myService.getState().study[mapID].study_id);	
+//									$scope.showWarning("studyType mismatch for map: " + mapID + 
+//										"; study ID: " + $scope.myService.getState().study[mapID].study_id);	
 								}
 								else {
 									$scope.consoleError("addSelectedShapesCallback() study_type OK for map: " + mapID + 
