@@ -237,6 +237,14 @@ angular.module("RIF")
 									", studyShapes: " + studySelection.studyShapes.length +
 									", comparisonShapes: " + studySelection.comparisonShapes.length);
 					
+							if (newStudyType == undefined) {
+								throw new EnewStudyTyperror("rifs-dsub-selectstate.js(): newStudyType is undefined");
+							}
+							else if (newStudySelection.studyType && newStudySelection.studyType != newStudyType) {
+								throw new EnewStudyTyperror("rifs-dsub-selectstate.js(): newStudySelection study type: " + newStudyType +
+									" does not match newStudyType: " + newStudyType);
+							}
+								
 							if (newStudyType === "disease_mapping_study") {		
 								s.studyType=newStudyType;
 							}
@@ -251,6 +259,9 @@ angular.module("RIF")
 							var r;
 							if (s === undefined) {
 								throw new Error("rifs-dsub-selectstate.js(): s is undefined");
+							}
+							else if (s.studyType === undefined) {
+								throw new Error("rifs-dsub-selectstate.js(): s.studyType is undefined");
 							}
 							else if (s.studyType === "disease_mapping_study") {		
 								r=verifyStudySelection2(s.studySelection, "disease_mapping_study");

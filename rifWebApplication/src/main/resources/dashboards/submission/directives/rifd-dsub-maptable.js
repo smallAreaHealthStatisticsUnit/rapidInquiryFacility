@@ -583,13 +583,16 @@ angular.module("RIF")
                                 $scope.areamap.band = 6;
 								
 								SelectStateService.initialiseRiskAnalysis();
+								SelectStateService.getState().studyType="risk_analysis_study";
                             } else {
                                 $scope.possibleBands = [1];
                                 $scope.currentBand = 1;
                                 $scope.areamap.band = 1;
 								
 								SelectStateService.resetState();
+								SelectStateService.getState().studyType="disease_mapping_study";
                             }
+							SelectStateService.verifyStudySelection();
 						};
 
                         /*
