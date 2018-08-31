@@ -1347,7 +1347,7 @@ This setup will support:
 
 ## 4.3 Setup R
 
-**Note:** Much of the information below is specific to setting up on Windows. You can get information on setting up on a Mac -- which will also be helpful for setting up on other Unixes -- [here](../R_setup_on_Mac).
+**Note:** Much of the information below is specific to setting up on Windows. You can get information on setting up on a Mac -- which will also be helpful for setting up on other Unixes -- [here](/rifWebApplication/R_setup_on_Mac).
 
 ### 4.3.1 R and Printing Output Directories
 
@@ -2178,7 +2178,7 @@ instructions if it is updated say to *RIF41*.
 * Restore *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* if you have modified it;
 * When you are satisfied with the patch remove the RIF40.old directory in *%CATALINA_HOME%\webapps*.
 
-The RIF web application may require you to patch the database. You will get messages on logon such as 
+The RIF web application may require you to patch the database. You will get messages on logon such as
 **alter_10.sql (post 3rd August 2018 changes for risk analysis) not run** to tell you to run the alter scripts.
 
 See the database Management manual: [6 Patching](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual.html#6-patching)
