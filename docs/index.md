@@ -1,36 +1,11 @@
 Welcome to the Rapid Inquiry Facility Documentation Site
 ========================================
-# Contents
+{:.no_toc}
 
-- [1. What is the RIF?](#1-what-is-the-rif)
-  - [1.1 Study Aims](#11-study-aims)
-  - [1.2 References](#12-references)
-- [2. What does the RIF do?](#2-what-does-the-rif-do)
-  - [2.1 Screen Shots](#21-screen-shots)
-    - [2.1.1 Screenshot of the old RIF 3.x](#211-screenshot-of-the-old-rif-3x)
-    - [2.1.2 Screenshots of the new RIF 4.0](#212-screenshots-of-the-new-rif-40)
-- [3. Who has authored the RIF?](#3-authors)
-- [4. Who funds the development?](#4-funders)
-  - [4.1 Funders](#4-funders)
-  - [4.2 Other Contributors](#4-other-contributors)
-- [5. What are the licensing terms?](#5-licensing)
-- [6. How do you build and install the RIF?](#6-build-and-install)
-  - [6.1 Postgres](#61-postgres)
-    - [6.1.1 Building the RIF Postgres Database](#611-building-the-rif-postgres-database)
-    - [6.1.2 Installing the RIF Postgres Database](#612-installing-the-rif-postgres-database)
-  - [6.2 Microsoft SQL Server](#62-microsoft-sql-server)
-    - [6.2.1 Building the RIF SQL Server Database](#621-building-the-rif-sql-server-database)
-    - [6.2.2 Installing the RIF SQL Server Database](#622-installing-the-rif-sql-server-database)
-  - [6.3 Web Services](#63-web-services)
-    - [6.3.1 Taxonomy Services](#631-taxonomy-services)
-  - [6.4 Data Loading](#64-data-loading)
-    - [6.4.1 Manual Data Loading](#641-manual-data-loading)
-    - [6.4.2 Using the Data Loading Tool](#642-using-the-data-Loading-tool)
-- [7. Are there manuals available?](#7-manuals)
-- [8. Are there resources for developers?](#8-for-developers)
-- [9. What is left TODO?](#9-todo-list)
+1. Contents
+{:toc}
 
-# 1. What is the RIF?
+# What is the RIF?
 
 The Rapid Inquiry Facility (RIF) is a freely available software application that supports two types of environmental health activities:
 disease mapping studies and risk analysis studies. It facilitates interrogation of databases containing geographical, health, population
@@ -40,7 +15,7 @@ epidemiologists and public health researchers to rapidly investigate potential e
 industrial sites. The tool uses health, environmental, socio-economic, population and geographic data to calculate risks in relation
 to sources of exposure and to generate maps.
 
-## 1.1 Study Aims
+## Study Aims
 
 Disease mapping studies are used to visualise mortality or morbidity rates and risks across an area.  They are used to explore spatial
 patterns of health outcomes; identify potential issues regarding data quality by geographical area; and identify areas which need
@@ -55,7 +30,7 @@ The software application was originally developed in the late 1990s by SAHSU sta
 (version 3.x) an embedded plug-in for ArcGIS 9.x has been employed by many institution and public health practitioners around the world
 to both automatically generate disease maps and asses disease risk in proximity to known source of pollution.
 
-## 1.2 References
+## References
 
 * P Aylin, R Maheswaran, J Wakefield, S Cockings, L Jarup, R Arnold, G Wheeler, P Elliott.
   A national facility for small area disease mapping and rapid initial assessment of apparent disease clusters around a point source:
@@ -75,7 +50,7 @@ to both automatically generate disease maps and asses disease risk in proximity 
   Evaluation of Spatial Relationships between Health and the Environment: The Rapid Inquiry Facility.
   Environ Health Perspect 2010;118:1306-1312.
 
-# 2. What does the RIF do?
+# What does the RIF do?
 
 The RIF automatically generates contextual maps showing the area under study. A report is generated summarising the study details, and
 reporting the crude and adjusted rates and risks for each health outcome investigated. Graphs comparing the age, gender and
@@ -89,15 +64,15 @@ Demonstrations of the current RIF are available. These are large Windows Media V
 
 [Old V3 RIF Disease mapping example video LINK BROKEN - FIX](http://www.sahsu.org/Disease%20Mapping%20Demo.zip)
 
-## 2.1. Screen Shots
+## Screen Shots
 
-### 2.1.1 Screenshot of the old RIF 3.x
+### Screenshot of the old RIF 3.x
 
 The old RIF was an embedded plug-in for ArcGIS 9 and used Oracle or access as a database backend. It was written in VBA
 
 ![RIF 3.0 screenshot](http://www.sahsu.org/sites/impc_sahsu/files/rif%203%20screenshot.png)
 
-### 2.1.2 Screenshots of the new RIF 4.0
+### Screenshots of the new RIF 4.0
 
 The Rapid Inquiry Facility (RIF) is a freely available software application that supports two types of environmental health activities:
 disease mapping studies and risk analysis studies.
@@ -156,7 +131,7 @@ Finally, the user can export the study data for further analysis and inclusion i
 
 ![RIF 4.0 data export](/Screenshots/RIF_export.png)
 
-# 3. Authors
+# Authors
 
 The RIF was developed by the [The Small Area Health Statistics Unit](http://www.sahsu.org/) at
 [Imperial College London](http://www.imperial.ac.uk/). SAHSU is part of the
@@ -200,7 +175,7 @@ Data on populations and socio-economic status (SES) are also held for small area
 areas: 34,000 and census output areas: 175,000) from the 1981, 1991 and 2001 censuses. Maintenance and updating of the databases
 (on health, population, SES and selected environmental data) is conducted by the SAHSU database manager and supporting staff.
 
-# 4. Funders
+# Funders
 
 The software application was originally developed in the late 1990s by SAHSU staff.  The RIF was further developed as part of the
 [EUROHEIS and EUROHEIS2](http://www.euroheis.org/) projects, funded by the European Commission’s Directorate for General Health and
@@ -216,28 +191,28 @@ The RIF also received funding from:
 * The [National Institute for Health Research](https://www.nihr.ac.uk/) which funds a Health Protection Research Unit into
   [Health Impact of Environmental Hazards](http://hieh.hpru.nihr.ac.uk/our-research/research-themes/theme-1-project-3-cluster-guidelinesrapid-inquiry-facility/)
 
-## 4.1 Collaborators
+## Collaborators
 
 * The [US Centers for Disease Control and Prevention (CDC)](https://www.cdc.gov/)
 * The [National Institute for Health Research](https://www.nihr.ac.uk/)
 
-## 4.2 Other Contributors
+## Other Contributors
 
 * The [European Commission](https://ec.europa.eu/commission/index_en/) has supported previous RIF versions
 * [Public Health England (PHE)](https://www.gov.uk/government/organisations/public-health-england/) is the principal funder of SAHSU.
 
-## 5. Licensing
+# Licensing
 
-The RIF is licensed by the [GNU LESSER GENERAL PUBLIC LICENSE](https://www.gnu.org/licenses/lgpl-3.0.en.html) and is freely available
+The RIF is licensed under the [GNU LESSER GENERAL PUBLIC LICENSE](https://www.gnu.org/licenses/lgpl-3.0.en.html) and is freely available
 from the [RIF GitHub](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/) repository.
 
-# 6. Build and Install
+# Build and Install
 
-## 6.1 Postgres
+## Postgres
 
 This section is a series of links to howto guides on the Postgres databas
 
-### 6.1.1 Building the RIF Postgres database
+### Building the RIF Postgres database
 
 Port specific install notes:
 
@@ -250,43 +225,43 @@ Detailed build instructions for Postgres:
 
   * [Building the RIF Postgres database from github](/rifDatabase/Postgres/docs/BUILD.md)
 
-### 6.1.2 Installing the RIF Postgres Database
+### Installing the RIF Postgres Database
 
 See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/production/windows_install_from_pg_dump)
 
-### 6.1.3 Extra Configuration
+### Extra Configuration
 
 You need to set some [configuration parameters](Extra_Postgres_config) for Postgres.
 
-## 6.2 Microsoft SQL Server
+## Microsoft SQL Server
 
-### 6.2.1 Building the RIF SQL Server Database
+### Building the RIF SQL Server Database
 
 See: [Building the RIF SQL Server database from github](/rifDatabase/SQLserver/installation/README.md)
 
-### 6.2.2 Installing the RIF SQL Server Database
+### Installing the RIF SQL Server Database
 
 See: [Installing the RIF SQL Server database from a SAHSU supplied database export](/rifDatabase/SQLserver/production/INSTALL.md)
 
-## 6.3 Web Services
+## Web Services
 
 See: [Building RIF web services from github and installing securely in Tomcat](/rifWebApplication/Readme.md)
 
-### 6.3.1 Taxonomy Services
+### Taxonomy Services
 
 See: [RIF Taxonomy Services](/Taxonomy-Services)
 
-## 6.4 Data Loading
+## Data Loading
 
-### 6.4.1 Manual Data Loading
+### Manual Data Loading
 
 See: [Manual data loading](/rifDatabase/DataLoaderData/DataLoading.md)
 
-### 6.4.2 Using the Data Loading Tool
+### Using the Data Loading Tool
 
 See: [RIF Data Loader Manual](/Documentation/RIF%20Data%20Loader%20Manual.pdf)
 
-# 7. Manuals
+# Manuals
 
 Currently there are eight manuals:
 
@@ -299,7 +274,7 @@ Currently there are eight manuals:
 - [Tile maker Manual](/rifNodeServices/tileMaker.md)
 - [Database Management Manual](/rifDatabase/databaseManagementManual.md)
 
-# 8. For Developers
+# For Developers
 
 ## RIF Architecture
 
@@ -322,6 +297,6 @@ This section is a series of links to developer documentation
 * [RIF Front End Description](/RIF-front-end-description)
 * [Creating a new restful web service](/Creating-a-new-restful-web-service)
 
-# 9. TODO list
+# TODO list
 
 * [To Do List](/TODO)
