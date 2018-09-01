@@ -22,27 +22,27 @@ Creating a new restful web service
 - [3. Front End Steps](#3-front-end-steps)
   - [3.1 Add to backend requests](#31-add-to-backend-requests)
   - [3.2 Add to controller](#32-add-to-controller)
-- [4. Example log of error from restful services, including stacks](#4-example-log-of-error-from-restful-services-including-stacks)  
+- [4. Example log of error from restful services, including stacks](#4-example-log-of-error-from-restful-services-including-stacks)
 
 Peter Hambly
 16th October 2017
 
 # 1. Define the web service
 
-The object of this document is to detail how to add a restful web service to the RIF. The RIF is structured with an HTML5/Javascript 
-front end, using [Angular.js](https://angularjs.org/) and [Leaflet](http://leafletjs.com/). Middleware is implemented using 
-Restfull web services written in [Java](https://www.java.com/en/) and running in [Apache Tomcat](http://tomcat.apache.org/). All data is stored in a 
+The object of this document is to detail how to add a restful web service to the RIF. The RIF is structured with an HTML5/Javascript
+front end, using [Angular.js](https://angularjs.org/) and [Leaflet](http://leafletjs.com/). Middleware is implemented using
+Restfull web services written in [Java](https://www.java.com/en/) and running in [Apache Tomcat](http://tomcat.apache.org/). All data is stored in a
 GeoSptial database, with a choice of [MicroSoft SQL Server](https://www.microsoft.com/en-us/sql-server/default.aspx) or [Postgres](https://www.postgresql.org/).
 
-![RIF Architecture](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/RIF_architecture.png)
+![RIF Architecture](/development/RIF_architecture.png)
 
-The web services are thus the key interface in the software, and this document details who to create one. The example code is 
+The web services are thus the key interface in the software, and this document details who to create one. The example code is
 principally focused on the Middleware, with the interfacing with the front end and the database detailed.
 
 This markdown document details the steps needed to create the latest Restful web service: *getExtractStatus*.
 
-It should be noted that RIF web services come in Microsoft SQL Server and Postgres variants. The code in the data storage layer is separated 
-into separate *ms* and *pg* path components with no common code. This causes substantial code duplication and will be rectified by 
+It should be noted that RIF web services come in Microsoft SQL Server and Postgres variants. The code in the data storage layer is separated
+into separate *ms* and *pg* path components with no common code. This causes substantial code duplication and will be rectified by
 the new Java Developer currently being hired (October 2017). These links will only work in a RIF browser session!
 
 * http://localhost:8080/rifServices/studySubmission/pg/getExtractStatus?userID=peter&studyID=51
@@ -52,17 +52,17 @@ This returns the reposnse: ```STUDY_EXTRACTABLE_NEEDS_ZIPPING```.
 
 ## 1.1 GetExtractStatus Definition
 
-Get textual extract status of a study.                          
-  
-This function determines whether a study can be extracted from the database and the results returned to the user in a ZIP file. 
+Get textual extract status of a study.
 
-It is intended that during 2018 this function be enhanced to support the information governance requirements that should an organisation wish, the 
+This function determines whether a study can be extracted from the database and the results returned to the user in a ZIP file.
+
+It is intended that during 2018 this function be enhanced to support the information governance requirements that should an organisation wish, the
 (to be created) Informartion Governance tool will control none, one or both of:
 
 * Data extraction from the database to perform the study;
 * Data delivery to the user (in the form of a ZIP file);
 
-The middleware export functionality will shortly be modified to use numbered directories (1-100 etc) to reduce the number of files/directories per 
+The middleware export functionality will shortly be modified to use numbered directories (1-100 etc) to reduce the number of files/directories per
 directory to 100. This is to improve filesystem performance on Windows Tomcat servers. This will result in the code changing from this example.
 
 The *GetExtractStatus* web service returns the following textual strings:
@@ -78,44 +78,44 @@ The *GetExtractStatus* web service returns the following textual strings:
   * G: Extract failure, extract, results or maps not created;
   * F: R failure, R has caught one or more exceptions [depends on the exception handler];
 
-* STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success; 
+* STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success;
   when the ZIP extrsct file has not yet been created;
 
-* STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu code/meaning of: S: R success; 
+* STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu code/meaning of: S: R success;
   when the ZIP extrsct file has been created;
 
 * STUDY_NOT_FOUND: returned where the studyID was not found in rif40_studies.
-	
+
 ## 1.2 GetExtractStatus Usage
 
 The *GetExtractStatus* web service is used by the export dashboard in the front end and on is one of three export related middleware calls:
- 
+
 * *createStudyExtract*: This creates the ZIP file if the study completed without error;
 * *getStudyExtract*: This fetches the ZIP file for the user (i.e. is a download link).
 
 The purpose of the *GetExtractStatus* web service is to manage what the download button does. The *export" button can:
 
-* Do nothing: the download button is disabled; either the study has not yet compoleted, did not complete correctly or in future is not yet permitted by 
-  Information Governance. Currently studies where the study has not yet compoleted or did not complete correctly are not displayed on the export 
+* Do nothing: the download button is disabled; either the study has not yet compoleted, did not complete correctly or in future is not yet permitted by
+  Information Governance. Currently studies where the study has not yet compoleted or did not complete correctly are not displayed on the export
   dashboard;
 * Export a study: This gets the muddleware to create the zipfile;
-* Download a study: This permits the user the download the newly created zip file. 
+* Download a study: This permits the user the download the newly created zip file.
 
-Currently the user has to push the export button at least twice; 
+Currently the user has to push the export button at least twice;
 firstly to create the extract and then again one or more time every time the extract is downloaded. I.e. the study export omnly needs to be created
-once! As exporting a large study may take some minutes it was decided not the "click" the completed download link for the user as the user may have 
+once! As exporting a large study may take some minutes it was decided not the "click" the completed download link for the user as the user may have
 moved onto other tasks.
 
-Two screenshots of the process are shown below. Firstly, after an export has been requested, including showing the effect of clicking the 
+Two screenshots of the process are shown below. Firstly, after an export has been requested, including showing the effect of clicking the
 download link:
 
-![RIF Export](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/RIF_export.png)
+![RIF Export](/development/RIF_export.png)
 
 And secondly, after the download the file is available for fresh download:
 
-![RIF Export](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/RIF_export2.png)
+![RIF Export](/development/RIF_export2.png)
 
-If the export is then saved to disk and unzipped, the R phase of the study can be re-run. This proves the validity of the extract and 
+If the export is then saved to disk and unzipped, the R phase of the study can be re-run. This proves the validity of the extract and
 gives the investigator the basis of future analysis. The export will be enhanced to add maps over the winter of 2017:
 
 ```
@@ -211,26 +211,26 @@ errorTrace: 1048
 R script ran OK
 Adj_Cov_Smooth_csv.R procedure OK for study: 53; investigation: 53
 ```
-	
+
 ## 1.3 GetExtractStatus Parameters
 
 Tne web service has the following parameters:
 
 * userID: Database username of logged on user.
 * studyID: Integer study identifier (database study_id field).
-	
+
 ## 1.4 GetExtractStatus Return Data
 
 The GetExtractStatus web service returns the textual extract status, e.g. ```STUDY_EXTRABLE_ZIPPID``` or a JSON error:
 ```
 [{"errorMessages":["Record \"Study\" with value \"535\" not found in the database."]}]
 ```
-	 
+
 # 2. Middleware Steps
-	 
+
 The middleware consists of five class in three distinct layers:
 
-* Restful Web Services: 
+* Restful Web Services:
   * PG/MSSQLRIFStudySubmissionWebServiceResource class
   * PG/MSSQLAbstractRIFWebServiceResource class
 * Common Business Concept Layer:
@@ -250,7 +250,7 @@ In most cases, as in this example, this extends the *PG/MSSQLAbstractRIFWebServi
 
 ```
 @GET
-@Produces({"application/json"})	
+@Produces({"application/json"})
 @Path("/getExtractStatus")
 public Response getExtractStatus(
 	@Context HttpServletRequest servletRequest,
@@ -258,8 +258,8 @@ public Response getExtractStatus(
 	@QueryParam("studyID") String studyID) {
 
 	return super.getExtractStatus(
-		servletRequest, 
-		userID, 
+		servletRequest,
+		userID,
 		studyID);
 }
 ```
@@ -276,9 +276,9 @@ This class hierarchy probably cannot be de-duplicated, but it does allow webserv
 protected Response getExtractStatus(
 		final HttpServletRequest servletRequest,
 		final String userID,
-		final String studyID) { 
-	
-		
+		final String studyID) {
+
+
 	String result = null;
 
 	try {
@@ -288,21 +288,21 @@ protected Response getExtractStatus(
 		= getRIFStudySubmissionService();
 
 		result=studySubmissionService.getExtractStatus(
-				user, 
+				user,
 				studyID);
 	}
 	catch(RIFServiceException rifServiceException) {
-		rifLogger.error(this.getClass(), 
+		rifLogger.error(this.getClass(),
 			"MSSQLAbstractRIFWebServiceResource.getExtractStatus error", rifServiceException);
-		result 
+		result
 		= serialiseException(
 				servletRequest,
-				rifServiceException);			
+				rifServiceException);
 	}
 
 	return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
-			result);		
+			result);
 }
 ```
 
@@ -339,9 +339,9 @@ This function is principally to set up the web service and the call the worker f
 
 ```
 /**
- * Get textual extract status of a study.                          
- * <p>   
- * This fucntion determines whether a study can be extracted from the database and the results returned to the user in a ZIP file 
+ * Get textual extract status of a study.
+ * <p>
+ * This fucntion determines whether a study can be extracted from the database and the results returned to the user in a ZIP file
  * </p>
  * <p>
  * Returns the following textual strings:
@@ -350,19 +350,19 @@ This function is principally to set up the web service and the call the worker f
  *     <ul>
  *	     <li>C: created, not verified;</li>
  *	     <li>V: verified, but no other work done; [NOT USED BY MIDDLEWARE]</li>
- *	     <li>E: extracted imported or created, but no results or maps created;</li> 
+ *	     <li>E: extracted imported or created, but no results or maps created;</li>
  *	     <li>R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design]</li>
  *	     <li>W: R warning. [NOT USED BY MIDDLEWARE]</li>
  *     <ul>
  *   </li>
  *   <li>STUDY_FAILED_NOT_ZIPPABLE: returned for the following rif40_studies.study_state codes/meanings:
- *	     <li>G: Extract failure, extract, results or maps not created;</li> 
- *	     <li>F: R failure, R has caught one or more exceptions [depends on the exception handler]</li> 
+ *	     <li>G: Extract failure, extract, results or maps not created;</li>
+ *	     <li>F: R failure, R has caught one or more exceptions [depends on the exception handler]</li>
  *   </li>
- *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success; 
+ *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success;
  *       when the ZIP extrsct file has not yet been created
  *   </il>
- *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+ *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu  code/meaning of: S: R success;
  *       when the ZIP extrsct file has been created
  *   </il>
  * </il>
@@ -374,23 +374,23 @@ This function is principally to set up the web service and the call the worker f
  * @param  _user 		Database username of logged on user.
  * @param  studyID 		Integer study identifier (database study_id field).
  *
- * @return 				Textual extract status 
+ * @return 				Textual extract status
  *						NULL on exception or permission denied by sqlConnectionManager
  */
 public String getExtractStatus(
 		final User _user,
-		final String studyID) 
+		final String studyID)
 				throws RIFServiceException {
-					
-					
+
+
 	String result = null;
 	RIFLogger rifLogger = RIFLogger.getLogger();
-	
+
 	//Defensively copy parameters and guard against blocked users
 	User user = User.createCopy(_user);
 	PGSQLConnectionManager sqlConnectionManager
-	= rifServiceResources.getSqlConnectionManager();			
-	
+	= rifServiceResources.getSqlConnectionManager();
+
 	if (sqlConnectionManager.isUserBlocked(user) == true) {
 		return null;
 	}
@@ -408,13 +408,13 @@ public String getExtractStatus(
 		fieldValidationUtility.checkNullMethodParameter(
 				"getExtractStatus",
 				"studyID",
-				studyID);	
+				studyID);
 
 		//Check for security violations
 		validateUser(user);
 		fieldValidationUtility.checkMaliciousMethodParameter(
-				"getExtractStatus", 
-				"studyID", 
+				"getExtractStatus",
+				"studyID",
 				studyID);
 
 		//Audit attempt to do operation
@@ -435,15 +435,15 @@ public String getExtractStatus(
 		= rifServiceResources.getRIFSubmissionManager();
 		RIFStudySubmission rifStudySubmission
 		= sqlRIFSubmissionManager.getRIFStudySubmission(
-				connection, 
-				user, 
+				connection,
+				user,
 				studyID);
 
 		PGSQLStudyExtractManager studyExtractManager
 		= rifServiceResources.getSQLStudyExtractManager();
 		result=studyExtractManager.getExtractStatus(
-				connection, 
-				user, 
+				connection,
+				user,
 				rifStudySubmission,
 				studyID);
 
@@ -453,21 +453,21 @@ public String getExtractStatus(
 		logException(
 				user,
 				"getExtractStatus",
-				rifServiceException);	
+				rifServiceException);
 	}
 	finally {
 		rifLogger.info(getClass(), "get ZIP file extract status: " + result);
 		//Reclaim pooled connection
 		sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
-				connection);			
-	}	
-	
+				user,
+				connection);
+	}
+
 	return result;
-}	
+}
 ```
 
-**In virtually all cases the code is identical.**. 
+**In virtually all cases the code is identical.**.
 
 ## 2.5 Add to the PG/MSSQLStudyExtractManager class
 
@@ -481,12 +481,12 @@ This function does the principal work associated with the web service specificat
   or if the state is **S** sets STUDY_EXTRACTABLE_NEEDS_ZIPPING/STUDY_EXTRABLE_ZIPPID as the return value depending
   on whether the ZIP file needs creating or not;
 * Exceptions are logged and re-thrown as a RIFServiceException
-  
+
 ```
 /**
- * Get textual extract status of a study.                          
- * <p>   
- * This fucntion determines whether a study can be extracted from the database and the results returned to the user in a ZIP file 
+ * Get textual extract status of a study.
+ * <p>
+ * This fucntion determines whether a study can be extracted from the database and the results returned to the user in a ZIP file
  * </p>
  * <p>
  * Returns the following textual strings:
@@ -495,19 +495,19 @@ This function does the principal work associated with the web service specificat
  *     <ul>
  *	     <li>C: created, not verified;</li>
  *	     <li>V: verified, but no other work done; [NOT USED BY MIDDLEWARE]</li>
- *	     <li>E: extracted imported or created, but no results or maps created;</li> 
+ *	     <li>E: extracted imported or created, but no results or maps created;</li>
  *	     <li>R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design]</li>
  *	     <li>W: R warning. [NOT USED BY MIDDLEWARE]</li>
  *     <ul>
  *   </li>
  *   <li>STUDY_FAILED_NOT_ZIPPABLE: returned for the following rif40_studies.study_state codes/meanings:
- *	     <li>G: Extract failure, extract, results or maps not created;</li> 
- *	     <li>F: R failure, R has caught one or more exceptions [depends on the exception handler]</li> 
+ *	     <li>G: Extract failure, extract, results or maps not created;</li>
+ *	     <li>F: R failure, R has caught one or more exceptions [depends on the exception handler]</li>
  *   </li>
- *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success; 
+ *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success;
  *       when the ZIP extrsct file has not yet been created
  *   </il>
- *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_status code/meaning of: S: R success; 
+ *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_status code/meaning of: S: R success;
  *       when the ZIP extrsct file has been created
  *   </il>
  * </il>
@@ -518,8 +518,8 @@ This function does the principal work associated with the web service specificat
  * @param  rifStudySubmission 		RIFStudySubmission object.
  * @param  studyID 		Study_id (as text!).
  *
- * @return 				Textual extract status 
- * 
+ * @return 				Textual extract status
+ *
  * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
  */
  public String getExtractStatus(
@@ -529,23 +529,23 @@ This function does the principal work associated with the web service specificat
 		final String studyID
 		)
 				throws RIFServiceException {
-	
+
 	String result=null;
 	File submissionZipFile = null;
 	String zipFileName="UNKNOWN";
-		
+
 	try {
 		//Establish the phrase that will be used to help name the main zip
 		//file and data files within its directories
-		
+
 		String studyStatus=getRif40StudyState(connection, studyID);
-		
+
 		if (studyStatus == null) { 	// Study ID does not exist. You will not get this
 									// [this is raised as an exception in the calling function: RIFStudySubmission.getRIFStudySubmission()]
 			throw new Exception("STUDY_NOT_FOUND: " + studyID);
 		}
-				
-		if (result != null && studyStatus != null) { 
+
+		if (result != null && studyStatus != null) {
 			switch (studyStatus.charAt(0)) {
 				case 'C':
 				case 'V':
@@ -564,11 +564,11 @@ This function does the principal work associated with the web service specificat
 					throw new Exception("Invalid rif40_studies.study_state: " + studyStatus);
 			}
 		}
-		
+
 		if (result == null) {
-			String baseStudyName 
+			String baseStudyName
 			= createBaseStudyFileName(rifStudySubmission, studyID);
-			
+
 			submissionZipFile = createSubmissionZipFile(
 					user,
 					baseStudyName);
@@ -576,14 +576,14 @@ This function does the principal work associated with the web service specificat
 			if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
 				result="STUDY_EXTRABLE_ZIPPID";
 			}
-			else { // No zip file 
+			else { // No zip file
 				result="STUDY_EXTRACTABLE_NEEDS_ZIPPING";
 			}
 		}
 	}
 	catch(Exception exception) {
 		rifLogger.error(this.getClass(), "PGSQLStudyExtractManager ERROR", exception);
-			
+
 		String errorMessage
 			= RIFServiceMessages.getMessage(
 				"sqlStudyStateManager.error.unableToGetExtractStatus",
@@ -592,11 +592,11 @@ This function does the principal work associated with the web service specificat
 				zipFileName);
 		RIFServiceException rifServiceExeption
 			= new RIFServiceException(
-				RIFServiceError.ZIPFILE_GET_STATUS_FAILED, 
+				RIFServiceError.ZIPFILE_GET_STATUS_FAILED,
 				errorMessage);
 		throw rifServiceExeption;
 	}
-	
+
 	return result;
 }
 
@@ -604,20 +604,20 @@ public String getRif40StudyState(
 		final Connection connection,
 		final String studyID)
 				throws Exception {
-					
+
 	//get study_state
-	SQLGeneralQueryFormatter studyStatusQueryFormatter = new SQLGeneralQueryFormatter();	
+	SQLGeneralQueryFormatter studyStatusQueryFormatter = new SQLGeneralQueryFormatter();
 	studyStatusQueryFormatter.addQueryLine(0, "SELECT a.study_state");
 	studyStatusQueryFormatter.addQueryLine(0, "FROM rif40.rif40_studies a");
 	studyStatusQueryFormatter.addQueryLine(0, "WHERE a.study_id = ?");
-				
+
 	ResultSet studyStatusResultSet = null;
 	String studyStatus = null;
-	
+
 	try {
 		logSQLQuery("getRif40StudyState", studyStatusQueryFormatter, studyID);
 		PreparedStatement studyStatusStatement = createPreparedStatement(connection, studyStatusQueryFormatter);
-		studyStatusStatement.setInt(1, Integer.parseInt(studyID));	
+		studyStatusStatement.setInt(1, Integer.parseInt(studyID));
 		studyStatusResultSet = studyStatusStatement.executeQuery();
 		studyStatusResultSet.next();
 		studyStatus = studyStatusResultSet.getString(1);
@@ -628,17 +628,17 @@ public String getRif40StudyState(
 		throw exception;
 	}
 	return studyStatus;
-}		
+}
 ```
 
-**In some cases the code is identical**. Principally Microsoft SQL Server has no concept on an object search path or **SYNONYM**s so requires 
-the the table name to be prefixed with the schema name. The same code would work on Postgres, but this reduces deployment functionality. 
+**In some cases the code is identical**. Principally Microsoft SQL Server has no concept on an object search path or **SYNONYM**s so requires
+the the table name to be prefixed with the schema name. The same code would work on Postgres, but this reduces deployment functionality.
 
 ## 2.6 Addtional files needing editing
 
 ### 2.6.1 Add audit trail message
 
-Add messaage template for RIFServiceMessages.getMessage() messages to: 
+Add messaage template for RIFServiceMessages.getMessage() messages to:
 
 * rapidInquiryFacility\rifServices\src\main\resources\RIFServiceMessages.properties
 
@@ -650,7 +650,7 @@ sqlStudyStateManager.error.unableToGetExtractStatus=Unable to get extract zipfil
 
 ### 2.6.2 Add the new error code to RIFServiceError enum
 
-Add error code to RIFServiceError enum to: 
+Add error code to RIFServiceError enum to:
 
 * rapidInquiryFacility\rifServices\src\main\java\rifServices\system\RIFServiceError.java
 
@@ -660,7 +660,7 @@ ZIPFILE_GET_STATUS_FAILED,/* Unable to get Zipfile status*/
 
 ### 2.6.3 To add SQL statement debug to AbstractSQLManager properties file
 
-Add logSQLQuery() SQL statment name to: 
+Add logSQLQuery() SQL statment name to:
 
 * rapidInquiryFacility\rifServices\src\main\resources\AbstractSQLManager.properties
 
@@ -687,13 +687,13 @@ self.getExtractStatus = function (username, studyID) {
 ```
 $scope.setupZipButton = function setupZipButton() {
 	$scope.extractStatus=user.getExtractStatus(user.currentUser, $scope.studyID["exportmap"].study_id).then(function (res) {
-		if (res.data === "STUDY_EXTRACTABLE_NEEDS_ZIPPING") {			
+		if (res.data === "STUDY_EXTRACTABLE_NEEDS_ZIPPING") {
 			$scope.exportTAG="Export Study Tables";
 			$scope.exportURL = undefined;
 			$scope.disableMapListButton=false;
 		}
 		else if (res.data === "STUDY_EXTRABLE_ZIPPID") {
-			$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id, 
+			$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id,
 				$scope.exportLevel); // Set mapListButtonExport URL
 			$scope.exportTAG="Download Study Export";
 			$scope.disableMapListButton=false;
@@ -708,7 +708,7 @@ $scope.setupZipButton = function setupZipButton() {
 			$scope.exportURL = undefined;
 			$scope.disableMapListButton=true;
 		}
-		else {		
+		else {
 			$scope.exportTAG="Study NOT Exportable";
 			$scope.exportURL = undefined;
 			$scope.disableMapListButton=true;
@@ -717,8 +717,8 @@ $scope.setupZipButton = function setupZipButton() {
 }
 ```
 
-The function ```$scope.setupZipButton();``` is then called at appropriate points in the controller so the export tag (button title), export 
-download URL and button disable/enable state is set appropriately. See github change: 
+The function ```$scope.setupZipButton();``` is then called at appropriate points in the controller so the export tag (button title), export
+download URL and button disable/enable state is set appropriately. See github change:
 https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/commit/606fb25e5dd0745f8c26bdf91d27716e44cf11d0
 
 # 4. Example log of error from restful services, including stacks
@@ -730,7 +730,7 @@ User:"peter" IP:"0:0:0:0:0:0:0:1" Cheking status of extract for study 53.
 15:49:04.857 [http-nio-8080-exec-7] WARN  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager]:
 MSSQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: getRif40StudyState NOT FOUND
 15:49:04.889 [http-nio-8080-exec-7] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager]:
-Error in SQL Statement: >>> 
+Error in SQL Statement: >>>
 SELECT a.study_statey
 FROM rif40.rif40_studies a
 WHERE a.study_id = ?
@@ -974,6 +974,6 @@ rifGenericLibrary.system.RIFServiceException: Unable to get extract zipfile stat
 <<< End getRootCauseStackTrace.
 ```
 
-  
+
 Peter Hambly
 16th October 2017
