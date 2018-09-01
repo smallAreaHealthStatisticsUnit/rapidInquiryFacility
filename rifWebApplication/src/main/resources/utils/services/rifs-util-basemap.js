@@ -242,7 +242,27 @@ angular.module("RIF")
                         getNoBaseMap: function (map) {
                             return noBaseMap[map];
                         },
-						setDefaultMapBackground: function(geography, callback) {
+						setDefaultBaseMap(map) {
+							noBaseMap[map] = false;
+							baseMapInUse[map] = defaultBaseMap;
+							return defaultBaseMap;
+						},
+						setDefaultMapBackground: function(geography, callback, map) {
+							
+							if (map == undefined) {
+								AlertService.rifMessage("warning", "setDefaultMapBackground() map is undefined.");
+								if (callback && typeof(callback) == "function") {
+									callback("setDefaultMapBackground() map is undefined.");
+								}
+								return;
+							}
+							else if (baseMapInUse[map] == undefined) {
+								AlertService.rifMessage("warning", "setDefaultMapBackground() map is invalid: " + map);
+								if (callback && typeof(callback) == "function") {
+									callback("setDefaultMapBackground() map is invalid: " + map);
+								}
+								return;
+							}
 							
 							// WARNING: The name is validated as constraint check map_background_ck on rif40_geographies.map_background
 							user.getMapBackground(user.currentUser, geography).then(function (res) {
@@ -251,21 +271,10 @@ angular.module("RIF")
 								if (mapBackground && mapBackground.mapBackground == "NONE") {
 									found=true;
 									AlertService.consoleDebug('[rifs-util-basemap.js]: mapBackground is NONE' +
-												" for geography: " + geography);
-									noBaseMap = {
-										areamap: true,
-										viewermap: true,
-										diseasemap1: true,
-										diseasemap2: true,
-										exportmap: true
-									};
-									baseMapInUse = {
-										areamap: defaultBaseMap,
-										viewermap: defaultBaseMap,
-										diseasemap1: defaultBaseMap,
-										diseasemap2: defaultBaseMap,
-										exportmap: defaultBaseMap
-									};
+										" for map: " + map +
+										" and geography: " + geography);
+									noBaseMap[map] = true;
+									baseMapInUse[map] = defaultBaseMap;
 								}
 								else if (mapBackground && mapBackground.mapBackground) {
 									var basemapsList = [];
@@ -275,49 +284,48 @@ angular.module("RIF")
 											found=true;
 									
 											AlertService.consoleDebug('[rifs-util-basemap.js]: mapBackground is: ' + mapBackground.mapBackground +
-												" for geography: " + geography);
-											noBaseMap = {
-												areamap: false,
-												viewermap: false,
-												diseasemap1: false,
-												diseasemap2: false,
-												exportmap: false
-											};
-											baseMapInUse = {
-												areamap: mapBackground.mapBackground,
-												viewermap: mapBackground.mapBackground,
-												diseasemap1: mapBackground.mapBackground,
-												diseasemap2: mapBackground.mapBackground,
-												exportmap: mapBackground.mapBackground
-											};
+												" for map: " + map +
+												" and geography: " + geography);
+
+											noBaseMap[map] = false;
+											baseMapInUse[map] = mapBackground.mapBackground;
 										}	
 									}
 								}
 								if (!found) {
 									if (mapBackground.mapBackground) {
 										AlertService.rifMessage("warning", "Default map background " + mapBackground.mapBackground + 
-											" not found in database for geography: " + geography);
+											" not found in database " +
+											" for map: " + map +
+											" and geography: " + geography);
 									}
 									else {
-										AlertService.rifMessage("warning", "No default map background found in database for geography: " + 
-											geography);
+										AlertService.rifMessage("warning", "No default map background found in database " +
+											" for map: " + map +
+											" and geography: " + geography);
 									}
 									AlertService.consoleDebug('[rifs-util-basemap.js]: mapBackground not found; ' + JSON.stringify(mapBackground) +
-										" for geography: " + geography);
+										" for map: " + map +
+										" and geography: " + geography);
 								}
 								
 								if (callback && typeof(callback) == "function") {
 //									AlertService.consoleDebug("[rifs-util-basemap.js]: basemapsList: " + JSON.stringify(basemapsList));
-									callback();
+									callback(undefined /* no error */, map);
 								}
                             }, function (err) {
 								
-                                AlertService.rifMessage("warning", "Could not get default map background from database for geography: " + geography +
+                                AlertService.rifMessage("warning", "Could not get default map background from database " +
+									" for map: " + map +
+									" and geography: " + geography +
 									"; using OpenStreetMap Mapnik", err);	
 
 								if (callback && typeof(callback) == "function") {
-									callback((err || "Could not get default map background from database for geography: " + geography +
-										"; using OpenStreetMap Mapnik"));
+									callback((err || "Could not get default map background from database " +
+										" for map: " + map +
+										" and geography: " + geography +
+										"; using OpenStreetMap Mapnik"), 
+										map);
 								}	
 							})
 						}

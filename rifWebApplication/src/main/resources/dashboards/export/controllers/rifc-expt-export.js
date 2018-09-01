@@ -439,14 +439,27 @@ angular.module("RIF")
                                                         areaIDs.length = 0;
                                                         //TODO: will cause issues for a risk analysis study
                                                         //This naming does not seem very consistent or logical - middleware issue                                                          
-                                                        var whyDidYouDoItLikeThatKevin = "disease_mapping_study_area";
+                                                        var whyDidYouDoItLikeThatKevin = "disease_mapping_study";
+														if ($scope.studyID['exportmap'].study_type && 
+															$scope.studyID['exportmap'].study_type == "risk_analysis_study") {
+															whyDidYouDoItLikeThatKevin = "risk_analysis_study";
+														}
                                                         if ($scope.area.name !== "study") {
                                                             whyDidYouDoItLikeThatKevin = "comparison_area";
                                                         }
-                                                        var tmp = res.data.rif_job_submission.disease_mapping_study[whyDidYouDoItLikeThatKevin].map_areas.map_area;
-                                                        for (var i = 0; i < tmp.length; i++) {
-                                                            areaIDs.push(tmp[i].id);
-                                                        }
+														if (res.data.rif_job_submission[whyDidYouDoItLikeThatKevin]) {
+															var tmp = res.data.rif_job_submission[whyDidYouDoItLikeThatKevin].map_areas.map_area;
+															for (var i = 0; i < tmp.length; i++) {
+																areaIDs.push(tmp[i].id);
+															}
+														}
+														else {
+															$scope.consoleLog("[rifc-expt-export.js] WARNING res.data.rif_job_submission[" + 
+																whyDidYouDoItLikeThatKevin + "] does not exist, $scope.studyID['exportmap']: " +
+																JSON.stringify($scope.studyID['exportmap'], null, 1) + "; res.data.rif_job_submission: " + 	
+																JSON.stringify(res.data.rif_job_submission, null, 1));
+															$scope.consoleLog("Cannot load areaIDs for export map");
+														}
                                                     })
                                             .then(
                                                     function () {

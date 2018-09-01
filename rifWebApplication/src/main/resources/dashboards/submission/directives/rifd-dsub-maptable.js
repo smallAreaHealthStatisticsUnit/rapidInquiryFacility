@@ -1186,10 +1186,17 @@ angular.module("RIF")
                         //Set the user defined basemap
 						// Called from rifc-dmap-main.js
                         $scope.renderMap = function (mapID) {
-							LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback);
+							if (thisGeography) {
+								LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback, mapID);
+							}
+							else {
+								$scope.consoleLog("[rifc-util-mapping.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
+									mapID);
+								LeafletBaseMapService.setDefaultBaseMap(mapID);
+							}							
                         };
 					
-						function setBaseMapCallback(err) {
+						function setBaseMapCallback(err, areamap) {
 							if (err) { // LeafletBaseMapService.setDefaultMapBackground had error
 								alertScope.consoleLog("[rifd-dsub-maptable.js] LeafletBaseMapService.setDefaultMapBackground had error: " + 
 									err);
