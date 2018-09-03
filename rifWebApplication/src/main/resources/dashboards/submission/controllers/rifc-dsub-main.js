@@ -112,8 +112,9 @@ angular.module("RIF")
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.fractions.push(res.data[i]);
                     }
-					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 2));
-                    if (angular.isDefined(SubmissionStateService.getState().numerator.length) && SubmissionStateService.getState().numerator.length !== 0) {
+					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 2) +
+						"SubmissionStateService.getState(): " + JSON.stringify(SubmissionStateService.getState(), null, 1));
+                    if (angular.isDefined(SubmissionStateService.getState().numerator) && SubmissionStateService.getState().numerator.length !== 0) {
                         for (var i = 0; i < $scope.fractions.length; i++) {
                             var thisNum = SubmissionStateService.getState().numerator;
                             if ($scope.fractions[i].numeratorTableName === thisNum) {
