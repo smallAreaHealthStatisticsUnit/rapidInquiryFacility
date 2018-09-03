@@ -1413,7 +1413,7 @@ getParameter("p 1")     yes     c d
 						}
 						else if (studyType == null || studyType.length() == 0) {
 							throw new Exception("Parsed risk_analysis_study: \"" + name + "\"; description: " + description + 
-								" but study selection.studyType is not set: " + riskAnalysisDescription);
+								" but study_selection.studyType is not set: " + riskAnalysisDescription);
 						}
 						else {
 							throw new Exception("Parsed risk_analysis_study: \"" + name + "\"; description: " + description + 
@@ -1426,7 +1426,7 @@ getParameter("p 1")     yes     c d
 						}
 						else if (studyType == null || studyType.length() == 0) {
 							throw new Exception("Parsed disease_mapping_study: \"" + name + "\"; description: " + description + 
-								" but study selection.studyType is not set");
+								" but study_selection.studyType is not set");
 						}
 						else {
 							throw new Exception("Parsed disease_mapping_study: \"" + name + "\"; description: " + description + 

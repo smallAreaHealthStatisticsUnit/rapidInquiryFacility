@@ -207,16 +207,92 @@ angular.module("RIF")
             _getAttr = function (v) {
                 return '<attr>' + v + '</attr></br>';
             };
+			/* E.g.
+			+253.8: [DEBUG] [rifs-dsub-model.js] studyType: Disease Mapping; 
+			modelJSON["risk_analysis_study"] name: 1002 LUNG CANCER; description: TEST 1002 LUNG CANCER HET 95_96; 
+			study_selection: {
+				 "studySelectedAreas": [
+				  {
+				   "id": "01",
+				   "gid": "01",
+				   "label": "01",
+				   "band": 1
+				  }
+				 ],
+				 "studyShapes": [],
+				 "comparisonSelectedAreas": [
+				  {
+				   "id": "01",
+				   "gid": "01",
+				   "label": "01",
+				   "band": 1
+				  }
+				 ],
+				 "fileList": [],
+				 "bandAttr": [],
+				 "comparisonSelectAt": "SAHSU_GRD_LEVEL1",
+				 "studySelectAt": "SAHSU_GRD_LEVEL1",
+				 "comparisonShapes": [],
+				 "studyType": "disease_mapping_study"
+				}
+			 */
+			verifyModel = function(modelJSON) {
+				var studyType = SubmissionStateService.getState().studyType; // "Disease Mapping" or "Risk Analysis"
+				//  type = "disease_mapping_study" or "risk_analysis_study"
+				var errors=0;
+				if (modelJSON["rif_job_submission"].study_selection.studyType == type) {
+					// OK
+				}
+				else {
+					AlertService.consoleLog('[rifs-dsub-model.js] WARNING modelJSON["rif_job_submission"].study_selection.studyType != type' +
+						'; modelJSON["rif_job_submission"].study_selection.studyType: ' + modelJSON["rif_job_submission"].study_selection.studyType +
+						'; type: ' + type);
+					errors++;
+				}
+				
+				if (type == "risk_analysis_study") {
+					if (studyType == "Risk Analysis") {
+						// OK
+					}
+					else {
+						AlertService.consoleLog('[rifs-dsub-model.js] WARNING Invalid ubmissionStateService.getState().studyType: ' + studyType +
+							'; expecting: "Disease Mapping"');
+						errors++;
+					}
+				}
+				else if (type == "disease_mapping_study") {
+					if (studyType == "Disease Mapping") {
+						// OK
+					}
+					else {
+						AlertService.consoleLog('[rifs-dsub-model.js] WARNING Invalid ubmissionStateService.getState().studyType: ' + studyType +
+							'; expecting: "Risk Analysis"');
+						errors++;
+					}
+				}
+				else {
+					AlertService.consoleLog('[rifs-dsub-model.js] WARNING Invalid study type: ' + type);
+					errors++;
+				}
+				
+				AlertService.consoleDebug('[rifs-dsub-model.js] studyType: ' + SubmissionStateService.getState().studyType +
+					'; errors: ' + errors + 
+					'; modelJSON["' + type + '"] name: ' + modelJSON["rif_job_submission"][type].name + 
+					'; description: ' + modelJSON["rif_job_submission"][type].description +
+					'; study_selection: ' + JSON.stringify(modelJSON["rif_job_submission"].study_selection, null, 1));		
+				if (errors > 0) {
+					var err = new Error("Study model verification failed with " + errors + " error(s)");
+					
+					AlertService.rifMessage('error', "Study model verification failed with " + errors + " error(s)", err);
+					throw err;
+				}
+			}
 				
             return {
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
                     var modelJSON = updateModel();
-					
-					AlertService.consoleDebug('[rifs-dsub-model.js] studyType: ' + SubmissionStateService.getState().studyType +
-						'; modelJSON["' + type + '"] name: ' + modelJSON["rif_job_submission"][type].name + 
-						'; description: ' + modelJSON["rif_job_submission"][type].description +
-						'; study_selection: ' + JSON.stringify(modelJSON["rif_job_submission"].study_selection, null, 1));
+					verifyModel(modelJSON);
 						
                     return modelJSON;
                 },

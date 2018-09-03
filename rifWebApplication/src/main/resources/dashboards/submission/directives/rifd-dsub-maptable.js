@@ -1384,9 +1384,10 @@ angular.module("RIF")
 						
 							
 						$scope.createAreaNameList = function () { // Not from latlngList - not in scope when restored
+							var newAreaNameList = {};
+							
 							if (SelectStateService.getState().studySelection && SelectStateService.getState().studySelection.studySelectedAreas) {
 								var studySelectedAreas=SelectStateService.getState().studySelection.studySelectedAreas;
-								newAreaNameList = {};
 								
 								for (var i = 0; i < studySelectedAreas.length; i++) {              									
 									// Update areaNameList for debug
