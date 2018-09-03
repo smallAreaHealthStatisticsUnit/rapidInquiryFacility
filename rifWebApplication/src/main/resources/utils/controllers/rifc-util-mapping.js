@@ -1029,21 +1029,40 @@ angular.module("RIF")
                  * Map rendering
                  */
                 //change the basemaps 
+				/* Needs a rename to renderBaseMap() [all similar functions]; called from:
+				 * 
+				 * src\main\resources\dashboards\mapping\controllers\rifc-dmap-main.js:                    $scope.child.renderMap("diseasemap1");
+				 * src\main\resources\dashboards\mapping\controllers\rifc-dmap-main.js:                    $scope.child.renderMap("diseasemap2");
+				 *
+				 * This is wrong as a) $scope.tileInfo[mapID].geography is not in scope
+				 * Needs to be called when you change the study ID 
+				 */
                 $scope.renderMap = function (mapID) {
 					var thisGeography = $scope.tileInfo[mapID].geography
 					if (thisGeography) {
-						LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback);
+						LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback, mapID);
 					}
 					else {
+						LeafletBaseMapService.setDefaultBaseMap(mapID);
 						$scope.consoleLog("[rifc-util-mapping.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
-							mapID);
+							mapID + 
+							"; using default basemap: " + LeafletBaseMapService.getCurrentBaseMapInUse(mapID));
 					}
+					var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse(mapID);
+					if ($scope.thisLayer[mapID]) {
+						$scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
+					}
+					//add new baselayer if requested
+					if (!LeafletBaseMapService.getNoBaseMap(mapID)) {
+						$scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
+						$scope.thisLayer[mapID].addTo($scope.map[mapID]);
+					}	
 				};
 						
-				function setBaseMapCallback(err) {
+				function setBaseMapCallback(err, mapID) {
 					if (err) { // LeafletBaseMapService.setDefaultMapBackground had error
-						$scope.consoleLog("[rifc-util-mapping.js] WARNING LeafletBaseMapService.setDefaultMapBackground had error: " + 
-							err);
+						$scope.consoleLog("[rifc-util-mapping.js] WARNING LeafletBaseMapService.setDefaultMapBackground for map: " + mapID + 
+							" had error: " + err);
 					}				
 							
 					var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse(mapID);
@@ -1110,7 +1129,7 @@ angular.module("RIF")
 									if (angular.isDefined($scope.geoJSON[mapID]._geojsons.default)) {
 										$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
 									}
-								}, 200);	
+								}, 500);	
 								
 								$scope.bringShapesToFront(mapID);
 										
@@ -1119,7 +1138,7 @@ angular.module("RIF")
 											
 											$scope.consoleLog("[rifc-util-mapping.js] redraw map");
 											$scope.map[mapID].fitBounds($scope.map[mapID].getBounds()); // Force map to redraw after 0.2s delay
-										}, 200);	
+										}, 500);	
 								});	
 						});	
 					}
@@ -1550,6 +1569,8 @@ angular.module("RIF")
 							$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.removeSubLayer);
 							$scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
 							$scope.geoJSON[mapID]={};
+							$scope.map[mapID].setView({lat: 0, lng: 0}); // Pay a quick visit to west Africa so the zoom to extent can work!
+							$scope.map[mapID].setZoom(6);
                         }
 					
                         //save study, sex selection
@@ -1585,19 +1606,23 @@ angular.module("RIF")
 									$scope.showError("studyType not defined for map: " + mapID + 
 										"; study ID: " + $scope.myService.getState().study[mapID].study_id);
 								}
+								else if ($scope.myService.getState().study[mapID].study_type == undefined) {
+									$scope.consoleError("addSelectedShapesCallback() study_type mismatch for map: " + mapID + 
+										"; study: " + JSON.stringify($scope.myService.getState().study[mapID]) +
+										"; select state for map: " + mapID + " studyType: " + $scope.myService.getState().studyType[mapID] +
+										"; database studyType is not yet defined");	
+								}
 								else if ($scope.myService.getState().studyType[mapID] != $scope.myService.getState().study[mapID].study_type) {
 									$scope.consoleError("addSelectedShapesCallback() study_type mismatch for map: " + mapID + 
 										"; study: " + JSON.stringify($scope.myService.getState().study[mapID]) +
 										"; select state for map: " + mapID + " studyType: " + $scope.myService.getState().studyType[mapID] +
-										"!=  database: " + $scope.myService.getState().study[mapID].studyType);	
-									$scope.showWarning("studyType mismatch for map: " + mapID + 
-										"; study ID: " + $scope.myService.getState().study[mapID].study_id);	
+										" != database: " + $scope.myService.getState().study[mapID].study_type);	
 								}
 								else {
-									$scope.consoleError("addSelectedShapesCallback() study_type OK for map: " + mapID + 
+									$scope.consoleLog("addSelectedShapesCallback() study_type OK for map: " + mapID + 
 										"; study: " + JSON.stringify($scope.myService.getState().study[mapID]) +
 										"; select state for map: " + mapID + " studyType: " + $scope.myService.getState().studyType[mapID] +
-										"==  database: " + $scope.myService.getState().study[mapID].studyType);	
+										" == database: " + $scope.myService.getState().study[mapID].study_type);	
 								}	
 								
 								user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
@@ -1605,6 +1630,8 @@ angular.module("RIF")
 										$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
 										$scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
 					
+										$scope.renderMap(mapID);
+										
 										$scope.consoleDebug("[rifc-util-mapping.js] set studyType for map: " + mapID + ": " + 
 											$scope.myService.getState().studyType[mapID] + 
 											"; studyID: " + JSON.stringify($scope.studyID[mapID], null, 1) + 

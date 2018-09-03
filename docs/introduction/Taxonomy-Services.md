@@ -11,7 +11,7 @@ RIF Taxonomy Services
   - [2.2 ICD 11](#22-icd-11)
 - [3. Adding new ontologies](#3-adding-new-ontologies)
 - [4. Issues](#4-issues)
-  
+
 # 1. Introduction
 
 The RIF has a separate taxonomy service. It is intended to support a variety of ontologies; the first
@@ -24,22 +24,22 @@ further ontologies will be added; for instance:
 
 ## 1.1 Configuration
 
-The source code *TaxonomyServicesConfiguration.xml* configuration file in 
-*rapidInquiryFacility\rifServices\src\main\resources* specifies the configuration for one or more configurations 
-for taxonomy services. The parameter for the ICD 10 service is "icd10_ClaML_file" wih a value of 
+The source code *TaxonomyServicesConfiguration.xml* configuration file in
+*rapidInquiryFacility\rifServices\src\main\resources* specifies the configuration for one or more configurations
+for taxonomy services. The parameter for the ICD 10 service is "icd10_ClaML_file" wih a value of
 "ExampleClaMLICD10Codes.xml". This is a cut down version of the standard WHO file which needs to be licensed
-directly from the WHO. 
+directly from the WHO.
 
-For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy services configuration files*) to: 
+For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy services configuration files*) to:
 *%CATALINA_HOME%\conf* and restart tomcat
 
 * *icdClaML2016ens.xml* [WHO ICD 10 2016 data from: [WHO Classifications Download Area](http://apps.who.int/classifications/apps/icd/ClassificationDownloadNR/login.aspx?ReturnUrl=%2fclassifications%2fapps%2ficd%2fClassificationDownload%2fdefault.aspx).
-  You will need to agree to a non commercial WHO license, declare your usage and create an account. 
+  You will need to agree to a non commercial WHO license, declare your usage and create an account.
 * *TaxonomyServicesConfiguration.xml* [The configuration file]
 * *ClaML.dtd* [The XML specification used to parse *icdClaML2016ens.xml* supplied with it]
 
-The taxonomy services does not startup until the first first user logon. It has to load and process a 
-number of different data sources, it is possible if you are quick to get the error "The system for supporting the 
+The taxonomy services does not startup until the first first user logon. It has to load and process a
+number of different data sources, it is possible if you are quick to get the error "The system for supporting the
 taxonomy services has not yet been initialised" from the front end:
 
 * Investigations tab: Searching ICD codes;
@@ -93,12 +93,12 @@ Check the taxonomy services configuration file *TaxonomyServicesConfiguration.xm
 ## 1.2 How it works
 
 The configuration file is read and parsed and then for each taxonomy service the &lt;ontology_service_class_name&gt;
-e.g. *org.sahsu.taxonomyservices.claMLTaxonomyService* is loaded and the initialise() function called. 
-The file *org.sahsu.taxonomyservices.claMLTaxonomyService.java* then loads and 
-parses the file and sets a taxonomy services manager. The code for this is in ICD10TaxonomyTermParser.java in 
-the rifGenericLibrary.taxonomyServices package. The taxonomy services manager is used by the taxonomy service 
+e.g. *org.sahsu.taxonomyservices.claMLTaxonomyService* is loaded and the initialise() function called.
+The file *org.sahsu.taxonomyservices.claMLTaxonomyService.java* then loads and
+parses the file and sets a taxonomy services manager. The code for this is in ICD10TaxonomyTermParser.java in
+the rifGenericLibrary.taxonomyServices package. The taxonomy services manager is used by the taxonomy service
 REST calls and then the front end.
- 
+
 Taxonomy service REST calls:
 
 * http://localhost:8080/taxonomyServices/taxonomyServices/initialiseService
@@ -138,24 +138,24 @@ The following do not appear to be in use:
 * http://localhost:8080/taxonomyServices/taxonomyServices/getImmediateChildTerms
 * http://localhost:8080/taxonomyServices/taxonomyServices/getParentTerm
 * http://localhost:8080/taxonomyServices/taxonomyServices/getRootTerms
-	
+
 # 2. Adding ICD 9 and ICD 11 support
 
 * ICD 11 is in beta tested and is expected to be released in June 2018.
-* ICD 9 codes were downloaded from: https://raw.githubusercontent.com/drobbins/ICD9/master/icd9.txt; 
-  these codes are themselves reformatted 
+* ICD 9 codes were downloaded from: https://raw.githubusercontent.com/drobbins/ICD9/master/icd9.txt;
+  these codes are themselves reformatted
   from: https://www.cms.gov/ICD9ProviderDiagnosticCodes/downloads/cmsv29_master_descriptions.zip
 
 ## 2.1 ICD 9
 
-To create an ICD 9 service, you would make a class along the lines of 
-*org.sahsu.taxonomyservices.claMLTaxonomyService* and ensure it implemented the interface 
-rifGenericLibrary.taxonomyServices.TaxonomyServiceAPI.  Note that most of the code used to support taxonomy 
-services is generic and does not rely on RIF concepts - this is why it is found in the 
+To create an ICD 9 service, you would make a class along the lines of
+*org.sahsu.taxonomyservices.claMLTaxonomyService* and ensure it implemented the interface
+rifGenericLibrary.taxonomyServices.TaxonomyServiceAPI.  Note that most of the code used to support taxonomy
+services is generic and does not rely on RIF concepts - this is why it is found in the
 rifGenericLibrary.taxonomyServices package.
 
 This would need to parse the CSV file into a similar structure to that used by the CLaML parser and implement
-the required REST service callbacks. 
+the required REST service callbacks.
 
 ## 2.2 ICD 11
 
@@ -199,28 +199,28 @@ There are a number of inter related assumptions here that may not be correct:
 
 * The same CLaML data type description is used by ICD 10 and 11
 * The ICD 10 parser can parse the ICD 11 CLaML
-* ICD 11 codes will be set in the same way as ICD 10 (is the histology separate or part of the code or both 
+* ICD 11 codes will be set in the same way as ICD 10 (is the histology separate or part of the code or both
   and therefore data provider dependent)
-  
-Whilst it would be useful for the RIF to support ICD 11 as a training and familiarization; medical data containing 
-ICD 11 code is probably a decade away.  
+
+Whilst it would be useful for the RIF to support ICD 11 as a training and familiarization; medical data containing
+ICD 11 code is probably a decade away.
 
 # 3. Adding new ontologies
 
 Currently all configured taxonomy services are loaded on service start.
 
-* Changes would be required to the *getTaxonomyServiceProviders* to filter on a named taxonomy and a 
+* Changes would be required to the *getTaxonomyServiceProviders* to filter on a named taxonomy and a
   taxonomy parameter added to each taxonomy service.
 
 # 4. Issues
 
 The taxonomy services has the following issues:
 
-* Initialization: remove annoying messages caused by initialization by run the initialization in a 
+* Initialization: remove annoying messages caused by initialization by run the initialization in a
   service context listener, to the taxonomy service is initialized on service start; not first call;
 * List contains ICD 10 chapters. These should be removed from the list as they contain no identifiers,
   e.g. Chapter II Neoplasms contains an identifier of *II-NULL* which is not convertible to a database query);
-* Range queries, e.g. A15-A19 Tuberculosis (identifier A15-A19-ICD10) are not converted to a workable 
+* Range queries, e.g. A15-A19 Tuberculosis (identifier A15-A19-ICD10) are not converted to a workable
   database query.
 
 These are intended to be resolved in the period May-September 2018 when ICD 9 support is added.
