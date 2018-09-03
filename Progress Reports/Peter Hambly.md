@@ -2880,7 +2880,16 @@ SELECT a.*, b.coa2011
     * Re-factor of Leaflet mapping code to ensure common core between mapping and selection screens; creation of new common Services to 
       reduce complexity (e.g. LayerOrderingService);
   * Print state support #67;
-  
+ 
+#### 3rd September to 7th September
+
+* Front end bug fixes:
+  * Basemap change on study ID now works in maps;
+  * Export map now work (RA changes to REST calls);
+  * Multi geography fix in study load;
+  * Partial fix to not zooming to study extent in changing study ID;
+  * Diagnosis of: On-screen toggle between disease mapping and risk analysis doesn't work properly: #52
+
 Also:
 
 * Manuals;
