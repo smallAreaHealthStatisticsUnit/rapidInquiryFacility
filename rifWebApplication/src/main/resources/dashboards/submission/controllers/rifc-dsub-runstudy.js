@@ -35,8 +35,8 @@
  * CONTROLLER for disease submission run study modal
  */
 angular.module("RIF")
-        .controller('ModalRunCtrl', ['$scope', '$uibModal',
-            function ($scope, $uibModal) {
+        .controller('ModalRunCtrl', ['$scope', '$uibModal', 'SubmissionStateService',
+            function ($scope, $uibModal, SubmissionStateService) {
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
                         animation: true,
@@ -48,7 +48,7 @@ angular.module("RIF")
                         keyboard: false
                     });
                     modalInstance.result.then(function () {
-                        $scope.showSuccess("Study Submitted: Processing may take several minutes");
+                        $scope.showSuccess((SubmissionStateService.getState().studyType + "") + " study Submitted: Processing may take several minutes");
                     });
                 };
             }])
@@ -60,6 +60,8 @@ angular.module("RIF")
             $scope.input.studyDescription = SubmissionStateService.getState().studyDescription;
             $scope.input.projectName = SubmissionStateService.getState().projectName;
 
+			$scope.studyType = SubmissionStateService.getState().studyType;
+			
             //Fill health themes drop-down
             $scope.input.projects = [];
             $scope.input.fillProjects = function () {

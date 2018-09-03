@@ -71,10 +71,13 @@ angular.module("RIF")
                             ]
                         },
 						"study_selection": SelectStateService.getState().studySelection
-					
                     }
                 };
 
+				if (model.rif_job_submission.study_selection.studyType == undefined) {
+					model.rif_job_submission.study_selection.studyType = SelectStateService.getState().studyType;
+				}
+				
                 model["rif_job_submission"][type] = {
                     "name": SubmissionStateService.getState().studyName,
                     "description": SubmissionStateService.getState().studyDescription,
@@ -208,7 +211,14 @@ angular.module("RIF")
             return {
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
-                    return updateModel();
+                    var modelJSON = updateModel();
+					
+					AlertService.consoleDebug('[rifs-dsub-model.js] studyType: ' + SubmissionStateService.getState().studyType +
+						'; modelJSON["' + type + '"] name: ' + modelJSON["rif_job_submission"][type].name + 
+						'; description: ' + modelJSON["rif_job_submission"][type].description +
+						'; study_selection: ' + JSON.stringify(modelJSON["rif_job_submission"].study_selection, null, 1));
+						
+                    return modelJSON;
                 },
                 //return the job submission as formatted HTML
                 get_rif_job_submission_HTML: function () {
@@ -281,7 +291,8 @@ angular.module("RIF")
 //                    outputOptions = outputOptions.substring(0, outputOptions.length - 2);
 //                    project += '<section>Options:</section>' + _getAttr(outputOptions);
 
-					AlertService.consoleDebug('get_rif_job_submission_HTML(): ' + project);
+					AlertService.consoleDebug('[rifs-dsub-model.js] stypeType: ' + SubmissionStateService.getState().studyType +
+						'; get_rif_job_submission_HTML(): ' + project);
 					
                     return project;
                 }
