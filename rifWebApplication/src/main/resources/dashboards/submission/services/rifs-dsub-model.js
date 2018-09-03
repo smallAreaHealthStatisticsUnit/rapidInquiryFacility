@@ -48,6 +48,10 @@ angular.module("RIF")
                     type = 'risk_analysis_study';
                     areaType = 'risk_analysis_study_area';
                 } 
+				else {	
+					type = "disease_mapping_study";
+					areaType = "disease_mapping_study_area";
+				}
                 
                 var model = {
                     "rif_job_submission": {
