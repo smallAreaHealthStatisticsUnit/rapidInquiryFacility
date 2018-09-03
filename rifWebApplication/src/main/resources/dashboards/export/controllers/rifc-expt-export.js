@@ -444,9 +444,17 @@ angular.module("RIF")
 															$scope.studyID['exportmap'].study_type == "risk_analysis_study") {
 															whyDidYouDoItLikeThatKevin = "risk_analysis_study";
 														}
-                                                        if ($scope.area.name !== "study") {
+														
+														if (res.data.rif_job_submission[whyDidYouDoItLikeThatKevin] == undefined &&
+															whyDidYouDoItLikeThatKevin != "risk_analysis_study") {
+															whyDidYouDoItLikeThatKevin = "risk_analysis_study";
+														}
+														
+														if (res.data.rif_job_submission[whyDidYouDoItLikeThatKevin] == undefined &&
+                                                            $scope.area.name !== "study") {
                                                             whyDidYouDoItLikeThatKevin = "comparison_area";
                                                         }
+														
 														if (res.data.rif_job_submission[whyDidYouDoItLikeThatKevin]) {
 															var tmp = res.data.rif_job_submission[whyDidYouDoItLikeThatKevin].map_areas.map_area;
 															for (var i = 0; i < tmp.length; i++) {

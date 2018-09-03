@@ -1029,6 +1029,14 @@ angular.module("RIF")
                  * Map rendering
                  */
                 //change the basemaps 
+				/* Needs a rename to renderBaseMap() [all similar functions]; called from:
+				 * 
+				 * src\main\resources\dashboards\mapping\controllers\rifc-dmap-main.js:                    $scope.child.renderMap("diseasemap1");
+				 * src\main\resources\dashboards\mapping\controllers\rifc-dmap-main.js:                    $scope.child.renderMap("diseasemap2");
+				 *
+				 * This is wrong as a) $scope.tileInfo[mapID].geography is not in scope
+				 * Needs to be called when you change the study ID 
+				 */
                 $scope.renderMap = function (mapID) {
 					var thisGeography = $scope.tileInfo[mapID].geography
 					if (thisGeography) {
@@ -1561,6 +1569,8 @@ angular.module("RIF")
 							$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.removeSubLayer);
 							$scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
 							$scope.geoJSON[mapID]={};
+							$scope.map[mapID].setView({lat: 0, lng: 0}); // Pay a quick visit to west Africa so the zoom to extent can work!
+							$scope.map[mapID].setZoom(6);
                         }
 					
                         //save study, sex selection
@@ -1620,6 +1630,8 @@ angular.module("RIF")
 										$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
 										$scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
 					
+										$scope.renderMap(mapID);
+										
 										$scope.consoleDebug("[rifc-util-mapping.js] set studyType for map: " + mapID + ": " + 
 											$scope.myService.getState().studyType[mapID] + 
 											"; studyID: " + JSON.stringify($scope.studyID[mapID], null, 1) + 
