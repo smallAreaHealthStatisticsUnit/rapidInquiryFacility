@@ -53,9 +53,9 @@ This section is a series of links to developer documentation
 
 None of these is close to an actual product roadmap, but most of them contain something useful. They are shown with the latest change date where we know that.
 
-* [To Do List](/development/TODO) (March 2018)
-* [Node Services TODO](/rifNodeServices/TODO) (October 2017)
-* [RIF Re-development](/development/The-RIF-re-development)
-* [Kev’s Suggested Road Map with the Middleware](/development/Kevs-Suggested-Road-Map-with-the-Middleware)
-* [Middleware Code Road Map](/development/Kev-Code-Road-Map)
-* [Middleware Handover Notes](/development/Kev-Handover-Notes)
+* [RIF to-do List](/development/TODO) (March 2018) -- This has the most useful details of these files. Some things are genuinely still to be done. Some are done and marked as such. Some are done and not marked. We’ll turn the ones that are still relevant into issues on GitHub.
+* [Node Services TODO](/rifNodeServices/TODO) (October 2017) -- Some things here are probably still valid. Need to discuss with Peter.
+* [RIF Re-development](/development/The-RIF-re-development) -- This is a high-level overview, and out of date.
+* [Kev’s Suggested Road Map with the Middleware](/development/Kevs-Suggested-Road-Map-with-the-Middleware) -- Some OK suggestions here, notably about reworking the web services and creating an ICD-9 service. Also tells us the name of the main class in the data loader.
+* [Middleware Code Road Map](/development/Kev-Code-Road-Map) -- Parts of this provide a decent overview of the project structure within the RIF. It’s out of date regarding the package structure and the way the database-related classes are split up, but it has some value. Ignore the coding conventions, though.
+* [Middleware Handover Notes](/development/Kev-Handover-Notes) -- This is essentially all out of date. The notes on the taxonomy services might be useful.
