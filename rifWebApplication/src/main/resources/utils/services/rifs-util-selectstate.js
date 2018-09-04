@@ -190,25 +190,31 @@ angular.module("RIF")
 					function getStudySelection2(mapID, studyId, getStudySelectionCallback) {
 						
 						var dbStudySelection;
+						
+						if (getStudySelectionCallback && typeof(getStudySelectionCallback) == "function") { // OK
+						}
+						else {
+							throw new Error("rifs-dsub-selectstate.js(): invalid callback for map: " + mapID + "; studyId: " + studyId);
+						}
+								
 						user.getSelectState(user.currentUser, studyId).then(function (res) {
 							
-							if (getStudySelectionCallback && typeof(getStudySelectionCallback) == "function") {
-								dbStudySelection=res.data.select_state;
-								s=(dbStudySelection||defaults);
-								s.showHideSelectionShapes=true;
-								s.showHideCentroids=false;
-								if (dbStudySelection && dbStudySelection.riskAnalysisDescription && dbStudySelection.riskAnalysisType) {
-									s.studyType="risk_analysis_study";
-								} 
-								else {
-									s.studyType="disease_mapping_study";
-								}
-								getStudySelectionCallback(undefined /* no error */, mapID, dbStudySelection);
-							}
+							dbStudySelection=res.data.select_state;
+							s=(dbStudySelection||defaults);
+							s.showHideSelectionShapes=true;
+							s.showHideCentroids=false;
+							if (dbStudySelection && dbStudySelection.riskAnalysisDescription && dbStudySelection.riskAnalysisType) {
+								s.studyType="risk_analysis_study";
+							} 
 							else {
-								throw new Error("rifs-dsub-selectstate.js(): invalid callback for map: " + mapID + "; studyId: " + studyId);
+								s.studyType="disease_mapping_study";
 							}
-						}, function (eer) {
+							getStudySelectionCallback(undefined /* no error */, mapID, dbStudySelection);
+						}, function (err) {
+							if (err) {
+								AlertService.consoleLog("[rifs-dsub-selectstate.js] getStudySelection2() user.getSelectState err: " + 
+									JSON.stringify(err, null, 1));
+							}
 							getStudySelectionCallback("Error in getSelectState REST call" /* error */, mapID, dbStudySelection);
 						});
 					}
@@ -229,7 +235,6 @@ angular.module("RIF")
 						},
 						setStudySelection: function(newStudySelection, newStudyType) { // Needs to verify
 							studySelection=verifyStudySelection2(newStudySelection, newStudyType);
-							s.studySelection=studySelection;
 							AlertService.consoleDebug("[rifs-dsub-selectstate.js] setup study selection: " + newStudyType + 
 									"; studySelectAt: " + studySelection.studySelectAt +
 									"; studySelectedAreas: " + studySelection.studySelectedAreas.length +
@@ -244,7 +249,8 @@ angular.module("RIF")
 								throw new EnewStudyTyperror("rifs-dsub-selectstate.js(): newStudySelection study type: " + newStudyType +
 									" does not match newStudyType: " + newStudyType);
 							}
-								
+							
+							s.studySelection=studySelection;
 							if (newStudyType === "disease_mapping_study") {		
 								s.studyType=newStudyType;
 							}

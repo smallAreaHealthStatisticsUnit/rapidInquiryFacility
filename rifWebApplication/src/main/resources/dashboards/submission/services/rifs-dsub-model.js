@@ -52,7 +52,10 @@ angular.module("RIF")
 					type = "disease_mapping_study";
 					areaType = "disease_mapping_study_area";
 				}
-                
+                if (SubmissionStateService.verifySubmissionState() == false) {
+					throw new Error("Submission state verification failed");
+				}
+				
                 var model = {
                     "rif_job_submission": {
                         "submitted_by": user.currentUser,
@@ -279,7 +282,7 @@ angular.module("RIF")
 					errors++;
 				}
 				
-				AlertService.consoleDebug('[rifs-dsub-model.js] studyType: ' + SubmissionStateService.getState().studyType +
+				AlertService.consoleDebug('[rifs-dsub-model.js] verifyModel studyType: ' + SubmissionStateService.getState().studyType +
 					'; errors: ' + errors + 
 					'; modelJSON["' + type + '"] name: ' + modelJSON["rif_job_submission"][type].name + 
 					'; description: ' + modelJSON["rif_job_submission"][type].description +
