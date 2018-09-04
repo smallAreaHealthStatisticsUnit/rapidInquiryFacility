@@ -19,9 +19,13 @@
 
 ## To-do Lists and Roadmaps
 
+## Consolidated
+
+I've put together a partial [consolidated to-do list](/development/consolidated-to-do-list) based on what is still useful from the documents below. It still requires work, specifically discussion with the rest of the team. And the various points will then be extracted and turned into [Issues on GitHub](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues).
+
 ### Still Valid or Useful
 
-These contain at least potentially useful information.  We’ll turn the actual things to be done into [Issues on GitHub](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues).
+These contain at least potentially useful information.
 
 * [RIF to-do List](/development/TODO) (Last changed March 2018) -- This has the most useful details of any of these files. Some things are genuinely still to be done. Some are done and marked as such. Some are done and not marked.
 * [Node Services TODO](/rifNodeServices/TODO) (Last changed October 2017) -- Some things here are probably still valid. Need to discuss with Peter.
