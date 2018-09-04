@@ -10,7 +10,7 @@ import org.sahsu.rif.generic.datastorage.pg.PGSQLInsertQueryFormatter;
  * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
- * <pre> 
+ * <pre> SelectStateService
  * This file is part of the Rapid Inquiry Facility (RIF) project.
  * RIF is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
