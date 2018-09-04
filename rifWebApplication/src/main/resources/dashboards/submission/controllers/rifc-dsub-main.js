@@ -45,7 +45,14 @@ angular.module("RIF")
                  */
 
                 $scope.geographies = [];
-
+//				$scope.numeratorTableName = "";
+				if (SubmissionStateService.getState().numerator) { // Restore
+					$scope.numerator = copyFraction(SubmissionStateService.getState().numerator);
+					
+					$scope.consoleDebug("[rifc-dsub-main.js] restore $scope.numerator from SubmissionStateService: " + 
+						JSON.stringify(SubmissionStateService.getState().numerator, null, 1));
+				}
+				
                 //Get geographies
                 user.getGeographies(user.currentUser).then(
 					function (res) { handleGeographies(res); }, 
@@ -141,9 +148,14 @@ angular.module("RIF")
 					if ($scope.denominator == undefined && SubmissionStateService.getState().numerator) {
 						$scope.denominator = SubmissionStateService.getState().numerator.denominatorTableName;
 					}
+//					if ($scope.numerator.numeratorTableName) {
+//						$scope.numerator = $scope.numerator.numeratorTableName;
+//					}
+//					$scope.numeratorTableName = $scope.numerator.numeratorTableName;
 					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 1) +
 						"; SubmissionStateService.getState(): " + JSON.stringify(SubmissionStateService.getState(), null, 1) +
 						"; $scope.numerator: " + JSON.stringify($scope.numerator, null, 1) +
+//						"; $scope.numeratorTableName: " + $scope.numeratorTableName +
 						"; $scope.denominator: " + $scope.denominator);
                 }
 				
@@ -191,6 +203,7 @@ angular.module("RIF")
                 $scope.numeratorChange = function () {
                     if ($scope.numerator) {
                         $scope.denominator = $scope.numerator.denominatorTableName;
+//						$scope.numeratorTableName = $scope.numerator.numeratorTableName;
                     } else {
                         $scope.denominator = "";
                     }
@@ -221,6 +234,7 @@ angular.module("RIF")
                  * STUDY NAME
                  */
                 $scope.studyName = SubmissionStateService.getState().studyName;
+                $scope.studyDescription = (SubmissionStateService.getState().studyDescription || $scope.studyName);
                 $scope.studyNameChanged = function () {
                     SubmissionStateService.getState().studyName = $scope.studyName;
                 };

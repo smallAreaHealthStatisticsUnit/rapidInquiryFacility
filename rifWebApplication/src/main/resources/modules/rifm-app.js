@@ -88,7 +88,8 @@ angular.module("RIF",
 			var savedSelectState = {};
 			
             $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
-				// Save/restore SelectStateService as required
+				// Save/restore SelectStateService as require
+				
 				if (fromState.name == 'state0' || toState.name == 'state0') {
 					savedSelectState = {};
 					AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
