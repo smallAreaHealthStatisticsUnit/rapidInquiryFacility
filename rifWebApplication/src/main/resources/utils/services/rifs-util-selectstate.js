@@ -143,7 +143,7 @@ angular.module("RIF")
 //								throw new Error("at least one comparison area required");
 //							}					
 						}
-						else {
+						else {							
 							throw new Error("rifs-dsub-selectstate.js(): studySelectAt not found");
 						}
 							
@@ -235,12 +235,18 @@ angular.module("RIF")
 						},
 						setStudySelection: function(newStudySelection, newStudyType) { // Needs to verify
 							studySelection=verifyStudySelection2(newStudySelection, newStudyType);
-							AlertService.consoleDebug("[rifs-dsub-selectstate.js] setup study selection: " + newStudyType + 
+							if (studySelection && studySelection.studySelectedAreas && studySelection.studyShapes && studySelection.comparisonShapes) {
+								AlertService.consoleDebug("[rifs-dsub-selectstate.js] set verified study selection: " + newStudyType + 
 									"; studySelectAt: " + studySelection.studySelectAt +
 									"; studySelectedAreas: " + studySelection.studySelectedAreas.length +
 									", riskAnalysisType: " + studySelection.riskAnalysisType + 
 									", studyShapes: " + studySelection.studyShapes.length +
 									", comparisonShapes: " + studySelection.comparisonShapes.length);
+							}
+							else {
+								AlertService.consoleDebug("[rifs-dsub-selectstate.js] set partially verified study selection: " + newStudyType + 
+									"; studySelection: " + JSON.stringify(studySelection, null, 1));
+							}
 					
 							if (newStudyType == undefined) {
 								throw new EnewStudyTyperror("rifs-dsub-selectstate.js(): newStudyType is undefined");

@@ -112,8 +112,6 @@ angular.module("RIF")
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.fractions.push(res.data[i]);
                     }
-					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 2) +
-						"; SubmissionStateService.getState(): " + JSON.stringify(SubmissionStateService.getState(), null, 1));
                     if (angular.isDefined(SubmissionStateService.getState().numerator) && SubmissionStateService.getState().numerator.length !== 0) {
                         for (var i = 0; i < $scope.fractions.length; i++) {
                             var thisNum = SubmissionStateService.getState().numerator;
@@ -126,9 +124,68 @@ angular.module("RIF")
                         $scope.numerator = $scope.fractions[0];
                         $scope.denominator = $scope.fractions[0].denominatorTableName;
                     }
-                    SubmissionStateService.getState().numerator = $scope.numerator;
-                    SubmissionStateService.getState().denominator = $scope.numerator;
+					
+					// Default $scope.denominator and $scope.numerator is set in SubmissionStateService
+					if ($scope.numerator) {
+//						$scope.numerator = copyFraction($scope.numerator);  // This removes the hashkey and causes the {{numerator.numeratorTableName}}
+																			// tooltip to "disappear"
+						SubmissionStateService.getState().numerator = copyFraction($scope.numerator);
+						SubmissionStateService.getState().denominator = SubmissionStateService.getState().numerator;
+					}
+					else if (SubmissionStateService.getState().numerator) { // Restore
+						$scope.numerator = copyFraction(SubmissionStateService.getState().numerator);
+						// The original hashkey needs to be restored
+//						$state.go('state1');
+					}
+					
+					if ($scope.denominator == undefined && SubmissionStateService.getState().numerator) {
+						$scope.denominator = SubmissionStateService.getState().numerator.denominatorTableName;
+					}
+					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 1) +
+						"; SubmissionStateService.getState(): " + JSON.stringify(SubmissionStateService.getState(), null, 1) +
+						"; $scope.numerator: " + JSON.stringify($scope.numerator, null, 1) +
+						"; $scope.denominator: " + $scope.denominator);
                 }
+				
+				function copyFraction(fraction) {
+					var rVal=undefined;
+					
+					if (fraction && 
+						fraction.numeratorTableName && 
+						fraction.denominatorTableName && 
+						fraction.numeratorTableDescription && 
+						fraction.denominatorTableDescription) {
+						rVal={
+							numeratorTableName: fraction.numeratorTableName,
+							denominatorTableName: fraction.denominatorTableName,
+							numeratorTableDescription: fraction.numeratorTableDescription,
+							denominatorTableDescription: fraction.denominatorTableDescription
+						};
+					}
+				
+					return rVal;
+				}
+				
+				function compareFractions(fraction1, fraction2) {	
+					if (fraction1 && fraction2 &&
+						fraction1.numeratorTableName && 
+						fraction1.denominatorTableName && 
+						fraction1.numeratorTableDescription && 
+						fraction1.denominatorTableDescription && 
+						fraction2.numeratorTableName && 
+						fraction2.denominatorTableName && 
+						fraction2.numeratorTableDescription && 
+						fraction2.denominatorTableDescription && 
+						fraction1.numeratorTableName == fraction2.numeratorTableName && 
+						fraction1.denominatorTableName == fraction2.denominatorTableName && 
+						fraction1.numeratorTableDescription == fraction2.numeratorTableDescription && 
+						fraction1.denominatorTableDescription == fraction2.denominatorTableDescription) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
 
                 //sync the denominator
                 $scope.numeratorChange = function () {
@@ -138,10 +195,13 @@ angular.module("RIF")
                         $scope.denominator = "";
                     }
 					
-					if (SubmissionStateService.getState().numerator != $scope.numerator &&
-					    SubmissionStateService.getState().denominator != $scope.numerator) {
+					if (!compareFractions(SubmissionStateService.getState().numerator, $scope.numerator) &&
+					    !compareFractions(SubmissionStateService.getState().denominator, $scope.numerator)) {
 					
-						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), reset investigation parameters: " + JSON.stringify($scope.numerator, null, 2));
+						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), reset investigation parameters, $scope.numerator: " + 
+							JSON.stringify($scope.numerator, null, 1) +
+							"; SubmissionStateService.getState().numerator: " + JSON.stringify(SubmissionStateService.getState().numerator, null, 1) +
+							"; SubmissionStateService.getState().denominator: " + JSON.stringify(SubmissionStateService.getState().denominator, null, 1));
 						SubmissionStateService.getState().numerator = $scope.numerator;
 						SubmissionStateService.getState().denominator = $scope.numerator;
 						//This will have an impact on investigations year range, so reset investigation parameters

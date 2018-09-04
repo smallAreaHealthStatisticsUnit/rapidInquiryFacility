@@ -940,11 +940,13 @@ angular.module("RIF")
 						function addSelectedShapes() {
 							var selectedShapes=undefined;
 							// Add back selected shapes
-							if ($scope.input.name == "ComparisionAreaMap") {
-								selectedShapes=SelectStateService.getState().studySelection.comparisonShapes;
-							}
-							else {
-								selectedShapes=SelectStateService.getState().studySelection.studyShapes;
+							if (selectedShapes=SelectStateService.getState().studySelection) {
+								if ($scope.input.name == "ComparisionAreaMap") {
+									selectedShapes=SelectStateService.getState().studySelection.comparisonShapes;
+								}
+								else {
+									selectedShapes=SelectStateService.getState().studySelection.studyShapes;
+								}
 							}
 							if (selectedShapes) {
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() selectedShapes " + 

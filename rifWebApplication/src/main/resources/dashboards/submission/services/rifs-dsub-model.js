@@ -81,7 +81,11 @@ angular.module("RIF")
                     }
                 };
 
-				if (model.rif_job_submission.study_selection.studyType == undefined) {
+				if (model.rif_job_submission.study_selection == undefined) {
+					model.rif_job_submission.study_selection = SelectStateService.getState();
+					AlertService.rifMessage('warning', "Study selection state has been lost");
+				}
+				else if (model.rif_job_submission.study_selection.studyType == undefined) {
 					model.rif_job_submission.study_selection.studyType = SelectStateService.getState().studyType;
 				}
 				
