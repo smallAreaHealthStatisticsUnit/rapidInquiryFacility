@@ -175,6 +175,9 @@ angular.module("RIF")
 								if (callback && typeof callback == "function") {
 									callback();
 								}
+								else {
+									AlertService.rifMessage("warning", "getPostalCodeCapabilities() callback is undefined.");
+								}
 							});
 						}
 						
