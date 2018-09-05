@@ -127,7 +127,7 @@ angular.module("RIF")
                 $scope.fillContents = function () {
                     thisGeography = SubmissionStateService.getState().geography;
 					if (SubmissionStateService.getState().numerator) {
-						thisNumerator = SubmissionStateService.getState().numerator.numeratorTableName;
+						thisNumerator = SubmissionStateService.getState().numerator;
 					}
                     thisGeoLevel = StudyAreaStateService.getState().studyResolution;
 
