@@ -6,7 +6,7 @@
 
 # What is the RIF?
 
-An overview of the RIF, along with details of its purpose and its creators  [can be found here](/introduction/what-is-the-RIF).
+An overview of the RIF, along with details of its purpose and its creators  [can be found here](introduction/what-is-the-RIF).
 
 # Licensing
 
