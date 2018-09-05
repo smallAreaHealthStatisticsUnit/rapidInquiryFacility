@@ -2888,7 +2888,7 @@ SELECT a.*, b.coa2011
   * Export map now work (RA changes to REST calls);
   * Multi geography fix in study load;
   * Partial fix to not zooming to study extent in changing study ID;
-  * Diagnosis of: On-screen toggle between disease mapping and risk analysis doesn't work properly: #52
+  * Diagnosis and fix of: On-screen toggle between disease mapping and risk analysis doesn't work properly: #52
 
 Also:
 
