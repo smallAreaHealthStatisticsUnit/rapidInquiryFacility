@@ -2889,7 +2889,10 @@ SELECT a.*, b.coa2011
   * Multi geography fix in study load;
   * Partial fix to not zooming to study extent in changing study ID;
   * Diagnosis and fix of: On-screen toggle between disease mapping and risk analysis doesn't work properly: #52
+  * Add: cannot view error messages that disappear #59;
 
+  Now: Error handling ICD10 chapters and ranges as investigation conditions #58;
+  
 Also:
 
 * Manuals;
