@@ -42,6 +42,10 @@
     margin: 5px;
     height: 95%;
 }
+.grid-messages {
+    margin: 5px;
+    height: 95%;
+}
 
 .grid-shapefile { 
     position: relative;
