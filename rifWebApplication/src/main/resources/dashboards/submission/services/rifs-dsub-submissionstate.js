@@ -93,8 +93,8 @@ angular.module("RIF")
 					 */
 					verifySubmissionState2 = function() {
 						var errors=0;
-						var stringKeyList = ['studyName', 'geography', 'studyDescription', 'studyType'];
-						var objectKeyList = ['healthTheme', 'numerator', 'denominator'];
+						var stringKeyList = ['studyName', 'geography', 'studyDescription', 'numerator', 'studyType'];
+						var objectKeyList = ['healthTheme', 'denominator'];
 						for (var i=0; i<stringKeyList.length; i++) {
 							if (s[stringKeyList[i]] && s[stringKeyList[i]].length > 0) { // OK
 							}

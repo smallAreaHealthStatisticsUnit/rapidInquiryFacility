@@ -43,23 +43,34 @@ angular.module("RIF")
                  * STUDY, GEOGRAPHY AND FRACTION DROP-DOWNS
                  * Calls to API returns a chain of promises
                  */
-
+				$scope.numerator = {};
+				$scope.denominator = "";
                 $scope.geographies = [];
-//				$scope.numeratorTableName = "";
-				if (SubmissionStateService.getState().numerator) { // Restore
-					$scope.numerator = copyFraction(SubmissionStateService.getState().numerator);
-					
-					$scope.consoleDebug("[rifc-dsub-main.js] restore $scope.numerator from SubmissionStateService: " + 
-						JSON.stringify(SubmissionStateService.getState().numerator, null, 1));
-				}
-				
-                //Get geographies
-                user.getGeographies(user.currentUser).then(
+				$scope.fractions = [];	
+				$scope.fraction = "";	
+				$scope.studyName = "";	
+				$scope.geography = "";		
+				$scope.healthThemes = [];
+				$scope.healthTheme = "";
+
+				//Get geographies
+				$scope.consoleDebug("[rifc-dsub-main.js] Load $scope.numerator, $scope.fractions etc from DB");
+				user.getGeographies(user.currentUser).then(
 					function (res) { handleGeographies(res); }, 
 					function (err) { handleError(err, "unable to get geographies"); }); //1ST PROMISE
-					
+				
+                /*
+                 * STUDY NAME
+                 */
+                $scope.studyNameChanged = function () {
+                    SubmissionStateService.getState().studyName = $scope.studyName;
+                };
+				
                 function handleGeographies(res) {
                     $scope.geographies.length = 0;
+//					$scope.geographyDescriptions = {}; // Need to add description to array
+//					$scope.consoleDebug("[rifc-dsub-main.js] res.data[0]: " + JSON.stringify(res.data[0], null, 1));
+					
                     for (var i = 0; i < res.data[0].names.length; i++) {
                         $scope.geographies.push(res.data[0].names[i]);
                     }
@@ -86,7 +97,7 @@ angular.module("RIF")
                     SubmissionStateService.getState().comparisonTree = false;
                     SubmissionStateService.getState().studyTree = false;
                     SubmissionStateService.getState().investigationTree = false;
-                    SubmissionStateService.getState().numerator = "";
+                    SubmissionStateService.getState().numerator = {};
                     SubmissionStateService.getState().denominator = "";
                     $scope.resetState();
                 };
@@ -103,7 +114,6 @@ angular.module("RIF")
                 }
 
                 //Get relevant numerators and associated denominators
-                $scope.fractions = [];
                 $scope.healthThemeChange = function () {
                     if ($scope.healthTheme) {
                         SubmissionStateService.getState().healthTheme = $scope.healthTheme;
@@ -114,50 +124,68 @@ angular.module("RIF")
                         $scope.fractions.length = 0;
                     }
                 };
+				
                 function handleFractions(res) {
-                    $scope.fractions.length = 0;
+                    $scope.fractions = []; // Zero array
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.fractions.push(res.data[i]);
                     }
-                    if (angular.isDefined(SubmissionStateService.getState().numerator) && SubmissionStateService.getState().numerator.length !== 0) {
+					
+                    if (SubmissionStateService.getState().numerator && 
+					    typeof(SubmissionStateService.getState().numerator) == "string" &&
+						SubmissionStateService.getState().numerator.length > 0) {
+                        var thisNum = SubmissionStateService.getState().numerator;
                         for (var i = 0; i < $scope.fractions.length; i++) {
-                            var thisNum = SubmissionStateService.getState().numerator;
-                            if ($scope.fractions[i].numeratorTableName === thisNum) {
+                            if ($scope.fractions[i].numeratorTableName == thisNum) {
+								$scope.consoleDebug("[rifc-dsub-main.js] Set $scope.numerator, $scope.fractions etc from DB/SubmissionStateService: " + 
+									$scope.fractions[i].numeratorTableName);
                                 $scope.numerator = $scope.fractions[i];
                                 $scope.denominator = $scope.fractions[i].denominatorTableName;
                             }
                         }
                     } else {
+						$scope.consoleDebug("[rifc-dsub-main.js] Set default $scope.numerator, $scope.fractions etc from DB: " + 
+							$scope.fractions[0].numeratorTableName);
                         $scope.numerator = $scope.fractions[0];
                         $scope.denominator = $scope.fractions[0].denominatorTableName;
                     }
 					
 					// Default $scope.denominator and $scope.numerator is set in SubmissionStateService
-					if ($scope.numerator) {
+					if (checkNumeratorKeys($scope.numerator)) {
+//						$scope.consoleDebug("[rifc-dsub-main.js] Set SubmissionStateService.getState().numerator: " + 
+//							JSON.stringify($scope.numerator, null, 1));
 //						$scope.numerator = copyFraction($scope.numerator);  // This removes the hashkey and causes the {{numerator.numeratorTableName}}
 																			// tooltip to "disappear"
-						SubmissionStateService.getState().numerator = copyFraction($scope.numerator);
-						SubmissionStateService.getState().denominator = SubmissionStateService.getState().numerator;
+						SubmissionStateService.getState().numerator = $scope.numerator.numeratorTableName;
+						SubmissionStateService.getState().denominator = $scope.numerator;
 					}
-					else if (SubmissionStateService.getState().numerator) { // Restore
+/*					else if (checkNumeratorKeys(SubmissionStateService.getState().numerator)) {
+						$scope.consoleDebug("[rifc-dsub-main.js] Restore $scope.numerator from SubmissionStateService.getState().numerator: " + 
+							JSON.stringify(SubmissionStateService.getState().numerator, null, 1));
 						$scope.numerator = copyFraction(SubmissionStateService.getState().numerator);
-						// The original hashkey needs to be restored
-//						$state.go('state1');
-					}
+					} */
 					
 					if ($scope.denominator == undefined && SubmissionStateService.getState().numerator) {
 						$scope.denominator = SubmissionStateService.getState().numerator.denominatorTableName;
 					}
-//					if ($scope.numerator.numeratorTableName) {
-//						$scope.numerator = $scope.numerator.numeratorTableName;
-//					}
-//					$scope.numeratorTableName = $scope.numerator.numeratorTableName;
 					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 1) +
 						"; SubmissionStateService.getState(): " + JSON.stringify(SubmissionStateService.getState(), null, 1) +
 						"; $scope.numerator: " + JSON.stringify($scope.numerator, null, 1) +
-//						"; $scope.numeratorTableName: " + $scope.numeratorTableName +
 						"; $scope.denominator: " + $scope.denominator);
                 }
+				
+				function checkNumeratorKeys(numerator) {
+					if (numerator && 
+						numerator.numeratorTableName && 
+						numerator.denominatorTableName && 
+						numerator.numeratorTableDescription && 
+						numerator.denominatorTableDescription) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
 				
 				function copyFraction(fraction) {
 					var rVal=undefined;
@@ -203,7 +231,6 @@ angular.module("RIF")
                 $scope.numeratorChange = function () {
                     if ($scope.numerator) {
                         $scope.denominator = $scope.numerator.denominatorTableName;
-//						$scope.numeratorTableName = $scope.numerator.numeratorTableName;
                     } else {
                         $scope.denominator = "";
                     }
@@ -229,15 +256,6 @@ angular.module("RIF")
                     $scope.showError("Could not retrieve your project information from the database: " + reason);
 					$scope.consoleDebug("[rifc-dsub-main.js] handleError: " + (JSON.stringify(e) || "(no error message)"));
                 }
-
-                /*
-                 * STUDY NAME
-                 */
-                $scope.studyName = SubmissionStateService.getState().studyName;
-                $scope.studyDescription = (SubmissionStateService.getState().studyDescription || $scope.studyName);
-                $scope.studyNameChanged = function () {
-                    SubmissionStateService.getState().studyName = $scope.studyName;
-                };
 
                 /*
                  * RESET

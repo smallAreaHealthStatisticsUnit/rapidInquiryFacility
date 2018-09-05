@@ -286,11 +286,11 @@ angular.module("RIF")
 					errors++;
 				}
 				
-				AlertService.consoleDebug('[rifs-dsub-model.js] verifyModel studyType: ' + SubmissionStateService.getState().studyType +
-					'; errors: ' + errors + 
-					'; modelJSON["' + type + '"] name: ' + modelJSON["rif_job_submission"][type].name + 
-					'; description: ' + modelJSON["rif_job_submission"][type].description +
-					'; study_selection: ' + JSON.stringify(modelJSON["rif_job_submission"].study_selection, null, 1));		
+//				AlertService.consoleDebug('[rifs-dsub-model.js] verifyModel studyType: ' + SubmissionStateService.getState().studyType +
+//					'; errors: ' + errors + 
+//					'; modelJSON["' + type + '"] name: ' + modelJSON["rif_job_submission"][type].name + 
+//					'; description: ' + modelJSON["rif_job_submission"][type].description +
+//					'; study_selection: ' + JSON.stringify(modelJSON["rif_job_submission"].study_selection, null, 1));		
 				if (errors > 0) {
 					var err = new Error("Study model verification failed with " + errors + " error(s)");
 					
@@ -378,8 +378,8 @@ angular.module("RIF")
 //                    outputOptions = outputOptions.substring(0, outputOptions.length - 2);
 //                    project += '<section>Options:</section>' + _getAttr(outputOptions);
 
-					AlertService.consoleDebug('[rifs-dsub-model.js] stypeType: ' + SubmissionStateService.getState().studyType +
-						'; get_rif_job_submission_HTML(): ' + project);
+//					AlertService.consoleDebug('[rifs-dsub-model.js] stypeType: ' + SubmissionStateService.getState().studyType +
+//						'; get_rif_job_submission_HTML(): ' + project);
 					
                     return project;
                 }
