@@ -91,9 +91,15 @@ angular.module("RIF")
 						 "studyType": "Risk Analysis"
 						}
 					 */
-					verifySubmissionState2 = function() {
+					verifySubmissionState2 = function(strict) {
 						var errors=0;
-						var stringKeyList = ['studyName', 'geography', 'studyDescription', 'numerator', 'studyType'];
+						var stringKeyList;
+						if (strict) { // Strict: study name and description have to exist
+							stringKeyList = ['studyName', 'geography', 'studyDescription', 'numerator', 'studyType'];
+						}
+						else {
+							stringKeyList = ['geography', 'numerator', 'studyType'];
+						}
 						var objectKeyList = ['healthTheme', 'denominator'];
 						for (var i=0; i<stringKeyList.length; i++) {
 							if (s[stringKeyList[i]] && s[stringKeyList[i]].length > 0) { // OK
@@ -160,8 +166,8 @@ angular.module("RIF")
                         getState: function () {
                             return s;
                         },
-                        verifySubmissionState: function () {
-                            return verifySubmissionState2();
+                        verifySubmissionState: function (strict) { // Strict: study name and description have to exist
+                            return verifySubmissionState2(strict);
                         },
                         resetState: function () {
 							if (s.removeMap) { // Remove Map

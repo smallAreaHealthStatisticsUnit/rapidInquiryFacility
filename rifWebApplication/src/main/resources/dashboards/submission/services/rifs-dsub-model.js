@@ -43,7 +43,7 @@ angular.module("RIF")
             var type = "disease_mapping_study";
             var areaType = "disease_mapping_study_area";
 
-            updateModel = function () {
+            updateModel = function (strict) {
                 if (SubmissionStateService.getState().studyType === "Risk Analysis") {
                     type = 'risk_analysis_study';
                     areaType = 'risk_analysis_study_area';
@@ -52,7 +52,7 @@ angular.module("RIF")
 					type = "disease_mapping_study";
 					areaType = "disease_mapping_study_area";
 				}
-                if (SubmissionStateService.verifySubmissionState() == false) {
+                if (SubmissionStateService.verifySubmissionState(strict) == false) {
 					throw new Error("Submission state verification failed");
 				}
 				
@@ -302,14 +302,14 @@ angular.module("RIF")
             return {
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
-                    var modelJSON = updateModel();
+                    var modelJSON = updateModel(true); // Study name and description must exist
 					verifyModel(modelJSON);
 						
                     return modelJSON;
                 },
                 //return the job submission as formatted HTML
                 get_rif_job_submission_HTML: function () {
-                    var modelJSON = updateModel();
+                    var modelJSON = updateModel(false); // Study name and description do not have to exist
 					
                     //Overview
                     var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(modelJSON.rif_job_submission.project.name) +
