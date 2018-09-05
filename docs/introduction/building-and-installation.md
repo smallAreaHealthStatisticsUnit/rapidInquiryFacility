@@ -14,7 +14,7 @@ Port specific install notes:
 
   * [Windows install notes](/rifDatabase/Postgres/docs/windows)
   * [Linux install from repository notes](/rifDatabase/Postgres/docs/linux_repo)
-  * [MACoS install from repository notes](/rifDatabase/Postgres/docs/macos_repo)
+  * [Mac OS install from repository notes](/rifDatabase/Postgres/docs/macos_repo)
   * [Linux install from source notes](/rifDatabase/Postgres/docs/linux_source)
 
 Detailed build instructions for Postgres:
