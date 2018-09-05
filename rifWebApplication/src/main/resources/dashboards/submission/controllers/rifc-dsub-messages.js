@@ -36,8 +36,8 @@
  */
 
 angular.module("RIF")
-        .controller('ModalMessagesCtrl', ['$scope', '$uibModal', 'user', 'uiGridConstants',
-            function ($scope, $uibModal, user, uiGridConstants) {
+        .controller('ModalMessagesCtrl', ['$scope', '$uibModal', 'user', 'uiGridConstants', 'AlertService',
+            function ($scope, $uibModal, user, uiGridConstants, AlertService) {
 				var testError = new Error("Test Error");
 				
                 $scope.messagesTableOptions = {
@@ -60,41 +60,36 @@ angular.module("RIF")
 							}
 						}
 					},
-//                    rowTemplate: rowTemplate(),
+                    rowTemplate: rowTemplate(),
                     columnDefs: [
-						{name: 'time', enableHiding: false, width: 150},
+						{name: 'time', enableHiding: false, width: 60},
                         {name: 'message', enableHiding: false, width: "*"},
-                        {name: 'error', enableHiding: false, width: 46, enableFiltering: false,
+                        {name: 'error', enableHiding: false, width: 48, enableFiltering: false,
 								cellTemplate: '<div><button ng-if="row.entity.error" ng-click="grid.appScope.onClickTrace(row.entity)">View</button></div>'}
                     ],
 					data: [
-						{time: "+1.234", message: "Test Message", error: testError}
+						{time: "+1.234", messageLevel: "INFO", message: "Test Message", error: undefined},
+						{time: "+1.234", messageLevel: "ERROR", message: "Error Message", error: testError},
+						{time: "+1.234", messageLevel: "WARNING", message: "Warning Message", error: undefined},
+						{time: "+1.234", messageLevel: "SUCCESS", message: "Success Message", error: undefined}
 					],
                     onRegisterApi: function (gridApi) {
                         $scope.gridApi = gridApi;
                     } 
                 };
-//				$scope.messagesTableOptions.data = [
-//					{time: "+1.234", message: "Test Message", error: undefined}
-//					];
+			
+				$scope.messagesTableOptions.data=AlertService.getMessageList();
 				
-/*                function rowTemplate() {
-                    return  '<div id="testdiv" tabindex="0"' +
-//							' ng-dblclick="grid.appScope.onDblClickRow(row)>' +
-                            '<div style="height: 100%" ng-class="{ ' +
-                            "statusC: row.entity.study_state==='C'," + //C: created, not verfied
-                            "statusV: row.entity.study_state==='V'," + //V: verified, but no other work done;
-                            "statusE: row.entity.study_state==='E'," + //E: extracted imported or created
-                            "statusG: row.entity.study_state==='G'," + //G: Extract failure, extract, results or maps not created
-                            "statusR: row.entity.study_state==='R'," + //R: results computed
-                            "statusS: row.entity.study_state==='S'," + //S: R success
-                            "statusF: row.entity.study_state==='F'," + //F: R failure, R has caught one or more exceptions
-                            "statusW: row.entity.study_state==='W'," + //W: R warning
-                            "statusU: row.entity.study_state==='U'," + //U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.
+                function rowTemplate() {
+                    return  '<div style="height: 100%" ng-class="{ ' +
+                            "statusINFO: row.entity.messageLevel==='INFO'," + 
+                            "statusERROR: row.entity.messageLevel==='ERROR'," + 
+                            "statusWARNING: row.entity.messageLevel==='WARNING'," + 
+                            "statusSUCCESS: row.entity.messageLevel==='SUCCESS'," + 
                             '}">' +
                             '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +
                             '</div>';
-                } */
+                } 
 				
 				function openError(row) {
 					$scope.traceModalInstance=$uibModal.open({
@@ -104,8 +99,29 @@ angular.module("RIF")
 						windowClass: 'error-Modal',
 						keyboard: false,
 						resolve: {
-							getError: function() {
-								return JSON.stringify(row.error, null, 1);
+							getError: function() {			
+								return '<table style="width:100%" class="errorTable">' +
+									'  <tr>' +
+									'    <td>Time</td>' +
+									'    <td>' + row.time + ' S</td>' +
+									'  </tr>' +
+									'  <tr>' +
+									'    <td>Message Level</td>' +
+									'    <td>' + row.messageLevel + '</td>' +
+									'  </tr>' +
+									'  <tr>' +
+									'    <td>Message</td>' +
+									'    <td>' + (row.message || "No message") + '</td>' +
+									'  </tr>' +
+									'  <tr>' +
+									'    <td>Error Message</td>' +
+									'    <td>' + (row.error.message || "No error message") + '</td>' +
+									'  </tr>' +
+									'  <tr>' +
+									'    <td>Error stack</td>' +
+									'    <td><pre>' + (row.error.stack || "No error stack") + '</pre></td>' +
+									'  </tr>' +
+									'</table>';
 							}
 						},
 					    scope: $scope 

@@ -32,12 +32,34 @@
  */
 
 /*
- * SERVICE for Alerts functions. Calls Alert conbtroller
+ * SERVICE for Alerts functions. Calls Alert controller
  */
 angular.module("RIF")
         .factory('AlertService', ['$rootScope',
                 function ($rootScope) {
+					$rootScope.messagesList = [];
+			
                     return {
+						addMessage: function (time, messageLevel, msg, rifError) {
+							var msg=angular.copy({ 
+								time: time,
+								messageLevel: messageLevel, 
+								message: msg,
+								error: rifError
+							});
+							$rootScope.messagesList.push(msg);
+//							$rootScope.$broadcast('consoleMessage', { 
+//								messageLevel: "DEBUG", 
+//								msg: "[rifs-util-alert.js] Add[" + $rootScope.messagesList.length + "]: " + JSON.stringify(msg)
+//							});
+						},
+						getMessageList: function() {
+//							$rootScope.$broadcast('consoleMessage', { 
+//								messageLevel: "DEBUG", 
+//								msg: "[rifs-util-alert.js] Get: " + $rootScope.messagesList.length
+//							});
+							return angular.copy($rootScope.messagesList);
+						},
                         rifMessage: function (messageLevel, msg, rifHide, rifError) {
                             $rootScope.$broadcast('rifMessage', { 
 								messageLevel: messageLevel, 

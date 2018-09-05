@@ -227,6 +227,38 @@
     opacity: 0.8;
 }
 
+.statusINFO .ui-grid-cell-contents {
+    background-color: #0c6997;
+    color: black;
+    opacity: 0.8;
+}
+.statusERROR .ui-grid-cell-contents {
+    background-color: #F64747;
+    color: black;
+    opacity: 0.8;
+}
+.statusWARNING .ui-grid-cell-contents {
+    background-color: #F7CA18;
+    color: black;
+    opacity: 0.8;
+}
+.statusSUCCESS .ui-grid-cell-contents {
+    background-color: #03C9A9;
+    color: black;
+    opacity: 0.8;
+}
+
+table.errorTable {
+    width: 100%;
+}
+table.errorTable td {
+    background-color: white; 
+	border: 1px solid #AAAAAA;
+    padding: 5px;
+    color: black;
+    opacity: 0.8;
+}
+
 /*
 * Export toolbars
 */
