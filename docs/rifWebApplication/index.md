@@ -1,5 +1,7 @@
-RIF Web Application and Middleware Installation
-===============================================
+---
+layout: default
+title: RIF Web Application and Middleware Installation
+---
 
 # Contents
 
@@ -2180,10 +2182,10 @@ instructions if it is updated say to *RIF41*.
 
 The RIF web application may require you to patch the database. You will get messages on logon such as
 **alter_10.sql (post 3rd August 2018 changes for risk analysis) not run** to tell you to run the alter scripts.
-  
+
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/alter_10.PNG?raw=true "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run")
 
-  
+
 See the database Management manual: [6 Patching](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual.html#6-patching)
 
 ## 6.2 RIF Middleware

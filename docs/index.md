@@ -1,5 +1,7 @@
-# Welcome to the Rapid Inquiry Facility Documentation Site
-{:.no_toc}
+---
+layout: default
+title: Welcome to the Rapid Inquiry Facility Documentation Site
+---
 
 1. Contents
 {:toc}
