@@ -15,21 +15,21 @@ from the [RIF GitHub](https://github.com/smallAreaHealthStatisticsUnit/rapidInqu
 
 # Building and installation
 
-[See this document](/introduction/building-and-installation) for details on how to build and install the RIF.
+[See this document](introduction/building-and-installation) for details on how to build and install the RIF.
 
 # Other Manuals
 
 The RIF has the following manuals:
 
-- [RIF 4.0 Manual](/standalone/RIF_v40_Manual.pdf)
-- [RIF 4.0 Data Loader Manual](/standalone/RIF_Data_Loader_Manual.pdf)
-- [RIF Web Application and Middleware Installation](/rifWebApplication/Readme)
-- [Windows Postgres Install using pg_dump and scripts](/rifDatabase/Postgres/production/windows_install_from_pg_dump)
-- [SQL Server Production Database Installation](/rifDatabase/SQLserver/production/INSTALL)
-- [Manual data loading](/rifDatabase/DataLoaderData/DataLoading)
-- [Tile maker Manual](/rifNodeServices/tileMaker)
-- [Database Management Manual](/rifDatabase/databaseManagementManual)
+- [RIF 4.0 Manual](standalone/RIF_v40_Manual.pdf)
+- [RIF 4.0 Data Loader Manual](standalone/RIF_Data_Loader_Manual.pdf)
+- [RIF Web Application and Middleware Installation](rifWebApplication/index)
+- [Windows Postgres Install using pg_dump and scripts](rifDatabase/Postgres/docs/windows_install_from_pg_dump)
+- [SQL Server Production Database Installation](rifDatabase/SQLserver/production/INSTALL)
+- [Manual data loading](rifDatabase/DataLoaderData/DataLoading)
+- [Tile maker Manual](rifNodeServices/tileMaker)
+- [Database Management Manual](rifDatabase/databaseManagementManual)
 
 # For Developers
 
-Documents for developers [are here](/development/index).
+Documents for developers [are here](development/index).
