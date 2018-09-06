@@ -94,8 +94,8 @@ angular.module("RIF")
 					verifySubmissionState2 = function(strict) {
 						var errors=0;
 						var stringKeyList;
-						if (strict) { // Strict: study name and description have to exist
-							stringKeyList = ['studyName', 'geography', 'studyDescription', 'numerator', 'studyType'];
+						if (strict) { // Strict: study name has to exist
+							stringKeyList = ['studyName', 'geography', 'numerator', 'studyType'];
 						}
 						else {
 							stringKeyList = ['geography', 'numerator', 'studyType'];
@@ -105,7 +105,7 @@ angular.module("RIF")
 							if (s[stringKeyList[i]] && s[stringKeyList[i]].length > 0) { // OK
 							}
 							else {
-								AlertService.consoleLog('[rifs-dsub-submissionstate.js] WARNING SubmissionStateService: no string key: ' + 
+								AlertService.rifMessage('warning', 'Submission state verification: no string key: ' + 
 									stringKeyList[i]);
 								errors++;
 							}
@@ -124,15 +124,14 @@ angular.module("RIF")
 									    s[objectKeyList[i]][stringKeyList2[j]].length > 0) { // OK
 									}
 									else {
-										AlertService.consoleLog('[rifs-dsub-submissionstate.js] WARNING SubmissionStateService["' + 
-											objectKeyList[i] + '"]["' + [stringKeyList2[j]] + '"]: no string key: "' + 
+										AlertService.rifMessage('warning', 'Submission state verification: no string key: ' + 
 											stringKeyList2[j] + '" for object key: ' + objectKeyList[i]);
 										errors++;
 									}
 								}
 							}
 							else {
-								AlertService.consoleLog('[rifs-dsub-submissionstate.js] WARNING SubmissionStateService: no object key: ' + 
+								AlertService.rifMessage('warning', 'Submission state verification: no object key: ' + 
 									objectKeyList[i]);
 								errors++;
 							}
@@ -141,7 +140,7 @@ angular.module("RIF")
 						if (s.studyTree && s.comparisonTree && s.investigationTree && s.statsTree) { // OK
 						}
 						else {
-							AlertService.consoleLog('[rifs-dsub-submissionstate.js] WARNING SubmissionStateService: not all trees complete');
+							AlertService.rifMessage('warning', 'Submission state verification: not all trees complete');
 							errors++;
 						}
 							
@@ -166,7 +165,7 @@ angular.module("RIF")
                         getState: function () {
                             return s;
                         },
-                        verifySubmissionState: function (strict) { // Strict: study name and description have to exist
+                        verifySubmissionState: function (strict) { // Strict: study name has to exist
                             return verifySubmissionState2(strict);
                         },
                         resetState: function () {

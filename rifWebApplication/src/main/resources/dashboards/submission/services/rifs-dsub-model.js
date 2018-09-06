@@ -302,7 +302,7 @@ angular.module("RIF")
             return {
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
-                    var modelJSON = updateModel(true); // Study name and description must exist
+                    var modelJSON = updateModel(true); // Study name must exist
 					verifyModel(modelJSON);
 						
                     return modelJSON;
