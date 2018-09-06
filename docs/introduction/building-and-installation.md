@@ -1,5 +1,7 @@
-# Building and Installing the RIF
-{:.no_toc}
+---
+layout: default
+title: Building and Installing the RIF
+---
 
 1. Contents
 {:toc}

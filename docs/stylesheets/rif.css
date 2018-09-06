@@ -1,0 +1,25 @@
+/*
+	I borrowed most of this from https://ehmatthes.github.io/GitHub-Pages-Non-Rubyists/
+*/
+
+a.link-no-style {
+  color: inherit;
+}
+
+
+@media screen and (min-width: 64em) {
+  .page-header-subpages {
+    padding: 0.5rem 0.6rem; } }
+
+@media screen and (min-width: 42em) and (max-width: 64em) {
+  .page-header-subpages {
+    padding: 0.3rem 0.4rem; } }
+
+@media screen and (max-width: 42em) {
+  .page-header-subpages {
+    padding: 0.2rem 0.1rem; } }
+
+/* The parent CSS in the Cayman theme is removing all margins at the moment */
+body {
+	margin: 0 10%;
+}
