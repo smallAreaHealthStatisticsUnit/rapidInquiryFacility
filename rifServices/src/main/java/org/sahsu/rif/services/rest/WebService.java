@@ -1408,7 +1408,7 @@ getParameter("p 1")     yes     c d
 					studyType = studySelection.optString("studyType");
 
 					if (riskAnalysisDescription != null && riskAnalysisDescription.length() > 0) {
-						if (studyType.equals("risk_analysis_study")) {
+						if (rifStudySubmission.getStudy().isRiskAnalysis()) {
 							rifLogger.info(this.getClass(),
 							               "ARWS - study_selection risk analysis: "
 							               + riskAnalysisDescription);
@@ -1426,7 +1426,7 @@ getParameter("p 1")     yes     c d
 						}
 					}
 					else {
-						if (studyType.equals("disease_mapping_study")) {
+						if (rifStudySubmission.getStudy().isDiseaseMapping()) {
 							rifLogger.info(this.getClass(),
 							               "ARWS - study_selection disease mapping");
 						}
