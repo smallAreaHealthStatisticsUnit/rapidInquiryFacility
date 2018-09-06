@@ -120,11 +120,12 @@ angular.module("RIF")
 				var actualTime = end.toLocaleDateString() + " " + end.toLocaleTimeString();
 
 				try {
-					user.rifFrontEndLogger(user.currentUser, 
+					user.rifFrontEndLogger(
+						user.currentUser, 
 						messageType,
 						browser.name + "; v" + browser.version,
-						message.substring(300), // Limit to 300 characters
-						errorMessage.substring(300), // Limit to 300 characters
+						message.substring(0, 300), // Limit to 300 characters
+						errorMessage.substring(0, 300), // Limit to 300 characters
 						errorStack,
 						actualTime,
 	//					actualTime.toDateString() + "; " + actualTime.toTimeString(),
