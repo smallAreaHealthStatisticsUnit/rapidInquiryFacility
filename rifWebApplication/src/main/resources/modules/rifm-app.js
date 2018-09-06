@@ -82,11 +82,43 @@ angular.module("RIF",
         .run(function ($rootScope, $state) {
             $rootScope.$state = $state;
         })
-        .run(function ($rootScope, $uibModalStack) {
-            //force modal close on state chnage
+        .run(['$rootScope', '$uibModalStack', 'AlertService', 'SelectStateService',
+				function ($rootScope, $uibModalStack, AlertService, SelectStateService) {
+			
+			var savedSelectState = {};
+			
+            $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
+				// Save/restore SelectStateService as require
+				
+				if (fromState.name == 'state0' || toState.name == 'state0') {
+					savedSelectState = {};
+					AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
+						"; reset savedSelectState");
+				}
+				else if (fromState.name == 'state1' && toState.name == 'state1') {
+					savedSelectState = SelectStateService.getState();
+					AlertService.consoleLog("[rifm-app.js] state no change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
+						"; save savedSelectState: " + JSON.stringify(savedSelectState, null, 1));
+				}
+				else if (fromState.name == 'state1' && toState.name != 'state1') {
+					savedSelectState = SelectStateService.getState();
+					AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
+						"; save savedSelectState: " + JSON.stringify(savedSelectState, null, 1));
+				}
+				else if (fromState.name != 'state1' && toState.name == 'state1' && savedSelectState) {
+					SelectStateService.setStudySelection(savedSelectState.studySelection, savedSelectState.studyType);
+					AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
+						"; restore savedSelectState: " + JSON.stringify(savedSelectState, null, 1));
+				}
+				else {
+					AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name);
+				}
+			});
+			
+            //force modal close on state change
             $rootScope.$on('$stateChangeSuccess', function (newVal, oldVal) {
                 if (oldVal !== newVal) {
                     $uibModalStack.dismissAll();
                 }
             });
-        });
+        }]);

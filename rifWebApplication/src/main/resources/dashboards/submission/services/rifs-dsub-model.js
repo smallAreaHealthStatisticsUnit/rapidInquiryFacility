@@ -43,12 +43,19 @@ angular.module("RIF")
             var type = "disease_mapping_study";
             var areaType = "disease_mapping_study_area";
 
-            updateModel = function () {
+            updateModel = function (strict) {
                 if (SubmissionStateService.getState().studyType === "Risk Analysis") {
                     type = 'risk_analysis_study';
                     areaType = 'risk_analysis_study_area';
                 } 
-                
+				else {	
+					type = "disease_mapping_study";
+					areaType = "disease_mapping_study_area";
+				}
+                if (SubmissionStateService.verifySubmissionState(strict) == false) {
+					throw new Error("Submission state verification failed");
+				}
+				
                 var model = {
                     "rif_job_submission": {
                         "submitted_by": user.currentUser,
@@ -71,10 +78,17 @@ angular.module("RIF")
                             ]
                         },
 						"study_selection": SelectStateService.getState().studySelection
-					
                     }
                 };
 
+				if (model.rif_job_submission.study_selection == undefined) {
+					model.rif_job_submission.study_selection = SelectStateService.getState();
+					AlertService.rifMessage('warning', "Study selection state has been lost");
+				}
+				else if (model.rif_job_submission.study_selection.studyType == undefined) {
+					model.rif_job_submission.study_selection.studyType = SelectStateService.getState().studyType;
+				}
+				
                 model["rif_job_submission"][type] = {
                     "name": SubmissionStateService.getState().studyName,
                     "description": SubmissionStateService.getState().studyDescription,
@@ -204,15 +218,98 @@ angular.module("RIF")
             _getAttr = function (v) {
                 return '<attr>' + v + '</attr></br>';
             };
+			/* E.g.
+			+253.8: [DEBUG] [rifs-dsub-model.js] studyType: Disease Mapping; 
+			modelJSON["risk_analysis_study"] name: 1002 LUNG CANCER; description: TEST 1002 LUNG CANCER HET 95_96; 
+			study_selection: {
+				 "studySelectedAreas": [
+				  {
+				   "id": "01",
+				   "gid": "01",
+				   "label": "01",
+				   "band": 1
+				  }
+				 ],
+				 "studyShapes": [],
+				 "comparisonSelectedAreas": [
+				  {
+				   "id": "01",
+				   "gid": "01",
+				   "label": "01",
+				   "band": 1
+				  }
+				 ],
+				 "fileList": [],
+				 "bandAttr": [],
+				 "comparisonSelectAt": "SAHSU_GRD_LEVEL1",
+				 "studySelectAt": "SAHSU_GRD_LEVEL1",
+				 "comparisonShapes": [],
+				 "studyType": "disease_mapping_study"
+				}
+			 */
+			verifyModel = function(modelJSON) {
+				var studyType = SubmissionStateService.getState().studyType; // "Disease Mapping" or "Risk Analysis"
+				//  type = "disease_mapping_study" or "risk_analysis_study"
+				var errors=0;
+				if (modelJSON["rif_job_submission"].study_selection.studyType == type) {
+					// OK
+				}
+				else {
+					AlertService.consoleLog('[rifs-dsub-model.js] WARNING modelJSON["rif_job_submission"].study_selection.studyType != type' +
+						'; modelJSON["rif_job_submission"].study_selection.studyType: ' + modelJSON["rif_job_submission"].study_selection.studyType +
+						'; type: ' + type);
+					errors++;
+				}
+				
+				if (type == "risk_analysis_study") {
+					if (studyType == "Risk Analysis") {
+						// OK
+					}
+					else {
+						AlertService.consoleLog('[rifs-dsub-model.js] WARNING Invalid ubmissionStateService.getState().studyType: ' + studyType +
+							'; expecting: "Disease Mapping"');
+						errors++;
+					}
+				}
+				else if (type == "disease_mapping_study") {
+					if (studyType == "Disease Mapping") {
+						// OK
+					}
+					else {
+						AlertService.consoleLog('[rifs-dsub-model.js] WARNING Invalid ubmissionStateService.getState().studyType: ' + studyType +
+							'; expecting: "Risk Analysis"');
+						errors++;
+					}
+				}
+				else {
+					AlertService.consoleLog('[rifs-dsub-model.js] WARNING Invalid study type: ' + type);
+					errors++;
+				}
+				
+//				AlertService.consoleDebug('[rifs-dsub-model.js] verifyModel studyType: ' + SubmissionStateService.getState().studyType +
+//					'; errors: ' + errors + 
+//					'; modelJSON["' + type + '"] name: ' + modelJSON["rif_job_submission"][type].name + 
+//					'; description: ' + modelJSON["rif_job_submission"][type].description +
+//					'; study_selection: ' + JSON.stringify(modelJSON["rif_job_submission"].study_selection, null, 1));		
+				if (errors > 0) {
+					var err = new Error("Study model verification failed with " + errors + " error(s)");
+					
+					AlertService.rifMessage('error', "Study model verification failed with " + errors + " error(s)", err);
+					throw err;
+				}
+			}
 				
             return {
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
-                    return updateModel();
+                    var modelJSON = updateModel(true); // Study name must exist
+					verifyModel(modelJSON);
+						
+                    return modelJSON;
                 },
                 //return the job submission as formatted HTML
                 get_rif_job_submission_HTML: function () {
-                    var modelJSON = updateModel();
+                    var modelJSON = updateModel(false); // Study name and description do not have to exist
 					
                     //Overview
                     var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(modelJSON.rif_job_submission.project.name) +
@@ -281,7 +378,8 @@ angular.module("RIF")
 //                    outputOptions = outputOptions.substring(0, outputOptions.length - 2);
 //                    project += '<section>Options:</section>' + _getAttr(outputOptions);
 
-					AlertService.consoleDebug('get_rif_job_submission_HTML(): ' + project);
+//					AlertService.consoleDebug('[rifs-dsub-model.js] stypeType: ' + SubmissionStateService.getState().studyType +
+//						'; get_rif_job_submission_HTML(): ' + project);
 					
                     return project;
                 }

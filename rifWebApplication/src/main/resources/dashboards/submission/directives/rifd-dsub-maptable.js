@@ -583,13 +583,16 @@ angular.module("RIF")
                                 $scope.areamap.band = 6;
 								
 								SelectStateService.initialiseRiskAnalysis();
+								SelectStateService.getState().studyType="risk_analysis_study";
                             } else {
                                 $scope.possibleBands = [1];
                                 $scope.currentBand = 1;
                                 $scope.areamap.band = 1;
 								
 								SelectStateService.resetState();
+								SelectStateService.getState().studyType="disease_mapping_study";
                             }
+							SelectStateService.verifyStudySelection();
 						};
 
                         /*
@@ -937,11 +940,13 @@ angular.module("RIF")
 						function addSelectedShapes() {
 							var selectedShapes=undefined;
 							// Add back selected shapes
-							if ($scope.input.name == "ComparisionAreaMap") {
-								selectedShapes=SelectStateService.getState().studySelection.comparisonShapes;
-							}
-							else {
-								selectedShapes=SelectStateService.getState().studySelection.studyShapes;
+							if (selectedShapes=SelectStateService.getState().studySelection) {
+								if ($scope.input.name == "ComparisionAreaMap") {
+									selectedShapes=SelectStateService.getState().studySelection.comparisonShapes;
+								}
+								else {
+									selectedShapes=SelectStateService.getState().studySelection.studyShapes;
+								}
 							}
 							if (selectedShapes) {
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() selectedShapes " + 
@@ -1381,9 +1386,10 @@ angular.module("RIF")
 						
 							
 						$scope.createAreaNameList = function () { // Not from latlngList - not in scope when restored
+							var newAreaNameList = {};
+							
 							if (SelectStateService.getState().studySelection && SelectStateService.getState().studySelection.studySelectedAreas) {
 								var studySelectedAreas=SelectStateService.getState().studySelection.studySelectedAreas;
-								newAreaNameList = {};
 								
 								for (var i = 0; i < studySelectedAreas.length; i++) {              									
 									// Update areaNameList for debug
