@@ -126,7 +126,9 @@ angular.module("RIF")
 
                 $scope.fillContents = function () {
                     thisGeography = SubmissionStateService.getState().geography;
-                    thisNumerator = SubmissionStateService.getState().numerator.numeratorTableName;
+					if (SubmissionStateService.getState().numerator) {
+						thisNumerator = SubmissionStateService.getState().numerator;
+					}
                     thisGeoLevel = StudyAreaStateService.getState().studyResolution;
 
                     //taxonomy services
@@ -187,7 +189,7 @@ angular.module("RIF")
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.taxonomyServices.push(res.data[i].identifier);
                     }
-                    $scope.taxonomyScheme = $scope.taxonomyServices[0];
+                    $scope.taxonomyScheme = ($scope.taxonomyServices[0] || "ICD10");
                 }
 
                 //handle fill covariates box

@@ -192,7 +192,7 @@ public final class FrontEndLogger {
 
 		MessageType messageType=null;
 		for (MessageType mType : MessageType.values()) {
-			if (mType.toString().equals(stringMessageType)) {
+			if (mType.toString().toUpperCase().equals(stringMessageType.toUpperCase())) {
 				messageType=mType;
 			}				
 		}

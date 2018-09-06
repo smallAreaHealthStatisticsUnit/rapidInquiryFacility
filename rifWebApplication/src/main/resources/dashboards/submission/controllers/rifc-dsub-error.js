@@ -1,4 +1,3 @@
-<!--
 /**
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
@@ -31,34 +30,29 @@
  * David Morley
  * @author dmorley
  */
--->
 
-<!-- 
-HTML partial for ui-router
-Disease submission modal to run study
--->
-<div class="msettingsMedium" ng-controller="ModalRunCtrl">
-    <div class="msettings-ct">
-        <div class="msettings-header">
-            <h2>Run {{studyType}} study</h2>
-            <a class="modal_close" ng-click="close()"></a>
-        </div>       
-        <div class='modalContainer runDialog'>
-            <a ng-controller="ModalSummaryCtrl" class='viewSummary' ng-click="open()">View study submission summary </a>
-            <div class='runMenu'>
-                <div id='studyOptions' >
-                    <div id="buttons" class='positioning'>
-                        <div class='styleUnderline dropdowns availablesWrapper'>
-                            <select type="text" ng-model="input.projectName" id='projectCode' class='dropdownSelect' ng-options="s for s in input.projects" ng-change="updateModel()">
-                            </select>   
-                             <div class="dropDownLabel">Project Name</div>
-                        </div>
-                    </div>
-                    <textarea ng-model="input.studyDescription" placeholder="Study Description (Optional)" ng-change="updateModel()" 
-                              name='studyDescription' id='studyDescription' class='description'></textarea>   
-                    <button id='finalRun' class='myButton' ng-click="submit()"> RUN </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+/* 
+ * CONTROLLER for disease submission status modal
+ */
+
+angular.module("RIF")
+	.controller('ModalErrorCtrl', ['$scope', '$uibModal',
+		function ($scope, $uibModal) {			
+			
+            $scope.traceClose = function () {
+//				$scope.consoleLog("traceClose A");
+				this.closeTrace();
+            };
+		}])
+		
+	.controller('ModalErrorInstanceCtrl', ['$scope', '$uibModalInstance', 'getError',
+		function ($scope, $uibModalInstance, getError) {
+
+//			$scope.consoleLog("getTrace");
+			$scope.errorTrace=getError;
+			
+			$scope.closeTrace = function () {
+//				$scope.consoleLog("closeTrace B");
+				$uibModalInstance.close();
+			}
+        }]);

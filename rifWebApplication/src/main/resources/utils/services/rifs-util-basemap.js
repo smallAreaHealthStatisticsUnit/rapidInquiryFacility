@@ -254,12 +254,18 @@ angular.module("RIF")
 								if (callback && typeof(callback) == "function") {
 									callback("setDefaultMapBackground() map is undefined.");
 								}
+								else {
+									AlertService.rifMessage("warning", "setDefaultMapBackground() callback is undefined.");
+								}
 								return;
 							}
 							else if (baseMapInUse[map] == undefined) {
 								AlertService.rifMessage("warning", "setDefaultMapBackground() map is invalid: " + map);
 								if (callback && typeof(callback) == "function") {
 									callback("setDefaultMapBackground() map is invalid: " + map);
+								}
+								else {
+									AlertService.rifMessage("warning", "setDefaultMapBackground() callback is undefined.");
 								}
 								return;
 							}
@@ -313,6 +319,9 @@ angular.module("RIF")
 //									AlertService.consoleDebug("[rifs-util-basemap.js]: basemapsList: " + JSON.stringify(basemapsList));
 									callback(undefined /* no error */, map);
 								}
+								else {
+									AlertService.rifMessage("warning", "setDefaultMapBackground() callback is undefined.");
+								}
                             }, function (err) {
 								
                                 AlertService.rifMessage("warning", "Could not get default map background from database " +
@@ -327,6 +336,9 @@ angular.module("RIF")
 										"; using OpenStreetMap Mapnik"), 
 										map);
 								}	
+								else {
+									AlertService.rifMessage("warning", "setDefaultMapBackground() callback is undefined.");
+								}
 							})
 						}
                     };

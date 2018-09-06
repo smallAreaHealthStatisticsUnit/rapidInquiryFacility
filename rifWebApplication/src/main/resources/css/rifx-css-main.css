@@ -851,11 +851,11 @@ div.headerBlock{
     cursor: pointer;
 }
 
-#fromFile:hover, #resetStudy:hover {
+#fromFile:hover, #resetStudy:hover, #viewMessages:hover {
     color: black;
 }
 
-#resetStudy, #fromFile {
+#resetStudy, #fromFile, #viewMessages {
     top: 15px;
     font-size: 12px;
 }

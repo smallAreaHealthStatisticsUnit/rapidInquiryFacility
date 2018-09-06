@@ -35,8 +35,8 @@
  * SERVICE to store state of main submission page
  */
 angular.module("RIF")
-        .factory('SubmissionStateService', 
-                function () {
+        .factory('SubmissionStateService', ['AlertService',
+                function (AlertService) {
 					var areamap;
                     var s = {
                         //these are on the main disease submission page
@@ -57,6 +57,104 @@ angular.module("RIF")
 						removeMap: undefined
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
+					
+					/*
+						+24.3: [DEBUG] [rifs-dsub-submissionstate.js] verifySubmissionState2 SubmissionStateService: {
+						 "studyTree": true,
+						 "comparisonTree": true,
+						 "investigationTree": true,
+						 "statsTree": true,
+						 "studyName": "1006 LUNG CANCER RA",
+						 "healthTheme": {
+						  "name": "cancers",
+						  "description": "covering various types of cancers",
+						  "$$hashKey": "object:231"
+						 },
+						 "geography": "SAHSULAND",
+						 "numerator": {
+						  "numeratorTableName": "NUM_SAHSULAND_CANCER",
+						  "numeratorTableDescription": "cancer numerator",
+						  "denominatorTableName": "POP_SAHSULAND_POP",
+						  "denominatorTableDescription": "population health file",
+						  "$$hashKey": "object:248"
+						 },
+						 "denominator": {
+						  "numeratorTableName": "NUM_SAHSULAND_CANCER",
+						  "numeratorTableDescription": "cancer numerator",
+						  "denominatorTableName": "POP_SAHSULAND_POP",
+						  "denominatorTableDescription": "population health file",
+						  "$$hashKey": "object:248"
+						 },
+						 "projectName": "",
+						 "projectDescription": "",
+						 "studyDescription": "TEST 1006 LUNG CANCER BYM 95 96 Risk Analyisis 02 db covariate",
+						 "studyType": "Risk Analysis"
+						}
+					 */
+					verifySubmissionState2 = function(strict) {
+						var errors=0;
+						var stringKeyList;
+						if (strict) { // Strict: study name has to exist
+							stringKeyList = ['studyName', 'geography', 'numerator', 'studyType'];
+						}
+						else {
+							stringKeyList = ['geography', 'numerator', 'studyType'];
+						}
+						var objectKeyList = ['healthTheme', 'denominator'];
+						for (var i=0; i<stringKeyList.length; i++) {
+							if (s[stringKeyList[i]] && s[stringKeyList[i]].length > 0) { // OK
+							}
+							else {
+								AlertService.rifMessage('warning', 'Submission state verification: no string key: ' + 
+									stringKeyList[i]);
+								errors++;
+							}
+						}
+						for (var i=0; i<objectKeyList.length; i++) {
+							if (s[objectKeyList[i]] && typeof(s[objectKeyList[i]]) == "object") { // OK
+								var stringKeyList2;
+								if (objectKeyList[i] == "healthTheme") {
+									stringKeyList2 = ['name', 'description'];
+								}
+								else {
+									stringKeyList2 = ['numeratorTableName', 'numeratorTableDescription', 'denominatorTableName', 'denominatorTableDescription'];
+								}
+								for (var j=0; j<stringKeyList2.length; j++) {
+									if (s[objectKeyList[i]] && s[objectKeyList[i]][stringKeyList2[j]] && 
+									    s[objectKeyList[i]][stringKeyList2[j]].length > 0) { // OK
+									}
+									else {
+										AlertService.rifMessage('warning', 'Submission state verification: no string key: ' + 
+											stringKeyList2[j] + '" for object key: ' + objectKeyList[i]);
+										errors++;
+									}
+								}
+							}
+							else {
+								AlertService.rifMessage('warning', 'Submission state verification: no object key: ' + 
+									objectKeyList[i]);
+								errors++;
+							}
+						}
+						
+						if (s.studyTree && s.comparisonTree && s.investigationTree && s.statsTree) { // OK
+						}
+						else {
+							AlertService.rifMessage('warning', 'Submission state verification: not all trees complete');
+							errors++;
+						}
+							
+						AlertService.consoleDebug('[rifs-dsub-submissionstate.js] verifySubmissionState2 SubmissionStateService: ' +
+							JSON.stringify(s, null, 1));		
+						if (errors > 0) {
+							var err = new Error("Submission state verification failed with " + errors + " error(s)");
+							
+							AlertService.rifMessage('error', "Submission state verification failed with " + errors + " error(s)", err);
+							return false;
+						}
+						return true;
+					}
+					
                     return {
 						setAreaMap: function (map) {
 							areamap=map;
@@ -66,6 +164,9 @@ angular.module("RIF")
 						},
                         getState: function () {
                             return s;
+                        },
+                        verifySubmissionState: function (strict) { // Strict: study name has to exist
+                            return verifySubmissionState2(strict);
                         },
                         resetState: function () {
 							if (s.removeMap) { // Remove Map
@@ -77,4 +178,4 @@ angular.module("RIF")
                             s.removeMap=removeMap;
                         }
                     };
-                });
+                }]);

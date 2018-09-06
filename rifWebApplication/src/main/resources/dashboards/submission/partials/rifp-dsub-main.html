@@ -56,7 +56,7 @@ Disease submission main 'trees' menu
                 <input type="text" ng-model="studyName" placeholder = "my rif study" id='studyName' class='dropdownSelectSingle' ng-pattern-restrict="^[A-Za-z0-9_ ]*$" ng-change="studyNameChanged()">
                 <div id='studyAvailables' class='availables' > </div>
                 <div class="dropDownLabel">Study Name
-                    <md-tooltip md-direction="right" md-delay="1000">{{studyName}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{studyDescription}}</md-tooltip>
                 </div>
             </div>
         </div>  
@@ -66,7 +66,7 @@ Disease submission main 'trees' menu
                 </select>
                 <div id='healthThemeAvailables' class='availables'></div>
                 <div class="dropDownLabel">Health Theme
-                    <md-tooltip md-direction="right" md-delay="1000">{{healthTheme.name}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{healthTheme.description}}</md-tooltip>
                 </div>
             </div>
         </div>
@@ -86,7 +86,7 @@ Disease submission main 'trees' menu
                 </select>
                 <div id='numeratorAvailables' class='availables' ></div>
                 <div class="dropDownLabel">Numerator
-                    <md-tooltip md-direction="right" md-delay="1000">{{numerator.numeratorTableName}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{numerator.numeratorTableDescription}}</md-tooltip>
                 </div>
             </div>
         </div>
@@ -95,7 +95,7 @@ Disease submission main 'trees' menu
                 <input type="text" ng-model="denominator" id='denominator' class='dropdownSelectSingle' readonly>
                 <div id='denominatorAvailables' class='availables' > </div>
                 <div class="dropDownLabel">Denominator
-                    <md-tooltip md-direction="right" md-delay="1000">{{denominator}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{numerator.denominatorTableDescription}}</md-tooltip>
                 </div>
             </div>
         </div>
@@ -150,5 +150,6 @@ Disease submission main 'trees' menu
     </div>  
     <div id='statusButton' class='subButtonContainer'> 
         <div ng-controller="ModalStatusCtrl" id='status' ng-click="open()">Status</div>
+        <div ng-controller="ModalMessagesCtrl" id='viewMessages' ng-click="open()">Messages</div>
     </div>
 </div>

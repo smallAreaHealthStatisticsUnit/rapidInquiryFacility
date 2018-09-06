@@ -1388,9 +1388,67 @@ getParameter("p 1")     yes     c d
 			JSONObject rifJobSubmission = jsonObject.optJSONObject("rif_job_submission");
 			if (rifJobSubmission != null) {
 				JSONObject studySelection = rifJobSubmission.optJSONObject("study_selection");
+				JSONObject disease_mapping_study = rifJobSubmission.optJSONObject("disease_mapping_study");
+				JSONObject risk_analysis_study = rifJobSubmission.optJSONObject("risk_analysis_study");
+				String name = "<no name>";
+				String description = "<no description>";
+				
+				if (disease_mapping_study != null) {
+					name = disease_mapping_study.optString("name");
+					description = disease_mapping_study.optString("description");	
+				}
+				if (risk_analysis_study != null) {
+					name = risk_analysis_study.optString("name");
+					description = risk_analysis_study.optString("description");
+				}
+				
+				String riskAnalysisDescription=null;
+				String studyType=null;
 				if (studySelection != null) {
-					rifLogger.info(this.getClass(), "ARWS - study_selection: " + studySelection.toString(2));	
+					riskAnalysisDescription = studySelection.optString("riskAnalysisDescription");	
+					studyType = studySelection.optString("studyType");	
+					if (riskAnalysisDescription != null && riskAnalysisDescription.length() > 0) {
+						if (studyType.equals("risk_analysis_study")) {
+							rifLogger.info(this.getClass(), "ARWS - study_selection risk analysis: " + riskAnalysisDescription);	
+						}
+						else if (studyType == null || studyType.length() == 0) {
+							throw new Exception("Parsed risk_analysis_study: \"" + name + "\"; description: " + description + 
+								" but study_selection.studyType is not set: " + riskAnalysisDescription);
+						}
+						else {
+							throw new Exception("Parsed risk_analysis_study: \"" + name + "\"; description: " + description + 
+								" but study_selection.studyType is: " + studyType);
+						}
+					}
+					else {
+						if (studyType.equals("disease_mapping_study")) {
+							rifLogger.info(this.getClass(), "ARWS - study_selection disease mapping");	
+						}
+						else if (studyType == null || studyType.length() == 0) {
+							throw new Exception("Parsed disease_mapping_study: \"" + name + "\"; description: " + description + 
+								" but study_selection.studyType is not set");
+						}
+						else {
+							throw new Exception("Parsed disease_mapping_study: \"" + name + "\"; description: " + description + 
+								" but study_selection.studyType is: " + studyType);
+						}
+					}
 					riftudySubmission.setStudySelection(studySelection);
+				}
+				if (disease_mapping_study != null) {
+					rifLogger.info(this.getClass(), "ARWS - disease_mapping_study: \"" + name + "\"; description: " + description);	
+					
+					if (riskAnalysisDescription != null && riskAnalysisDescription.length() > 0) {
+						throw new Exception("Parsed disease_mapping_study: \"" + name + "\"; description: " + description + 
+							" but study selection has riskAnalysisDescription");
+					}
+				}
+				if (risk_analysis_study != null) {
+					rifLogger.info(this.getClass(), "ARWS - risk_analysis_study: \"" + name + "\"; description: " + description);	
+					if (riskAnalysisDescription == null || riskAnalysisDescription.length() == 0) {
+						throw new Exception("Parsed risk_analysis_study: \"" + name + "\"; description: " + description + 
+							" but study selection does not have riskAnalysisDescription");
+					}
 				}
 			}
 				

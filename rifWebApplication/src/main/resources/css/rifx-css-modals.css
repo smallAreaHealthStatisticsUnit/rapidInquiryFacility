@@ -567,6 +567,15 @@
     overflow: none !important;
 }
 
+.error-Modal .modal-dialog{
+    width: 950px;
+    height: 400px;
+    position: absolute;
+    top:0; bottom: 0; left: 0; right: 0;
+    margin: auto;
+    overflow: none !important;
+}
+
 #traceContents  pre {
 	word-wrap: break-word;
 	overflow-wrap: break-word;
@@ -582,6 +591,14 @@
 }
 
 .status-Modal .modal-dialog{
+    width:1000px;
+    height: 700px;
+    position: absolute;
+    top:0; bottom: 0; left: 0; right: 0;
+    margin: auto;
+}
+
+.messages-Modal .modal-dialog{
     width:1000px;
     height: 700px;
     position: absolute;

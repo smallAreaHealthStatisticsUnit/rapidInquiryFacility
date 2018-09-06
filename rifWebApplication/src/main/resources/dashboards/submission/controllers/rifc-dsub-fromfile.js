@@ -496,9 +496,12 @@ angular.module("RIF")
                 function uploadStudySelection() {
 					try {	
 						SelectStateService.getState().studyType=studyType;
-						if (rifJob.study_selection) {
+						if (rifJob.study_selection) { // Set in JSON file
 							//set StudySelection
 							SelectStateService.setStudySelection(rifJob.study_selection, studyType);
+							if (SelectStateService.getState().studyType == undefined) {	// Set studyType
+								return "SelectStateService.getState().studyType is undefined";
+							}
 							return true;
 						} else {
 							if (SelectStateService.getState().studyType == 'disease_mapping_study') {
@@ -512,6 +515,7 @@ angular.module("RIF")
 							}
 							return true; // Optional for backward compatibility
 						}	
+						SelectStateService.verifyStudySelection();
                     } catch (e) {
                         return "Could not upload and check study selection: " + (e.message||"(no message)");
                     }

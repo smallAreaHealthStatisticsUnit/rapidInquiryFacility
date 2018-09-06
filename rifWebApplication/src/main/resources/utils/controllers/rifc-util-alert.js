@@ -35,8 +35,8 @@
  * CONTROLLER to handle alert bars and notifications over whole application
  */
 angular.module("RIF")
-        .controller('AlertCtrl', ['$scope', 'notifications', 'user', 'ParametersService',
-			function ($scope, notifications, user, ParametersService) {
+        .controller('AlertCtrl', ['$scope', 'notifications', 'user', 'ParametersService', 'AlertService',
+			function ($scope, notifications, user, ParametersService, AlertService) {
             $scope.delay = 0; // mS
 			$scope.lastMessage = undefined;
 			$scope.messageList = [];
@@ -120,11 +120,12 @@ angular.module("RIF")
 				var actualTime = end.toLocaleDateString() + " " + end.toLocaleTimeString();
 
 				try {
-					user.rifFrontEndLogger(user.currentUser, 
+					user.rifFrontEndLogger(
+						user.currentUser, 
 						messageType,
 						browser.name + "; v" + browser.version,
-						message.substring(300), // Limit to 300 characters
-						errorMessage.substring(300), // Limit to 300 characters
+						message.substring(0, 300), // Limit to 300 characters
+						errorMessage.substring(0, 300), // Limit to 300 characters
 						errorStack,
 						actualTime,
 	//					actualTime.toDateString() + "; " + actualTime.toTimeString(),
@@ -387,6 +388,7 @@ angular.module("RIF")
 							hide: rifHide
 							});	
 						$scope.consoleLog("Stack: " + err.stack);
+						AlertService.addMessage("+" + elapsed, messageLevel.toUpperCase(), msg, err);
 					}
 					else if (messageLevel.toUpperCase() == "WARNING") {
 						notifications.showWarning({
@@ -394,6 +396,7 @@ angular.module("RIF")
 							hideDelay: $scope.delay, 
 							hide: rifHide
 							});
+						AlertService.addMessage("+" + elapsed, messageLevel.toUpperCase(), msg, rifError);
 					}
 					else if (messageLevel.toUpperCase() == "SUCCESS") {
 						notifications.showSuccess({
@@ -401,9 +404,10 @@ angular.module("RIF")
 							hideDelay: 
 							$scope.delay, 
 							hide: rifHide});
+						AlertService.addMessage("+" + elapsed, messageLevel.toUpperCase(), msg, rifError);
 					}	
 				}
-				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages to often
+				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages too often
 					$scope.consoleLog("+" + elapsed + ": [DUPLICATE: " + $scope.messageCount + 
 						", msgInterval=" + msgInterval + "] " + 
 						messageLevel + ": " + msg);
