@@ -1,6 +1,6 @@
 github: [metadata]
 repository: smallAreaHealthStatisticsUnit/rapidInquiryFacility
-theme: jekyll-theme-minimal
+theme: jekyll-theme-cayman
 encoding: UTF-8
 kramdown:
    input: GFM
