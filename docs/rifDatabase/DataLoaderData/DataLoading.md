@@ -60,7 +60,7 @@ This document details the manual process for the loading of data into the RIF. T
 * Denominator data. This is in aggregate form.
 * Covariate data. This is again in aggregate form and has been quantilised
 * Administrative geography. This is created by the Tile-Maker tool; this document details the loading of
-  the administrative geography data and the geo-coding requirements of the RIF. See the [tile-maker manual](/rifNodeServices/tileMaker) for how to create
+  the administrative geography data and the geo-coding requirements of the RIF. See the [tile-maker manual]({{ site.baseurl }}/rifNodeServices/tileMaker) for how to create
   RIF administrative geographies.
 
 RIF data loading occurs in two distinct phases;
@@ -73,7 +73,7 @@ RIF data loading occurs in two distinct phases;
   to users in the RIF. There are two routes to carry out this this processing:
   * Via the RIF data loader tool. This is the automated process for loading data into the RIF. The data loader tool carries out additional load pre-processing and then generates data and
     scripts for both SQL Server and Postgres. The current data loader documentation is not in this document; but in:
-	[RIF Data Loader Manual](/source-documents/RIF%20Data%20Loader%20Manual.pdf).
+	[RIF Data Loader Manual]({{ site.baseurl }}/source-documents/RIF%20Data%20Loader%20Manual.pdf).
 	The data loader tools is still in development and is not expected to be complete until 2019.
   * Manually via a user created script. Again an example is provided using the US SEER Cancer Registry data with example
     scripts for both Postgres and SQL Server.
@@ -1086,7 +1086,7 @@ END;
 
 The *SAHSULAND* example geography is supplied as part of the RIF. To load the SEER test dataset you first
 need to load the USA County level administrative geography. The scripts and the data are creared by the
-[tile-maker](/rifNodeServices/tileMaker) program:
+[tile-maker]({{ site.baseurl }}/rifNodeServices/tileMaker) program:
 
 To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA&gt;
 
