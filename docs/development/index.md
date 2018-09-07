@@ -1,7 +1,11 @@
+<!--
 ---
 layout: default
 title: Developer Documentation
 ---
+-->
+
+# Developer Documentation
 
 ## RIF Architecture
 
