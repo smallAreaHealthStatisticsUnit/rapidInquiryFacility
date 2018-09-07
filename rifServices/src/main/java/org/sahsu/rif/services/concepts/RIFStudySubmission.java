@@ -1,6 +1,7 @@
 
 package org.sahsu.rif.services.concepts;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLReader;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 
@@ -64,6 +66,20 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 
     	return new RIFStudySubmission();
     }
+
+	/**
+	 * Gets a new instance from an XML {@link InputStream}
+	 * @param stream the XML {@link InputStream}
+	 * @return an instance of {@code RIFStudySubmission}
+	 * @throws RIFServiceException on any failure
+	 */
+	public static RIFStudySubmission newInstance(final InputStream stream)
+		    throws RIFServiceException {
+
+		    RIFStudySubmissionXMLReader reader = new RIFStudySubmissionXMLReader();
+		    reader.readFile(stream);
+		    return reader.getStudySubmission();
+    }
 	
     /* studySelection get/set methods */
 	public void setStudySelection(JSONObject studySelection) {
@@ -76,7 +92,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
     /**
      * Creates the copy.
      *
-     * @param originalRIFJobSubmission the original rif job submission
+     * @param originalRIFStudySubmission the original rif study submission
      * @return the RIF job submission
      */
     public static RIFStudySubmission createCopy(
