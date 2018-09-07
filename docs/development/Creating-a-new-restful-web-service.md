@@ -1,28 +1,10 @@
-Creating a new restful web service
-----------------------------------
+---
+layout: default
+title: Creating a new restful web service
+---
 
-
-# Contents
-
-- [1. Define the web service](#1-define-the-web-service)
-  - [1.1 GetExtractStatus Definition](#11-getextractstatus-definition)
-  - [1.2 GetExtractStatus Usage](#12-getextractstatus-usage)
-  - [1.3 GetExtractStatus Parameters](#13-getextractstatus-parameters)
-  - [1.4 GetExtractStatus Return Data](#14-getextractstatus-return-data)
-- [2. Middleware Steps](#2-middleware-steps)
-  - [2.1 Add to the PG/MSSQLRIFStudySubmissionWebServiceResource class](#21-add-to-the-pgmssqlrifstudysubmissionwebserviceresource-class)
-  - [2.2 Add to the PG/MSSQLAbstractRIFWebServiceResource class](#22-add-to-the-pgmssqlabstractrifwebserviceresource-class)
-  - [2.3 Add to the Common Business Concept Layer RIFStudySubmissionAPI class](#23-add-to-the-common-business-concept-layer-rifstudysubmissionapi-class)
-  - [2.4 Add to PG/MSSQLAbstractRIFStudySubmissionService class](#24-add-to-pgmssqlabstractrifstudysubmissionservice-class)
-  - [2.5 Add to the PG/MSSQLStudyExtractManager class](#25-add-to-the-pgmssqlstudyextractmanager-class)
-  - [2.6 Addtional files needing editing](#26-addtional-files-needing-editing)
-    - [2.6.1 Add audit trail message](#261-add-audit-trail-message)
-    - [2.6.2 Add error code to RIFServiceError enum](#262-add-error-code-to-rifserviceerror-enum)
-    - [2.6.3 To add SQL statement debug to AbstractSQLManager properties file](#263-to-add-sql-statement-debug-to-abstractsqlmanager-properties-file)
-- [3. Front End Steps](#3-front-end-steps)
-  - [3.1 Add to backend requests](#31-add-to-backend-requests)
-  - [3.2 Add to controller](#32-add-to-controller)
-- [4. Example log of error from restful services, including stacks](#4-example-log-of-error-from-restful-services-including-stacks)
+1. Contents
+{:toc}
 
 Peter Hambly
 16th October 2017

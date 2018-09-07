@@ -1,4 +1,7 @@
-# Linux installation from source notes
+---
+layout: default
+title: Linux installation from source notes
+---
 
 ## Redhat Enterprise Linux 6
 

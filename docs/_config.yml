@@ -12,11 +12,10 @@ gfm_quirks: paragraph_end
 
 # ---------------------------------------------------------------------------------------
 # 
-# The baseurl value probably doesn't need to be here, but when it was set as per the 
-# commented-out version below -- which should be correct for GitHub pages -- it made
-# some pages not appear at the correct URL, and some appear at multiple URLs, with no
-# obvious pattern. Setting it to the empty value as per the live line is probably not
-# necessary, but I'm leaving it here as a reminder.
+# There is some confusion about what the baseurl value should be. The one specifying 
+# the project name seems like it should work for GitHub Pages, and it can easily be 
+# overridden for local Jekyll runs if necessary (though it doesn't seem to be 
+# necessary at present).
 #
 baseurl: /rapidInquiryFacility
 # baseurl: ""

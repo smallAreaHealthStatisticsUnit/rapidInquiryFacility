@@ -1,5 +1,7 @@
-RIF40 Postgres database build from Github
-=========================================
+---
+layout: default
+title: RIF40 Postgres database build from Github
+---
 
 # Contents
 - [1. Postgres Requirements](#1-postgres-requirements)

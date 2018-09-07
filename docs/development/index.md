@@ -12,7 +12,7 @@ title: Developer Documentation
 * [Coding Standards]({{ site.baseurl }}/development/coding-standards) -- see this for our preferences for code formatting, and so on.
 * [RIF design documentation on Sourceforge](http://rapidinquiryfacility.sourceforge.net/index.html)
 * [Database Design]({{ site.baseurl }}/development/Database-design)
-* [Database test harness]({{ site.baseurl }}/rifDatabase/TestHarness/db_test_harness)
+* [Database test harness]({{ site.baseurl }}/rifDatabase/TestHarness/db_test_harness/README)
 * [General RIF Installation Notes for the Middleware and the Data Loader Tool]({{ site.baseurl }}/rifDatabase/General-RIF-Installation-Notes-for-the-Middleware-and-the-Data-Loader-Tool)
 * [Opening the RIF front end in NetBeans8 for editing and debugging]({{ site.baseurl }}/development/Opening-the-RIF-front-end-in-NetBeans8-for-editing---debugging)
 * [Opening the RIF repository in Eclipse for editing]({{ site.baseurl }}/development/Opening-the-RIF-repository-in-Eclipse-for-editing)

@@ -29,7 +29,7 @@ See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres 
 
 ### Extra Configuration
 
-You need to set some [configuration parameters](Extra_Postgres_config) for Postgres.
+You need to set some [configuration parameters](/rifDatabase/Postgres/docs/Extra_Postgres_config) for Postgres.
 
 ## Microsoft SQL Server
 

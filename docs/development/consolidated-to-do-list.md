@@ -1,4 +1,7 @@
-# Consolidated To-do List
+---
+layout: default
+title: Consolidated To-do List
+---
 
 **Created 2018-09-03** by Martin McCallion, from various documents relating to Kev’s departure a year or more ago, and existing `TODO.md` documents. I intend to turn everything  here into issues in the GitHub project, as that will be a better way of managing the project into the future.
 
