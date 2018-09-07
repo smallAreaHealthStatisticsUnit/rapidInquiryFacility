@@ -25,7 +25,7 @@ Detailed build instructions for Postgres:
 
 ### Installing the RIF Postgres Database
 
-See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/production/windows_install_from_pg_dump)
+See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/docs/windows_install_from_pg_dump)
 
 ### Extra Configuration
 
@@ -35,7 +35,7 @@ You need to set some [configuration parameters](Extra_Postgres_config) for Postg
 
 ### Building the RIF SQL Server Database
 
-See: [Building the RIF SQL Server database from github](/rifDatabase/SQLserver/installation/README)
+See: [Building the RIF SQL Server database from github](/rifDatabase/SQLserver/installation/)
 
 ### Installing the RIF SQL Server Database
 
@@ -43,7 +43,7 @@ See: [Installing the RIF SQL Server database from a SAHSU supplied database expo
 
 ## Web Services
 
-See: [Building RIF web services from github and installing securely in Tomcat](/rifWebApplication/Readme)
+See: [Building RIF web services from github and installing securely in Tomcat](/rifWebApplication/)
 
 ### Taxonomy Services
 

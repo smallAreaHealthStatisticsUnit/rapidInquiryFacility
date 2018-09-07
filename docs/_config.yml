@@ -9,5 +9,15 @@ future: true
 jailed: false
 #theme: jekyll-theme-primer
 gfm_quirks: paragraph_end
-#baseurl: /rapidInquiryFacility
-baseurl: 
+
+# ---------------------------------------------------------------------------------------
+# 
+# The baseurl value probably doesn't need to be here, but when it was set as per the 
+# commented-out version below -- which should be correct for GitHub pages -- it made
+# some pages not appear at the correct URL, and some appear at multiple URLs, with no
+# obvious pattern. Setting it to the empty value as per the live line is probably not
+# necessary, but I'm leaving it here as a reminder.
+#
+baseurl: /rapidInquiryFacility
+# baseurl: ""
+# ---------------------------------------------------------------------------------------

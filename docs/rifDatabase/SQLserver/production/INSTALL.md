@@ -14,32 +14,32 @@ SQL Server Production Database Installation
    - [4.1 Creating The Database](#41-creating-the-database)
    - [4.2 Creating a New User](#42-creating-a-new-user)
    - [4.3 Testing The Database](#43-testing-the-database)
-- [5. Tuning](#5-tuning)   
+- [5. Tuning](#5-tuning)
 
 # 1. Install SQL Server
 
-Install SQL Server 2012 SP2 or 2016(Express for a test system/full version for production). **DO NOT INSTALL SQL Server 2008 or before**: 
+Install SQL Server 2012 SP2 or 2016(Express for a test system/full version for production). **DO NOT INSTALL SQL Server 2008 or before**:
 
 * [SQL Server 2012](https://www.microsoft.com/en-gb/download/details.aspx?id=43351#)
 * [SQL Server 2016](https://www.microsoft.com/en-GB/evalcenter/evaluate-sql-server-2016)
-* [SQL Server 2016 developer edition](https://my.visualstudio.com/Downloads?q=SQL%20Server%202016%20Developer). Note this requires a My visual studio login. An 
+* [SQL Server 2016 developer edition](https://my.visualstudio.com/Downloads?q=SQL%20Server%202016%20Developer). Note this requires a My visual studio login. An
   installer may be downloaded from: http://go.microsoft.com/fwlink/?LinkID=799009
 
 SQL Server 2012 developer/evaluation edition databases are limited to 5G in size. This is a series limitation for the RIF. The SQL Server 2016 developer edition
 does not haves this limitation and is therefore recommended for RIF development. Note:
 
-* Use of development/evaluation edition is Usage is restricted – design, development, testing and 
-  demonstration of programs using the SQL database engine are all permitted, as long as the user has permanent access to the license owner’s internal network. 
-  Therefore, while you could demonstrate the RIF to a client, you could not let that client play around with it themselves afterwards. Using the license in 
+* Use of development/evaluation edition is Usage is restricted – design, development, testing and
+  demonstration of programs using the SQL database engine are all permitted, as long as the user has permanent access to the license owner’s internal network.
+  Therefore, while you could demonstrate the RIF to a client, you could not let that client play around with it themselves afterwards. Using the license in
   any other way, such as to support a commercial software installation, would constitute a breach of the license terms
 
-* Microsoft gets access to your data – it is mandatory with any non-commercial installation of SQL Server that all your usage data covering performance, errors, 
+* Microsoft gets access to your data – it is mandatory with any non-commercial installation of SQL Server that all your usage data covering performance, errors,
   feature use, IP addresses, device identifiers and more, is sent to Microsoft. There are no exceptions. This will cause issues with particularly sensitive data
   and the developer edition may not work on the private network.
 
-See: https://www.matrix42.com/blog/2016/09/23/how-free-is-microsoft-sql-server-developer-edition-really/ 
+See: https://www.matrix42.com/blog/2016/09/23/how-free-is-microsoft-sql-server-developer-edition-really/
 
-If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; 
+If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed;
 [SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017)
 
 Check the version of your database:
@@ -68,16 +68,16 @@ Microsoft SQL Server 2016 (SP1-GDR) (KB4019089) - 13.0.4206.0 (X64)
         Developer Edition (64-bit) on Windows 10 Pro 6.3 <X64> (Build 16299: )
 ```
 
-* The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more 
+* The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more
   than one SQL Server database on your machine, see setting *SQLCMDSERVER* in the next section.
-  
+
 # 2. Installing the RIF
 
 A standalone script *rif40_database_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
-*...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by 
-*rebuild_all.bat* see: [SQL Server Development Database Installation](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md) or supplied by SAHSU. 
+*...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by
+*rebuild_all.bat* see: [SQL Server Development Database Installation](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/) or supplied by SAHSU.
 If you use the pre-built version check that the dump *sahsuland_dev.bak* is unZipped.
-   
+
 You will need to enter:
 
 * Database name
@@ -100,12 +100,12 @@ This script runs:
   * Import database from ./sahsuland_dev.bak into $(NEWDB); fixing the log file names so to be as just created for $(NEWDB);
   * rif40_production_user.sql - creates the production user specified. This in turn runs:
     * rif40_user_objects.sql;
-	
-  Notes: 
+
+  Notes:
 	* *Does not grant ```BLUK INSERT```*;
 	* User is a RIF manager.
 
-* Script output. Use control-C to abort the script before database (re-)creation.	
+* Script output. Use control-C to abort the script before database (re-)creation.
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>rif40_database_install.bat
 
@@ -139,12 +139,12 @@ rif40_production_user.sql built OK 0; created RIF40 production database sahsulan
 
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>
 ```
-	
+
 ## 2.1 Network connection errors
 
 This is when the above command will not run.
 
-```	
+```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -E -d rif40 -b -m-1 -e -r1 -i rif40_production_creation.sql
 Result 0x2, Level 16, State 1
 Named Pipes Provider: Could not open a connection to SQL Server [2].
@@ -154,10 +154,10 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
   * You may need to specify the instance name: e.g. `-S PETER-PC\SAHSU`, e.g.
 	```
 	sqlcmd -E -S PETER-PC\SAHSU -d rif40 -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\" -v newdb="%NEWDB%"
-	```  
-    If you set this it will need to be set in the environment as *SQLCMDSERVER*. This is usually caused by 
-    multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry 
-	key is wrong. In Windows 10/SQL Server 2012 setting the instance name caused an error (i.e. PETER-PC worked but 
+	```
+    If you set this it will need to be set in the environment as *SQLCMDSERVER*. This is usually caused by
+    multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry
+	key is wrong. In Windows 10/SQL Server 2012 setting the instance name caused an error (i.e. PETER-PC worked but
 	PETER-PC\SAHSU did not).
   * Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
   * Check TCP access is enabled using SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
@@ -172,7 +172,7 @@ Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXX
 
 ### 2.2.1 Wrong server authentication mode
 
-The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
+The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server.
 See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
 
 ```
@@ -186,7 +186,7 @@ Login failed for user 'peter'.
 Login failed for user 'peter'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
 ```
 
-  The node also show how to enable the sa (system administrator) account. As with all relational database administration accounts as strong (12+ character) password is recommended to defeat 
+  The node also show how to enable the sa (system administrator) account. As with all relational database administration accounts as strong (12+ character) password is recommended to defeat
   attacks by dictionary or all possible passwords.
 
   This is what a successful login looks like: `sqlcmd -U kevin -P XXXXXXXXXXXX`
@@ -201,9 +201,9 @@ rif40
 
 (1 rows affected)
 1>
-``` 
+```
 
-The database specified by *db_name()* will be the one specified by $(NEWDB). Running this script against a pre-existing development user 
+The database specified by *db_name()* will be the one specified by $(NEWDB). Running this script against a pre-existing development user
 will change the default database from *sahsuland_dev* to *$(NEWDB)*.
 
 ## 2.3 SQL Server Restore
@@ -214,7 +214,7 @@ SQL Server needs access to the current directory. The simplest
 way is to allow read and execute permission to the local users group (e.g. PH-LAPTOP\Users).
 
 *DO NOT TRY `RESTORE` FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
-access to; e.g. somewhere on the C: drive. Note that SQL Server *RESTORE* behaves differently if you logon using Windows authentication (where it will use your credentials 
+access to; e.g. somewhere on the C: drive. Note that SQL Server *RESTORE* behaves differently if you logon using Windows authentication (where it will use your credentials
 to access the files) to using a username and password (where it will use the Server's credentials to access the file).
 
 ```
@@ -248,7 +248,7 @@ guest
 
 (1 rows affected)
 1> quit
-``` 
+```
 
 The solution to this is to:
 
@@ -266,12 +266,12 @@ The solution to this is to:
 
 	(1 rows affected)
 	1> quit
-	``` 
+	```
 * Re-run *rif40_database_install.bat*
-	
+
 # 3. Create Additional Users
 
-Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
+Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using
 the -v newuser=<my new user>  and -v newpw=<my new password> parameters. Run as Administrator:
 
 ```
@@ -302,9 +302,9 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
 
 # 4. Installation By Hand
 
-This assumes that your database team will not run the *rif40_database_install.bat* script as an Administrator, so they will have to run: 
-*rif40_production_creation.sql* as a database administrator or run the commands manually in it, and then do the same for 
-*rif40_production_user.sql* to create a user, also as an administrator. The RIF must have a *rif40* schema account; although the password can be set to gibberish. 
+This assumes that your database team will not run the *rif40_database_install.bat* script as an Administrator, so they will have to run:
+*rif40_production_creation.sql* as a database administrator or run the commands manually in it, and then do the same for
+*rif40_production_user.sql* to create a user, also as an administrator. The RIF must have a *rif40* schema account; although the password can be set to gibberish.
 There are no restrictions as to the database name (other than it being valid).
 
 All commands are assumed to be run by an administrator.
@@ -328,13 +328,13 @@ SET @first_char=SUBSTRING(@newdb, 1, 1);
 IF @invalid_chars IS NULL
 	RAISERROR('New database name is null', 16, 1, @newdb);
 ELSE IF @invalid_chars > 0
-	RAISERROR('New database name: %s contains invalid character(s) starting at position: %i.', 16, 1, 
+	RAISERROR('New database name: %s contains invalid character(s) starting at position: %i.', 16, 1,
 		@newdb, @invalid_chars);
-ELSE IF (LEN(@newdb) > 30) 
+ELSE IF (LEN(@newdb) > 30)
 	RAISERROR('New database name: %s is too long (30 characters max).', 16, 1, @newdb);
 ELSE IF ISNUMERIC(@first_char) = 1
 	RAISERROR('First character in database name: %s is numeric: %s.', 16, 1, @newdb, @first_char);
-ELSE 
+ELSE
 	PRINT 'New database name: ' + @newdb + ' OK';
 GO
 ```
@@ -345,7 +345,7 @@ USE master;
 GO
 IF EXISTS(SELECT * FROM sys.sysdatabases where name='mydatabasename')
 	DROP DATABASE mydatabasename;
-GO	
+GO
 CREATE DATABASE mydatabasename;
 GO
 ```
@@ -359,7 +359,7 @@ GO
 --
 SELECT DB_NAME(mf1.database_id) AS database_name,
 	   mf1.physical_name AS physical_db_filename,
-	   mf2.physical_name AS physical_log_filename 
+	   mf2.physical_name AS physical_log_filename
   FROM sys.master_files mf1, sys.master_files mf2
  WHERE mf1.database_id = mf2.database_id
    AND mf1.name        = 'mydatabasename'
@@ -373,7 +373,7 @@ GO
 DECLARE c1_db CURSOR FOR
 	SELECT DB_NAME(mf1.database_id) AS database_name,
 	       mf1.physical_name AS physical_db_filename,
-	       mf2.physical_name AS physical_log_filename 
+	       mf2.physical_name AS physical_log_filename
 	  FROM sys.master_files mf1, sys.master_files mf2
 	 WHERE mf1.database_id = mf2.database_id
 	   AND mf1.name        = 'mydatabasename'
@@ -410,10 +410,10 @@ SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev_log, NEW
 Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
 The file name 'sahsuland_log' has been set.
 
- */	
+ */
 
 DECLARE @sql_stmt NVARCHAR(MAX);
-SET @sql_stmt =	'RESTORE DATABASE [mydatabasename]' + @crlf + 
+SET @sql_stmt =	'RESTORE DATABASE [mydatabasename]' + @crlf +
 '        FROM DISK=''mybackuppath\sahsuland_dev.bak''' + @crlf +
 '        WITH REPLACE,' + @crlf +
 '        MOVE ''sahsuland_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
@@ -499,7 +499,7 @@ IF DATABASE_PRINCIPAL_ID('rif_user') IS NULL
 GO
 IF DATABASE_PRINCIPAL_ID('rif_student') IS NULL
 	CREATE ROLE [rif_student];
-GO	
+GO
 IF DATABASE_PRINCIPAL_ID('rif_no_suppression') IS NULL
 	CREATE ROLE [rif_no_suppression];
 GO
@@ -569,14 +569,14 @@ SET @first_char=SUBSTRING(@newuser, 1, 1);
 IF @invalid_chars IS NULL
 	RAISERROR('New username is null', 16, 1, @newuser);
 ELSE IF @invalid_chars > 0
-	RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1, 
+	RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1,
 		@newuser, @invalid_chars);
-ELSE IF (LEN(@newuser) > 30) 
+ELSE IF (LEN(@newuser) > 30)
 	RAISERROR('New username: %s is too long (30 characters max).', 16, 1, @newuser);
 ELSE IF ISNUMERIC(@first_char) = 1
 	RAISERROR('First character in username: %s is numeric: %s.', 16, 1, @newuser, @first_char);
-ELSE 
-	PRINT 'New username: ' + @newuser + ' OK';	
+ELSE
+	PRINT 'New username: ' + @newuser + ' OK';
 GO
 ```
 
@@ -589,7 +589,7 @@ CREATE LOGIN [mydatabaseuser] WITH PASSWORD='mydatabasepassword', CHECK_POLICY =
 GO
 
 ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
-GO	
+GO
 ```
 
 3. Creare user and grant roles
@@ -600,7 +600,7 @@ BEGIN
 	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'mydatabaseuser')
 	CREATE USER [mydatabaseuser] FOR LOGIN [mydatabaseuser] WITH DEFAULT_SCHEMA=[dbo]
 	ELSE ALTER USER [mydatabaseuser] WITH LOGIN=[mydatabasepassword];
-	
+
 --
 -- Object privilege grants
 --
@@ -611,7 +611,7 @@ BEGIN
 		EXEC('CREATE SCHEMA [mydatabaseuser] AUTHORIZATION [mydatabasepassword]');
 	ALTER USER [mydatabaseuser] WITH DEFAULT_SCHEMA=[mydatabaseuser];
 	ALTER ROLE rif_user ADD MEMBER [mydatabaseuser];
-	ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];	
+	ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];
 END;
 GO
 ```
@@ -632,14 +632,14 @@ GO
 --	rif40_auto_indirect_checks
 --
 
-IF EXISTS (SELECT * FROM sys.objects 
+IF EXISTS (SELECT * FROM sys.objects
 WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom]') AND type in (N'V'))
 BEGIN
 	DROP VIEW [mydatabaseuser].[rif40_num_denom]
 END
 GO
 
-CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS 
+CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS
  WITH n AS (
          SELECT n1.geography,
             n1.numerator_table,
@@ -670,7 +670,7 @@ CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS
                   WHERE d_1.isindirectdenominator = 1
   				    AND d_1.automatic = 1
 					AND [rif40].[rif40_is_object_resolvable](d_1.table_name) = 1) d1
-          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1 
+          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1
 		    AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL
         )
  SELECT n.geography,
@@ -685,54 +685,54 @@ CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS
   WHERE n.geography = d.geography
 GO
 
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.' , 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.' ,
 	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Geography', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Geography',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'geography'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'numerator_table'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table description', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table description',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'numerator_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table health study theme description', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table health study theme description',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'theme_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'denominator_table'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table description', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table description',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'denominator_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.' , 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.' ,
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'automatic'
 GO
 
-IF EXISTS (SELECT * FROM sys.objects 
+IF EXISTS (SELECT * FROM sys.objects
 WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom_errors]') AND type in (N'V'))
 BEGIN
 	DROP VIEW [mydatabaseuser].[rif40_num_denom_errors]
 END
 GO
 
-CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS 
+CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS
  WITH n AS (
          SELECT n1.geography,
             n1.numerator_table,
@@ -795,87 +795,87 @@ CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS
   WHERE n.geography = d.geography;
 GO
 
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' , 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' ,
 	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Geography', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Geography',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'geography'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table owner' , 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table owner' ,
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'numerator_owner'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table' , 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table' ,
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'numerator_table'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the numerator table resolvable and accessible (0/1)' , 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the numerator table resolvable and accessible (0/1)' ,
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'is_numerator_resolvable'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the numerator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the numerator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'n_num_denom_validated'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table description', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table description',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'numerator_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table owner', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table owner',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'denominator_owner'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'denominator_table'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the denominator table resolvable and accessible (0/1)', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the denominator table resolvable and accessible (0/1)',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'is_denominator_resolvable'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the denominator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the denominator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'd_num_denom_validated'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table description', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table description',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'denominator_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'automatic'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Error flag 0/1. Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Error flag 0/1. Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'auto_indirect_error_flag'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'auto_indirect_error'
 GO
 ```
 
 ## 4.3 Testing The Database
 
-The best test of a correctly installed database is to logon as a test user and select from rif40_num_denom (numerator/denominator) pair view. The standard row 
+The best test of a correctly installed database is to logon as a test user and select from rif40_num_denom (numerator/denominator) pair view. The standard row
 will only appear if you can find and select from both tables:
- 
+
 ```SQL
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>sqlcmd -U peter -P XXXXXXXXXXXXXXXXXXXXXXX -d sahsuland
 1> select * from rif40_num_denom;

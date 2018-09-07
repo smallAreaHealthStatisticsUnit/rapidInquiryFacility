@@ -528,7 +528,7 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
  	  * *v4_0_alter_6.sql*: R support [optional script if PL/R integration is enabled with *USE_PLR=Y*].
  	  * *v4_0_alter_7.sql*: Support for taxonomies/ontologies (e.g. ICD9, 10); removed previous table based support.
                             Modify t_rif40_inv_conditions to remove SQL injection risk.
- 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](../../TestHarness/db_test_harness/README.md)
+ 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](../../TestHarness/db_test_harness/)
  	  * *v4_0_alter_9.sql*: Misc integration fixes
 
 		  1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles;
