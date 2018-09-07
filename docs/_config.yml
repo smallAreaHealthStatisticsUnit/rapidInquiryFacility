@@ -19,5 +19,5 @@ gfm_quirks: paragraph_end
 # necessary, but I'm leaving it here as a reminder.
 #
 # baseurl: /rapidInquiryFacility
-# baseurl: ""
+baseurl: ""
 # ---------------------------------------------------------------------------------------

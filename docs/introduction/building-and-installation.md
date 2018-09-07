@@ -25,7 +25,7 @@ Detailed build instructions for Postgres:
 
 ### Installing the RIF Postgres Database
 
-See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/production/windows_install_from_pg_dump)
+See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](/rifDatabase/Postgres/docs/windows_install_from_pg_dump)
 
 ### Extra Configuration
 
