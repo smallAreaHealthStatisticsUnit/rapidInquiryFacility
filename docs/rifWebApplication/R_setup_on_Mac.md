@@ -18,7 +18,7 @@ but I don't recommend that now. The Homebrew version has issues with the INLA li
 
 ## Additional R Setup
 
-You should be able to run R from the Mac terminal now. [Follow the main instructions](../rifWebApplication/Readme.md#433-r-packages) to ensure all the required R packages are setup. Make sure RJDBC is among them, as it is needed for database access.
+You should be able to run R from the Mac terminal now. [Follow the main instructions](../rifWebApplication/#433-r-packages) to ensure all the required R packages are setup. Make sure RJDBC is among them, as it is needed for database access.
 
 ## Getting R to Run from Java
 
