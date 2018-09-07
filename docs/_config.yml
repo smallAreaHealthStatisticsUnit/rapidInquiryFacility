@@ -18,6 +18,6 @@ gfm_quirks: paragraph_end
 # obvious pattern. Setting it to the empty value as per the live line is probably not
 # necessary, but I'm leaving it here as a reminder.
 #
-#baseurl: /rapidInquiryFacility
-baseurl: 
+baseurl: /rapidInquiryFacility
+# baseurl: 
 # ---------------------------------------------------------------------------------------
