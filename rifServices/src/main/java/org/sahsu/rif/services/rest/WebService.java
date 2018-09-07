@@ -1318,8 +1318,7 @@ getParameter("p 1")     yes     c d
 			rifLogger.info(this.getClass(), "ARWS-submitStudy122 fileFormat=="+format+"==");
 			if (StudySubmissionFormat.JSON.matchesFormat(tmpFormat)) {
 				rifLogger.info(this.getClass(), "ARWS-submitStudy122 JSON");
-				rifStudySubmission
-					= getRIFSubmissionFromJSONSource(inputStream);
+				rifStudySubmission = getRIFSubmissionFromJSONSource(inputStream);
 			}
 			else {
 				rifLogger.info(this.getClass(), "ARWS-submitStudy122 ");
@@ -1373,7 +1372,7 @@ getParameter("p 1")     yes     c d
 			}
 			reader.close();
 
-			rifLogger.info(getClass(), "JSON from UI: " + buffer.toString());
+			rifLogger.debug(getClass(), "JSON from UI: " + buffer.toString());
 			
 			JSONObject jsonObject = new JSONObject(buffer.toString());
 			
@@ -1387,55 +1386,51 @@ getParameter("p 1")     yes     c d
 			// Parse out study_selection to avoid using the XML parser
 			JSONObject rifJobSubmission = jsonObject.optJSONObject("rif_job_submission");
 			if (rifJobSubmission != null) {
-				JSONObject studySelection = rifJobSubmission.optJSONObject("study_selection");
 				JSONObject study = rifJobSubmission.optJSONObject("disease_mapping_study");
 				if (study == null) {
 					study = rifJobSubmission.optJSONObject("risk_analysis_study");
 				}
-				String name = "<no name>";
-				String description = "<no description>";
-				
-				if (study != null) {
-					name = study.optString("name");
-					description = study.optString("description");
+
+				if (study == null) {
+
+					throw new IllegalStateException("Invalid data received: JSON contains "
+					                                + "neither 'disease_mapping_study' nor "
+					                                + "'risk_analysis_study'. Complete JSON is: "
+					                                + "\n" + buffer.toString());
 				}
 
-				String riskAnalysisDescription = null;
+				String name = study.optString("name");
+				String description = study.optString("description");
+				String riskAnalysisDescription;
 				String studyType;
-
+				JSONObject studySelection = rifJobSubmission.optJSONObject("study_selection");
 				if (studySelection != null) {
-					riskAnalysisDescription = studySelection.optString("riskAnalysisDescription");	
+
+					// Note that disease mapping studies do not have a corresponding description
+					// field.
+					riskAnalysisDescription = studySelection.optString("riskAnalysisDescription");
 					studyType = studySelection.optString("studyType");
 
 					if (riskAnalysisDescription != null && riskAnalysisDescription.length() > 0) {
+
 						if (rifStudySubmission.getStudy().isRiskAnalysis()) {
+
 							rifLogger.info(this.getClass(),
 							               "ARWS - study_selection risk analysis: "
 							               + riskAnalysisDescription);
-						}
-						else if (studyType == null || studyType.length() == 0) {
-							throw new Exception("Parsed risk_analysis_study: \"" + name
-							                    + "\"; description: " + description
-							                    + " but study_selection.studyType is not set: "
-							                    + riskAnalysisDescription);
-						}
-						else {
+						} else {
+
 							throw new Exception("Parsed risk_analysis_study: \"" + name
 							                    + "\"; description: " + description
 							                    + " but study_selection.studyType is: " + studyType);
 						}
-					}
-					else {
+					} else {
+
 						if (rifStudySubmission.getStudy().isDiseaseMapping()) {
 							rifLogger.info(this.getClass(),
 							               "ARWS - study_selection disease mapping");
-						}
-						else if (studyType == null || studyType.length() == 0) {
-							throw new Exception("Parsed disease_mapping_study: \"" + name
-							                    + "\"; description: " + description
-							                    + " but study_selection.studyType is not set");
-						}
-						else {
+						} else {
+
 							throw new Exception("Parsed disease_mapping_study: \"" + name
 							                    + "\"; description: " + description
 							                    + " but study_selection.studyType is: " + studyType);
@@ -1443,17 +1438,6 @@ getParameter("p 1")     yes     c d
 					}
 					rifStudySubmission.setStudySelection(studySelection);
 				}
-				if (study != null) {
-					rifLogger.info(getClass(), "ARWS - disease_mapping_study: \"" + name
-					                           + "\"; description: " + description);
-					
-					if (riskAnalysisDescription != null && riskAnalysisDescription.length() > 0) {
-						throw new Exception("Parsed disease_mapping_study: \"" + name
-						                    + "\"; description: " + description
-						                    + " but study selection has riskAnalysisDescription");
-					}
-				}
-
 			}
 				
 			return rifStudySubmission;
