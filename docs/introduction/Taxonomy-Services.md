@@ -46,13 +46,13 @@ taxonomy services has not yet been initialised" from the front end:
 * Export: Save completed study
 * Export: Export study tables
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/taxonomy_sevice_warning.png?raw=true "Taxonomy Services warning")
+![alt text]({{ base.url }}/rifWebApplication/taxonomy_sevice_warning.png?raw=true "Taxonomy Services warning"){:width="100%"}
 
 These will go away if you wait!
 
 Errors, which are normally caused by configuration issues are displayed as:
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/taxonomy_sevice_error.png?raw=true "Taxonomy Services error")
+![alt text]({{ base.url }}/rifWebApplication/taxonomy_sevice_error.png?raw=true "Taxonomy Services error"){:width="100%"}
 
 Look in the startup log. This is the normal case:
 

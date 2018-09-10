@@ -1,5 +1,7 @@
-RIF TODO LIST
-=============
+---
+layout: default
+title: RIF To-do List
+---
 
 * David Morley, September 2017
 * Peter Hambly, October-December 2017

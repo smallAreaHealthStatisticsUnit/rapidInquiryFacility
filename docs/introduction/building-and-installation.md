@@ -57,5 +57,5 @@ See: [Manual data loading]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoa
 
 ### Using the Data Loading Tool
 
-See: [RIF Data Loader Manual]({{ site.baseurl }}/Documentation/RIF%20Data%20Loader%20Manual.pdf)
+See: [RIF Data Loader Manual]({{ site.baseurl }}/standalone/RIF_Data_Loader_Manual.pdf)
 
