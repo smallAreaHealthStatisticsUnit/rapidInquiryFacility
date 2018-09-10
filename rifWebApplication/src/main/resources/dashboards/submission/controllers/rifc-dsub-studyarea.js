@@ -100,7 +100,7 @@ angular.module("RIF")
 								SelectStateService.resetState();
 							}
 							else {
-								SelectStateService.ginitialiseRiskAnalysis();
+								SelectStateService.initialiseRiskAnalysis();
 							}
 						}
 						if (SelectStateService.getState().studyType == "disease_mapping_study" && input.type == "Disease Mapping") {
@@ -114,9 +114,14 @@ angular.module("RIF")
                             SubmissionStateService.getState().studyTree = false;
                             $scope.tree = false;
 						}
-						SelectStateService.getState().studySelection.studySelectAt = input.selectAt;
-						SelectStateService.getState().studySelection.studySelectedAreas = 
-							input.selectedPolygon;
+						
+						if (input.selectAt) {
+							SelectStateService.getState().studySelection.studySelectAt = input.selectAt;
+						}
+						if (input.selectedPolygon) {
+							SelectStateService.getState().studySelection.studySelectedAreas = 
+								input.selectedPolygon;
+						}
 						
 						try {
 							if (SelectStateService.getState().studySelection.studySelectedAreas.length > 0) {
