@@ -116,17 +116,20 @@ angular.module("RIF")
 							newStudySelection.bandAttr = [];
 						}
 							
-						if (newStudySelection.studySelectAt) {
+						if (newStudySelection.studySelectAt && newStudySelection.comparisonSelectAt) {
 							if (!newStudySelection.studySelectedAreas) {
-								throw new Error("rifs-dsub-selectstate.js(): studySelectedAreas key not found, got: " +
+								AlertService.consoleDebug("rifs-dsub-selectstate.js(): studySelectedAreas key not found, got: " +
 									Object.keys(newStudySelection).join(", "));
+										throw new Error("no study areas selected");
 							}	
-							if (newStudySelection.comparisonSelectAt) {
+							else if (newStudySelection.studySelectedAreas) {
 								if (!newStudySelection.comparisonSelectedAreas) {
-									throw new Error("rifs-dsub-selectstate.js(): comparisonSelectedAreas key not found, got: " +
+									AlertService.consoleDebug("rifs-dsub-selectstate.js(): comparisonSelectedAreas key not found, got: " +
 										Object.keys(newStudySelection).join(", "));
+										throw new Error("no comparison areas selected");
 								}								
-							}						
+							}	
+							
 							if (newStudySelection.studySelectedAreas.length == 0 &&
 							    newStudySelection.comparisonSelectedAreas.length == 0) { // Pre alter 10 study
 								AlertService.consoleDebug("[rifs-dsub-selectstate.js] newStudySelection: " +
@@ -143,8 +146,20 @@ angular.module("RIF")
 //								throw new Error("at least one comparison area required");
 //							}					
 						}
-						else {							
-							throw new Error("rifs-dsub-selectstate.js(): studySelectAt not found");
+						else if (newStudySelection.studySelectAt == undefined && newStudySelection.comparisonSelectAt == undefined) {
+							AlertService.consoleDebug("[rifs-dsub-selectstate.js] studySelectAt and comparisonSelectAt not found; newStudySelection: " + 
+								JSON.stringify(newStudySelection, 1));		
+							throw new Error("study selection and comparison resolution not setup correctly");
+						}
+						else if (newStudySelection.studySelectAt == undefined && newStudySelection.comparisonSelectAt) {
+							AlertService.consoleDebug("[rifs-dsub-selectstate.js] studySelectAt not found; newStudySelection: " + 
+								JSON.stringify(newStudySelection, 1));		
+							throw new Error("study selection resolution not setup correctly");
+						}
+						else if (newStudySelection.studySelectAt && newStudySelection.comparisonSelectAt == undefined) {
+							AlertService.consoleDebug("[rifs-dsub-selectstate.js] comparisonSelectAt not found; newStudySelection: " + 
+								JSON.stringify(newStudySelection, 1));		
+							throw new Error("study comparison resolution not setup correctly");
 						}
 							
 						if (newStudyType == "disease_mapping_study") {
@@ -154,8 +169,7 @@ angular.module("RIF")
 
 						}
 						else {
-							throw new Error("verifyStudySelection2(): unexpected study type: " + 
-								newStudyType);
+							throw new Error("unexpected study type: " + newStudyType);
 						}		
 						
 						return newStudySelection;
