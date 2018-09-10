@@ -66,7 +66,7 @@ angular.module("RIF")
                 }
 
                 $scope.openStatsManual = function () {
-                    var baseUrl = "https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/raw/master/Documentation/RIF%20v4%200%20Manual.pdf";
+                    var baseUrl = "https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/standalone/RIF_v40_Manual.pdf";
                     $window.open(baseUrl);
                 };
 
