@@ -2891,9 +2891,13 @@ SELECT a.*, b.coa2011
   * Diagnosis and fix of: On-screen toggle between disease mapping and risk analysis doesn't work properly: #52
   * Add: cannot view error messages that disappear #59;
   * Revised RIF 4.0 User Manual
-  
-  Now: Error handling ICD10 chapters and ranges as investigation conditions #58;
-  
-Also:
+ 
 
-* Manuals;
+#### 10th September to 14th September
+
+* Fix for: WARNING: Could not upload and check study selection: study comparison resolution not setup correctly
+* Fix for: Warning: Unable to verify comparison area selection errors
+* Applied temporary fix by disabling the ChloroService.doRenderSwatch(): 
+  (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/commit/d26ab96f001145f9d6d4e6a987acc94d62a3cbee)
+* Create pull #72 for Error handling ICD10 chapters and ranges as investigation conditions #58;
+
