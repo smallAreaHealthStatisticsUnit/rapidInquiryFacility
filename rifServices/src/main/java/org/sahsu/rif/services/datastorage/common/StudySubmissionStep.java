@@ -871,29 +871,52 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					HealthCode currentHealthCode = healthCodes.get(i - 1);
 
 					rifLogger.info(this.getClass(),
-					               "XXXXXXXXXX currentHealthCode XXXXXXXXXXXXXXXXXXXXXX"
-					               + lineSeparator +
-					               currentHealthCode + lineSeparator +
+					               "XXXXXXXXXX currentHealthCode XXXXXXXXXXXXXXXXXXXXXX" + lineSeparator +
+					               "Code: " + currentHealthCode.getCode() +
+					               "; namespace: " + currentHealthCode.getNameSpace() +
+					               "; isTopLevelTerm: " + currentHealthCode.isTopLevelTerm() + lineSeparator +
+					               "; description: " + currentHealthCode.getDescription() +
 					               "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-
-					logSQLQuery(
-							"add_inv_condition",
-							addHealthOutcomeQueryFormatter,
-							outcomeGroupName,
-							currentHealthCode.getCode(),
-							null, //max_condition not supported yet
-							null, //predefined_group_name not supported yet
-							String.valueOf(i));
 
 					addHealthCodeStatement
 							= createPreparedStatement(
 							connection,
 							addHealthOutcomeQueryFormatter);
-					addHealthCodeStatement.setString(1, outcomeGroupName);
-					addHealthCodeStatement.setString(2, currentHealthCode.getCode());
-					addHealthCodeStatement.setString(3, null);
-					addHealthCodeStatement.setString(4, null);
-					addHealthCodeStatement.setInt(5, i);
+							
+					if (currentHealthCode.getCode().contains("-")) { // 
+						String minCondition=currentHealthCode.getCode().substring(0, currentHealthCode.getCode().indexOf("-"));
+						String maxCondition=currentHealthCode.getCode().substring(currentHealthCode.getCode().indexOf("-")+1);
+						logSQLQuery(
+								"add_inv_condition",
+								addHealthOutcomeQueryFormatter,
+								outcomeGroupName,
+								minCondition,
+								maxCondition,
+								null, //predefined_group_name not supported yet
+								String.valueOf(i));
+
+						addHealthCodeStatement.setString(1, outcomeGroupName);
+						addHealthCodeStatement.setString(2, minCondition);
+						addHealthCodeStatement.setString(3, maxCondition);
+						addHealthCodeStatement.setString(4, null);
+						addHealthCodeStatement.setInt(5, i);
+					}
+					else {
+						logSQLQuery(
+								"add_inv_condition",
+								addHealthOutcomeQueryFormatter,
+								outcomeGroupName,
+								currentHealthCode.getCode(),
+								null, //max_condition not supported yet
+								null, //predefined_group_name not supported yet
+								String.valueOf(i));
+						addHealthCodeStatement.setString(1, outcomeGroupName);
+						addHealthCodeStatement.setString(2, currentHealthCode.getCode());
+						addHealthCodeStatement.setString(3, null);
+						addHealthCodeStatement.setString(4, null);
+						addHealthCodeStatement.setInt(5, i);
+
+					}
 
 					addHealthCodeStatement.executeUpdate();
 				}
