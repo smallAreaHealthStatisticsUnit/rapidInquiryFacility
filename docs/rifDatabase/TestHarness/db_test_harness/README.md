@@ -1,4 +1,7 @@
-# README for RIF node.js database test harness
+---
+layout: default
+title: README for RIF node.js database test harness
+---
 
 * node.js is required to build to geoJSON to topoJSON converter by Mike Bostock
   at: https://github.com/mbostock/topojson/wiki/Installation

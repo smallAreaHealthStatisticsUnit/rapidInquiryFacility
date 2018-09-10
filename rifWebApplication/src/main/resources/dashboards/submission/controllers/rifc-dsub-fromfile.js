@@ -497,11 +497,11 @@ angular.module("RIF")
 					try {	
 						SelectStateService.getState().studyType=studyType;
 						if (rifJob.study_selection) { // Set in JSON file
-							//set StudySelection
+							//set StudySelection					
 							SelectStateService.setStudySelection(rifJob.study_selection, studyType);
 							if (SelectStateService.getState().studyType == undefined) {	// Set studyType
 								return "SelectStateService.getState().studyType is undefined";
-							}
+							}	
 							return true;
 						} else {
 							if (SelectStateService.getState().studyType == 'disease_mapping_study') {
@@ -515,8 +515,9 @@ angular.module("RIF")
 							}
 							return true; // Optional for backward compatibility
 						}	
-						SelectStateService.verifyStudySelection();
                     } catch (e) {
+						$scope.consoleDebug("[rifc-dsub-fromfile.js] SelectStateService.getState(): " + 
+							JSON.stringify(SelectStateService.getState(), null, 1));
                         return "Could not upload and check study selection: " + (e.message||"(no message)");
                     }
                 }
@@ -604,7 +605,20 @@ angular.module("RIF")
 //							SelectStateService.getState().studySelection.comparisonSelectedAreas = 
 //								StudyAreaStateService.getState().comparisonSelectedAreas;
 //						}
-						
+						// Fix for: WARNING: Could not upload and check study selection: study comparison resolution not setup correctly
+						// (Older saved studies)
+						if (rifJob.study_selection.comparisonSelectAt == undefined) {
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] set rifJob.study_selection.comparisonSelectAt: " +
+								JSON.stringify(CompAreaStateService.getState().comparisonSelectAt, null, 1));
+							rifJob.study_selection.comparisonSelectAt=CompAreaStateService.getState().comparisonSelectAt;
+						}
+						if (rifJob.study_selection.comparisonSelectedAreas == undefined ||
+							rifJob.study_selection.comparisonSelectedAreas.length <1) {
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] set rifJob.study_selection.comparisonSelectedAreas: " +
+								JSON.stringify(CompAreaStateService.getState().polygonIDs, null, 1));
+							rifJob.study_selection.comparisonSelectedAreas=CompAreaStateService.getState().polygonIDs;
+						}	
+							
 						try {
 							if (SelectStateService.getState().studySelection) {
 								var r=SelectStateService.verifyStudySelection();

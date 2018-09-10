@@ -592,7 +592,7 @@ angular.module("RIF")
 								SelectStateService.resetState();
 								SelectStateService.getState().studyType="disease_mapping_study";
                             }
-							SelectStateService.verifyStudySelection();
+//							SelectStateService.verifyStudySelection(); 	// Don't - it is not setup
 						};
 
                         /*

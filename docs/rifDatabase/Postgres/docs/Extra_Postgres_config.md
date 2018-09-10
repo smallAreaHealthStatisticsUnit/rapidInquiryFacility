@@ -1,4 +1,7 @@
-# Extra Postgres Configuration
+---
+layout: default
+title: Extra Postgres Configuration
+---
 
 ## Config File location
 

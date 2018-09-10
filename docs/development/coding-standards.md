@@ -1,4 +1,7 @@
-# Coding Standards for the Rapid Inquiry Facility (RIF)
+---
+layout: default
+title: Coding Standards for the Rapid Inquiry Facility (RIF)
+---
 
 These are the standards -- or at least guidelines -- that we aim to use for RIF code.
 

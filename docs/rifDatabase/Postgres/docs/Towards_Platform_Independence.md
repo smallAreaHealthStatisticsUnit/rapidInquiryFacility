@@ -1,4 +1,7 @@
-# Platform Independence for Building and Installing the RIF
+---
+layout: default
+title: Platform Independence for Building and Installing the RIF
+---
 
 These are some notes I made in March 2018, on getting the RIF installed and running on my Mac. The changes I had to make should at least act as a guide to installing it on Linux or other Unixes in the future.
 
