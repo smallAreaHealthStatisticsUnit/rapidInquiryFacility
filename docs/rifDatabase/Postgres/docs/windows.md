@@ -1,6 +1,9 @@
-# Windows installation notes
+---
+layout: default
+title: Windows installation notes
+---
 
-Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload. 
+Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload.
 The Postgres installer then runs stack builder to download and install the additional packages. The following additional packages need to be installed:
 
 * PostGres (database, PG Admin III administration tool, and common extensions)

@@ -1,4 +1,7 @@
-# Database design documentation
+---
+layout: default
+title: Database design documentation
+---
 
 The database design documentation was created using http://dbmstools.sourceforge.net/. See the [README.md](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/master/rifDatabase/ERD#rif-erd) file in the rifDatabase/ERD directory for how to re-create it. This is the current SAHSULAND database. The core schema and the SAHSUland example data are documented.
 

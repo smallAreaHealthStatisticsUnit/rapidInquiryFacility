@@ -1,60 +1,49 @@
+---
+layout: default
+title: Windows Postgres Install using pg_dump and scripts
+---
 
-Windows Postgres Install using pg_dump and scripts
-==================================================
-
-# Contents
-
-- [1. Installation Prerequisites](#1-installation-prerequisites)
-   - [1.1 Postgres](#11-postgres)	
-      - [1.1.0 Memory Requirements](#110-memory-requirements)
-      - [1.1.1 Postgres User Setup](#111-postgres-user-setup)
-      - [1.1.2 Fixing Windows Code page errors](#112-fixing-windows-code-page-errors)
-- [2. Installing a production database](#2-installing-a-production-database)
-  - [2.1 Changing the postgres database administrator password](#21-Changing-the-postgres-database-administrator-password)
-- [3. Configuration File Examples](#3-configuration-file-examples)
-  - [3.1 Postgres user password file](#31-postgres-user-password-file)
-  - [3.2 Authentication Setup (hba.conf)](#32-authentication-setup-hbaconf)
-  - [3.3 Proxy User Setup (ident.conf)](#33-proxy-user-setup-identconf)
-- [4. Tuning](#4-tuning)   
+* Contents
+{:toc}
 
 # 1 Installation Prerequisites
-## 1.1 Postgres
- 
+## Postgres
+
 * Uses *pg_dump* and Powershell
 * Does **NOT** need *make* or *Node.js*
 
-Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload. 
+Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload.
 This is standard PostGres as packaged by Enterprise DB and not their own Postgres based product EDB Postgres
-Enterprise/Standard/Developer. An installation guide is at: 
+Enterprise/Standard/Developer. An installation guide is at:
 http://get.enterprisedb.com/docs/PostgreSQL_Installation_Guide_v9.6.pdf
 
 WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. It has *NOT* yet been tested on Postgres 10.
 
 Postgres is usually setup in one of four ways:
- 
+
 1. Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
 2. Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
-3. Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
+3. Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS
    connectivity) for psql and secure LDAP for Java connectivity.
-4. Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
+4. Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for
    psql and secure LDAP for Java connectivity.
 
 The front and and middleware require username and password authentications; so method 4 must not be used.
-  
+
 Postgres also can proxy users (see ident.conf examples are in [Configuration File Examples](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#3-configuration-file-examples)
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
-The Postgres installer will ask for a password for Postgres; do **NOT** use internationalised characters, e.g. **£** as the 
+The Postgres installer will ask for a password for Postgres; do **NOT** use internationalised characters, e.g. **£** as the
 database usually defaults to US ASCII!
 
-The Postgres installer then runs stack builder to download and install the additional packages. 
+The Postgres installer then runs stack builder to download and install the additional packages.
 Choose the local port. The following additional packages need to be installed:
 
 * PostGres (database, PG Admin III administration tool, and common extensions)
 * PostGIS (Geospatial integration)
 * pgODBC (ODBC database connector for PostGres, 32 and 64 bit)
 
-The PostGIS installer will ask to enable the builtin GDAL (Geospatial Data Abstraction Library). This 
+The PostGIS installer will ask to enable the builtin GDAL (Geospatial Data Abstraction Library). This
 **MUST** be *chosen*.
 
 Once the install is complete:
@@ -64,40 +53,40 @@ Once the install is complete:
 
   * PGDATABASE - &lt;your database name&gt;
 
-* Check you can logon as postgres. If you need to reset the password see 
-[Changing the postgres database administrator password](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#21-Changing-the-postgres-database-administrator-password)
+* Check you can logon as postgres. If you need to reset the password see
+[Changing the postgres database administrator password](#changing-the-postgres-database-administrator-password)
 
   ```
   C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>psql -U postgres -d postgres
   psql (9.5.0)
   Type "help" for help.
 
-  postgres=#  
+  postgres=#
   ```
   * If you get a code page error on Windows see 1.1.2 below.
-  
-### 1.1.0 Memory Requirements
- 
-Approximately: 
 
-* Windows 10 seems to need 6-8GB to function in normal use; 
-* The database needs 1-2 GB (SQL server will automatically; Postgres will run in less); 
-* R needs 1-2 GB (depends on study size; may need more); 
+### Memory Requirements
+
+Approximately:
+
+* Windows 10 seems to need 6-8GB to function in normal use;
+* The database needs 1-2 GB (SQL server will automatically; Postgres will run in less);
+* R needs 1-2 GB (depends on study size; may need more);
 * The Middleware 2-3GB;
 * The front end 1-2GB.
- 
+
 16GB recommended. If you process large geographies using the Node.js tilemaker 48-64GB is recommended.
 
-### 1.1.1 Postgres User Setup
+### Postgres User Setup
 
 The following users are created by the install script (*rif40_database_install.bat*):
 
-* postgres     - The database administrator. You will have set this password when you created 
+* postgres     - The database administrator. You will have set this password when you created
                  the Postgres cluster.
-* rif40        - The schema owner. 
-* &lt;user login&gt; - Your user login. This must be in lowercase and without spaces. 
+* rif40        - The schema owner.
+* &lt;user login&gt; - Your user login. This must be in lowercase and without spaces.
 
-The install script (*rif40_database_install.bat*) will create your local .pgpass/pgpass.conf files 
+The install script (*rif40_database_install.bat*) will create your local .pgpass/pgpass.conf files
 (see Postgres documentation for its location on various OS) and create random passwords for *rif40*
 and *&lt;user login&gt;*.
 
@@ -108,7 +97,7 @@ localhost:5432:*:pch:<password>
 localhost:5432:*:rif40:<password>
 ```
 
-### 1.1.2 Fixing Windows Code page errors
+### Fixing Windows Code page errors
 
 ```
 H:\>psql
@@ -136,7 +125,7 @@ The script will ask the user for:
 
 **ONLY USE LOWERCASE LETTERS, UNDERSCORE AND THE DIGITS 0-9; START WITH A LTTER**
 
-The script will create the user *pgpass.conf* (in *C:\Users\%USERNAME%\AppData\Roaming\postgresql*) and the 
+The script will create the user *pgpass.conf* (in *C:\Users\%USERNAME%\AppData\Roaming\postgresql*) and the
 create the *psqlrc* psql logon script. If required it will:
 
 * Ask the user for the *postgres* databaase administrator password (set as part of the database install)
@@ -444,7 +433,7 @@ Command pg_restore ran OK.
 pg_restore/psql restored trumpton OK
 ```
 
-## 2.1 Changing the postgres database administrator password
+## Changing the postgres database administrator password
 
 Check you can logon using psql as the database adminstrator account; *postgres*.
 ```
@@ -456,8 +445,8 @@ Type "help" for help.
 postgres=#
 ```
 
-It is possible to login to postgres as postgres without a password using the administrator or 
-root accounts. If you lock yourself out the *hba.conf* file will need the following line temporary 
+It is possible to login to postgres as postgres without a password using the administrator or
+root accounts. If you lock yourself out the *hba.conf* file will need the following line temporary
 added at the top of the file:
 
 ```
@@ -476,7 +465,7 @@ ALTER USER postgres PASSWORD <new password>;
 
 If you are running locally only (e.g. on a laptop) you do *NOT* need to edit the configuration files.
 
-## 3.1 Postgres user password file
+## Postgres user password file
 
 Postgres user password files are located in:
 
@@ -498,7 +487,7 @@ wpea-rif1:5432:*:postgres: XXXXXXX
 wpea-rif1:5432:*:pch: XXXXXXX
 ```
 
-# 3.2 Authentication Setup (hba.conf)
+# Authentication Setup (hba.conf)
 
 You **MUST** read the Postgres manuals before editing this file.
 
@@ -508,9 +497,9 @@ Fields separated by TAB.
   * local: UDP
   * host: TCP/IP
   * hostssl: TCP/IP with TLS
-* DATABASE: Database name      
-* USER: Username           
-* ADDRESS: Host/address mask                
+* DATABASE: Database name
+* USER: Username
+* ADDRESS: Host/address mask
 * METHOD:
   * Non mappable:
 	  * trust: Allow with authentication (useful if you have locked yourself out by chnaginbg hte password!
@@ -520,16 +509,16 @@ Fields separated by TAB.
 	  * krb5: Kerberos 5 (**OBSOLETED: use GSSAPI**)
 	  * ldap: directory services
 	  * radius: RADIUS authentication
-	  
+
   * Mappable using ident.conf (i.e. support proxying):
 	  * ident: Identification Protocol as described in RFC 1413 (**INSECURE: DO NOT USE**)
-	  * peer: Peer authentication is only available on operating systems providing the getpeereid() function, 
-			  the SO_PEERCRED socket parameter, or similar mechanisms. Currently that includes Linux, most flavors 
+	  * peer: Peer authentication is only available on operating systems providing the getpeereid() function,
+			  the SO_PEERCRED socket parameter, or similar mechanisms. Currently that includes Linux, most flavors
 			  of BSD including OS X, and Solaris.
-	  * gss: GSSAPI/Kerberos			  
-	  * pam: Linux PAM (Pluggable authentication modules)  
-	  * sspi: Windows native autentiation (NTLM V2) 
-	  * cert: Uses SSL client certificates to perform authentication. It is therefore only available for SSL connections. 
+	  * gss: GSSAPI/Kerberos
+	  * pam: Linux PAM (Pluggable authentication modules)
+	  * sspi: Windows native autentiation (NTLM V2)
+	  * cert: Uses SSL client certificates to perform authentication. It is therefore only available for SSL connections.
 
 ```
 # PostgreSQL Client Authentication Configuration File
@@ -615,7 +604,7 @@ host    all             postgres      ::1/128                 md5
 hostssl all		 postgres     146.179.138.xxx 	  255.255.255.255    md5
 #
 # Allow local connections as schema owner (usually use a proxy)
-# 
+#
 #hostssl    sahsuland	   pop             127.0.0.1/32            md5
 #hostssl    sahsuland	   pop             ::1/128                 md5
 #hostssl    sahsuland	   gis             127.0.0.1/32            md5
@@ -639,25 +628,25 @@ hostssl	sahsuland_dev	all	 	146.179.138. xxx	255.255.255.255	sspi 	map=sahsuland
 #
 # b) LDAP (to be fixed – need to use different server
 #
-# hostssl	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapurl="ldaps:// xxx.ic.ac.uk/basedn;cn=;,o=Imperial College,c=GB" 
-# 
+# hostssl	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapurl="ldaps:// xxx.ic.ac.uk/basedn;cn=;,o=Imperial College,c=GB"
+#
 # No LDAP URLs or username map on Windows
 #
-# 2014-03-12 13:44:24 GMT LOG: 00000: LDAP login failed for user "cn=pch,o=Imperial College,c=GB" on server " xxx.ic.ac.uk": Invalid Credentials 2014-03-12 13:44:24 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321 
+# 2014-03-12 13:44:24 GMT LOG: 00000: LDAP login failed for user "cn=pch,o=Imperial College,c=GB" on server " xxx.ic.ac.uk": Invalid Credentials 2014-03-12 13:44:24 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321
 #
-#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix="uid=" ldapsuffix=",ou=phs,o=Imperial College,c=GB"	
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix="uid=" ldapsuffix=",ou=phs,o=Imperial College,c=GB"
 #
-# 2014-03-12 13:50:33 GMT LOG: 00000: LDAP login failed for user "pch@IC.AC.UK" on server " xxx.ic.ac.uk": Invalid DN Syntax 2014-03-12 13:50:33 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321 
+# 2014-03-12 13:50:33 GMT LOG: 00000: LDAP login failed for user "pch@IC.AC.UK" on server " xxx.ic.ac.uk": Invalid DN Syntax 2014-03-12 13:50:33 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321
 #
-#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix="@IC.AC.UK"	
-#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix=",o=Imperial College,c=GB"	
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix="@IC.AC.UK"
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix=",o=Imperial College,c=GB"
 #
 # Other databases
-# 
+#
 hostssl	traffic		all	 	127.0.0.1/32 		sspi
 hostssl	traffic		all	 	::1/128 		sspi
 hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
-#	
+#
 #host    all             all             127.0.0.1/32            md5
 #host    all             all             ::1/128                 md5
 # Allow replication connections from localhost, by a user with the
@@ -666,14 +655,14 @@ hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
 #host    replication     postgres        ::1/128                 md5
 ```
 
-# 3.3 Proxy User Setup (ident.conf)
+# Proxy User Setup (ident.conf)
 
 You **MUST** read the Postgres manuals before editing this file.
 
 One line per per system user and map, fields separated by TAB in the order:
 
-* MAPNAME: map name in hba.conf (not all authentication types can proxy - e.g. md5 cannot!)       
-* SYSTEM-USERNAME: account name to proxy for         
+* MAPNAME: map name in hba.conf (not all authentication types can proxy - e.g. md5 cannot!)
+* SYSTEM-USERNAME: account name to proxy for
 * PG-USERNAME: account name to authenticate as
 
 ```

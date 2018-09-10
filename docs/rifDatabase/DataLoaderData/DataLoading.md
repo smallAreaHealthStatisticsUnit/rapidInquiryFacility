@@ -3,54 +3,10 @@ layout: default
 title: RIF Data Loading
 ---
 
-# Contents
+1. Contents
+{:toc}
 
-- [1. Overview](#1-overview)
-  - [1.1 RIF Capabilities](#11-rif-capabilities)
-  - [1.2 Limitations](#12-limitations)
-  - [1.3 Data Loader Tool](#13-data-loader-tool)
-- [2. RIF Data Loading Prerequistes](#2-rif-data-loading-prerequistes)
-  - [2.1 Postgres](#21-postgres)
-  - [2.2 SQL Server](#22-sql-server)
-  - [2.3 Data Structure](#23-data-structure)
-     - [2.3.1 Numerator](#231-numerator)
-     - [2.3.2 Denominator](#232-denominator)
-     - [2.3.3 Covariates](#233-covariates)
-     - [2.3.4 Administrative Geography](#234-administrative-geography)
-       - [2.3.4.1 Geography](#2341-geography)
-       - [2.3.4.2 Geolevels](#2342-geolevels)
-       - [2.3.4.3 Lookup tables](#2343-lookup-tables)
-       - [2.3.4.4 Tile tables](#2344-tile-tables)
-       - [2.3.4.5 Adjacency tables](#2345-adjacency-tables)
-       - [2.3.4.6 Hierarchy tables](#2346-hierarchy-tables)
-       - [2.3.4.7 Geometry tables](#2347-geometry-tables)
-       - [2.3.4.8 Shapefile, shapefile tables](#2348-shapefile-shapefile-tables)
-       - [2.3.4.8 Centroids tables](#2349-centroids-tables)
-	 - [2.3.5 Health Themes](#235-health-themes)
-- [3. Load Processing](#3-load-processing)
-     - [3.0.1 Generate Series](#301-generate-series)
-  - [3.1 Administrative Geography](#31-administrative-geography)
-     - [3.1.1 Postgres](#311-postgres)
-     - [3.1.2 SQL Server](#312-sql-server)
-  - [3.2 Numerator](#32-numerator)
-     - [3.2.1 Pre Processing](#321-pre-processing)
-     - [3.2.2 Load Processing](#322-load-processing)
-  - [3.3 Denominator](#33-denominator)
-     - [3.3.1 Pre Processing](#331-pre-processing)
-     - [3.3.2 Load Processing](#332-load-processing)
-  - [3.4 Covariates](#34-covariates)
-     - [3.4.1 Pre Processing](#341-pre-processing)
-     - [3.4.2 Load Processing](#342-load-processing)
-- [4. Information Governance](#4-information-governance)
-- [5. Flexible Configuration Support](#5-flexible-configuration-support)
-  - [5.1 Age Groups](#51-age-groups)
-  - [5.2 ICD field Name](#52-icd-field-name)
-  - [5.3 Automatic Numerator Denominator Pairs](#53-automatic-numerator-denominator-pairs)
-- [6. Quality Control](#6-quality-control)
-  - [6.1 Extract Warnings](61-extract-warnings)
-  - [6.2 Numerator Denominator Pair Errors](#62-numerator-denominator-pair-errors)
-
-# 1. Overview
+# Overview
 
 This document details the manual process for the loading of data into the RIF. The RIF requires the following types of data:
 
@@ -78,7 +34,7 @@ RIF data loading occurs in two distinct phases;
   * Manually via a user created script. Again an example is provided using the US SEER Cancer Registry data with example
     scripts for both Postgres and SQL Server.
 
-# 1.1 RIF Capabilities
+# RIF Capabilities
 
 The RIF supports:
 
@@ -94,7 +50,7 @@ may potentially be added in future releases:
 * Covariates without years
 * Study age bands, e.g. 0-19,20-29,60-74,75+
 
-# 1.2 Limitations
+# Limitations
 
 Limitations in the current RIF
 
@@ -146,7 +102,7 @@ Like the old RIF there are field naming restrictions:
 
 THe ICD field name is now configurable. The default is *ICD_SAHSU_01*.
 
-## 1.3 Data Loader Tool
+## Data Loader Tool
 
 The data loader tool in its current prototype form is severely limited in its ability to transform data by:
 
@@ -166,9 +122,9 @@ The following are known issues with the RIF data loader.
 It is envisaged that the data loader will become a browser based tool like the RIF of the RIF tool chain.
 
 The current data loader documentation is in the
-[RIF Data Loader Manual](/source-documents/RIF%20Data%20Loader%20Manual.pdf)
+[RIF Data Loader Manual]({{ site.baseurl }}/source-documents/RIF%20Data%20Loader%20Manual.pdf)
 
-# 2. RIF Data Loading Prerequisites
+# RIF Data Loading Prerequisites
 
 The following steps need to be carried out to load process the data:
 
@@ -184,7 +140,7 @@ The following are restrictions on the naming of columns:
   lower case letters, digits (0-9) and underscore. This is a common database restriction. The 30 character
   limit comes from the earlier Oracle versions of the RIF.
 
-## 2.1 Postgres
+## Postgres
 
 Postgres uses the *\copy* command to load and unload data. *\copy* cannot handle fixed length data; this
 is loaded as a fixed length string and parsed using SQL.
@@ -192,7 +148,7 @@ is loaded as a fixed length string and parsed using SQL.
 The SEER data load requires USA load phase data pg_USQ_2014.sql to be loaded as a RIF user (not rif40) and
 the production data (rif_pg_usa_2014.sql) needs to be loaded into the rif40 account in the rif_data schema.
 
-## 2.2 SQL Server
+## SQL Server
 
 SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the
 server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command. This also implies that a full file path is required and the file name must be accessible on the
@@ -218,7 +174,7 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
-## 2.3 Data Structure
+## Data Structure
 
 All RIF data tables are located in the *rif_data* schema. They must be located in *rif_data* because SQL Server does not have the concept of a schema search
 path; the search paths have been hard coded. Tables may be located in any tablespace and you may use views which again must be located in the *rif_data* schema.
@@ -236,7 +192,7 @@ the length is reduced to 20 characters so that derived names of indexes, primary
 
 The middleware translates these names into the correct format for the database software port. Names must *NOT* have schemas appended.
 
-### 2.3.1 Numerator
+### Numerator
 
 The example numerator table is *num_sahsuland_cancer*:
 
@@ -255,9 +211,9 @@ The *num_sahsuland_cancer* table is aggregated to the highest geographic resolut
 (e.g. SAHSU cancer incidence data). Numerator table must have the following fields:
 
 * *YEAR*. This must be an integer;
-* *AGE_SEX_GROUP*. This contains an age sex group field name, e.g. ```M5_9```. See: [Age groups](/rifDatabase/DataLoaderData/DataLoading#51-age-groups);
-* *&lt;outcome groups field name&gt;* e.g. ```icd``` for the OUTCOME_GROUP_NAME **SAHSULAND_ICD**. See: [ICD field name](/rifDatabase/DataLoaderData/DataLoading#52-icd-field-name);
-* *&lt;one geolevel field name for each geography geolevel&gt;* e.g. ```sahsu_grd_level1```. See: [Administrative geography](/rifDatabase/DataLoaderData/DataLoading#34-administrative-geography);
+* *AGE_SEX_GROUP*. This contains an age sex group field name, e.g. ```M5_9```. See: [Age groups]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#51-age-groups);
+* *&lt;outcome groups field name&gt;* e.g. ```icd``` for the OUTCOME_GROUP_NAME **SAHSULAND_ICD**. See: [ICD field name]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#52-icd-field-name);
+* *&lt;one geolevel field name for each geography geolevel&gt;* e.g. ```sahsu_grd_level1```. See: [Administrative geography]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#234-administrative-geography);
 * *&lt;total field name&gt;* e.g. ```total```. If this is null, the &lt;outcome groups field name&gt; e.g. ```icd``` is **COUNT**ed (i.e. the table is disaggregated).
   If not null, the &lt;total field name&gt; is summed.
 
@@ -267,7 +223,7 @@ To add a numerator table to the RIF if must be added to:
 
   |       column_name        |                                                                                                                                                                                                                                                                 description                                                                                                                                                                                                                                                                  |          data_type          |
   |--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------|
-  | theme                    | Health Study theme. Link to RIF40_HEALTH_STUDY_THEMES. See: [Health theme](/rifDatabase/DataLoaderData/DataLoading#235-health-themes);                                                                                                                                                                                                                                                                                                                   | varchar(30)                 |
+  | theme                    | Health Study theme. Link to RIF40_HEALTH_STUDY_THEMES. See: [Health theme]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#235-health-themes);                                                                                                                                                                                                                                                                                                                   | varchar(30)                 |
   | table_name               | RIF table name. Normally the schema owner will not be able to see the health data tables, so no error is raised if the table cannot be resolved to an acceisble object. The schema owner must have access to automatic indirect standardisation denominators.                                                                                                                                                                                                                                                                                | varchar(30)                 |
   | description              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | varchar(250)                |
   | year_start               | Year table starts                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | smallint                    |
@@ -280,7 +236,7 @@ To add a numerator table to the RIF if must be added to:
   | sex_field_name           | Name of SEX field. No default. AGE_GROUP_FIELD_NAME must be set, AGE_SEX_GROUP_FIELD_NAME must not be set. Not currently used.                                                                                                                                                                                                                                                                                                                                                                                                               | varchar(30)                 |
   | age_group_field_name     | Name of AGE_GROUP field. No default. SEX_FIELD_NAME must be set, AGE_SEX_GROUP_FIELD_NAME must not be set. Not currently used.                                                                                                                                                                                                                                                                                                                                                                                                               | varchar(30)                 |
   | age_sex_group_field_name | Name of AGE_SEX_GROUP field. Default: AGE_SEX_GROUP; AGE_GROUP_FIELD_NAME and SEX_FIELD_NAME must not be set.                                                                                                                                                                                                                                                                                                                                                                                                                                | varchar(30)                 |
-  | age_group_id             | Type of RIF age group in use. Link to RIF40_AGE_GROUP_NAMES. No default. See: [Age groups](/rifDatabase/DataLoaderData/DataLoading#51-age-groups);                                                                                                                                                                                                                                                                                                       | smallint                    |
+  | age_group_id             | Type of RIF age group in use. Link to RIF40_AGE_GROUP_NAMES. No default. See: [Age groups]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#51-age-groups);                                                                                                                                                                                                                                                                                                       | smallint                    |
   | validation_date          | Date table contents were validated OK. Availabel for use by quality control programs                                                                                                                                                                                                                                                                                                                                                                                                                                                         | timestamp without time zone |
 
   |  theme  |      table_name      |      description       | year_start | year_stop | total_field | isindirectdenominator | isdirectdenominator | isnumerator | automatic | age_sex_group_field_name | age_group_id |
@@ -290,24 +246,24 @@ To add a numerator table to the RIF if must be added to:
   So, for the example numerator table *num_sahsuland_cancer*:
 
   * The *theme* is a reference to *RIF40_HEALTH_STUDY_THEMES.THEME*. See:
-    [Health theme](/rifDatabase/DataLoaderData/DataLoading#235-health-themes);
+    [Health theme]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#235-health-themes);
   * The table name **MUST** be in upper case. Do not add the schema owner;
   * Year stop and start refer to the first and last years of numerator data;
   * The *total* field, if not null, **MUST** be in upper case;
   * *isindirectdenominator*, *isdirectdenominator* are "0"; *isnumerator* is "1";
   * *automatic* is normally "1" unless you have >1 denominator for the geography when it is "0".
-    See: [Automatic numerator denominator pairs](/rifDatabase/DataLoaderData/DataLoading#53-automatic-numerator-denominator-pairs);
+    See: [Automatic numerator denominator pairs]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#53-automatic-numerator-denominator-pairs);
   * *age_sex_group_field_name* **MUST** be *AGE_SEX_GROUP*;
   * The *age_group_id* refers to **rif40.rif40_age_group_names**. The standard 21 age groups used by SAHSU is "1".
-    See: [Age groups](/rifDatabase/DataLoaderData/DataLoading#51-age-groups);
+    See: [Age groups]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#51-age-groups);
 
-* *rif40.rif40_table_outcomes**: see: [ICD field name](/rifDatabase/DataLoaderData/DataLoading#52-icd-field-name);
+* *rif40.rif40_table_outcomes**: see: [ICD field name]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#52-icd-field-name);
 
 | outcome_group_name |      numer_tab       | current_version_start_year |
 |--------------------|----------------------|----------------------------|
 | SAHSULAND_ICD      | NUM_SAHSULAND_CANCER |                       1989 |
 
-### 2.3.2 Denominator
+### Denominator
 
 The example denominator table is *pop_sahsuand_pop*:
 
@@ -325,8 +281,8 @@ The *pop_sahsuand_pop* table is aggregated to the highest geographic resolution.
 Denominator table must have the following fields:
 
 * *YEAR*. This must be an integer;
-* *AGE_SEX_GROUP*. This contains an age sex group field name, e.g. ```M5_9```. See: [Age groups](/rifDatabase/DataLoaderData/DataLoading#51-age-groups);
-* *&lt;one geolevel field name for each geography geolevel&gt;* e.g. ```sahsu_grd_level1```. See: [Administrative geography](/rifDatabase/DataLoaderData/DataLoading#34-administrative-geography);
+* *AGE_SEX_GROUP*. This contains an age sex group field name, e.g. ```M5_9```. See: [Age groups]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#51-age-groups);
+* *&lt;one geolevel field name for each geography geolevel&gt;* e.g. ```sahsu_grd_level1```. See: [Administrative geography]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#234-administrative-geography);
 * *&lt;total field name&gt;* e.g. ```total```. This field is summed.
 
 To add a denominator table to the RIF if must be added to:
@@ -340,18 +296,18 @@ To add a denominator table to the RIF if must be added to:
 So, for the example denominator table *pop_sahsuand_pop*:
 
 * The *theme* is a reference to *RIF40_HEALTH_STUDY_THEMES.THEME*. See:
-  [Health theme](/rifDatabase/DataLoaderData/DataLoading#235-health-themes);
+  [Health theme]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#235-health-themes);
 * The table name **MUST** be in upper case. Do not add the schema owner;
 * Year stop and start refer to the first and last years of denominator data;
 * The *total* field, if not null, **MUST** be in upper case;
 * *isindirectdenominator* is "1", *isdirectdenominator* and *isnumerator* are "0";
 * *automatic* is normally "1" unless you have >1 denominator for the geography when it is "0".
-  See: [Automatic numerator denominator pairs](/rifDatabase/DataLoaderData/DataLoading#53-automatic-numerator-denominator-pairs);
+  See: [Automatic numerator denominator pairs]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#53-automatic-numerator-denominator-pairs);
 * *age_sex_group_field_name* **MUST** be *AGE_SEX_GROUP*;
 * The *age_group_id* refers to **rif40.rif40_age_group_names**. The standard 21 age groups used by SAHSU is "1".
-  See: [Age groups](/rifDatabase/DataLoaderData/DataLoading#51-age-groups);
+  See: [Age groups]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#51-age-groups);
 
-### 2.3.3 Covariates
+### Covariates
 
 The covariate tables with one table per geolevel for additional covariates within a geography (e.g. social exclusion scores).
 The table is defined in *rif40_geolevels.covariate_table*.
@@ -360,7 +316,7 @@ Covariate tables must contain the following fields (as in the *covar_sahsuland_c
 
 * Year this should cover the range of the associated denominator and must be an integer;
 * *&lt;geolevel field name&gt;* e.g. ```sahsu_grd_level4```.
-  See: [Administrative geography](/rifDatabase/DataLoaderData/DataLoading#234-administrative-geography);
+  See: [Administrative geography]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#234-administrative-geography);
 * One or more *&lt;covariate name&gt;* fields e.g. ```ses```. These can be either an integer or a numeric. Currently only quantilised fields are supported; continuous variables are not supported.
 
 Unlike other administrative geography tables; RIF managers **MUST** create these tables for themselves. A full range of all possible values **MUST** be provided,
@@ -389,25 +345,25 @@ As an example the covariate table *covar_sahsuland_covariates3* contains (with r
 | 1989 | 01.002.000900    |   1 |         2 |
 | ...  | ...              | ... | ...       |
 
-### 2.3.4 Administrative Geography
+### Administrative Geography
 
 RIF administrative geography has nine components:
 
-* [Geography](/rifDatabase/DataLoaderData/DataLoading#2341-geography): name of the administrative geography;
-* [Geolevels](/rifDatabase/DataLoaderData/DataLoading#2342-geolevels): a hierarchy of administrative areas that define a geography where each higher resolution contains one or more areas that fit exactly within the lower resolution;
-* [Lookup tables](/rifDatabase/DataLoaderData/DataLoading#2343-lookup-tables): for the names of the administrative area id codes within a geolevel;
-* [Tile tables](/rifDatabase/DataLoaderData/DataLoading#2344-tile-tables): the WGS84 topoJSON and geoJSON tiles for a geography used by the RIF front end and extract utilities to display administrative geography geolevels;
-* [Adjacency tables](/rifDatabase/DataLoaderData/DataLoading#2345-adjacency-tables): a list of adjacent areas for each geolevel and area id in a geography used in BAtesian smoothing;
-* [Hierarchy tables](/rifDatabase/DataLoaderData/DataLoading#2346-hierarchy-tables): one table per administrative geography; contains a hierarchy of higher resolution of one or more areas that fit exactly within the lower resolution
+* [Geography]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2341-geography): name of the administrative geography;
+* [Geolevels]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2342-geolevels): a hierarchy of administrative areas that define a geography where each higher resolution contains one or more areas that fit exactly within the lower resolution;
+* [Lookup tables]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2343-lookup-tables): for the names of the administrative area id codes within a geolevel;
+* [Tile tables]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2344-tile-tables): the WGS84 topoJSON and geoJSON tiles for a geography used by the RIF front end and extract utilities to display administrative geography geolevels;
+* [Adjacency tables]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2345-adjacency-tables): a list of adjacent areas for each geolevel and area id in a geography used in BAtesian smoothing;
+* [Hierarchy tables]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2346-hierarchy-tables): one table per administrative geography; contains a hierarchy of higher resolution of one or more areas that fit exactly within the lower resolution
 
 The following components are used by the administrative geography preprocessing (tile maker):
 
-* [Geometry tables](/rifDatabase/DataLoaderData/DataLoading#2347-geometry-tables): geometric data for a geography to allow the database to perform spatial queries with the administrative geometry;
-* [Shapefile, shapefile tables](/rifDatabase/DataLoaderData/DataLoading#2348-shapefile-shapefile-tables): Storage for the original shapefile data and name used as part of the administrative geography preprocessing (tile maker);
+* [Geometry tables]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2347-geometry-tables): geometric data for a geography to allow the database to perform spatial queries with the administrative geometry;
+* [Shapefile, shapefile tables]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2348-shapefile-shapefile-tables): Storage for the original shapefile data and name used as part of the administrative geography preprocessing (tile maker);
 
 The final component is in the TODO list for future additions:
 
-* [Centroids tables](/rifDatabase/DataLoaderData/DataLoading#2349-centroids-tables): tables of centroids tables. Used to import population weighted or spatially processed (centroid pulled to within the centroid boundary) centroids into an administrative geography;
+* [Centroids tables]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#2349-centroids-tables): tables of centroids tables. Used to import population weighted or spatially processed (centroid pulled to within the centroid boundary) centroids into an administrative geography;
 
 **All components are created by the administrative geography preprocessing (tile maker) and loaded by a SQL Server ```sqlcmd``` or Postgres ```psql``` script.**
 
@@ -814,7 +770,7 @@ Centroids tables are used to import population weighted or spatially processed (
 Centroids tables are not currently supported. The table is defined in *rif40_geolevels.centroids_table*.
 This is in the TODO list for future additions
 
-### 2.3.5 Health Themes
+### Health Themes
 
 The table *rif40.rif40_health_study_themes* is used to group numerators logically so the user is not presented with a long list of numerator/denominator pairs. Purpose could include:
 
@@ -833,13 +789,13 @@ An example theme is provided:
 |---------|-----------------------------------|
 | cancers | covering various types of cancers |
 
-# 3. Load Processing
+# Load Processing
 
 Generally load processing requires three steps:
 
 * Create and load the Administrative geography. **Always load the administrative geography first**. This is produced by the
-  [Tile maker](/rifNodeServices/tileMaker). See
-  [Example of Post Front End Processing](/rifNodeServices/tileMaker#244-example-of-post-front-end-processing)
+  [Tile maker]({{ site.baseurl }}/rifNodeServices/tileMaker). See
+  [Example of Post Front End Processing]({{ site.baseurl }}/rifNodeServices/tileMaker#post-front-end-processing)
 * Pre-process the data from flat files, process and unloaded back into flat files that can be loaded into either Postgres or SQL Server.
   Typically this is done as a normal user on any database. Do **not** use the schema *rif40* or  administrative accounts (*postgres* or *administrator*):
   * Create numerator/denominator/covariate load tables to load data from CSV or Text files. Fixed length (mainframe) record files have to be loaded as a single string
@@ -850,7 +806,7 @@ Generally load processing requires three steps:
   * Convert numerator/denominator/covariate fixed length string into new numerator/denominator/covariate load table with the correct columns and datatypes;
   * Create numerator/denominator/covariate table from load table. For denominator and covariate tables additional rows may need to be added to cope with holes in the data; e.g. re-use a later
     year of population or covariate data to replace missing earlier years. RIF covariates require annual data, if you do not have annual data you can use a view and the ```generate_series```
-	function to add the years; see: [3.0.1 Generate series](/rifDatabase/DataLoaderData/DataLoading#301-generate-series);
+	function to add the years; see: [3.0.1 Generate series]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#301-generate-series);
   * Add constraints to numerator/denominator/covariate table;
   * Add indexes to numerator/denominator/covariate table;
   * Comment numerator/denominator/covariate table and columns;
@@ -873,9 +829,9 @@ Generally load processing requires three steps:
   * Setup numerator and denominator tables and views.
     - Numerator and denominator tables are setup in *rif40.rif40_tables*;
 	- The numerator ICD field needs to be defined in: *rif40.rif40_outcome_groups* and *rif40.rif40_outcomes*,
-	  see: [ICD field name](/rifDatabase/DataLoaderData/DataLoading#52-icd-field-name);
+	  see: [ICD field name]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#52-icd-field-name);
     - Covariate table names are predefined, see:
-      [Covariates](/rifDatabase/DataLoaderData/DataLoading#233-covariates);
+      [Covariates]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#233-covariates);
   The RIF load scripts only require the administrative geography; and not the tilemaker pre-processing tables.
 
 The following scripts are used in the examples:
@@ -920,13 +876,13 @@ To run a script:
   * ```-e```: copy all SQL commands sent to the server to standard output as well;
   * ```-f <script name>```: run SQL script &lt;script name&gt;
 
-  For information on [Postgres passwords](/rifDatabase/databaseManagementManual#221-postgres)
+  For information on [Postgres passwords]({{ site.baseurl }}/rifDatabase/databaseManagementManual#221-postgres)
 
   e.g.
   ```
   psql -U rif40 -d sahsuland -w -e -f pg_rif40_load_seer.sql
   ```
-  An an example see: [Postgres data load](/rifDatabase/DataLoaderData/Example_postgres_load);
+  An an example see: [Postgres data load]({{ site.baseurl }}/rifDatabase/DataLoaderData/Example_postgres_load);
 
 - SQL Server: ```sqlcmd -U rif40 -P <password> -d <database name> -b -m-1 -e -r1 -i <script name> -v pwd="%cd%"```
   Flags:
@@ -982,9 +938,9 @@ sahsuland=> select * from rif40_num_denom;
 (2 rows)
 
 ```
-If your data does not appear; see [Numerator Denominator Pair Errors](/rifDatabase/DataLoaderData/DataLoading#62-numerator-denominator-pair-errors)
+If your data does not appear; see [Numerator Denominator Pair Errors]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#62-numerator-denominator-pair-errors)
 
-### 3.0.1 Generate Series
+### Generate Series
 
 The ```generate_series``` function is used in the RIF *rif_data.tiles_sahsuland* VIEW to add back tiles for which there is no data (i.e. outside of the extent of the geography so the tiles
 cover the entire world. It is also very useful for converting non annual covariates to the annual form required by the RIF; e.g:
@@ -1082,7 +1038,7 @@ BEGIN
 END;
 ```
 
-## 3.1 Administrative Geography
+## Administrative Geography
 
 The *SAHSULAND* example geography is supplied as part of the RIF. To load the SEER test dataset you first
 need to load the USA County level administrative geography. The scripts and the data are creared by the
@@ -1115,17 +1071,17 @@ e) Tiles table and view
    * t_tiles_usa_2014
    * tiles_usa_2014
 
-## 3.1.1 Postgres
+## Postgres
 
 Run: ```psql -U rif40 -w -e -f rif_pg_USA_2014.sql```
 
-## 3.1.2 SQL Server
+## SQL Server
 
 Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.sql -v pwd="%cd%"```
 
-## 3.2 Numerator
+## Numerator
 
-## 3.2.1 Pre Processing
+## Pre Processing
 
 * Create numerator load tables to load data from CSV or Text files. Fixed length (mainframe) record files have to be loaded as a single string
   and then chopped converted into the relevant fields in stage four:
@@ -1452,7 +1408,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	TO BE ADDED
 	```
 
-## 3.1.2 Load Processing
+## Load Processing
 
 * Remove numerator setup data, views and tables;
   - Postgres:
@@ -1974,9 +1930,9 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	FROM rif_data.seer_cancer;
   ```
 
-## 3.3 Denominator
+## Denominator
 
-## 3.3.1 Pre Processing
+## Pre Processing
 
 * Create denominator load tables:
   - Postgres:
@@ -2187,7 +2143,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	TO BE ADDED
     ```
 
-## 3.3.2 Load Processing
+## Load Processing
 
 * Remove denominator setup data and tables;
   - Postgres:
@@ -2422,9 +2378,9 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	FROM rif_data.seer_population;
   ```
 
-## 3.4 Covariates
+## Covariates
 
-## 3.4.1 Pre Processing
+## Pre Processing
 
 * Create covariate load tables:
   - Postgres:
@@ -2927,7 +2883,7 @@ E.g:
 	TO BE ADDED
     ```
 
-## 3.4.2 Load Processing
+## Load Processing
 
 * Remove covariate setup data and tables;
   - Postgres:
@@ -3392,20 +3348,20 @@ E.g:
   GRANT SELECT ON rif_data.cov_cb_2014_us_state_500k TO seer_user;
   ```
 
-# 4. Information Governance
+# Information Governance
 
-See [Database management manual - Information Governance](/rifDatabase/databaseManagementManual#4-information-governance)
+See [Database management manual - Information Governance]({{ site.baseurl }}/rifDatabase/databaseManagementManual#4-information-governance)
 
-# 5. Flexible Configuration Support
+# Flexible Configuration Support
 
 RIF 4.0 has a number of options for more flexible configuration:
 
-* Configurable [age groups](/rifDatabase/DataLoaderData/DataLoading#51-age-groups)
-* Configurable [ICD field Name](/rifDatabase/DataLoaderData/DataLoading#52-icd-field-name)
-* [Automatic Numerator Denominator Pairs](/rifDatabase/DataLoaderData/DataLoading#53-automatic-numerator-denominator-pairs).
+* Configurable [age groups]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#51-age-groups)
+* Configurable [ICD field Name]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#52-icd-field-name)
+* [Automatic Numerator Denominator Pairs]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading#53-automatic-numerator-denominator-pairs).
   If a single denominator is used for a geography then numerator-denominator pairs can be automatically created.
 
-## 5.1 Age Groups
+## Age Groups
 
 This is configured using the tables:
 
@@ -3465,7 +3421,7 @@ This is configured using the tables:
 |            3 |      8 |      80 |      255 | 80PLUS    |
 
 
-## 5.2 ICD field Name
+## ICD field Name
 
 Numerators are currently limited to ICD 10 coding only and a single ICD field. Support will be added for:
 
@@ -3522,11 +3478,11 @@ This is configured using the tables:
 | ICD          | SAHSULAND_ICD           | Single ICD                                                           | ICD           |                    0 |
 | BIRTHWEIGHT  | BIRTHWEIGHT             | Birthweight (e.g. low <2500g)                                        | BIRTHWEIGHT   |                    0 |
 
-## 5.3 Automatic Numerator Denominator Pairs
+## Automatic Numerator Denominator Pairs
 
-# 6. Quality Control
+# Quality Control
 
-## 6.1 Extract Warnings
+## Extract Warnings
 
 The table/view *t_rif40_warnings/rif40_warnings* will contain contain warning messages on a study basis. These can be created
 by extract or R scripts. Traps will be added for:
@@ -3537,7 +3493,7 @@ by extract or R scripts. Traps will be added for:
 * ICD codes not present when requested in numerator;
 * Mal-join detection
 
-## 6.2 Numerator Denominator Pair Errors
+## Numerator Denominator Pair Errors
 
 The normal cases if for valid numerator and denominator pairs to appear in the view *rif40_num_denom*.
 ```SQL
@@ -3591,7 +3547,7 @@ In this case the error is not an error as *n_num_denom_validated* and *d_num_den
 * If *d_num_denom_validated*=1 and *is_denominator_resolvable*=0, the denominator but the table itself (rif_data.pop_sahsuland_pop) is not resolvable and/or not accessible;
 * If *n_num_denom_validated*=1 and *is_numerator_resolvable*=0, the numerator but the table itself (rif_data.num_sahsuland_cancer) is not resolvable and/or not accessible;
 
-In both these case you need to check the grants on the tables: [Viewing your user setup](/rifDatabase/databaseManagementManual#25-viewing-your-user-setup)
+In both these case you need to check the grants on the tables: [Viewing your user setup]({{ site.baseurl }}/rifDatabase/databaseManagementManual#25-viewing-your-user-setup)
 
 Peter Hambly
 May 2018

@@ -1,46 +1,12 @@
-Tile Maker
-==========
+---
+layout: default
+title: Tile Maker
+---
 
-# Contents
+1. Contents
+{:toc}
 
-- [1. Overview](#1-overview)
-  - [1.1 Software Requirements](#11-software-requirements)
-  - [1.2 Issues](#12-issues)
-    - [1.2.1 Memory Requirements](#121-memory-requirements)
-    - [1.2.2 SQL Server Connection Error](#122-sql-server-connection-error)
-	- [1.2.3 JSZip 3.0 Error](#123-jszip-30-error)
-	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
-	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
-	- [1.2.6 JavaScript heap out of memory](#126-javascript-heap-out-of-memory)
-	- [1.2.7 No top level shapefile with only one area](#127-no-top-level-shapefile-with-only-one-area)
-	- [1.2.8 pgTileMaker or mssqlTileMaker JavaScript heap out of memory](#128-pgtilemaker-or-mssqltilemaker-javascript-heap-out-of-memory)
-	- [1.2.9 Hierarchy Issues](#129-hierarchy-issues)
-	- [1.2.10 SQL Server disk space and memory Issues](#1210-sql-server-disk-space-and-memory-issues)
-- [2. Running the Tile Maker](#2-running-the-tile-maker)
-  - [2.1 Setup](#21-setup)
-  - [2.2 Processing Overview](#22-processing-overview)
-  - [2.3 Running the Front End](#23-running-the-front-end)
-    - [2.3.1 Shapefile Format](#231-shapefile-format)
-    - [2.3.2 Shapefile Naming Requirements](#232-shapefile-naming-requirements)
-	- [2.3.3 Handling Large Shapefiles](#233-handling-large-shapefiles)
-  - [2.4 Pre Processing Shapefiles](#24-pre-processing-shapefiles)
-    - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
-    - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
-	- [2.4.3 Renaming fields in a shapefile](#243-renaming-fields-in-a-shapefile)
-    - [2.4.4 Simplifying multiple shapefiles](#244-simplifying-multiple-shapefiles)
-    - [2.4.5 Dissolving a shapefile](#245-dissolving-a-shapefile)
-  - [2.4 Post Front End Processing](#24-post-front-end-processing)
-    - [2.4.1 Geospatial Data Load](#241-geospatial-data-load)
-    - [2.4.2 Tile Manufacture](#242-tile-manufacture)
-    - [2.4.3 Load Production Data into the RIF](#243-load-production-data-into-the-rif)
-- [3. TileMaker Source Code](#3-tilemaker-source-code)
-  - [3.1 TileMaker Server](#31-tilemaker-server)
-    - [3.1.1 TileMaker SQL Generation](#311-tilemaker-sql-generation)
-  - [3.2 TileMaker Web Application](#32-tilemaker-web-application)
-  - [3.3 TileViewer](#33-tileviewer)
-- [4. TileMaker TODO](#4-tilemaker-todo)
-
-# 1. Overview
+# Overview
 
 This document details the loading of the administrative geography data and the geo-coding requirements of the RIF.
 
@@ -98,7 +64,7 @@ The principal limitation is memory:
 * This requires a machine with 32 or 63G memory.
 * A pre-simplification program will be created to reduce the resolution suitably.
 
-## 1.1 Software Requirements
+## Software Requirements
 
 * [Node.js 8](https://nodejs.org/en/);
 * [Python 2.7](https://www.python.org/downloads/release/python-2714/);
@@ -107,9 +73,9 @@ The principal limitation is memory:
 
 The software has not been tested on Linux or MacOS but should work.
 
-## 1.2 Issues
+## Issues
 
-### 1.2.1 Memory Requirements
+### Memory Requirements
 
 A minimum of 16GB of RAM is required; if you are processing high resolution geographies (e.g. US census
 block groups or UK census output areas) you will require 32 to 64GB of RAM.
@@ -122,7 +88,7 @@ By default the *TileMaker* runs in only 4GB memory which is not enough for large
 In particular see [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to
 either reduce the memory requirement or increase the available memory.
 
-### 1.2.2 SQL Server Connection Error
+### SQL Server Connection Error
 
 Symptom; SQL Severer connect error ```Error: None of the binaries loaded successfully. Is your node version either >= 0.12.7 or >= 4.2.x or >= 5.1.1 or >= 6.1.0```
 
@@ -179,7 +145,7 @@ Symptom; SQL Severer connect error ```Error: None of the binaries loaded success
   added 12 packages in 11.196s
   ```
 
-### 1.2.3 JSZip 3.0 Error
+### JSZip 3.0 Error
 
 The error log forever.err contains:
 ```
@@ -230,7 +196,7 @@ npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@
  {"os":"win32","arch":"x64"})
 ```
 
-### 1.2.4 BULK INSERT Permission
+### BULK INSERT Permission
 
 SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the
 server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command.
@@ -256,7 +222,7 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 3
 Cannot bulk load because the file "C:\Users\Peter\OneDrive\SEER Data\Tile maker USA/cb_2014_us_county_500k.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
-### 1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms
+### MSSQL Timeout: Request failed to complete in XXX000ms
 
 Timeout in Node [mssql](https://www.npmjs.com/package/mssql) package. Edit *mssqlTileMaker.js*  and set
 the the requestTomeout in the MSSQL connection config:
@@ -291,7 +257,7 @@ RequestError: Timeout: Request failed to complete in 90000ms
     at ReadablePacketStream.emit (events.js:188:7)
 ```
 
-### 1.2.6 JavaScript heap out of memory
+### JavaScript heap out of memory
 
 The TileMaker server log *forever.log* contains:
 ```
@@ -317,7 +283,7 @@ By default the *TileMaker* runs in only 4GB memory which is not enough for large
 See [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to either
 reduce the memory requirement or increase the available memory.
 
-### 1.2.7 No top level shapefile with only one area
+### No top level shapefile with only one area
 
 The top level shapefile must have only one area:
 
@@ -337,7 +303,7 @@ done@http://127.0.0.1:3000/jquery-2.2.3.js:8785:5
 callback/<@http://127.0.0.1:3000/jquery-2.2.3.js:9151:9
 ```
 
-### 1.2.8 pgTileMaker or mssqlTileMaker JavaScript heap out of memory
+### pgTileMaker or mssqlTileMaker JavaScript heap out of memory
 
 Symptom:
 
@@ -389,7 +355,7 @@ Solution: add ```--max-old-space-size=<max node memory in MB>``` flag, e.g.
 
 ```node --max-old-space-size=4096 C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev -V```
 
-### 1.2.9 Hierarchy Issues
+### Hierarchy Issues
 
 E.g.  Postgres processing failed after 2:26 (hours) at statement 421/601 hierarchy checks (check_intersections.sql):
 ```
@@ -593,9 +559,9 @@ has to be done manually.
 
 It is advised to do this before any big run.
 
-# 2. Running the Tile Maker
+# Running the Tile Maker
 
-## 2.1 Setup
+## Setup
 
 Install the required *Node.js* modules. Change directory into the *rapidInquiryFacility\rifNodeServices*:
 
@@ -678,7 +644,7 @@ The following browsers have been tested:
 * Internet Explorer 11 [not recommended as it is very bad at handling large memory requirements];
 * Microsoft Edge
 
-## 2.2 Processing Overview
+## Processing Overview
 
 GUI phase:
 
@@ -705,7 +671,7 @@ Processing concepts:
 * Area ID: A code given to an area ID by the administrative authority (e.g. ONS for the 2011 Census);
 * Area Name: A name corresponding to an *area ID*.
 
-## 2.3 Running the Front End
+## Running the Front End
 
 The *tile maker* web application is used to:
 
@@ -839,7 +805,7 @@ The *tile maker* web application is used to:
    * *response.json.N*: internal JSON status at stages 1 to 3 of the processing;
    * *status.json*: processing statii in JSON format.
 
-### 2.3.1 Shapefile Format
+### Shapefile Format
 
 The best approach is to have each administrative geography in your hierarchy as single ZIP file containing a set of shapefiles. The tile maker requires two or more shapefiles with:
 
@@ -893,7 +859,7 @@ Make sure you:
 * **Do not add extra files other than those specified here. For example a Windows batch script used to pre process the shapefiles will cause an error**;
 * **Follow the Shapefile Naming Requirements**.
 
-### 2.3.2 Shapefile Naming Requirements
+### Shapefile Naming Requirements
 
 The *AreaID* field will be the name of column used throughout the administrative geography and must be:
 
@@ -910,7 +876,7 @@ example below.
 
 The file name of the ZIP file is the code for the geography. This can be changed in the front end.
 
-### 2.3.3 Handling Large Shapefiles
+### Handling Large Shapefiles
 
 Large shapefiles are those bigger than 500MB in size or with more than 100,000 records. The England, Wales and Scotland 2011 census has census output area as it highest resolution
 with 227,759 feature and is 1.04GB in size. Pre-processing to reduce the shapefile size by 80% reduces this to 240MB with acceptable loss in quality. The maximum zoomlevel can
@@ -970,7 +936,7 @@ The server is pre-configured with 4GB of memory in the *Makefile*. To change the
   node node_modules\forever\bin\forever start -c "node --max-old-space-size=24576 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
   ```
 
-## 2.4 Pre Processing Shapefiles
+## Pre Processing Shapefiles
 
 Huge shapefiles need to be pre processed using *mapshaper* down to a more reasonable size. *mapshaper* has browser and command line based versions and handles large files well.
 Do *NOT* use the web based version [http://mapshaper.org/](http://mapshaper.org/) as it is limited to 100MB.
@@ -1045,7 +1011,7 @@ Examples:
 * [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
 * [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#245-dissolving-a-shapefile). To dissolve a geography - UK regions (GOR2011) to UK Countries.
 
-### 2.4.1 To display information about a shapefile
+### To display information about a shapefile
 
 To display information about a shapefile: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd COA\coa11_clip.shp -info```
 
@@ -1072,7 +1038,7 @@ Attribute data
   MSOA11NM  'Darlington 010'
 ```
 
-### 2.4.2 Simplifying a shapefile
+### Simplifying a shapefile
 
 To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *EWS2011* directory:
 ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -simplify 0.5 stats -clean -o EWS2011/ format=shapefile -verbose```
@@ -1111,7 +1077,7 @@ C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\
 [o] - 15673ms
 ```
 
-### 2.4.3 Renaming fields in a shapefile
+### Renaming fields in a shapefile
 
 To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *EWS2011* directory:
 ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile -verbose```
@@ -1129,7 +1095,7 @@ C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\
 [o] - 25844ms
 ```
 
-### 2.4.4 Simplifying multiple shapefiles
+### Simplifying multiple shapefiles
 
 To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *EWS2011* directory. Note the
 grouping and repetition of the commands; this is essentially five commands concatenated together:
@@ -1308,7 +1274,7 @@ More? -verbose
 [o] - 608ms
 ```
 
-### 2.4.5 Dissolving a shapefile
+### Dissolving a shapefile
 
 To dissolve a geography - UK regions (GOR2011) to UK Countries.
 
@@ -1628,7 +1594,7 @@ Attribute data
   SCNTRYNAME  'United_Kingdom'
 ```
 
-## 2.4 Post Front End Processing
+## Post Front End Processing
 
 Typical post front end processing:
 
@@ -1643,7 +1609,7 @@ The SEER pre-processing script *pg_load_seer_covariates.sql* has a dependency on
 lookup tables. For this reason it is necessary to build
 the covariates table on *sahsuland_dev*. In the longer term the FIPS codes should be added to the lookup tables.
 
-### 2.4.1 Geospatial Data Load
+### Geospatial Data Load
 
 1. Place the files in the archive *data* in a new directory together with the *geoDataLoader.xml* configuration
    file
@@ -1956,7 +1922,7 @@ Data loading steps. These load the data and prepare it for tile manufacture:
 * For each shapefile geolevel:
   * Test Turf (Node.js processing) and database calculated areas agree to within 1% (Postgres)/5% (SQL server)
 
-### 2.4.2 Tile Manufacture
+### Tile Manufacture
 
 In the same directory as before run the *tile Maker* manufacturer. This has separate Postgres and SQL Server stubs calling a common
 *tileMaker.js* node.js core:
@@ -2173,7 +2139,7 @@ Tile manufacturing steps:
   |                   8                      |               0/665 |               0/992 |
   |                   9                      |              0/1568 |              0/3137 |
 
-### 2.4.3 Load Production Data into the RIF
+### Load Production Data into the RIF
 
 1. Load production data into RIF40 Schema.
    - Postgres: ```psql -U rif40 -d <database name> -w -e -f rif_pg_usa_2014.sql```
@@ -2245,17 +2211,17 @@ Add data, then:
 - Check study and comparison area selection works OK;
 - Setup and run a study.
 
-# 3. TileMaker Source Code
+# TileMaker Source Code
 
 TO BE ADDED.
 
-## 3.1 TileMaker Server
+## TileMaker Server
 
-### 3.1.1 TileMaker SQL Generation
+### TileMaker SQL Generation
 
-## 3.2 TileMaker Web Application
+## TileMaker Web Application
 
-## 3.3 TileViewer
+## TileViewer
 
 The TileViewer is an experimental program to view tiles and to test the topoJSON technology used in the RIF. It also uses tile caching technology not enabled in the RIF web front end
 so may have browser compatibility issues. It currently uses both Postgres and SQL Server; both must be used for it to run.
@@ -2282,7 +2248,7 @@ To use the *tileViwer* you must
 *TileViewer* example - Lower super output area in south east London:
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")
 
-# 4. TileMaker TODO
+# TileMaker TODO
 
 TileMaker is currently working with some minor faults but needs to have in order of priority:
 
