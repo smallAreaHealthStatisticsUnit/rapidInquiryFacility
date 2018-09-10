@@ -90,7 +90,7 @@ a mixture of technologies which are connected together using an abstract interfa
 
 Oncde the RIF is set up the user can logon to the SQL Server or Postgres database:
 
-![RIF 4.0 login screen](/Screenshots/RIF_login.png)
+![RIF 4.0 login screen]({{ site.baseurl }}/Screenshots/RIF_login.png)
 
 To create a RIF disease map:
 
@@ -101,34 +101,34 @@ To create a RIF disease map:
 
 Study area  section. Comparision are selection is identical.
 
-![RIF 4.0 study area selection](/Screenshots/RIF_studyarea.png)
+![RIF 4.0 study area selection]({{ site.baseurl }}/Screenshots/RIF_studyarea.png)
 
 This shows an investigation being setup.
 
-![RIF 4.0 investigation setup](/Screenshots/RIF_investigation.png)
+![RIF 4.0 investigation setup]({{ site.baseurl }}/Screenshots/RIF_investigation.png)
 
 This box shows the choosing of the statistical methods.
 
-![RIF 4.0 Statistics Dialog](/Screenshots/RIF_statistical_methods.png)
+![RIF 4.0 Statistics Dialog]({{ site.baseurl }}/Screenshots/RIF_statistical_methods.png)
 
 The study is then submitted. It is checked and then saved in the database and a procedure called to extract the required data. This is then
 passed to R to perform the required statistics, with the results saved to the database.
 
-![RIF 4.0 study submission](/Screenshots/RIF_submission.png)
+![RIF 4.0 study submission]({{ site.baseurl }}/Screenshots/RIF_submission.png)
 
 When the study is complete the user is informed and the data can be viewed or mapped. The data can additionally be exported to the user as a zip file
 for further analysis.
 
-![RIF 4.0 data viewer](/Screenshots/RIF_viewer.png)
+![RIF 4.0 data viewer]({{ site.baseurl }}/Screenshots/RIF_viewer.png)
 
 The maps displayed here use the synthetic test dataset, *SAHSULAND* are are using the classification scheme from the
 [THE ENVIRONMENT AND HEALTH ATLAS FOR ENGLAND AND WALES](http://www.envhealthatlas.co.uk/homepage/)
 
-![RIF 4.0 mapping](/Screenshots/RIF_mapping.png)
+![RIF 4.0 mapping]({{ site.baseurl }}/Screenshots/RIF_mapping.png)
 
 Finally, the user can export the study data for further analysis and inclusion in papers and reports.
 
-![RIF 4.0 data export](/Screenshots/RIF_export.png)
+![RIF 4.0 data export]({{ site.baseurl }}/Screenshots/RIF_export.png)
 
 # Authors
 
