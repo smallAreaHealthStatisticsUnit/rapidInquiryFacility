@@ -1288,17 +1288,20 @@ angular.module("RIF")
 					
 //					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + "; choroScope: " + JSON.stringify(choroScope, null, 2)); 
 					choroScope.tableData[mapID]=$scope.tableData[mapID];	
-					try {
-						ChoroService.doRenderSwatch(
-							true /* Called on modal open */, 
-							true /* Secret field, always true */, 
-							choroScope, 
-							ColorBrewerService);
-					}
-					catch (e) {
-						$scope.consoleError("[rifc-util-mapping.js] Caught error in doRenderSwatch(): " + 
-							JSON.stringify(e));
-					}
+					// XXXX TEMPORARILIY DISABLED
+					// +16.6: WARNING: renderSwatch() being called too early choroScope.input.methodObj not defined: 
+					// {"isDefault":true,"checkboxInvert":true,"selectedSchemeName":"PuOr","intervalRange":[],"selectedN":9,"method":"AtlasRelativeRisk","currOption":{"name":"PuOr","image":"images/colorBrewer/PuOr.png"},"features":[]}
+//					try {
+//						ChoroService.doRenderSwatch(
+//							true /* Called on modal open */, 
+//							true /* Secret field, always true */, 
+//							choroScope, 
+//							ColorBrewerService);
+//					}
+//					catch (e) {
+//						$scope.consoleError("[rifc-util-mapping.js] Caught error in doRenderSwatch(): " + 
+//							JSON.stringify(e));
+//					}
 					
 					$scope.input=choroScope.input;
 					$scope.domain=choroScope.domain;
@@ -1570,7 +1573,7 @@ angular.module("RIF")
 							$scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
 							$scope.geoJSON[mapID]={};
 							$scope.map[mapID].setView({lat: 0, lng: 0}); // Pay a quick visit to west Africa so the zoom to extent can work!
-							$scope.map[mapID].setZoom(6);
+							$scope.map[mapID].setZoom(1);
                         }
 					
                         //save study, sex selection
