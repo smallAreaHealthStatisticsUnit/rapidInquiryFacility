@@ -294,7 +294,7 @@ public class RIFStyle {
 				classifyFunctionName.equals("Quantile") || 
 				classifyFunctionName.equals("standardDeviation")
 			)) {
-			throw new Exception("Unsupport classify Function Name: " + classifyFunctionName);
+			throw new Exception("Unsupported classify Function Name: " + classifyFunctionName);
 		}
 
 		FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
@@ -303,7 +303,14 @@ public class RIFStyle {
 		if (groups == null) {
 			Function classify = filterFactory.function(classifyFunctionName, 
 				propertyExpression, filterFactory.literal(numberOfBreaks));
-			groups = (Classifier) classify.evaluate(featureCollection);  // Classify data 
+			try {
+				groups = (Classifier) classify.evaluate(featureCollection);  // Classify data 
+			}
+			catch (NullPointerException npe) {
+				throw new Exception("Failed to classify fesatureCollection; function Name: " + classifyFunctionName +
+					"; column: " + columnName + 
+					"; NullPointerException in classify.evaluate()");
+			}
 		}
 
 		return createUsingFeatureTypeStyle(rifMethod, columnName, paletteName, numberOfBreaks, invert, 

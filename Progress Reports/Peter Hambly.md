@@ -2821,7 +2821,7 @@ SELECT a.*, b.coa2011
   * getSelectState
   * getPrintState
   * setPrintState  
-* Set map background by geography, constrain map background filed; parse testeing study_selection in middleware;
+* Set map background by geography, constrain map background filed; parse testing study_selection in middleware;
 * Added select/print (initialisation) state update via study submission; test alter 10 on SQL Server;
 
 #### 13th to 17th August
