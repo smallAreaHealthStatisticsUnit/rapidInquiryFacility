@@ -30,7 +30,8 @@ Postgres is usually setup in one of four ways:
 
 The front and and middleware require username and password authentications; so method 4 must not be used.
 
-Postgres also can proxy users (see ident.conf examples are in [Configuration File Examples](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#3-configuration-file-examples)
+Postgres also can proxy users (see ident.conf examples are in [Configuration File Examples](#configuration-file-examples)
+
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
 The Postgres installer will ask for a password for Postgres; do **NOT** use internationalised characters, e.g. **£** as the
@@ -114,7 +115,7 @@ cmd.exe /c chcp 1252
 ```
 * Or: modify the cmd shortcut (find the cmd icon, right click, properties, shortcut panel) to run *cmd.exe /k chcp 1252*
 
-# 2 Installing a production database
+# Installing a production database
 
 Run the database installer batch script as an administrator: rif40_database_install.bat.
 
@@ -461,7 +462,7 @@ host  all   all  127.0.0.1/32  trust
 psql -U postgres -d postgres
 ALTER USER postgres PASSWORD <new password>;
 ```
-# 3 Configuration File Examples
+# Configuration File Examples
 
 If you are running locally only (e.g. on a laptop) you do *NOT* need to edit the configuration files.
 
@@ -723,6 +724,6 @@ sahsuland_dev	pch			postgres
 # Eof
 ```
 
-# 4 Tuning
+# Tuning
 
 To be added.

@@ -1,5 +1,7 @@
-RIF TODO LIST
-=============
+---
+layout: default
+title: RIF To-do List
+---
 
 * David Morley, September 2017
 * Peter Hambly, October-December 2017
@@ -44,7 +46,7 @@ RIF TODO LIST
 	database type. The actual differences between ms and pg are not very big. The RIF works the way things are now, but there is a lot
 	of duplication of code and it will cause a huge maintenance problem in the future.
 
-	See: [Creating a new restful web service](/development/Creating-a-new-restful-web-service)
+	See: [Creating a new restful web service]({{ site.baseurl }}/development/Creating-a-new-restful-web-service)
 	for examples of this and a discussion of the solutions.
 
 	A partial solution has been implemented for the ZIP and extract services as a proof of concept. Common SQL code

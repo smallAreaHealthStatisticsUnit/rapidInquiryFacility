@@ -35,8 +35,9 @@
  * CONTROLLER for disease submission investigation parameters modal
  */
 angular.module("RIF")
-        .controller('ModalParametersCtrl', ['$timeout', '$q', '$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user', 'StudyAreaStateService',
-            function ($timeout, $q, $scope, $uibModal, SubmissionStateService, ParameterStateService, user, StudyAreaStateService) {
+        .controller('ModalParametersCtrl', 
+			['$timeout', '$q', '$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user', 'StudyAreaStateService', 'AlertService',
+            function ($timeout, $q, $scope, $uibModal, SubmissionStateService, ParameterStateService, user, StudyAreaStateService, AlertService) {
 
                 $scope.tree = SubmissionStateService.getState().investigationTree;
                 $scope.animationsEnabled = true;
@@ -330,7 +331,41 @@ angular.module("RIF")
                     var myICD = [];
                     if (res.data.length !== 0) {
                         for (var i = 0; i < res.data.length; i++) {
-                            myICD.push({term_name: res.data[i].label, term_description: res.data[i].description, identifier: res.data[i].identifier, selected: 0});
+							// Deduce taxonomy so that the chapter headings can be removed, e.g I-null
+							/*
+							+6.6: [DEBUG] [rifc-dsub-params.js] handleTextSearch res: {
+							 "identifier": "I-null",
+							 "label": "I",
+							 "description": "\n\t\t\tCertain infectious and parasitic diseases\n\t\t",
+							 "isTopLevelTerm": null
+							} rifc-util-alert.js:194:7
+							+36.9: [DEBUG] [rifc-dsub-params.js] handleTextSearch res: {
+							 "identifier": "C30-C39-icd10",
+							 "label": "C30-C39",
+							 "description": "\n\t\t\tMalignant neoplasms of respiratory and intrathoracic organs\n\t\t",
+							 "isTopLevelTerm": null
+							} rifc-util-alert.js:194:7
+							*/
+
+							if (res.data[i].label && res.data[i].identifier && res.data[i].label.length > 0) {
+								res.data[i].taxonomy = res.data[i].identifier.substr(res.data[i].label.length+1);
+							}		
+							else {
+								res.data[i].taxonomy = "UNK";
+							}
+							
+							if (i == 0) {
+								AlertService.consoleDebug("[rifc-dsub-params.js] handleTextSearch res: " + JSON.stringify(res.data[i], null, 1));
+							}
+							if (res.data[i].taxonomy && res.data[i].taxonomy == 'null') {
+							}
+							else {
+								myICD.push({
+									term_name: res.data[i].label, 
+									term_description: res.data[i].description, 
+									identifier: res.data[i].identifier, 
+									selected: 0});
+							}
                             //if selected already, make them green in ICD table
                             for (var j = 0; j < $scope.thisICDselection.length; j++) {
                                 if (res.data[i].identifier === $scope.thisICDselection[j][0]) {

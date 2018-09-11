@@ -1,22 +1,12 @@
-SQL Server Production Database Installation
-===========================================
+---
+layout: default
+title: SQL Server Production Database Installation
+---
 
-# Contents
-- [1. Install SQL Server](#1-install-sql-server)
-- [2. Installing the RIF](#2-installing-the-rif)
-   - [2.1 Network connection errors](#21-network-connection-errors)
-   - [2.2 Logon errors](#22-logon-errors)
-     - [2.2.1 Wrong server authentication mode](#221-wrong-server-authentication-mode)
-   - [2.3 SQL Server Restore](#23-sql-server-restore)
-   - [2.4 Power User Issues](#24-power-user-issues)
-- [3. Create Additional Users](#3-create-additional-users)
-- [4. Installation By Hand](#4-installation-by-hand)
-   - [4.1 Creating The Database](#41-creating-the-database)
-   - [4.2 Creating a New User](#42-creating-a-new-user)
-   - [4.3 Testing The Database](#43-testing-the-database)
-- [5. Tuning](#5-tuning)
+1. Contents
+{:toc}
 
-# 1. Install SQL Server
+# Install SQL Server
 
 Install SQL Server 2012 SP2 or 2016(Express for a test system/full version for production). **DO NOT INSTALL SQL Server 2008 or before**:
 
@@ -71,11 +61,11 @@ Microsoft SQL Server 2016 (SP1-GDR) (KB4019089) - 13.0.4206.0 (X64)
 * The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more
   than one SQL Server database on your machine, see setting *SQLCMDSERVER* in the next section.
 
-# 2. Installing the RIF
+# Installing the RIF
 
 A standalone script *rif40_database_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
 *...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by
-*rebuild_all.bat* see: [SQL Server Development Database Installation](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/) or supplied by SAHSU.
+*rebuild_all.bat* see: [SQL Server Development Database Installation]({{ base.url }}/rifDatabase/SQLserver/installation/) or supplied by SAHSU.
 If you use the pre-built version check that the dump *sahsuland_dev.bak* is unZipped.
 
 You will need to enter:
@@ -87,7 +77,7 @@ You will need to enter:
 The database name and user name should only contain lowercase letters, underscore (\_) and numbers and must start with a letter.
 The default password is the same as the username; change it on a production system connected to the internet!
 
-Before you run *rebuild_all.bat* check the [restore permissions](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md#23-sql-server-restore)
+Before you run *rebuild_all.bat* check the [restore permissions]({{ base.url }}/rifDatabase/SQLserver/production/INSTALL.md#23-sql-server-restore)
 
 **THESE SCRIPTS DO DROP ALL EXISTING TABLES AND DATA**.
 
@@ -140,7 +130,7 @@ rif40_production_user.sql built OK 0; created RIF40 production database sahsulan
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>
 ```
 
-## 2.1 Network connection errors
+## Network connection errors
 
 This is when the above command will not run.
 
@@ -166,11 +156,11 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 
 Now test your can connect to the database.
 
-## 2.2 Logon errors
+## Logon errors
 
 Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXX
 
-### 2.2.1 Wrong server authentication mode
+### Wrong server authentication mode
 
 The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server.
 See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
@@ -206,7 +196,7 @@ rif40
 The database specified by *db_name()* will be the one specified by $(NEWDB). Running this script against a pre-existing development user
 will change the default database from *sahsuland_dev* to *$(NEWDB)*.
 
-## 2.3 SQL Server Restore
+## SQL Server Restore
 
 SQL Server needs access granted to the directories used to the `RESTORE` file used to import the database.
 
@@ -234,7 +224,7 @@ rif40_sahsuland_dev_install.sql exiting with 1
 rif40_sahsuland_dev_install.bat exiting with 1
 ```
 
-## 2.4 Power User Issues
+## Power User Issues
 
 This is caused by *rif40_database_install.bat* failing complaining the user is not an Administrator when run as a power user.
 
@@ -269,7 +259,7 @@ The solution to this is to:
 	```
 * Re-run *rif40_database_install.bat*
 
-# 3. Create Additional Users
+# Create Additional Users
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using
 the -v newuser=<my new user>  and -v newpw=<my new password> parameters. Run as Administrator:
@@ -300,7 +290,7 @@ rif40
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
 
-# 4. Installation By Hand
+# Installation By Hand
 
 This assumes that your database team will not run the *rif40_database_install.bat* script as an Administrator, so they will have to run:
 *rif40_production_creation.sql* as a database administrator or run the commands manually in it, and then do the same for
@@ -309,7 +299,7 @@ There are no restrictions as to the database name (other than it being valid).
 
 All commands are assumed to be run by an administrator.
 
-## 4.1 Creating The Database
+## Creating The Database
 
 These instructions are based on *rif40_production_creation.sql*. This uses *NEWUSER*, *NEWDB* and *import_dir* from the CMD enviornment.
 
@@ -548,7 +538,7 @@ EXEC sp_addsrvrolemember @loginame = N'rif40', @rolename = N'bulkadmin';
 GO
 ```
 
-## 4.2 Creating a New User
+## Creating a New User
 
 
 These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD enviornment.
@@ -871,7 +861,7 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description',
 GO
 ```
 
-## 4.3 Testing The Database
+## Testing The Database
 
 The best test of a correctly installed database is to logon as a test user and select from rif40_num_denom (numerator/denominator) pair view. The standard row
 will only appear if you can find and select from both tables:

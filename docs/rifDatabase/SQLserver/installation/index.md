@@ -1,26 +1,12 @@
-SQL Server Development Database Installation
-============================================
+---
+layout: default
+title: SQL Server Development Database Installation
+---
 
-# Contents
-- [1. Install SQL Server](#1-install-sql-server)
-- [2. Create Databases and Users](#2-create-databases-and-users)
-   - [2.1 Network connection errors](#21-network-connection-errors)
-   - [2.2 Power User Issues](#22-power-user-issues)
-- [3. Create Additional Users](#3-create-additional-users)
-   - [3.1 Logon errors](#31-logon-errors)
-     - [3.1.1 Wrong server authentication mode](#311-wrong-server-authentication-mode)
-- [4. Installing the RIF Schema](#4-installing-the-rif-schema)
-  - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
-  - [4.2 Re-running scripts](#42-re-running-scripts)
-    - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
-    - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
-  - [4.3 SQL Server Backup and Restore](#43-sql-server-backup-and-restore)
-  - [4.4 SQL Server BULK INSERT Issues](#44-sql-server-bulk-insert-issues)
-    - [4.4.1 Line Termination](#441-line-termination)
-- [5. Script Notes](#5-script-notes)
-  - [5.1 Script and documentation TODO](#51-script-and-documentation-todo)
+1. Contents
+{:toc}
 
-# 1. Install SQL Server
+# Install SQL Server
 
 Install SQL Server 2012 SP2 or 2016(Express for a test system/full version for production). **DO NOT INSTALL SQL Server 2008 or before**:
 
@@ -75,7 +61,7 @@ Microsoft SQL Server 2016 (SP1-GDR) (KB4019089) - 13.0.4206.0 (X64)
 * The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more
   than one SQL Server database on your machine, see setting *SQLCMDSERVER* in the next section.
 
-# 2. Create Databases and Users
+# Create Databases and Users
 
 **This section details the original method using the script *rif40_development_creation.sql*. This section is useful to sort out connection
 problems. The easier way to rebuild the RIF is to skip to section 4, and run  *rebuild_all.bat* which runs all the required scriipts
@@ -100,7 +86,7 @@ Note:
 - The test database is for building geospatial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
   a separate database is used.
 
-## 2.1 Network connection errors
+## Network connection errors
 
 This is when the above command will not run.
 
@@ -156,7 +142,7 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
     1>
 	```
 
-## 2.2 Power User Issues
+## Power User Issues
 
 This is caused by *rebuild_all.bat* failing complaining the user is not an Administrator when run as a power user.
 
@@ -191,7 +177,7 @@ The solution to this is to:
 	```
 * Re-run *rebuild_all.bat*
 
-# 3. Create Additional Users
+# Create Additional Users
 
 Run the optional script *rif40_development_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using
 the -v newuser=<my new user> and -v newpw=<my new password> parameters. Run as Administrator:
@@ -226,13 +212,13 @@ test
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
 
-## 3.1 Logon errors
+## Logon errors
 
 Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXXXXXX -d sahsuland_dev`
 
 Test all combinations of *sahsuland*/*sahsuland_dev*/*test* databases.
 
-### 3.1.1 Wrong server authentication mode
+### Wrong server authentication mode
 
 The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server.
 See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
@@ -265,7 +251,7 @@ sahsuland_dev
 1>
 ```
 
-# 4. Installing the RIF Schema
+# Installing the RIF Schema
 
 A script (*rapidInquiryFacility\rifDatabase\SQLserver\installation\rebuild_all.bat*) is provided to build everything and create an example study. Note that this user's password will be the
 username, so change it on a networked system:
@@ -295,7 +281,7 @@ username, so change it on a networked system:
 	Terminate batch job (Y/N)? y
     ```
 
-Before you run *rebuild_all.bat* check the [BLUK INSERRT permissions](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/#41-bulk-insert-permission)
+Before you run *rebuild_all.bat* check the [BULK INSERT permission](#bulk-insert-permission)
 
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
 **You _must_ build sahusland_dev before sahsuland**; as *sahsuland_dev* is exported as the basis for *sahsuland*.
@@ -330,7 +316,7 @@ An additional script in the installation directory can be used to create an exam
 sqlcmd -U <my new user> -P <my new user> -d sahsuland_dev -b -m-1 -e -r1 -i rif40_run_study.sql
 ```
 
-## 4.1 BULK INSERT Permission
+## BULK INSERT Permission
 
 SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the
 server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command.
@@ -365,9 +351,9 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
-## 4.2 Re-running scripts
+## Re-running scripts
 
-### 4.2.1 Geospatial script: rif40_sahsuland_tiles.bat
+### Geospatial script: rif40_sahsuland_tiles.bat
 
 Re-running the geospatial script: rif40_sahsuland_tiles.bat will produce the following error:
 
@@ -387,11 +373,11 @@ To resolve: delete the covariates. You must re-run rif40_sahsuland_data.bat afte
 ```
 DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
 ```
-### 4.2.2 Re-load sahsuland example data
+### Re-load sahsuland example data
 
 Re-load sahsuland example data with: rif40_sahsuland_data.bat
 
-## 4.3 SQL Server Backup and Restore
+## SQL Server Backup and Restore
 
 SQL Server needs access granted to the directories used to `BACKUP` and to `RESTORE` files.
 
@@ -419,9 +405,9 @@ rif40_sahsuland_dev_install.sql exiting with 1
 rif40_sahsuland_dev_install.bat exiting with 1
 ```
 
-## 4.4 SQL Server BULK INSERT Issues
+## SQL Server BULK INSERT Issues
 
-### 4.4.1 Line Termination
+### Line Termination
 
 ```
 BULK INSERT rif_data.pop_sahsuland_pop FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\DataLoaderData\SAHSULAND/pop_sahsuland_pop.csv'
@@ -448,7 +434,7 @@ perl -i -p -e "s/\r//" <oldfilename >newfilename
 *.fmt text eol=lf
 ```
 
-# 5. Script Notes
+# Script Notes
 
 * All scripts except database creation are now transactional, with a script of the same name usually in the source code directory;
   The T-SQL functions sp_addsrvrolemember() and sp_addrolemember() are not transactional;
@@ -485,7 +471,7 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 	G_RIF40_COMPARISON_AREAS
 	G_RIF40_STUDY_AREAS
 
-## 5.1 Script and documentation TODO
+## Script and documentation TODO
 
 Still to do (low priority):
 

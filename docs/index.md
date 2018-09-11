@@ -25,7 +25,7 @@ The RIF has the following manuals:
 
 - [RIF 4.0 Manual](standalone/RIF_v40_Manual.pdf)
 - [RIF 4.0 Data Loader Manual](standalone/RIF_Data_Loader_Manual.pdf)
-- [RIF Web Application and Middleware Installation](rifWebApplication/index)
+- [RIF Web Application and Middleware Installation](rifWebApplication/)
 - [Windows Postgres Install using pg_dump and scripts](rifDatabase/Postgres/docs/windows_install_from_pg_dump)
 - [SQL Server Production Database Installation](rifDatabase/SQLserver/production/INSTALL)
 - [Manual data loading](rifDatabase/DataLoaderData/DataLoading)
@@ -34,4 +34,4 @@ The RIF has the following manuals:
 
 # For Developers
 
-Documents for developers [are here](development/index).
+Documents for developers [are here](development/).

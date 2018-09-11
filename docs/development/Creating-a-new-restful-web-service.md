@@ -16,7 +16,7 @@ front end, using [Angular.js](https://angularjs.org/) and [Leaflet](http://leafl
 Restfull web services written in [Java](https://www.java.com/en/) and running in [Apache Tomcat](http://tomcat.apache.org/). All data is stored in a
 GeoSptial database, with a choice of [MicroSoft SQL Server](https://www.microsoft.com/en-us/sql-server/default.aspx) or [Postgres](https://www.postgresql.org/).
 
-![RIF Architecture](/development/RIF_architecture.png)
+![RIF Architecture]({{ site.baseurl }}/development/RIF_architecture.png)
 
 The web services are thus the key interface in the software, and this document details who to create one. The example code is
 principally focused on the Middleware, with the interfacing with the front end and the database detailed.
@@ -91,11 +91,11 @@ moved onto other tasks.
 Two screenshots of the process are shown below. Firstly, after an export has been requested, including showing the effect of clicking the
 download link:
 
-![RIF Export](/development/RIF_export.png)
+![RIF Export]({{ site.baseurl }}/development/RIF_export.png)
 
 And secondly, after the download the file is available for fresh download:
 
-![RIF Export](/development/RIF_export2.png)
+![RIF Export]({{ site.baseurl }}/development/RIF_export2.png)
 
 If the export is then saved to disk and unzipped, the R phase of the study can be re-run. This proves the validity of the extract and
 gives the investigator the basis of future analysis. The export will be enhanced to add maps over the winter of 2017:

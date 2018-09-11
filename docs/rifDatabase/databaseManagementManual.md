@@ -1,84 +1,31 @@
-Database Management Manual
-==========================
+---
+layout: default
+title: Database Management Manual
+---
 
-# Contents
+1. Contents
+{:toc}
 
-- [1. Overview](#1-overview)
-- [2. User Management](#2-user-management)
-  - [2.1 Creating new users](#21-creating-new-users)
-     - [2.1.1 Postgres](#211-postgres)
-	   - [2.1.1.1 Manually creating a new user](#2111-manually-creating-a-new-user)
-     - [2.1.2 SQL Server](#212-sql-server)
-	   - [2.1.2.1 Manually creating a new user](#2121-manually-creating-a-new-user)
-  - [2.2 Changing passwords](#22-changing-passwords)
-     - [2.2.1 Postgres](#221-postgres)
-     - [2.2.2 SQL Server](#222-sql-server)
-  - [2.3 Proxy accounts](#23-proxy-accounts)
-     - [2.3.1 Postgres](#231-postgres)
-     - [2.3.2 SQL Server](#232-sql-server)
-  - [2.4 Granting permission](#24-granting-permission)
-     - [2.4.1 Postgres](#241-postgres)
-     - [2.4.2 SQL Server](#242-sql-server)
-  - [2.5 Viewing your user setup](#25-viewing-your-user-setup)
-     - [2.5.1 Postgres](#251-postgres)
-     - [2.5.2 SQL Server](#252-sql-server)
-- [3. Data Management](#3-data-management)
-  - [3.1 Creating new schemas](#31-creating-new-schemas)
-     - [3.1.1 Postgres](#311-postgres)
-     - [3.1.2 SQL Server](#312-sql-server)
-  - [3.2 Tablespaces](#32-tablespaces)
-     - [3.2.1 Postgres](#321-postgres)
-     - [3.2.2 SQL Server](#322-sql-server)
-  - [3.3 Partitioning](#33-partitioning)
-     - [3.3.1 Postgres](#331-postgres)
-     - [3.3.2 SQL Server](#332-sql-server)
-  - [3.4 Granting permission](#34-granting-permission)
-     - [3.4.1 Postgres](#341-postgres)
-     - [3.4.2 SQL Server](#342-sql-server)
-- [4. Information Governance](#4-information-governance)
-  - [4.1 Auditing](#41-auditing)
-     - [4.1.1 Postgres](#411-postgres)
-     - [4.1.2 SQL Server](#412-sql-server)
-- [5. Backup and recovery](#5-backup-and-recovery)
-   - [5.1 Postgres](#51-postgres)
-     - [5.1.1 Logical Backups](#511-logical-backups)
-     - [5.1.2 Continuous Archiving and Point-in-Time Recovery](#512-continuous-archiving-and-point-in-time-recovery)
-   - [5.2 SQL Server](#52-sql-server)
-     - [5.2.1 Logical Backups](#521-logical-backups)
-     - [5.2.2 Continuous Archiving and Point-in-Time Recovery](#522-continuous-archiving-and-point-in-time-recovery)
-- [6. Patching](#6-patching)
-   - [6.1 Postgres](#61-postgres)
-   - [6.2 SQL Server](#62-sql-server)
-- [7. Tuning](#7-tuning)
-   - [7.1 Postgres](#71-postgres)
-     - [7.1.1 Server Memory Tuning](#711-server-memory-tuning)
-     - [7.1.2 Query Tuning](#712-query-tuning)
-	 - [7.1.3 Database Space Management](#713-database-space-management)
-   - [7.2 SQL Server](#72-sql-server)
-     - [7.2.1 Server Memory Tuning](#721-server-memory-tuning)
-     - [7.2.2 Query Tuning](#722-query-tuning)
-	 - [7.2.3 Database Space Management](#723-database-space-management)
-					
 # 1. Overview
 
 This manual details how to manage RIF databases. See also the:
 
-* [Tile-maker manual](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md) for how to create
+* [Tile-maker manual]({{ base.url }}/rifNodeServices/tileMaker) for how to create
   RIF administrative geographies.
-* [RIF Manual Data Loading manual](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase\DataLoaderData\DataLoading.md) 
+* [RIF Manual Data Loading manual]({{ base.url }}/rifDatabase\DataLoaderData\DataLoading)
   for details on the manual process for the loading of data into the RIF.
 
 # 2. User Management
- 
+
 ## 2.1 Creating new users
 
-New users must be created in lower case, start with a letter, and only contain the characters: ```[a-z][0-9]_```. **Do not use mixed case, upper case, dashes, space or non 
-ASCII e.g. UTF8) characters**. Beware; the database stores user names internally in upper case. This is because of the RIF's Oracle heritage. 
+New users must be created in lower case, start with a letter, and only contain the characters: ```[a-z][0-9]_```. **Do not use mixed case, upper case, dashes, space or non
+ASCII e.g. UTF8) characters**. Beware; the database stores user names internally in upper case. This is because of the RIF's Oracle heritage.
 
 ### 2.1.1 Postgres
 
-Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment. 
-This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as a normal user or an 
+Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment.
+This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as a normal user or an
 Administrator, using the *postgres* account:
 
 ```
@@ -161,13 +108,13 @@ $$;
 ```SQL
 DO LANGUAGE plpgsql $$
 DECLARE
-	c2 CURSOR(l_usename VARCHAR) FOR 
+	c2 CURSOR(l_usename VARCHAR) FOR
 		SELECT * FROM pg_user WHERE usename = l_usename;
-	c3 CURSOR FOR 
+	c3 CURSOR FOR
 		SELECT CURRENT_SETTING('rif40.nnewpw') AS nnewpw,
 		       CURRENT_SETTING('rif40.newpw') AS newpw;
 	c4 CURSOR(l_name VARCHAR, l_pass VARCHAR) FOR
-		SELECT rolpassword::Text AS rolpassword, 
+		SELECT rolpassword::Text AS rolpassword,
 		       'md5'||md5(l_pass||l_name)::Text AS password
 	  	  FROM pg_authid
 	     WHERE rolname = l_name;
@@ -191,26 +138,26 @@ BEGIN
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
 	IF c2_rec.usename IS NULL THEN
-		RAISE NOTICE 'C209xx: User account does not exist: %; creating', u_name;	
+		RAISE NOTICE 'C209xx: User account does not exist: %; creating', u_name;
 		sql_stmt:='CREATE ROLE '||u_name||
 			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
 				CURRENT_SETTING('rif40.newpw')||'''';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
 	ELSE
---	
+--
 		OPEN c4(u_name, u_pass);
 		FETCH c4 INTO c4_rec;
 		CLOSE c4;
 		IF c4_rec.rolpassword IS NULL THEN
-			RAISE EXCEPTION 'C209xx: User account: % has a NULL password', 
-				c2_rec.usename;	
+			RAISE EXCEPTION 'C209xx: User account: % has a NULL password',
+				c2_rec.usename;
 		ELSIF c4_rec.rolpassword != c4_rec.password THEN
 			RAISE INFO 'rolpassword: "%"', c4_rec.rolpassword;
 			RAISE INFO 'password(%):    "%"', u_pass, c4_rec.password;
-			RAISE EXCEPTION 'C209xx: User account: % password (%) would change; set password correctly', c2_rec.usename, u_pass;		
+			RAISE EXCEPTION 'C209xx: User account: % password (%) would change; set password correctly', c2_rec.usename, u_pass;
 		ELSE
-			RAISE NOTICE 'C209xx: User account: % password is unchanged', 
+			RAISE NOTICE 'C209xx: User account: % password is unchanged',
 				c2_rec.usename;
 		END IF;
 --
@@ -219,9 +166,9 @@ BEGIN
 		ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
 			RAISE INFO 'rif40_production_user.sql() user account="%" is a rif manager', c2_rec.usename;
 		ELSE
-			RAISE EXCEPTION 'C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+			RAISE EXCEPTION 'C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;
 		END IF;
-	END IF;	
+	END IF;
 --
 	sql_stmt:='GRANT CONNECT ON DATABASE '||u_database||' to '||u_name;
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
@@ -239,7 +186,7 @@ $$;
 3. Create user and grant roles
 ```SQL
 DO LANGUAGE plpgsql $$
-DECLARE	
+DECLARE
 	sql_stmt VARCHAR;
 	u_name	VARCHAR;
 	u_database	VARCHAR;
@@ -247,11 +194,11 @@ BEGIN
 	u_name:='mydatabasenuser';
 	u_database:='mydatabasename';
 	IF user = 'postgres' AND current_database() = u_database THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'User check: %', user;
 	ELSE
-		RAISE EXCEPTION 'C209xx: User check failed: % is not postgres on % database (%)', 
-			user, u_database, current_database();	
-	END IF;	
+		RAISE EXCEPTION 'C209xx: User check failed: % is not postgres on % database (%)',
+			user, u_database, current_database();
+	END IF;
 
 --
 	sql_stmt:='GRANT CONNECT ON DATABASE '||u_database||' to '||u_name;
@@ -260,18 +207,18 @@ BEGIN
 
 	sql_stmt:='CREATE SCHEMA IF NOT EXISTS '||u_name||' AUTHORIZATION '||u_name;
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-	EXECUTE sql_stmt;	
+	EXECUTE sql_stmt;
 END;
 $$;
 ```
 * **Change the password**. The password is set to *mydatabasepassword*.
 
-The user specific object views: *rif40_num_denom*, *rif40_num_denom_errors* are automatically created. These must be created as the user so they run with the users 
+The user specific object views: *rif40_num_denom*, *rif40_num_denom_errors* are automatically created. These must be created as the user so they run with the users
 privileges and therefore only return RIF data tables to which the user has been granted access permission.
 
 ### 2.1.2 SQL Server
 
-Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment. 
+Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment.
 This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as *Administrator*:
 
 ```
@@ -327,14 +274,14 @@ SET @first_char=SUBSTRING(@newuser, 1, 1);
 IF @invalid_chars IS NULL
 	RAISERROR('New username is null', 16, 1, @newuser);
 ELSE IF @invalid_chars > 0
-	RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1, 
+	RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1,
 		@newuser, @invalid_chars);
-ELSE IF (LEN(@newuser) > 30) 
+ELSE IF (LEN(@newuser) > 30)
 	RAISERROR('New username: %s is too long (30 characters max).', 16, 1, @newuser);
 ELSE IF ISNUMERIC(@first_char) = 1
 	RAISERROR('First character in username: %s is numeric: %s.', 16, 1, @newuser, @first_char);
-ELSE 
-	PRINT 'New username: ' + @newuser + ' OK';	
+ELSE
+	PRINT 'New username: ' + @newuser + ' OK';
 GO
 ```
 
@@ -347,7 +294,7 @@ CREATE LOGIN [mydatabaseuser] WITH PASSWORD='mydatabasepassword', CHECK_POLICY =
 GO
 
 ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
-GO	
+GO
 ```
 
 3. Creare user and grant roles
@@ -358,7 +305,7 @@ BEGIN
 	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'mydatabaseuser')
 	CREATE USER [mydatabaseuser] FOR LOGIN [mydatabaseuser] WITH DEFAULT_SCHEMA=[dbo]
 	ELSE ALTER USER [mydatabaseuser] WITH LOGIN=[mydatabasepassword];
-	
+
 --
 -- Object privilege grants
 --
@@ -369,7 +316,7 @@ BEGIN
 		EXEC('CREATE SCHEMA [mydatabaseuser] AUTHORIZATION [mydatabasepassword]');
 	ALTER USER [mydatabaseuser] WITH DEFAULT_SCHEMA=[mydatabaseuser];
 	ALTER ROLE rif_user ADD MEMBER [mydatabaseuser];
-	ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];	
+	ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];
 END;
 GO
 ```
@@ -390,14 +337,14 @@ GO
 --	rif40_auto_indirect_checks
 --
 
-IF EXISTS (SELECT * FROM sys.objects 
+IF EXISTS (SELECT * FROM sys.objects
 WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom]') AND type in (N'V'))
 BEGIN
 	DROP VIEW [mydatabaseuser].[rif40_num_denom]
 END
 GO
 
-CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS 
+CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS
  WITH n AS (
          SELECT n1.geography,
             n1.numerator_table,
@@ -428,7 +375,7 @@ CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS
                   WHERE d_1.isindirectdenominator = 1
   				    AND d_1.automatic = 1
 					AND [rif40].[rif40_is_object_resolvable](d_1.table_name) = 1) d1
-          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1 
+          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1
 		    AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL
         )
  SELECT n.geography,
@@ -443,54 +390,54 @@ CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS
   WHERE n.geography = d.geography
 GO
 
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.' , 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.' ,
 	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Geography', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Geography',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'geography'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'numerator_table'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table description', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table description',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'numerator_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table health study theme description', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table health study theme description',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'theme_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'denominator_table'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table description', 
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table description',
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'denominator_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.' , 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.' ,
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
 	@level2type=N'COLUMN',@level2name=N'automatic'
 GO
 
-IF EXISTS (SELECT * FROM sys.objects 
+IF EXISTS (SELECT * FROM sys.objects
 WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom_errors]') AND type in (N'V'))
 BEGIN
 	DROP VIEW [mydatabaseuser].[rif40_num_denom_errors]
 END
 GO
 
-CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS 
+CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS
  WITH n AS (
          SELECT n1.geography,
             n1.numerator_table,
@@ -553,92 +500,92 @@ CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS
   WHERE n.geography = d.geography;
 GO
 
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' , 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' ,
 	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Geography', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Geography',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'geography'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table owner' , 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table owner' ,
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'numerator_owner'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table' , 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table' ,
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'numerator_table'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the numerator table resolvable and accessible (0/1)' , 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the numerator table resolvable and accessible (0/1)' ,
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'is_numerator_resolvable'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the numerator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the numerator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'n_num_denom_validated'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Numerator table description', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Numerator table description',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'numerator_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table owner', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table owner',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'denominator_owner'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'denominator_table'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the denominator table resolvable and accessible (0/1)', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the denominator table resolvable and accessible (0/1)',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'is_denominator_resolvable'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the denominator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the denominator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'd_num_denom_validated'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table description', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table description',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'denominator_description'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'automatic'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Error flag 0/1. Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Error flag 0/1. Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'auto_indirect_error_flag'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-	@value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.', 
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+	@value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.',
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 	@level2type=N'COLUMN',@level2name=N'auto_indirect_error'
 GO
 ```
 
 ## 2.2 Changing passwords
 
-Valid characters for passwords have been tested as: ```[A-Z][a-z][0-9]!@$^~_-```. Passwords must be up to 30 characters long; longer passwords may be supported. The following are definitely **NOT** 
+Valid characters for passwords have been tested as: ```[A-Z][a-z][0-9]!@$^~_-```. Passwords must be up to 30 characters long; longer passwords may be supported. The following are definitely **NOT**
 valid: [SQL Server/ODBC special characters](http://msdn.microsoft.com/en-us/library/windows/desktop/ms715433%28v=vs.85%29.aspx): ```[]{}(),;?*=!@```.
 Use of special characters]: ```\/&%``` is not advised as command line users will need to use an escaping URI to connect.
 
 ### 2.2.1 Postgres
 
-The file .pgpass in a user's home directory or the file referenced by PGPASSFILE can contain passwords to be used if the connection requires a password 
-(and no password has been specified otherwise). On Microsoft Windows the file is named %APPDATA%\postgresql\pgpass.conf (where %APPDATA% refers to the 
+The file .pgpass in a user's home directory or the file referenced by PGPASSFILE can contain passwords to be used if the connection requires a password
+(and no password has been specified otherwise). On Microsoft Windows the file is named %APPDATA%\postgresql\pgpass.conf (where %APPDATA% refers to the
 Application Data subdirectory in the user's profile).
 
 This file should contain lines of the following format:
@@ -647,21 +594,21 @@ This file should contain lines of the following format:
 hostname:port:database:username:password
 ```
 
-You can add a comment to the file by preceding the line with #. Each of the first four fields can be a literal value, or *, which matches anything. The password field from the first line 
-that matches the current connection parameters will be used. (Therefore, put more-specific entries first when you are using wildcards.) 
-If an entry needs to contain : or \, escape this character with \. A host name of localhost matches both TCP (host name localhost) and Unix domain socket 
-(pghost empty or the default socket directory) connections coming from the local machine. 
+You can add a comment to the file by preceding the line with #. Each of the first four fields can be a literal value, or *, which matches anything. The password field from the first line
+that matches the current connection parameters will be used. (Therefore, put more-specific entries first when you are using wildcards.)
+If an entry needs to contain : or \, escape this character with \. A host name of localhost matches both TCP (host name localhost) and Unix domain socket
+(pghost empty or the default socket directory) connections coming from the local machine.
 
-On Unix systems, the permissions on .pgpass must disallow any access to world or group; achieve this by the command chmod 0600 ~/.pgpass. If the permissions are less strict 
+On Unix systems, the permissions on .pgpass must disallow any access to world or group; achieve this by the command chmod 0600 ~/.pgpass. If the permissions are less strict
 than this, the file will be ignored. On Microsoft Windows, it is assumed that the file is stored in a directory that is secure, so no special permissions check is made.
 
 If you change a users password and you use the user from the command line (typically *postgres*, *rif40* and the test username) change it in the *&lt;pgpass&gt;* file.
 
-Notes: 
+Notes:
 
 * Your normal user and the administrator account will have separate *&lt;pgpass&gt;* files;
 * The *postgres* account password is set by the Postgres (EnterpriseDB) installler. This password is not set in the Administrator *&lt;pgpass&gt;* file.;
-* The *rif40* and the test username are both set by the database install script to &lt;username&gt;_&lt;5 digit random number&gt;_&lt;5 digit random number&gt;. 
+* The *rif40* and the test username are both set by the database install script to &lt;username&gt;_&lt;5 digit random number&gt;_&lt;5 digit random number&gt;.
   These passwords are set in the Administrator *&lt;pgpass&gt;* file.;
 * No passwords are set in the normal user *&lt;pgpass&gt;* file;
 
@@ -677,28 +624,28 @@ To change a SQL server password:
 ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
 GO
 ```
-  
+
 ## 2.3 Proxy accounts
 
-Proxy accounts are of use to the RIF as it can allow a normal user to login as a schema owner. Good practice is not the set the schema owner passwords (e.g. *rif40*) as these tend to be known by 
-several people and tend to get written down as these accounts are infrequently used. Proxy accounts allow for privilege minimisation. Importantly the use proxy accounts is fully audited, in 
+Proxy accounts are of use to the RIF as it can allow a normal user to login as a schema owner. Good practice is not the set the schema owner passwords (e.g. *rif40*) as these tend to be known by
+several people and tend to get written down as these accounts are infrequently used. Proxy accounts allow for privilege minimisation. Importantly the use proxy accounts is fully audited, in
 particular the privilege escalation (i.e. use of the proxy).
 
-The SAHSU Private network uses proxying for these reasons.  
- 
-The RIF front end application and middleware use user name and passwords to authenticate. Therefore federated mechanism such as [Kerberos](https://en.wikipedia.org/wiki/Kerberos_(protocol)) and 
-[SSPI](https://en.wikipedia.org/wiki/Security_Support_Provider_Interface) (Windows authentication) will not work; and would require 
-a [GSSAPI](https://en.wikipedia.org/wiki/Generic_Security_Services_Application_Program_Interface) implementation in the middleware. Invariably substantial browser and server key 
+The SAHSU Private network uses proxying for these reasons.
+
+The RIF front end application and middleware use user name and passwords to authenticate. Therefore federated mechanism such as [Kerberos](https://en.wikipedia.org/wiki/Kerberos_(protocol)) and
+[SSPI](https://en.wikipedia.org/wiki/Security_Support_Provider_Interface) (Windows authentication) will not work; and would require
+a [GSSAPI](https://en.wikipedia.org/wiki/Generic_Security_Services_Application_Program_Interface) implementation in the middleware. Invariably substantial browser and server key
 set-up is required and this is very difficult to set up (some years ago the SAHSU private network used this for five years; the experiment was not repeated).
-  
+
 ### 2.3.1 Postgres
 
-If you need to integrate into you Active Directory or authentication services you are advised to use [LDAP](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol). 
-This permits user name and password authentication; *ldap* does not support proxying. Login to the database using the command lines can then use *SSPI* and this can then be proxied 
-to allow schema access. See Postgres [LDAP Authentication](https://www.postgresql.org/docs/9.6/static/auth-methods.html#AUTH-LDAP) and 
+If you need to integrate into you Active Directory or authentication services you are advised to use [LDAP](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol).
+This permits user name and password authentication; *ldap* does not support proxying. Login to the database using the command lines can then use *SSPI* and this can then be proxied
+to allow schema access. See Postgres [LDAP Authentication](https://www.postgresql.org/docs/9.6/static/auth-methods.html#AUTH-LDAP) and
 [LDAP Authentication against AD](https://wiki.postgresql.org/wiki/LDAP_Authentication_against_AD)
 
-Postgres proxy accounts are controlled by *pg_ident.conf* in the Postgres data directory. See 
+Postgres proxy accounts are controlled by *pg_ident.conf* in the Postgres data directory. See
 [Postgres Client Authentication](https://www.postgresql.org/docs/9.6/static/client-authentication.html)
 
 The *map name* must be one of following mappable methods from *hba.conf* (i.e. that support proxying):
@@ -712,8 +659,8 @@ The *map name* must be one of following mappable methods from *hba.conf* (i.e. t
 
 The Windows installer guide for Postgres has examples:
 
-* [Authentication Setup - hba.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#32-authentication-setup-hbaconf)
-* [Proxy user setup - ident.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#33-proxy-user-setup-identconf)
+* [Authentication Setup - hba.conf]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#authentication-setup-hbaconf)
+* [Proxy user setup - ident.conf]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#proxy-user-setup-identconf)
 
 So, if I setup SSPI as per the examples to use *SSPI* in *hba.conf*:
 ```
@@ -746,8 +693,8 @@ Set the RIF40 password to an impossible value:
 
 ```ALTER ROLE rif40 WITH PASSWORD 'md5ac4bbe016b8XXXXXXXXXX6981f240dcae';```
 
-Finally, optioanlly add the passwords to the 
-[Pgpass](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#31-postgres-user-password-file)
+Finally, optioanlly add the passwords to the
+[Pgpass]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#postgres-user-password-file)
 
 I can then logon as rif40 using SSPI:
 
@@ -785,20 +732,20 @@ This needs to be investigated as it is not certain SQL Server has the correct fu
 
 The RIF is setup so that three roles control access to the application:
 
-* *rif_user*: User level access to the application with full access to data at the highest resolution. 
+* *rif_user*: User level access to the application with full access to data at the highest resolution.
   No ability to change the RIF configuration or to add more data;
-* *rif_manager*: Manager level access to the application with full access to data at the highest resolution. 
-  Ability to change the RIF configuration. No ability by default to add data to the RIF. Data is normally added 
-  using the schema owner account (rif40); see the above section on proxying to access the schema account user 
+* *rif_manager*: Manager level access to the application with full access to data at the highest resolution.
+  Ability to change the RIF configuration. No ability by default to add data to the RIF. Data is normally added
+  using the schema owner account (rif40); see the above section on proxying to access the schema account user
   a manager accounts credentials.
-* *rif_student*. Restricted access to the application with controlled access to data at the higher resolutions. 
-  No ability to change the RIF configuration or to add more data; 
+* *rif_student*. Restricted access to the application with controlled access to data at the higher resolutions.
+  No ability to change the RIF configuration or to add more data;
 
 Access to data is controlled by the permissions granted to that data and not by the RIF.
 
 * In the *SAHSULAND* example database data access is granted to *rif_user*, *rif_manager* and *rif_student*.
 * In the *SEER* dataset data access is granted to *seer_user*.
- 
+
 ### 2.4.1 Postgres
 
 To create the SEER_USER role and grant it to a user (peter) logon as the administrator (postgres):
@@ -810,7 +757,7 @@ GRANT seer_user TO peter;
 
 ### 2.4.2 SQL Server
 
-To create the SEER_USER role and grant it to a user (peter) logon as the administrator in an Administrator 
+To create the SEER_USER role and grant it to a user (peter) logon as the administrator in an Administrator
 *cmd* window:
 ```
 sqlcmd -E
@@ -859,7 +806,7 @@ sahsuland-# \du
  test_rif_student        |                                                            | {rif_student}
  test_rif_user           |                                                            | {rif_user}
 ```
- 
+
 To view roles and permissions granted to an object:
 
 ```
@@ -872,7 +819,7 @@ sahsuland-# \dp rif40_tables
         |              |       | =rx/rif40              |                   |
 (1 row)
 ```
- 
+
 Where the access privileges (*+* is a line continuation character) are:
 
 * r: SELECT ("read")
@@ -887,7 +834,7 @@ Where the access privileges (*+* is a line continuation character) are:
 * C: CREATE
 * c: CONNECT
 * T: TEMPORARY
-		
+
 ### 2.5.2 SQL Server
 
 To view roles, as an administrator ```sqlcmd -E -d sahsuland```:
@@ -922,30 +869,30 @@ db_datawriter                                                                   
 db_denydatareader                                                                                                                DATABASE_ROLE                                                NULL                                                                                                                             NONE
 db_denydatawriter                                                                                                                DATABASE_ROLE                                                NULL                                                                                                                             NONE
 
-(22 rows affected)  
+(22 rows affected)
 ```
 To view server roles, as an administrator ```sqlcmd -E -d sahsuland```:
 
 ```SQL
-SELECT sys.server_role_members.role_principal_id, role.name AS RoleName,   
-    sys.server_role_members.member_principal_id, member.name AS MemberName  
-FROM sys.server_role_members  
-JOIN sys.server_principals AS role  
-    ON sys.server_role_members.role_principal_id = role.principal_id  
-JOIN sys.server_principals AS member  
-    ON sys.server_role_members.member_principal_id = member.principal_id;  
+SELECT sys.server_role_members.role_principal_id, role.name AS RoleName,
+    sys.server_role_members.member_principal_id, member.name AS MemberName
+FROM sys.server_role_members
+JOIN sys.server_principals AS role
+    ON sys.server_role_members.role_principal_id = role.principal_id
+JOIN sys.server_principals AS member
+    ON sys.server_role_members.member_principal_id = member.principal_id;
 GO
 
-role_principal_id RoleName      member_principal_id MemberName                                                            
+role_principal_id RoleName      member_principal_id MemberName
 ----------------- ------------- ------------------- --------------------------------------------------------------------------------------------------------------------------------
-                3 sysadmin       1                   sa                                                                    
-                3 sysadmin       259                 DESKTOP-4P2SA80\admin                                                 
-                3 sysadmin       260                 NT SERVICE\SQLWriter                                                  
-                3 sysadmin       261                 NT SERVICE\Winmgmt                                                    
-                3 sysadmin       262                 NT Service\MSSQLSERVER                                                
-                3 sysadmin       264                 NT SERVICE\SQLSERVERAGENT                                             
-               10 bulkadmin      286                 rif40                                                                 
-               10 bulkadmin      287                 peter                                                                 
+                3 sysadmin       1                   sa
+                3 sysadmin       259                 DESKTOP-4P2SA80\admin
+                3 sysadmin       260                 NT SERVICE\SQLWriter
+                3 sysadmin       261                 NT SERVICE\Winmgmt
+                3 sysadmin       262                 NT Service\MSSQLSERVER
+                3 sysadmin       264                 NT SERVICE\SQLSERVERAGENT
+               10 bulkadmin      286                 rif40
+               10 bulkadmin      287                 peter
 
 (8 rows affected)
 ```
@@ -962,24 +909,24 @@ SELECT DP1.name AS DatabaseRoleName, isnull (DP2.name, 'No members') AS Database
  WHERE DP1.type = 'R'
  ORDER BY DP1.name;
 
-DatabaseRoleName                                                                                                                 DatabaseUserName  
+DatabaseRoleName                                                                                                                 DatabaseUserName
 -------------------------------------------------------------------------------------------------------------------------------- -----------------
-db_accessadmin                                                                                                                   No members                                                                                                  
-db_backupoperator                                                                                                                No members                                                                                                  
-db_datareader                                                                                                                    No members                                                                                                  
-db_datawriter                                                                                                                    No members                                                                                                  
-db_ddladmin                                                                                                                      No members                                                                                                  
-db_denydatareader                                                                                                                No members                                                                                                  
-db_denydatawriter                                                                                                                No members                                                                                                  
-db_owner                                                                                                                         dbo                                                                                                         
-db_securityadmin                                                                                                                 No members                                                                                                  
-notarifuser                                                                                                                      No members                                                                                                  
-public                                                                                                                           No members                                                                                                  
-rif_manager                                                                                                                      peter                                                                                                       
-rif_no_suppression                                                                                                               No members                                                                                                  
-rif_student                                                                                                                      No members                                                                                                  
-rif_user                                                                                                                         peter                                                                                                       
-seer_user                                                                                                                        peter                                                                                                       
+db_accessadmin                                                                                                                   No members
+db_backupoperator                                                                                                                No members
+db_datareader                                                                                                                    No members
+db_datawriter                                                                                                                    No members
+db_ddladmin                                                                                                                      No members
+db_denydatareader                                                                                                                No members
+db_denydatawriter                                                                                                                No members
+db_owner                                                                                                                         dbo
+db_securityadmin                                                                                                                 No members
+notarifuser                                                                                                                      No members
+public                                                                                                                           No members
+rif_manager                                                                                                                      peter
+rif_no_suppression                                                                                                               No members
+rif_student                                                                                                                      No members
+rif_user                                                                                                                         peter
+seer_user                                                                                                                        peter
 
 (16 rows affected)
 ```
@@ -1032,14 +979,14 @@ rif_studies            s5_map               peter      rif40      Grant       Up
 (36 rows affected)
 ```
 # 3. Data Management
- 
+
 ## 3.1 Creating new schemas
 
-The RIF install scripts create all the schemas required by the RIF. SQL Server does not have a search path or SYNONYNs so all schemas are hard coded. 
+The RIF install scripts create all the schemas required by the RIF. SQL Server does not have a search path or SYNONYNs so all schemas are hard coded.
 
 ### 3.1.1 Postgres
 
-See: [CREATE SCHEMA](https://www.postgresql.org/docs/9.3/static/sql-createschema.html). Normally schema schema is owned by a role (e.g. *rif40*) and then 
+See: [CREATE SCHEMA](https://www.postgresql.org/docs/9.3/static/sql-createschema.html). Normally schema schema is owned by a role (e.g. *rif40*) and then
 access is granted as required to other roles. New schemas will needs to be added to the default search path either for the roles or possibly at the system level.
 Care needs to be taken **NOT* to break the RIF. The default search path for a RIF database isL:
 
@@ -1060,7 +1007,7 @@ sahsuland=> show search_path;
  peter, rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions
 (1 row)
 ```
- 
+
 **THEREFORE BEWARE OF CREATING OBJECTS WITH THE SAME NAME AS A RIF OBJECT** on Postgres. They will be used in preference to the *RIF40* schema object!
 
 ### 3.1.2 SQL Server
@@ -1071,10 +1018,10 @@ SQL Server does not have a search path or SYNONYNs so all schemas are hard coded
 
 ### 3.2.1 Postgres
 
-Tablespaces in PostgreSQL allow database administrators to define locations in the file system where the files representing database objects can be stored. Once created, a 
+Tablespaces in PostgreSQL allow database administrators to define locations in the file system where the files representing database objects can be stored. Once created, a
 tablespace can be referred to by name when creating database objects.
 
-By using tablespaces, an administrator can control the disk layout of a PostgreSQL installation. This is useful in at least two ways. First, if the partition or volume on 
+By using tablespaces, an administrator can control the disk layout of a PostgreSQL installation. This is useful in at least two ways. First, if the partition or volume on
 which the cluster was initialized runs out of space and cannot be extended, a tablespace can be created on a different partition and used until the system can be reconfigured.
 
 Second, tablespaces allow an administrator to use knowledge of the usage pattern of database objects to optimize performance. For example, an index which is very heavily used
@@ -1088,43 +1035,43 @@ SQL Server does not have the concept of tablespaces.
 
 ## 3.3 Partitioning
 
-The SAHSU version 3.1 RIF was extensively partitioned; in particular the calculation tables and the result table *rif_results* needed to be partitioned on system that had run thousands of 
-studies will many millions of result rows and billions of extract calculation rows. Hash partitioning was retro fitted to the RIF calculation and results tables and this gave a useful 
+The SAHSU version 3.1 RIF was extensively partitioned; in particular the calculation tables and the result table *rif_results* needed to be partitioned on system that had run thousands of
+studies will many millions of result rows and billions of extract calculation rows. Hash partitioning was retro fitted to the RIF calculation and results tables and this gave a useful
 performance gain.
 
-The new V4.0 RIF uses separate extract and results tables so does not need partitioning of the internal tables. The geometry tables on Postgres are partitioned and this gave a useful 
+The new V4.0 RIF uses separate extract and results tables so does not need partitioning of the internal tables. The geometry tables on Postgres are partitioned and this gave a useful
 performance gain.
 
-The SAHSU Oracle database performance has benefited from: 
+The SAHSU Oracle database performance has benefited from:
 
 * Complete partitioning of all health, population and covariate data;
 * Allowing the use of limited parallelisation in queries, inserts and index creation;
-* Use of index organised denominator and covariate tables. Note that by default all tables are index organised on SQL Server; 
+* Use of index organised denominator and covariate tables. Note that by default all tables are index organised on SQL Server;
 
 The RIF currently [deliberately] extracts data year by year and so explicit disables effective parallelisation in the extract.
 
 ### 3.3.1 Postgres
 
-Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. Postgres 10 has native support for partitioning, see: 
-[Postgres 10 partitioning](https://www.postgresql.org/docs/10/static/ddl-partitioning. html). The implementation is still incomplete and the 
+Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. Postgres 10 has native support for partitioning, see:
+[Postgres 10 partitioning](https://www.postgresql.org/docs/10/static/ddl-partitioning. html). The implementation is still incomplete and the
 following limitations apply to partitioned tables:
 
-* There is no facility available to create the matching indexes on all partitions automatically. Indexes must be added to each partition with separate commands. This also means that 
+* There is no facility available to create the matching indexes on all partitions automatically. Indexes must be added to each partition with separate commands. This also means that
   there is no way to create a primary key, unique constraint, or exclusion constraint spanning all partitions; it is only possible to constrain each leaf partition individually.
-* Since primary keys are not supported on partitioned tables, foreign keys referencing partitioned tables are not supported, nor are foreign key references from a partitioned table 
+* Since primary keys are not supported on partitioned tables, foreign keys referencing partitioned tables are not supported, nor are foreign key references from a partitioned table
   to some other table.
-* Using the ON CONFLICT clause with partitioned tables will cause an error, because unique or exclusion constraints can only be created on individual partitions. There is no support 
+* Using the ON CONFLICT clause with partitioned tables will cause an error, because unique or exclusion constraints can only be created on individual partitions. There is no support
   for enforcing uniqueness (or an exclusion constraint) across an entire partitioning hierarchy.
 * An UPDATE that causes a row to move from one partition to another fails, because the new value of the row fails to satisfy the implicit partition constraint of the original partition.
 * Row triggers, if necessary, must be defined on individual partitions, not the partitioned table.
 
-See [Postgres Patching](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/databaseManagementManual#61-postgres)
-for a description of historic Postgres partitioning. The partitioning on the geometry tables uses the range 
+See [Postgres Patching](#postgres)
+for a description of historic Postgres partitioning. The partitioning on the geometry tables uses the range
 partitioning schema but generates the code directly. This functionality is part of the tile maker.
 
 The following partitioning limitations are scheduled to be fixed in Postgres 11:
 
-* Executor-stage partition pruning or faster child table pruning or parallel partition processing (i.e. partition elimination using bind variables). This in particular will effect the 
+* Executor-stage partition pruning or faster child table pruning or parallel partition processing (i.e. partition elimination using bind variables). This in particular will effect the
   RIF as the year by year extract uses bind variables and will probably not partition eliminate correctly;
 * Hash partitioning;
 * UPDATEs that cause rows to move from one partition to another;
@@ -1142,7 +1089,7 @@ There is no support currently planned for:
 ### 3.3.2 SQL Server
 
 SQL Server supports table and index partitioning, see [Partitioned Tables and Indexes](https://docs.microsoft.com/en-us/sql/relational-databases/partitions/partitioned-tables-and-indexes?view=sql-server-2017)
-Beware of the [SQL Server partitioning and licensing conditions](https://download.microsoft.com/download/9/C/6/9C6EB70A-8D52-48F4-9F04-08970411B7A3/SQL_Server_2016_Licensing_Guide_EN_US.pdf); 
+Beware of the [SQL Server partitioning and licensing conditions](https://download.microsoft.com/download/9/C/6/9C6EB70A-8D52-48F4-9F04-08970411B7A3/SQL_Server_2016_Licensing_Guide_EN_US.pdf);
 you may need a full enterprise license.
 
 ## 3.4 Granting permission
@@ -1197,12 +1144,12 @@ This currently covers:
 
 ### 4.1.1 Postgres
 
-Basic statement logging can be provided by the standard logging facility with the configuration parameter ```log_statement = all```. 
-Postgres has an extension [pgAudit](https://github.com/pgaudit/pgaudit) which provides much more auditing, however the Enterprise DB installer does not include Postgres 
+Basic statement logging can be provided by the standard logging facility with the configuration parameter ```log_statement = all```.
+Postgres has an extension [pgAudit](https://github.com/pgaudit/pgaudit) which provides much more auditing, however the Enterprise DB installer does not include Postgres
 extensions (apart from PostGIS). EnterpiseDB Postgres has its own auditing subsystem (*edb_audit), but this is is paid for item. To use pgAudit the module must be compile from source
 
 To configure Postgres server [error reporting and logging](https://www.postgresql.org/docs/9.6/static/runtime-config-logging.html) set the following Postgres system parameters see
-[Postgres tuning](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#71-postgres) for details on how to set parameters:
+[Postgres tuning](#postgres) for details on how to set parameters:
 
 * ```log_statement = all```. The default is 'none';
 * ```Set log_min_error_statement = error``` [default] or lower;
@@ -1211,23 +1158,23 @@ To configure Postgres server [error reporting and logging](https://www.postgresq
 * ```log_disconnections = on```;
 * ```log_destinstion = stderr, eventlog, csvlog```. Other choices are *csvlog* or syslog*
 
-Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can 
-move the data directory to a solid state disk, mine is: *E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag: 
+Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can
+move the data directory to a solid state disk, mine is: *E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag:
 ```"C:\Program Files\PostgreSQL\9.6\bin\pg_ctl.exe" runservice -N "postgresql-x64-9.6" -D "E:\Postgres\data" -w```
 
 If you are using CSV log files set:
 
 * ```logging_collector = on```;
-* ```log_filename = postgresql-%Y-%m-%d.log``` and ```log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know 
-  when an individual log file is complete and therefore ready to be imported. The log filename is in [strftime()](http://www.cplusplus.com/reference/ctime/strftime/) format; 
+* ```log_filename = postgresql-%Y-%m-%d.log``` and ```log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know
+  when an individual log file is complete and therefore ready to be imported. The log filename is in [strftime()](http://www.cplusplus.com/reference/ctime/strftime/) format;
 * ```log_rotation_size = 0``` to disable size-based log rotation, as it makes the log file name difficult to predict;
 * ```log_truncate_on_rotation = on``` to on so that old log data isn't mixed with the new in the same file.
 
-Create a Postgres event log custom view, create a [custom event view](https://technet.microsoft.com/en-us/library/gg131917.aspx) in the Event Viewer. 
+Create a Postgres event log custom view, create a [custom event view](https://technet.microsoft.com/en-us/library/gg131917.aspx) in the Event Viewer.
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_filter_setup.png?raw=true "Postgres event log custom view")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_filter_setup.png?raw=true "Postgres event log custom view")
 
-An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/conf/postgres_event_log_custom_view.xml) is also provided:
+An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_log_custom_view.xml) is also provided:
 ```xml
 <ViewerConfig>
 	<QueryConfig>
@@ -1308,7 +1255,7 @@ Formatted the CSV log entry is:
 
 | Log field name         | Value                                     |
 |------------------------|-------------------------------------------|
-| log_time               | 2018-05-21 16:20:39.261+01                | 
+| log_time               | 2018-05-21 16:20:39.261+01                |
 | user_name              | peter                                     |
 | database_name          | sahsuland                                 |
 | process_id             | 9900                                      |
@@ -1329,32 +1276,32 @@ Formatted the CSV log entry is:
 | context                |                                           |
 | query                  |                                           |
 | query_pos              |                                           |
-| location               | exec_simple_query, postgres.c:927         | 
+| location               | exec_simple_query, postgres.c:927         |
 | application_name       | RIF (psql)                                |
- 
+
 The equivalent PostgreSQL Windows log entry entry is:
- 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry"){:width="100%"}
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry"){:width="100%"}
 
 ### 4.1.2 SQL Server
 
-See: 
+See:
 
 [Creating a successful auditing strategy for your SQL Server databases](https://www.sqlshack.com/creating-successful-auditing-strategy-sql-server-databases/)
 [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-2017)
-[Create a Server Audit and Database Audit Specification](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-database-audit-specification?view=sql-server-2017) 
- 
+[Create a Server Audit and Database Audit Specification](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-database-audit-specification?view=sql-server-2017)
+
 To setup *(Common criteria compliance*:
 
-* Use the SQL Server management studio server properties pane: 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/auditing.PNG?raw=true "SQL Server auditing setup");
-* Also check audit failed and successful logins;  
+* Use the SQL Server management studio server properties pane:
+  ![alt text]({{ base.url }}/rifDatabase/SQLserver/auditing.PNG?raw=true "SQL Server auditing setup");
+* Also check audit failed and successful logins;
 * Restart SQL Server;
 
 TO BE ADDED: auditing DDL and DML (without using triggers!)
 
-# 5. Backup and recovery  
+# 5. Backup and recovery
 
 As with all relational databases; cold backups are recommended as a baselines and should be carried out using your enterprise backup tools with the database down. Two further backup solutions are
 suggested:
@@ -1367,48 +1314,48 @@ Because of the fully transactional nature of both Postgres and SQL Server consis
 Please bear in mind that continuous archiving and point-in-time recovery greatly expands the recovery options allowing for corruption repair and recovery from
 object deletion incidents.
 
-Replication is invariably very complex and is beyond the scope of this manual. It is recommended for very large sites with Postgres because of Postgres' poor support for corruption 
-detection and repair. 
+Replication is invariably very complex and is beyond the scope of this manual. It is recommended for very large sites with Postgres because of Postgres' poor support for corruption
+detection and repair.
 
 ## 5.1 Postgres
 
 ### 5.1.1 Logical Backups
 
-Postgres logical backup and recovery uses *pg_dump* and *pg_restore*. pg_dump only dumps a single database. To backup global objects that are common to all databases in a cluster, such as roles and tablespaces, 
+Postgres logical backup and recovery uses *pg_dump* and *pg_restore*. pg_dump only dumps a single database. To backup global objects that are common to all databases in a cluster, such as roles and tablespaces,
 use *pg_dumpall*.
 
 Two basic formats: 1) a SQL script to recreate the database using *psql* and 2) a binary dump file to restore using *pg_restore*.
 
-1. SQL Script: ```pg_dump -U postgres -w -F plain -v -C sahsuland > sahsuland.sql```	
+1. SQL Script: ```pg_dump -U postgres -w -F plain -v -C sahsuland > sahsuland.sql```
 2. Binary dump file: ```pg_dump -U postgres -w -F custom -v sahsuland > sahsuland.dump```
 
 Where the database name is *sahsuland*
-	
+
 Flags:
 
 * *-U postgres*:
 * *-F &lt;format%gt;*: dump format: plain (SQL), custom or directory (pg_restore);
 * *-w*: do not prompt for a password;
 * *-v*: be verbose;
- 
-To restore a custom or directory *pg_dump* file: ```pg_restore -d sahsuland -U postgres -v sahsuland.dump```. This is the method uses to create the example database *sahsuland* 
+
+To restore a custom or directory *pg_dump* file: ```pg_restore -d sahsuland -U postgres -v sahsuland.dump```. This is the method uses to create the example database *sahsuland*
 from the development database *sahsuland_dev*.
 
-See: 
+See:
 
 * [pd_dump](https://www.postgresql.org/docs/9.6/static/app-pgdump.html)
 * [pg_restore](https://www.postgresql.org/docs/9.6/static/app-pgrestore.html)
- 
-### 5.1.2 Continuous Archiving and Point-in-Time Recovery 
+
+### 5.1.2 Continuous Archiving and Point-in-Time Recovery
 
 Postgres supports continuous archiving and point-in-time recovery (PITR).
 
-See: 
+See:
 
 * [Continuous Archiving and Point-in-Time Recovery](https://www.postgresql.org/docs/9.6/static/continuous-archiving.html)
 * [Postgres Corruption WIKI](https://wiki.postgresql.org/wiki/Corruption)
 * [Postgres replication](https://www.postgresql.org/docs/9.6/static/different-replication-solutions.html)
- 
+
 ## 5.2 SQL Server
 
 ### 5.2.1 Logical Backups
@@ -1421,7 +1368,7 @@ SQL Server logical backup and restore are SQL commands entered using ```sqlcmd``
 * [RESTORE command](https://docs.microsoft.com/en-us/sql/t-sql/statements/restore-statements-transact-sql?view=sql-server-2017)
 
 ```
-BACKUP DATABASE [sahsuland] TO DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland.bak' 
+BACKUP DATABASE [sahsuland] TO DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland.bak'
   WITH COPY_ONLY, INIT;
 GO
 Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 6
@@ -1447,33 +1394,33 @@ RESTORE DATABASE successfully processed 45662 pages in 5.130 seconds (69.538 MB/
 ```
 
 See the script *rif40_production_creation.sql* if you want to rename the database, its files or to move the files.
- 
-### 5.2.2 Continuous Archiving and Point-in-Time Recovery 
+
+### 5.2.2 Continuous Archiving and Point-in-Time Recovery
 
 This requires a transaction log backup, i.e. not the copy only version created in the previous section. You will need to do a full backup, followed by differential backups:
 
 ```
--- Create a full database backup first.  
-BACKUP DATABASE sahsuland   
-   TO sahsuland   
-   WITH INIT;  
-GO  
--- Time elapses.  
--- Create a differential database backup, appending the backup  
--- to the backup device containing the full database backup.  
-BACKUP DATABASE sahsuland  
-   TO sahsuland  
-   WITH DIFFERENTIAL;  
-GO 
+-- Create a full database backup first.
+BACKUP DATABASE sahsuland
+   TO sahsuland
+   WITH INIT;
+GO
+-- Time elapses.
+-- Create a differential database backup, appending the backup
+-- to the backup device containing the full database backup.
+BACKUP DATABASE sahsuland
+   TO sahsuland
+   WITH DIFFERENTIAL;
+GO
 ```
 
 Log backups require the database to be in the full recovery model, not the default simple recovery model. See:
 [Back Up a Transaction Log](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/back-up-a-transaction-log-sql-server?view=sql-server-2017)
 
-For restoration see:  
+For restoration see:
 [Restore a SQL Server Database to a Point in Time (Full Recovery Model](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/restore-a-sql-server-database-to-a-point-in-time-full-recovery-model?view=sql-server-2017)
 
-# 6. Patching  
+# 6. Patching
 
 Alter scripts are numbered sequentially and have the same functionality in both ports, e.g. ```v4_0_alter_10.sql```. Scripts are safe to run more than once.
 
@@ -1496,7 +1443,7 @@ E.g. for alter 10:
 
 Alter scripts *v4_0_alter_1.sql* to *v4_0_alter_9.sql* related to be original database development on Postgres
 and were not created on SQL Server. The scripts *v4_0_alter_3.sql* and *v4_0_alter_4.sql* enable partitioning by
-ranges (data with year fields) and hashes (study_id) respectively. Alter script 4 must go after 7. Alter 
+ranges (data with year fields) and hashes (study_id) respectively. Alter script 4 must go after 7. Alter
 script 7 provides:
 - Support for  ontologies (e.g. ICD9, 10); removed previous table based support.
 - Modify t_rif40_inv_conditions to remove SQL injection risk
@@ -1506,8 +1453,8 @@ This is because alter script 7 was written before the partitioning was enabled a
 Partitioning was removed as it is supported natively in Postgres 10. Support for hash partitioning is
 in alter 4 and is incomplete:
 
-- Partition movement is not supported; 
-- The hashing function *rif40_sql_pkg._rif40_hash* has not been added to the code so hash partition elimination 
+- Partition movement is not supported;
+- The hashing function *rif40_sql_pkg._rif40_hash* has not been added to the code so hash partition elimination
   will not occur. Range partition elimination does work.
   ```
   CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash(l_value VARCHAR, l_bucket INTEGER)
@@ -1541,7 +1488,7 @@ E.g. for alter 10:
 * Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i v4_0_alter_10.sql -v pwd="%cd%"```
 * Connect flags if required: -P <password> -S<myServerinstanceName>
 
-# 7. Tuning  
+# 7. Tuning
 
 The following aspects of tuning are covered:
 
@@ -1549,13 +1496,13 @@ The following aspects of tuning are covered:
 * Huge/large page support
 * RIF application tuning
 
-In general RIF database performance will benefit from: 
+In general RIF database performance will benefit from:
 
 * Complete partitioning of all health, population and covariate data;
 * Allowing the use of limited parallelisation in queries, inserts and index creation;
-* Use of index organised denominator and covariate tables. Note that by default all tables are index organised on SQL Server; 
+* Use of index organised denominator and covariate tables. Note that by default all tables are index organised on SQL Server;
 
-See [3.3 Partitioning](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#33-partitioning)
+See [3.3 Partitioning](#partitioning)
 
 ## 7.1 Postgres
 
@@ -1564,18 +1511,18 @@ See [3.3 Partitioning](https://github.com/smallAreaHealthStatisticsUnit/rapidInq
 The best source for Postgres tuning information is at the [Postgres Performance Optimization Wiki](https://wiki.postgresql.org/wiki/Performance_Optimization). This references
 [Tuning Your PostgreSQL Server](https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server)
 
-Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can 
-move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag: 
+Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can
+move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag:
 ```"C:\Program Files\PostgreSQL\9.6\bin\pg_ctl.exe" runservice -N "postgresql-x64-9.6" -D "E:\Postgres\data" -w```
 
-An example [postgresql.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgresql.conf) is supplied. 
+An example [postgresql.conf]({{ base.url }}/rifDatabase/Postgres/conf/postgresql.conf) is supplied.
 The principal tuning changes are:
 
 * Shared buffers: 1GB. Can be tuned higher if required (see below);
 * Temporary buffers: 1-4GB
-* Work memory: 1GB. The Maximum is 2047MB; 
-* Effective_cache_size: 1/2 of total memory 
-* On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed 21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint 
+* Work memory: 1GB. The Maximum is 2047MB;
+* Effective_cache_size: 1/2 of total memory
+* On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed 21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint
   [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
 
   Example parameter entries from *postgresql.conf*:
@@ -1591,26 +1538,26 @@ work_mem = 1GB              # min 64kB; default 4MB
 log_temp_files = 5000		# log temporary files equal or larger [5MB]
 					# than the specified size in kilobytes;
 					# -1 disables [default], 0 logs all temp files
-					
-# according to http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server, 
-# "Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting, 
-# and 3/4 of memory is a more aggressive but still reasonable amount."					
+
+# according to http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server,
+# "Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting,
+# and 3/4 of memory is a more aggressive but still reasonable amount."
 #effective_cache_size = 4GB
 effective_cache_size = 20GB
 ```
 
-On Windows, I modified the *postgresql.conf* rather than use SQL at the server command line. This is because the server command line needs to be in the units of the parameters, 
+On Windows, I modified the *postgresql.conf* rather than use SQL at the server command line. This is because the server command line needs to be in the units of the parameters,
 so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared to using MB/GB etc.
- 
+
 The amount of memory given to Postgres should allow room for *tomcat* if installed together with the application server; shared memory should generally not exceed a quarter of the available RAM.
 
-Tuning the buffer cache, see: [A Large Database Does Not Mean Large shared_buffers](https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/). Add the 
+Tuning the buffer cache, see: [A Large Database Does Not Mean Large shared_buffers](https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/). Add the
 ```pg_buffercache``` extension as the postgres user: ```CREATE EXTENSION pg_buffercache;```, then run the following query as *postgres*:
 
 When running these queries, please bear in mind that *shared_buffers* usage varies with the type of workload;
-data loading (especially geospatial) will generally hit a few large tables often; normal RIF usage which is 
+data loading (especially geospatial) will generally hit a few large tables often; normal RIF usage which is
 more OLTP like less so. There run these queries often under different loads.
- 
+
 Firstly see how many buffers are in use by database:
 ```SQL
 SELECT CASE
@@ -1625,7 +1572,7 @@ SELECT CASE
 			ELSE d.datname
 	   END
  ORDER BY 1;
-  
+
         database         | buffers_in_use_percent
 -------------------------+------------------------
  sahsuland_dev (current) |                 99.988
@@ -1636,8 +1583,8 @@ too large (unless the other databases are doing substantial work).
 
 Now see what is being used in the current database:
 ```SQL
-SELECT n.nspname AS "schema", 
-	   c.relname AS "table name", 
+SELECT n.nspname AS "schema",
+	   c.relname AS "table name",
 	   c2.relname AS "toast table",
        c3.relname AS "primary table",
        pg_size_pretty(COUNT(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered,
@@ -1649,13 +1596,13 @@ SELECT n.nspname AS "schema",
 		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database()) /* Restrict to current database */
 		INNER JOIN pg_namespace n ON n.oid = c.relnamespace
 		LEFT OUTER JOIN pg_class c2 ON c2.oid = c.reltoastrelid
-		LEFT OUTER JOIN pg_class c3 ON c3.oid = 
-			CASE 
-				WHEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '')::oid 
+		LEFT OUTER JOIN pg_class c3 ON c3.oid =
+			CASE
+				WHEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '')::oid
 				ELSE NULL
 			END
- WHERE pg_relation_size(c.oid) > 0 /* Exclude non table objects or zero sized objects */ 
-   AND ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
+ WHERE pg_relation_size(c.oid) > 0 /* Exclude non table objects or zero sized objects */
+   AND ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */)
    AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 			/* Exclude data dictionary but not TOAST tables */)
  GROUP BY c.oid, n.nspname, c.relname, c2.relname, c3.relname, b.usagecount
  ORDER BY 6 DESC;
@@ -1663,15 +1610,15 @@ SELECT n.nspname AS "schema",
 
 This gives the following output here the columns are:
 
- * schema: Schema;                  
- * table name: Table;          
- * toast table: TOAST (The Oversized-Attribute Storage Technique) table;   
- * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;    
+ * schema: Schema;
+ * table name: Table;
+ * toast table: TOAST (The Oversized-Attribute Storage Technique) table;
+ * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;
  * buffered: Amount of table cached in *shared_buffers*;
  * buffers percent: % of *shared_buffers* use by this table;
  * percent of relation: % of table buffered;
  * usage count: times used by separate queries (can be the same SQL statement);
- 
+
 ```
   schema  |      table name        |   toast table    | primary table |  buffered  | buffers percent | percent of relation | usage count
 ----------+------------------------+------------------+---------------+------------+-----------------+---------------------+-------------
@@ -1714,7 +1661,7 @@ This gives the following output here the columns are:
 (36 rows)
 ```
 
-Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tables in Postgres. 
+Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tables in Postgres.
 TOAST (The Oversized-Attribute Storage Technique) is used to store large field values,
 for instance the geometry databases on *cntry2011* as in this example.
 
@@ -1724,8 +1671,8 @@ SELECT CASE
 			WHEN d.datname = current_database() THEN d.datname || ' (current)'
 			ELSE d.datname
 	   END AS database,
-	   CASE 
-			WHEN usagecount >3 THEN '>3' 
+	   CASE
+			WHEN usagecount >3 THEN '>3'
 			ELSE ' '||usagecount::Text END AS usagecount,
 	   pg_size_pretty(count(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) as ideal_shared_buffers
   FROM pg_class c
@@ -1735,8 +1682,8 @@ SELECT CASE
 			WHEN d.datname = current_database() THEN d.datname || ' (current)'
 			ELSE d.datname
 	      END,
-	      CASE 
-			WHEN usagecount >3 THEN '>3' 
+	      CASE
+			WHEN usagecount >3 THEN '>3'
 			ELSE ' '||usagecount::Text END
  ORDER BY 1, 2 DESC;
 ```
@@ -1758,11 +1705,11 @@ If you wanted to cache everything with a *usagecount* of 2 you would need to add
  sahsuland_dev (current) |  1         | 44 MB
  sahsuland_dev (current) |  0         | 55 MB
 (5 rows)
-``` 
+```
 This should give a reasonable starting performance on an OLTP system.
 
-You will need to run this many times under different loads to determine a suitable value. In this case a 
-1GB cache *appears* to be fine for the geospatial workload. Note however that the *shared_buffers* are 100% used. 
+You will need to run this many times under different loads to determine a suitable value. In this case a
+1GB cache *appears* to be fine for the geospatial workload. Note however that the *shared_buffers* are 100% used.
 
 The problem with just looking at the buffer cache is it does not tell you what effect cache misses are having on performance.
 
@@ -1770,43 +1717,43 @@ The problem with just looking at the buffer cache is it does not tell you what e
 WITH all_tables AS (
 	SELECT *
 		 FROM (
-			SELECT 'All'::Text AS schema_name, 'ALL'::text AS table_name, 
+			SELECT 'All'::Text AS schema_name, 'ALL'::text AS table_name,
 				   'N/A'::Text AS toast_table, 'N/A'::Text AS primary_table,
-				   SUM( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
+				   SUM( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk,
 				   SUM( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache,
 				   (SELECT pg_size_pretty(COUNT(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered
 						  FROM pg_buffercache b, pg_database d
-						 WHERE b.reldatabase = d.oid 
-						   AND d.datname = current_database()) AS buffered	   
+						 WHERE b.reldatabase = d.oid
+						   AND d.datname = current_database()) AS buffered
               FROM pg_statio_all_tables  --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
 		 ) a
 		WHERE (from_disk + from_cache) > 0 -- discard tables without hits
 ), tables AS (
-	SELECT a.schemaname AS schema_name, a.relname AS table_name, 
+	SELECT a.schemaname AS schema_name, a.relname AS table_name,
 	       c2.relname AS toast_table, c3.relname AS primary_table,
-	       a.from_disk, a.from_cache,   
+	       a.from_disk, a.from_cache,
            pg_size_pretty(COUNT(b.relfilenode) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered
 		FROM (
 			SELECT c.*, s.schemaname, s.from_disk, s.from_cache
 			  FROM (
 				SELECT relid, schemaname,
-						( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
-						( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache    
+						( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk,
+						( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache
 				 FROM pg_statio_all_tables --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
 			) s, pg_class c WHERE c.oid = s.relid
 		 ) a
 		LEFT OUTER JOIN pg_buffercache b ON b.relfilenode = a.relfilenode
 		LEFT OUTER JOIN pg_class c2 ON c2.oid = a.reltoastrelid
-		LEFT OUTER JOIN pg_class c3 ON c3.oid = 
-			CASE 
-				WHEN REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN 
-						REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '')::oid 
+		LEFT OUTER JOIN pg_class c3 ON c3.oid =
+			CASE
+				WHEN REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN
+						REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '')::oid
 				ELSE NULL
 			END
- WHERE ((a.relname NOT LIKE 'pg_%' OR a.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
+ WHERE ((a.relname NOT LIKE 'pg_%' OR a.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */)
    AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 		/* Exclude data dictionary but not TOAST tables */)
    AND  (a.from_disk + a.from_cache) > 0 -- discard tables without hits
- GROUP BY a.schemaname, a.relname, 
+ GROUP BY a.schemaname, a.relname,
 	       c2.relname, c3.relname,
 	       a.from_disk, a.from_cache
 )
@@ -1825,14 +1772,14 @@ SELECT schema_name AS "schema name",
 
 Where the columns are:
 
- * schema name: Schema;                  
- * table name: Table;          
- * toast table: TOAST (The Oversized-Attribute Storage Technique) table;   
- * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;              
+ * schema name: Schema;
+ * table name: Table;
+ * toast table: TOAST (The Oversized-Attribute Storage Technique) table;
+ * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;
  * disk hits: Total hits on table from the disk;
  * % disk hits: % of disk hits. Ideally this should be <10%;
- * % cache hits: % of cache hits. Ideally this should be >90%; 
- * total hits: Total hits on table from the *shared_buffers* cache and disk;  
+ * % cache hits: % of cache hits. Ideally this should be >90%;
+ * total hits: Total hits on table from the *shared_buffers* cache and disk;
  * buffered: Amount of table cached in *shared_buffers*.
 
 ```
@@ -1974,7 +1921,7 @@ WITH n1 AS (	/* NUM_SAHSULAND_CANCER - cancer numerator */
 				        /* No age group filter required for investigation 1 */)
 			) THEN total
 			ELSE 0
-	       END) inv_414_test_1002	/* Investigation 1 -  */ 
+	       END) inv_414_test_1002	/* Investigation 1 -  */
 	  FROM rif40_study_areas s,	/* Numerator study or comparison area to be extracted */
 	       num_sahsuland_cancer c	/* cancer numerator */
 	 WHERE c.sahsu_grd_level4 = s.area_id 	/* Study selection */
@@ -2012,7 +1959,7 @@ SELECT d.year,
        d.band_id,
        TRUNC(d.age_sex_group/100) AS sex,
        MOD(d.age_sex_group, 100) AS age_group,
-       COALESCE(n1.inv_414_test_1002, 0) AS inv_414_test_1002, 
+       COALESCE(n1.inv_414_test_1002, 0) AS inv_414_test_1002,
        d.total_pop
   FROM d			/* Denominator - population health file */
 	LEFT OUTER JOIN n1 ON ( 	/* NUM_SAHSULAND_CANCER - cancer numerator */
@@ -2117,10 +2064,10 @@ Insert on rif_studies.s416_extract  (cost=19943.90..21263.53 rows=52785 width=58
 
 ### 7.1.3 Database Space Management
 
-Postrgres needs to be VACUUM to clear out dead tuples as it has no rollback segments. VACUUM reclaims storage occupied by dead tuples. In normal PostgreSQL operation, 
-tuples that are deleted or obsoleted by an update are not physically removed from their table; they remain present until a VACUUM is done. Therefore it's necessary to do 
-VACUUM periodically, especially on frequently-updated tables. An [Auto Vacuum]https://www.postgresql.org/docs/9.6/static/routine-vacuuming.html#AUTOVACUUM) 
-daemon is provided for this purpose. If you do NOT do this you will eventually run out of disk space. After about Postgres 9.3 or so he system will launch autovacuum processes 
+Postrgres needs to be VACUUM to clear out dead tuples as it has no rollback segments. VACUUM reclaims storage occupied by dead tuples. In normal PostgreSQL operation,
+tuples that are deleted or obsoleted by an update are not physically removed from their table; they remain present until a VACUUM is done. Therefore it's necessary to do
+VACUUM periodically, especially on frequently-updated tables. An [Auto Vacuum]https://www.postgresql.org/docs/9.6/static/routine-vacuuming.html#AUTOVACUUM)
+daemon is provided for this purpose. If you do NOT do this you will eventually run out of disk space. After about Postgres 9.3 or so he system will launch autovacuum processes
 if necessary to prevent transaction ID wraparound.
 
 ```
@@ -2129,9 +2076,9 @@ autovacuum = on     # Enable autovacuum subprocess?  'on'
 track_counts = on
 ```
 
-Vaccuming can also be carried out using the [*vacuumdb*](https://www.postgresql.org/docs/9.6/static/app-vacuumdb.html) command or by using the SQL 
+Vaccuming can also be carried out using the [*vacuumdb*](https://www.postgresql.org/docs/9.6/static/app-vacuumdb.html) command or by using the SQL
 [*VACUUM*](https://www.postgresql.org/docs/9.6/static/sql-vacuum.html) command: ```VACCUM FULL VERBOSE ANALYZE``` will garbage-collect and analyze a database verbosely.
- 					
+
 ## 7.2 SQL Server
 
 ### 7.2.1 Server Memory Tuning
@@ -2149,28 +2096,28 @@ large_page_allocations_kb
 ```
 
 To enable *largepages* you need to [Enable the Lock Pages in Memory Option](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-the-lock-pages-in-memory-option-windows?view=sql-server-2017).
-This will have consequences for the automated tuning which unless limited in size will remove the ability of Windows to free up SQL Server memory for other applications (and Windows itself). You need to be on a 
-big server and make sure your memory set-up is stable before enabling it.  
-	
+This will have consequences for the automated tuning which unless limited in size will remove the ability of Windows to free up SQL Server memory for other applications (and Windows itself). You need to be on a
+big server and make sure your memory set-up is stable before enabling it.
+
 ### 7.2.2 Query Tuning
-			
+
 The [SQL Server profiler](https://docs.microsoft.com/en-us/sql/tools/sql-server-profiler/sql-server-profiler?view=sql-server-2017) needs to be used to trace RIF application tuning.
-		
+
 To use the profiler you will need to be a *sysadmin* or have the *ALTER TRACE* role: ```GRANT ALTER TRACE TO peter;```
-	
+
 Show execution plan in SQL Server management studio is also very effective (showing missing indexes) and allows analysis of running queries:
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/SSMS_execution_plan.PNG?raw=true "SQL Server Management Studio Execution Plan")
-	
-However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server. 
+![alt text]({{ base.url }}/rifDatabase/SQLserver/SSMS_execution_plan.PNG?raw=true "SQL Server Management Studio Execution Plan"){:width="100%"}
+
+However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server.
 When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
-		
+
 ### 7.2.3 Database Space Management
 
-SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically: 
+SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically:
 https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/shrink.PNG?raw=true "SQL Server Shrink Database")
+![alt text]({{ base.url }}/rifDatabase/SQLserver/shrink.PNG?raw=true "SQL Server Shrink Database"){:width="100%"}
 
 The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
 

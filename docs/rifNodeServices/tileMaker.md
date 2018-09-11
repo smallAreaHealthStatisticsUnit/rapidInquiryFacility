@@ -10,7 +10,7 @@ title: Tile Maker
 
 This document details the loading of the administrative geography data and the geo-coding requirements of the RIF.
 
-The RIF web front end uses [leaflet](https://leafletjs.com/), which requires map tiles; these are squares that follow certain Google Maps conventions:
+The RIF web front end uses [Leaflet](https://leafletjs.com/), which requires map tiles; these are squares that follow certain Google Maps conventions:
 
 * Tiles are 256x256 pixels;
 * At the outer most zoom level, 0, the entire world can be rendered in a single map tile;
@@ -85,7 +85,7 @@ suitable for each zoomlevel.
 
 By default the *TileMaker* runs in only 4GB memory which is not enough for large shapefiles.
 
-In particular see [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to
+In particular see [Handling Large Shapefiles](#handling-large-shapefiles) to
 either reduce the memory requirement or increase the available memory.
 
 ### SQL Server Connection Error
@@ -280,7 +280,7 @@ FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memo
 ```
 
 By default the *TileMaker* runs in only 4GB memory which is not enough for large shapefiles.
-See [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to either
+See [2.3.3 Handling Large Shapefiles](#handling-large-shapefiles) to either
 reduce the memory requirement or increase the available memory.
 
 ### No top level shapefile with only one area
@@ -406,7 +406,7 @@ The hierarchy check failure may have been caused by oversimplification of higher
 * GOR2011 (not oversimplified) in green;
 * COA2001 in hashing;
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map"){:width="100%"}
 To be in the hierarchy the intersection code *insert_hierarchy.sql* selects the intersection with the largest intersection by area for each (higher resolution). This
 eliminates duplicates and picks the most likely intersection on the basis of area. There are two possible reasons for this failure:
 
@@ -502,7 +502,7 @@ This, unsurprisingly, returned no rows, suggesting the problem is with the inter
 
 ```
 This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*; as shown by the below map. The records will be manually inserted to fix the problem.
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue2.png?raw=true "Cardiff COA2001 intersection issue map")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue2.png?raw=true "Cardiff COA2001 intersection issue map"){:width="100%"}
 
 The following Postgres SQL was added to *pg_EWS2011.sql* immediately after the hierarchy insert.
 
@@ -635,7 +635,7 @@ info:    Forever stopped process:
 ```
 
 Finally, start the *tile maker* application in a browser [http://127.0.0.1:3000/tile-maker.html](http://127.0.0.1:3000/tile-maker.html)
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_start.PNG?raw=true "Tile Maker Start Screen")
+![alt text]({{ base.url }}/rifNodeServices/tile_maker_start.PNG?raw=true "Tile Maker Start Screen"){:width="100%"}
 
 The following browsers have been tested:
 
@@ -689,7 +689,7 @@ The *tile maker* web application is used to:
 
    The descriptions may be pre-entered  for you if you have an ESRI extended attributes file (.shp.ea.iso.xml)
 
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sahsuland_setup.PNG?raw=true "SAHSUland setup")
+   ![alt text]({{ base.url }}/rifNodeServices/sahsuland_setup.PNG?raw=true "SAHSUland setup"){:width="100%"}
 
    So as a worked example for the United States to county level:
 
@@ -708,7 +708,7 @@ The *tile maker* web application is used to:
      * Area_ID: COUNTYNS - Current county Geographic Names Information System (GNIS) code;
 	 * Area_Name: NAME - Current county name;
 
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/USA_county_setup.PNG?raw=true "USA County setup")
+   ![alt text]({{ base.url }}/rifNodeServices/USA_county_setup.PNG?raw=true "USA County setup"){:width="100%"}
 
    Note that you can also change:
 
@@ -736,7 +736,7 @@ The *tile maker* web application is used to:
    4. Generates SQL scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
 
    Informative message appear at the bottom of the screen:
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_processing.PNG?raw=true "Tile maker processing messages")
+   ![alt text]({{ base.url }}/rifNodeServices/tile_maker_processing.PNG?raw=true "Tile maker processing messages"){:width="100%"}
 
    Tile maker processing messages are also found in the *forever.err* log, e.g:
 
@@ -744,10 +744,10 @@ The *tile maker* web application is used to:
    * ```SAHSU_GRD_Level4: simplified topojson for zoomlevel: 7```
    * ```Created database load scripts: pg_SAHSULAND.sql and mssql_SAHSULAND.sql```
 
-   [Tile-maker example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_log.md)
+   [Tile-maker example log]({{ base.url }}/rifNodeServices/tile_maker_log){:width="100%"}
 
    Finally a map is displayed of the adminstrative geography:
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_map.PNG?raw=true "Tile maker map")
+   ![alt text]({{ base.url }}/rifNodeServices/tile_maker_map.PNG?raw=true "Tile maker map"){:width="100%"}
 
 5. The user then downloads the processed data from server using the two download buttons in the *shapefile
    selector* tab. The *Download configuration" button returns an XML file e.g.
@@ -841,9 +841,9 @@ The usual layout for the tilemaker ZIP file is:
 
 -  *geoDataLoader.xml* [not needed first time around; generated by the *tile maker* web application]
 - Directory containing the shapefiles. These *may* be contained in sub-directories:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/zip_file_structure_1.PNG?raw=true "ZIP file base directory")
+  ![alt text]({{ base.url }}/rifNodeServices/zip_file_structure_1.PNG?raw=true "ZIP file base directory"){:width="100%"}
   - The shapefiles themselves:
-    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/zip_file_structure_2.PNG?raw=true "ZIP file directory containing the shapefiles")
+    ![alt text]({{ base.url }}/rifNodeServices/zip_file_structure_2.PNG?raw=true "ZIP file directory containing the shapefiles"){:width="100%"}
 
 This allows the *tile maker* runs to be re-produced exactly.
 
@@ -871,7 +871,7 @@ The *AreaID* field will be the name of column used throughout the administrative
   tileMaker.bat is missing a shapefile/DBF file/Projection file
   ```
 
-See the [2.4.3 Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile)
+See the [2.4.3 Renaming fields in a shapefile](#renaming-fields-in-a-shapefile)
 example below.
 
 The file name of the ZIP file is the code for the geography. This can be changed in the front end.
@@ -885,22 +885,22 @@ easily be set to 9, this removes two simplification passes with no reduction in 
 In the England, Wales and Scotland 2011 census there a four further levels with increasing administrative boundary size to (Government office) region; and a sixth highest level of country.
 
 A key factor is visualizing a suitable amount of initial simplification using the mapshaper GUI, see:
-[pre processing shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#24-pre-processing-shapefiles):
+[pre processing shapefiles](#pre-processing-shapefiles):
 
 * England Wales and Scotland at Census Output area, unsimplified. The orange lines and points are polygon errors (line intersections):
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_unsimplified.PNG?raw=true "England Wales and Scotland at Census Output area, unsimplified")
+  ![alt text]({{ base.url }}/rifNodeServices/EWS2011_COA_unsimplified.PNG?raw=true "England Wales and Scotland at Census Output area, unsimplified"){:width="100%"}
 
 * Simplified by 50%:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_50pct_simplified.PNG?raw=true "Simplified by 50%")
+  ![alt text]({{ base.url }}/rifNodeServices/EWS2011_COA_50pct_simplified.PNG?raw=true "Simplified by 50%"){:width="100%"}
 
 * Simplified by 80%:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_80pct_simplified.PNG?raw=true "Simplified by 80%")
+  ![alt text]({{ base.url }}/rifNodeServices/EWS2011_COA_80pct_simplified.PNG?raw=true "Simplified by 80%"){:width="100%"}
 
 * Simplified by 90%:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_90pct_simplified.PNG?raw=true "Simplified by 90%")
+  ![alt text]({{ base.url }}/rifNodeServices/EWS2011_COA_90pct_simplified.PNG?raw=true "Simplified by 90%"){:width="100%"}
 
 * Simplified by 99.999%:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_99_999pct_simplified.PNG?raw=true "Simplified by 99.999%")
+  ![alt text]({{ base.url }}/rifNodeServices/EWS2011_COA_99_999pct_simplified.PNG?raw=true "Simplified by 99.999%"){:width="100%"}
 
 These leads to the following conclusions:
 
@@ -1005,11 +1005,11 @@ The following *mapshaper* options were used:
 
 Examples:
 
-* [To display information about a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#241-to-display-information-about-a-shapefile);
-* [Simplifying a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#242-simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
-* [Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile);
-* [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
-* [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#245-dissolving-a-shapefile). To dissolve a geography - UK regions (GOR2011) to UK Countries.
+* [To display information about a shapefile]({{ base.url }}/rifNodeServices/tileMaker.md#241-to-display-information-about-a-shapefile);
+* [Simplifying a shapefile](#simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
+* [Renaming fields in a shapefile](#renaming-fields-in-a-shapefile);
+* [Simplifying multiple shapefiles](#simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
+* [Dissolving a shapefile](#dissolving-a-shapefile). To dissolve a geography - UK regions (GOR2011) to UK Countries.
 
 ### To display information about a shapefile
 
@@ -1315,7 +1315,7 @@ New DBF file data:
 | W08000001 | Wales                    | 10       | W92000004  | Wales      |
 | S15000001 | Scotland                 | 11       | S92000003  | Scotland   |
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/gor2011_map.png?raw=true "GOR2011 map")
+![alt text]({{ base.url }}/rifNodeServices/gor2011_map.png?raw=true "GOR2011 map"){:width="100%"}
 
 Step 2: Create Cntry\cntry11_clip.shp renaming *country_co* to *geo_code* and *country_na* to *geo_label*, simplifying as usual:
 ```
@@ -1428,7 +1428,7 @@ Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 | W92000004 | Wales     |
 | S92000003 | Scotland  |
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map")
+![alt text]({{ base.url }}/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map"){:width="100%"}
 
 Step 6. Using *Cntry\cntry11_clip.shp* dissolve completely to create *SCTRY2011.shp* in the *EWS2011* directory. Simplify an additional 90% as never used at high resolution:
 
@@ -1623,11 +1623,11 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
      * ```-e```: copy all SQL commands sent to the server to standard output as well;
      * ```-f pg_USA_2014.sql```: run SQL script pg_USA_2014.sql
 
-     For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
+     For information on [Postgres passwords](#postgres)
 
      E.g: ```psql -U peter -d sahsuland_dev -w -e -f pg_USA_2014.sql```
 
-	[Postgres data processing example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_data_processing.md)
+	[Postgres data processing example log]({{ base.url }}/rifNodeServices/postgres_data_processing)
 
    - SQL Server: ```sqlcmd -U <username> -P <password> -d <database name> -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
      Flags:
@@ -1645,7 +1645,7 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 	E.g:
 	```sqlcmd -U peter -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
 
-	[SQL Server data processing example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_data_processing.md)
+	[SQL Server data processing example log]({{ base.url }}/rifNodeServices/sql_server_data_processing)
 
 Data loading steps. These load the data and prepare it for tile manufacture:
 
@@ -1952,10 +1952,10 @@ In the same directory as before run the *tile Maker* manufacturer. This has sepa
 Script examples:
 
 * Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
-  [Postgres tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_tile_manufacture.md)
+  [Postgres tile manufacture example log]({{ base.url }}/rifNodeServices/postgres_tile_manufacture)
   A log file will be created in the current directory as: *pgTileMaker.log*;
 * SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password XXXXXXXXXXX --database sahsuland_dev```
-  [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
+  [SQL Server tile manufacture example log]({{ bae.url }}/rifNodeServices/sql_server_tile_manufacture)
   A log file will be created in the current directory as: *mssqlTileMaker.log*
 
 The CSV Files are created in a) the XML: directory defined in *geoDataLoader.xml* if the directory exists or b) the current working directory if it does not.
@@ -2151,11 +2151,11 @@ Tile manufacturing steps:
      * ```-e```: copy all SQL commands sent to the server to standard output as well;
      * ```-f rif_pg_usa_2014.sql```: run SQL script rif_pg_usa_2014.sql
 
-     For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
+     For information on [Postgres passwords](#postgres)
 
      E.g: ```psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql```
 
-	[Postgres production data load log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_load.md)
+	[Postgres production data load log]({{ base.url }}/rifNodeServices/postgres_load)
 
    - SQL Server: ```sqlcmd -U rif40 -P <password> -d <database name> -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql  -v pwd="%cd%"```
      Flags:
@@ -2173,7 +2173,7 @@ Tile manufacturing steps:
 	E.g:
 	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_USA_2014.sql  -v pwd="%cd%"```
 
- 	[SQL Server production load example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_load.md)
+ 	[SQL Server production load example log]({{ base.url }}/rifNodeServices/sql_server_load)
 
   - To Reload the geography it must not be in use by any studies:
     ```
@@ -2246,7 +2246,7 @@ To use the *tileViwer* you must
   ```
 
 *TileViewer* example - Lower super output area in south east London:
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")
+![alt text]({{ base.url }}/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London"){:width="100%"}
 
 # TileMaker TODO
 
@@ -2259,7 +2259,7 @@ TileMaker is currently working with some minor faults but needs to have in order
 5. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
 6. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons.
    These are often multiple records in shapefiles and they need to be UNIOONed together. A workaround is provide in
-   [2.4 Pre Processing Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#24-pre-processing-shapefiles);
+   [2.4 Pre Processing Shapefiles](#pre-processing-shapefiles);
 7. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
    than the TileMaker screen. Probably the best solution is to use Angular;
 8. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes);

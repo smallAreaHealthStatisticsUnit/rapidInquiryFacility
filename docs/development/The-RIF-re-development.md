@@ -1,4 +1,9 @@
-The RIF is embedded within geographical information systems (GIS) software.  It is being redeveloped in 2012-2015 to update software coding and improve functionality.  
+---
+layout: default
+title: Redeveloping the RIF
+---
+
+The RIF is embedded within geographical information systems (GIS) software.  It is being redeveloped in 2012-2015 to update software coding and improve functionality.
 
 The new RIF will use more modern technologies that are better able to mix proprietary and open-source software products.  The new application will be written in Java, Javascript and HTML5 some of the most popular internet programming languages (the original software was written in Visual Basic).  It will also make use of open source products such as PostgreSQL as a database and PostGIS as the geographic information system  with plans to extend statistical capababilities by a new linkage with the statistical package R (via the PL/R Postgres  database language extension). Existing RIF statistical functionality such as Satscan (for cluster dectection), INLA and LinBUGS/WinBUGS (for Bayesian Smoothing) will continue to be supported.
 

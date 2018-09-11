@@ -161,7 +161,7 @@ This makes tomcat Java upgrade proof; but this may have unintended effects if:
 ### 1.3.1 Apache Tomcat on a single host
 
 This is suitable for laptops and developers with no access from other machines. Download and install tomcat; make sure your firewall blocks
-port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in [Securing Tomcat](/rifWebApplication/#82-securing-tomcat).
+port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in [Securing Tomcat]({{ site.baseurl }}/rifWebApplication/#82-securing-tomcat).
 
 ### 1.3.2 Apache Tomcat for internet use
 
@@ -1349,7 +1349,7 @@ This setup will support:
 
 ## 4.3 Setup R
 
-**Note:** Much of the information below is specific to setting up on Windows. You can get information on setting up on a Mac -- which will also be helpful for setting up on other Unixes -- [here](/rifWebApplication/R_setup_on_Mac).
+**Note:** Much of the information below is specific to setting up on Windows. You can get information on setting up on a Mac -- which will also be helpful for setting up on other Unixes -- [here]({{ site.baseurl }}/rifWebApplication/R_setup_on_Mac).
 
 ### 4.3.1 R and Printing Output Directories
 
