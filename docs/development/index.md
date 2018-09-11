@@ -5,7 +5,7 @@ title: Developer Documentation
 
 ## RIF Architecture
 
-![RIF Architecture]({{ site.baseurl }}/development/RIF_architecture.png)
+![RIF Architecture]({{ site.baseurl }}/development/RIF_architecture.png){:width="100%"}
 
 ## General Developer Documentation
 
