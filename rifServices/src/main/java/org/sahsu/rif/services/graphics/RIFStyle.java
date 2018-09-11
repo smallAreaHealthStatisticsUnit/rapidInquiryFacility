@@ -307,7 +307,7 @@ public class RIFStyle {
 				groups = (Classifier) classify.evaluate(featureCollection);  // Classify data 
 			}
 			catch (NullPointerException npe) {
-				throw new Exception("Failed to classify fesatureCollection; function Name: " + classifyFunctionName +
+				throw new Exception("Failed to classify featureCollection; function Name: " + classifyFunctionName +
 					"; column: " + columnName + 
 					"; NullPointerException in classify.evaluate()");
 			}

@@ -20,6 +20,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONObject;
+
 import org.geotools.data.FeatureWriter;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
@@ -150,7 +152,17 @@ public class RifGeospatialOutputs {
 		
 		String studyID = rifStudySubmission.getStudyID();
 		String mapTable=manager.getColumnFromResultSet(rif40Studies, "map_table");
+		String selectStateText=manager.getColumnFromResultSet(rif40Studies, "select_state", true /* allowNulls */, false /*  allowNoRows */);
+		boolean isDiseaseMappingStudy=true;
 		
+		if (selectStateText != null) {
+			JSONObject selectStateJson = new JSONObject(selectStateText); // Check it parses OK
+			String studyTypeStr = selectStateJson.optString("studyType");
+			if (studyTypeStr != null && studyTypeStr.equals("risk_analysis_study")) {
+				isDiseaseMappingStudy=false;
+			}
+		}
+				
 		//Add geographies to zip file
 		StringBuilder tileTableName = new StringBuilder();	
 		tileTableName.append("geometry_");
@@ -268,7 +280,7 @@ public class RifGeospatialOutputs {
 				rif40Investigations,
 				locale);
 				
-		return createMapsHTML(studyID, rif40Investigations);
+		return createMapsHTML(studyID, rif40Investigations, isDiseaseMappingStudy);
 	}		
 
 	/** 
@@ -281,7 +293,8 @@ public class RifGeospatialOutputs {
 	 */	
 	private String createMapsHTML(
 		final String studyID,
-		final CachedRowSetImpl rif40Investigations)
+		final CachedRowSetImpl rif40Investigations,
+		final boolean isDiseaseMappingStudy)
 			throws Exception {
 			
 		StringBuffer mapHTML=new StringBuffer();
@@ -334,16 +347,23 @@ public class RifGeospatialOutputs {
 		mapHTML.append("      <div>" + lineSeparator);
 		mapHTML.append("        <form id=\"downloadForm2\" method=\"get\" action=\"maps\\smoothed_smr_" + 
 			nonFieldFileName + ">" + lineSeparator);
-		mapHTML.append("        Year: <select id=\"rifMapsList\">" + lineSeparator);					
-		mapHTML.append("          <option value=\"maps\\relative_risk_" + 
-			nonFieldFileName + "/>Relative Risk</option>" + 
-			lineSeparator);		
-		mapHTML.append("          <option value=\"maps\\posterior_probability_" + 
-			nonFieldFileName + "/>Posterior Probability_</option>" + 
-			lineSeparator);		
-		mapHTML.append("          <option value=\"maps\\smoothed_smr_" + 
-			nonFieldFileName + "\" selected />Smoothed SMR</option>" + 
-			lineSeparator);
+		mapHTML.append("        Year: <select id=\"rifMapsList\">" + lineSeparator);	
+		if (isDiseaseMappingStudy) {
+			mapHTML.append("          <option value=\"maps\\relative_risk_" + 
+				nonFieldFileName + "/>Relative Risk</option>" + 
+				lineSeparator);		
+			mapHTML.append("          <option value=\"maps\\posterior_probability_" + 
+				nonFieldFileName + "/>Posterior Probability_</option>" + 
+				lineSeparator);		
+			mapHTML.append("          <option value=\"maps\\smoothed_smr_" + 
+				nonFieldFileName + "\" selected />Smoothed SMR</option>" + 
+				lineSeparator);
+		}
+		else {
+			mapHTML.append("          <option value=\"maps\\relative_risk_" + 
+				nonFieldFileName + "/>Relative Risk</option>" + 
+				lineSeparator);	
+		}
 		mapHTML.append("        </select>" + lineSeparator);
 		
 		Iterator <Sex> GenderIter = allSexes.iterator();
@@ -393,8 +413,15 @@ public class RifGeospatialOutputs {
 		mapHTML.append("        <button id=\"downloadButton2\" type=\"submit\">Download PNG</button>" + lineSeparator);
 		mapHTML.append("        </form>" + lineSeparator);	
 		mapHTML.append("      </div>" + lineSeparator);
-		mapHTML.append("      <img src=\"maps\\smoothed_smr_" + 
-			nonFieldFileName + " id=\"rifMaps\" width=\"80%\" />");
+			
+		if (isDiseaseMappingStudy) {
+			mapHTML.append("      <img src=\"maps\\smoothed_smr_" + 
+				nonFieldFileName + " id=\"rifMaps\" width=\"80%\" />");
+		}
+		else {
+			mapHTML.append("      <img src=\"maps\\relative_risk_" + 
+				nonFieldFileName + " id=\"rifMaps\" width=\"80%\" />");
+		}
 		mapHTML.append("      </p>" + lineSeparator);	
 		
 		return mapHTML.toString();

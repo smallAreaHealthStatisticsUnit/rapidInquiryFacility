@@ -2899,5 +2899,6 @@ SELECT a.*, b.coa2011
 * Fix for: Warning: Unable to verify comparison area selection errors
 * Applied temporary fix by disabling the ChloroService.doRenderSwatch(): 
   (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/commit/d26ab96f001145f9d6d4e6a987acc94d62a3cbee)
-* Create pull #72 for Error handling ICD10 chapters and ranges as investigation conditions #58;
+* Create and apply pull #72 for Error handling ICD10 chapters and ranges as investigation conditions #58;
+* Investigate and fix risk analysis export NPE crash: caused by smoothed_smr, posterior_probability fields with no data;
 
