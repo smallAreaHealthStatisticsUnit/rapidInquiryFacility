@@ -5,7 +5,8 @@ title: RIF To-do List
 
 * David Morley, September 2017
 * Peter Hambly, October-December 2017
-* Peter Hambly, March 2018
+* Peter Hambly, March 2018,
+* Peter Hambly, September 2018
 
 # Contents
 
@@ -36,75 +37,40 @@ title: RIF To-do List
 
 # Java Middleware
 
-1.	Note that Kevin Garwood was the lead Java developer who left in March 2017. Since then there has not been a full-time Java developer
-    working on the RIF.
-
-	Note: new lead Java developer (Martin  McCallion) to start on the 5th March 2018.
-
-2.	DataStorageLayer is split into ms and pg. All web services have either /ms or /pg in the URL to signify which database is being used.
+1.	DataStorageLayer is split into ms and pg. All web services have either /ms or /pg in the URL to signify which database is being used.
     This needs to be refactored into a common super class for both databases and dispense of the two separate lumps of code for each
 	database type. The actual differences between ms and pg are not very big. The RIF works the way things are now, but there is a lot
 	of duplication of code and it will cause a huge maintenance problem in the future.
 
-	See: [Creating a new restful web service]({{ site.baseurl }}/development/Creating-a-new-restful-web-service)
-	for examples of this and a discussion of the solutions.
+    Done MM.
+	
+2.	The R script uses ODBC. Now that JRI is used this can be changed to JDBC to allow Linux version of RIF. The JRI code has now been
+    isolated into RIF_odbc.R prior to conversion.
+	
+	Done MM. Uses JDBC on Postgres, ODBC on SQL Server
 
-	A partial solution has been implemented for the ZIP and extract services as a proof of concept. Common SQL code
-	with port specific differences has been implmented.
-
-3.	The R script uses ODBC. Now that JRI is used this can be changed to JDBC to allow Linux version of RIF. The JRI code has now been
-    isolated into RIF_odbc.R proior to conversion.
-
-4.	Improved logging. [PH done September 2017]; including correct error recovery tracing. Note there are issues with
+3.	Improved logging. [PH done partially September 2017]; including correct error recovery tracing. Note there are issues with
     log4j log rotation.
+	
+	Some improvements to log rotation by using one log file per service. Added front end logger at the same time. Logging no longer "hangs" at the 
+	end of the day (the log was only written if you shut down Tomcat nicely); but log rotation and the delay to write are still problems.
+	Any solution 
 
-5.	Still A LOT of redundant, dead-end, stubbed, duplicate or unused code resulting from the lack of initial scoping as to what the RIF
+4.	Still A LOT of redundant, dead-end, stubbed, duplicate or unused code resulting from the lack of initial scoping as to what the RIF
     was going to do.
 
-6.	Risk Analysis: The Front-end can supply the following to the middleware as part of the JSON submission posted as submitStudy:
-	type = 'risk_analysis_study';
-	```
-            areaType = 'risk_analysis_study_area';
-	```
-	OR
-	```
-            type = "disease_mapping_study";
-            areaType = "disease_mapping_study_area";
-	```
+5.	Risk Analysis: Done, but more work needed on maps (do not include selection shapes)
 
-	Depending on the study type selected by the user. Currently, only disease mapping will 	work. If you attempt to submit risk_analysis you will get an error. This lump of JSON is read 	by the middleware as getRIFSubmissionFromJSONSource(inputStream).
+6  Data Extract ZIP file. PH completed initial middleware support.
 
-	Also, each map area has a band attribute (for disease mapping this is not expected by the middleware and is not used (Sequential and unique band IDs are assigned in the database by 	Peter). For risk analysis, the bands assigned by the user in the front-end must be used.
+	* Check manual R script using CSV files still work, and support for Unixen;
+	* Improve map layout; US maps are wrong;
+	* Add support for printing what the user selects in the mapping screens. Initial (default) setup and been done in the database. This will also
+	  include map centre and bounds;
+	* Allow the use of more fields; handle fields with no data so they do not cause and NPE (pull #73 partially fixed this);
+	* Allow the user to change the resolution of the images
 
-	```"map_areas":{"map_area":[{"id":"01.008","gid":8,"label":"01.008","band":1}]}```
-
-	THERE IS NOTHING IN THE MIDDLEWARE/R TO HANDLE RISK ANALYSIS (at least I don't think so). The Database is
-	believed to be complete an the middleware should be able to parse the JSON without too much restructuring.
-
-	There exists a class 'DiseaseMappingStudy' this will probably form the basis of a risk 	mapping study processing via runStudyThread.
-	Either by incorporating risk analysis into this class, or duplicating the class, renaming to RiskAnalysisStudy and adjusting to
-	handle risk analysis. Note that the type of the study is not known until it is parsed so the abstrst class will need
-    to identify the study type and have an appropriate getStudyType() method
-
-	The best possible outcome here is that we just have to keep the diseaseMappingStudy class as it is (assuming that the extract table
-	for disease mapping and risk analysis can be the same). Then, within this class there is some kind of switch that just sets of a
-	different R script to run risk analysis.
-
-	Anna FS is tasked to write the associated R script to do risk analysis. This will be run in the RIF using JRI as is the disease
-	mapping Bayesian INLA R script.
-
-7.  Data Extract ZIP file. PH completed initial middleware support. The middleware export functionality will
-    shortly be modified to: [Done PH]
-
-    * Use numbered directories (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem
-	  performance on Windows Tomcat servers [Done];
-	* Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing type].
-	  This **MUST** be exactly the same information as generated by the front end!
-	* Generate GeoJSON for mapping. This will include the result data which will need to be flattened (e.g. relative_risk_males_no_covariates);
-	* Add support for runing R scripts pre zip file creation. This is to add maps using the map setup choosen by the user in the mapping dashboard.
-	  The intention in to support all the potential map options like the last RIF, and also add the D3 graphics: population pyramids...
-
-8.  Rengine not being shutdown correctly on reload of service:
+7.  Rengine not being shutdown correctly on reload of service:
     ```
     Cannot find JRI native library!
     Please make sure that the JRI native library is in a directory listed in java.library.path.
@@ -124,48 +90,35 @@ title: RIF To-do List
     The solution is to restart tomcat. Server reload needs to stop R. This requires a ```@WebListener
 	[Context Listener (javax.servlet.ServletContextListener)]```.
 
-9.  Log4j logging is not flushing new logs on day turn.
-
 # JavaScript
 
-1.	Code mostly works - may need some tidying in places
+1.	Code mostly works - may need some tidying in places. Possible refactor the submission mapping tools (rifd-dsub-maptable) to fit in with the Leaflet stuff used in disease mapping and data
+    viewer as there is a lot of duplication. It works fine as it is though, just a maintenance issue.
+	Especially: rifp-dsub-maptable.html, rifs-util-mapping.js
 
-2.	Export map to png functionality. This is very difficult to implement as it is not really supported in Leaflet and in all browsers.
-    In reality, this functionality may have to be removed. The user can download the data to import into a GIS anyway. Another option
-	would be to recommend the use of making the map full screen then using the Print Scrn button to copy to clipboard. Same goes for the
-	export D3 to png code. This sort of works, but does not work at all in IE, but right click save works. Needs looking at or maybe
-	removing functionality.
-
-	PH suggestion: this may be best done in R. Will probably need a shapefile with the results in it. Proof of concept rifMapping.R script
-	in progress; awaiting data. [Done PH using Java]
+2.	Export map to png functionality. [Done PH using Java]
 
 3.	Save rifSubmission to text file (.JSON). This is currently done with a directive in JS and as such is a bit temperamental because of
     various browser/security issues. We need a new middleware method to save the rifSubmission.txt as a
-	.json file [see above]. [Done PH - implmented using middleware]
+	.json file [see above]. [Done PH - implemented using middleware]. Files are now in JSON5 format to make fore readable
 
-4.	Some of the references to parent and child scopes are messy and non-angular and may need looking at. But it does work.
+4.	Some of the references to parent and child scopes are messy and non-angular and may need looking at. But it does work. General best 
+    replaced by services (e.g. the AlertService to access the AlertController)
 
-5.	Adapt front-end (investigation) to accept multiple covariates (database cannot this yet, but should in future). Change drop-down to
-    a check-box list.
+5.	Main CSS needs removal of redundant code
 
-6.	Adapt front-end (investigation) to accept multiple investigations (database cannot this yet, but should in future).
+6.	At some point, Leaflet version used will need to be updated to v1.2.x. Breaking changes to the RIF expected.
 
-7.	Possible refactor the submission mapping tools (rifd-dsub-maptable) to fit in with the Leaflet stuff used in disease mapping and data
-    viewer as there is a lot of duplication. It works fine as it is though, just a maintenance issue.
-
-8.	Main CSS needs removal of redundant code
-
-9.	At some point, Leaflet version used will need to be updated to v1.2.x. Breaking changes to the RIF expected.
-
-10.	New D3 output graphs as-and-when requested by users. It is likely that when risk analysis is done, new graphs and/or tables will be
+7.	New D3 output graphs as-and-when requested by users. It is likely that when risk analysis is done, new graphs and/or tables will be
     needed.
 
-11. A download link is required to download the actual ZIP file [this requires a Middleware method too!] [Done PH. Is intelligent]
+8. A download link is required to download the actual ZIP file [this requires a Middleware method too!] [Done PH. Is intelligent]. May need a [redo] 
+   download button
 
-12. When you change the geography the numerator and denominator do not change and need to be
+9. When you change the geography the numerator and denominator do not change and need to be
     changed manually; [Done; bug fix]
 
-13. Login initialisation errors if a) you shoot tomcat whilst logged on [the RIF must be reloaded]
+10. Login initialisation errors if a) you shoot tomcat whilst logged on [the RIF must be reloaded]
     and b) spurious complaints caused by the process of logging out; e.g.
 	```
 	ERROR: API method "isLoggedIn" has a null "userID" parameter.
@@ -175,25 +128,31 @@ title: RIF To-do List
     Normally reloading the RIF allows the user to logon again; although if the user is already logged on
     the Middleware will not let the user log on a second time; [Done: 29/3/2018 PH]
 
-14. The newest study completed when the RIF initialised is displayed, this does not change with even when
+11. The newest study completed when the RIF initialised is displayed, this does not change with even when
     the user goes to the tab for the first time;
 
-15.	Add save study/comparison bands to file. Upload from file must have fields named ID,Band and can have
+12.	Add save study/comparison bands to file. Upload from file must have fields named ID,Band and can have
     other fields (e.g. NAME). Names are restricted and a save to file option would be good.
-    File: rifd-dsub-maptable.js;
+    File: rifd-dsub-maptable.js; [Done PH 3/9/2018]
 
-16. Map synchronisation issues: [Done: PH 18/12/2017]
+12. Map synchronisation issues: [First set done: PH 18/12/2017]
 	* A change in geography from one study to another causes chaos in the data viewer and disease
 	  mapping tabs. The best solution is to set both tabs to the same geography then set up the maps
 	  and finally zoom to map extent. This will fix the map to the correct location;
 	* Chrome is the worst browser and often does not refresh unless the map setup is reapplied;
-	* Needs caching (i.e. the middleware slowes it down). This is particularily noticeable on
+	* Needs caching (i.e. the middleware slowes it down). This is particularly noticeable on
 	  slow systems;
+	Second set:
+	* Fixed problems when changing from one geography to another between studies;
+	* Choropleth map defaults disabled as being run before thee map data has complete loading. Synchronisation in the 
+	  promises chains needs to be improved;
+	* Zoom to study extent sometimes does not work on drawing the map;
 
-17. The map hover displays the *area_id* prperty and should also display the *name* property if it is available [Done: 7/11/2017];
+13. The map hover displays the *area_id* property and should also display the *name* property if it is available [Done: 7/11/2017]. See also 
+    issue #65;
 
-18. Null zoomlevel error, appears when moving between the data viewer and the disease mapper. Made much more
-    likely by changing from one geography to another! [Done: PH 18/12/2017]
+14. Null zoomlevel error, appears when moving between the data viewer and the disease mapper. Made much more
+    likely by changing from one geography to another! [Partially done: PH 18/12/2017]
 	```
 	11:58:59.708 XML Parsing Error: no element found
 	Location: https://localhost:8080/rifServices/studyResultRetrieval/ms/getTileMakerTiles?userID=peter&geographyName=USA_2014&geoLevelSelectName=CB_2014_US_COUNTY_500K&zoomlevel=null&x=1&y=0
@@ -248,17 +207,19 @@ title: RIF To-do List
 	  * Lots of *_map()* objects leaking re-inforcing the above observations
 	  * SVG related leaks as seen above.
 	* Leak actual caused by $watch synchronmisation in disease mapping D3 graphs. This was redrawing
-	  the graphs several times per second! The actual leak was not fixed since it is small. The omly conclusion is to avoid
+	  the graphs several times per second! The actual leak was not fixed since it is small. The only conclusion is to avoid
 	  overly complex directives as self modification will cause a re-run!
 	* Code was restructured to remove mal-synchronisation issues and to parallelise tile and data fetching
 
+  **BEWARE: THIS ISSUE COULD RETURN: ALWAYS TEXT CHANGES TO ANY MAP CODE FOR LEAKS**
+  
 # Database
 
 ## Missing information not stored in the database
 
 1.	Retrieve information on a completed study. Used in the info button in disease mapping and data viewer.
     The database cannot return all the required information. This requires changes to both the backend and
-	middleware. [Planned PH]
+	middleware. [Done PH]
 
 2.	I'm not sure the statistical method is being stored in the database correctly, that is it is always NONE.
     [Done PH]
@@ -267,9 +228,9 @@ title: RIF To-do List
 
 1. The Postgres port is slow. This is because by the logging function *rif40_log()* is not compiled in Postgres and therefore slow. Needs to
    either be made acceptablely fast or the debug messages commented out. This particularily effects triggers. The Postgres SEER data is also
-   extrscting 3x slower than SQL Server; this requires further analysis; [Done: 13/11/2017]
+   extracting 3x slower than SQL Server; this requires further analysis; [Done: 13/11/2017; room for improvement]
 2. Data loading scripts needs to be made make independent - i.e. run from a single script like the SQL server ones, with one file/object;
-3. Patches needs to be merged.
+3. Patches need to be merged.
 
 ## SEER test dataset
 
@@ -538,25 +499,25 @@ These are to end of contract 10th October 2018
 
 #### High Priority
 
-* Package front end as WAR
-* Login screen: focus on user name field: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/22
-* Able to load, save and run risk analysis studies
+* Package front end as WAR [Done MM]
+* Login screen: focus on user name field: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/22 [Done: PH]
+* Able to load, save and run risk analysis studies. [Done: all]
 * Able to choose continuous covariate variables (not currently supported) https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/20
 
 #### Low Priority
 
-* Save and restore map state in the database;
+* Save and restore map state in the database; [Done: PH]
 * Sort popups in data viewer and disease maps [need to discuss]
 
 ### Database [Peter Hambly]
 
 #### High Priority
 
-* Add generate_series() to SQL Server port;
-* Fix predefined_groiup name issues - should be length 30 in t_rif40_inv_conditions: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/21
-* Save risk analysis bands as geojson in the database and the save file. Circle may need conversion to geojson (as a polygon of many, many short, linestrings).
+* Add generate_series() to SQL Server port; [Done: PH]
+* Fix predefined_groiup name issues - should be length 30 in t_rif40_inv_conditions: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/21 [Done: PH]
+* Save risk analysis bands as geojson in the database and the save file. Circle may need conversion to geojson (as a polygon of many, many short, linestrings). [Done: PH]
 * Save selection options (study and comparison resolution and selection geolevels, geolevels selected. Create
-  t_rif40_study_select/rif40_study_select, t_rif40_comparison_select/rif40_comparison_select for areas/bands actually selected by user;
+  t_rif40_study_select/rif40_study_select, t_rif40_comparison_select/rif40_comparison_select for areas/bands actually selected by user; [Done: PH]
 * Add area name to results map table;
 
 #### Low Priority
