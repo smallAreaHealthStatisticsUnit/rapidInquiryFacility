@@ -20,6 +20,8 @@ import org.sahsu.rif.services.system.files.TomcatFile;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
+import org.sahsu.rif.services.concepts.StudyType;
+
 /**
  *
  * <hr>
@@ -81,6 +83,8 @@ import org.sahsu.rif.generic.system.RIFServiceException;
  */
 	
 public class RIFMapsParameters {
+
+	private StudyType studyType = StudyType.DISEASE_MAPPING;	
 	
 	/* 
 	 * RIF map parameter
@@ -95,8 +99,8 @@ public class RIFMapsParameters {
 		private int numberOfBreaks;	
 		private double breaks[];
 		private Boolean invert;	
-	
-		/**
+		
+	 /**
 		 * Constructor.
 		 * 
 		 */	
@@ -254,7 +258,7 @@ public class RIFMapsParameters {
      */
 	public RIFMapsParameters(final SQLManager manager, final CachedRowSetImpl rif40Studies) {
 		try {
-			setupDefaultMapParameters();
+			setupDefaultMapParameters(manager, rif40Studies);
 			retrieveFrontEndParameters(manager, rif40Studies);
 		}		
 		catch(StackOverflowError stackOverflowError) {
@@ -291,9 +295,33 @@ public class RIFMapsParameters {
 	/**
 	 * Setup default map parameters
 	 */
-	private void setupDefaultMapParameters() 
+	private void setupDefaultMapParameters(final SQLManager manager, final CachedRowSetImpl rif40Studies) 
 		throws Exception {
 		
+		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");
+		String selectStateText=manager.getColumnFromResultSet(rif40Studies, "select_state", true /* allowNulls */, false /*  allowNoRows */);
+		
+		if (selectStateText != null) {
+			JSONObject selectStateJson = new JSONObject(selectStateText); // Check it parses OK
+			String studyTypeStr = selectStateJson.optString("studyType");
+			if (studyTypeStr != null && studyTypeStr.equals(StudyType.RISK_ANALYSIS.type())) {
+				rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; use database select state study type: risk analysis"); 
+				this.studyType = StudyType.RISK_ANALYSIS;
+			}
+			else if (studyType != null && studyType.equals(StudyType.DISEASE_MAPPING.type())) {
+				rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; use database select state study type: disease mapping"); 
+				this.studyType = StudyType.DISEASE_MAPPING;
+			}
+			else {
+				rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; no database select state study type, assume: disease_mapping;" +
+					lineSeparator +
+					"; selectStateJson: " + selectStateJson.toString(2)); 
+			}	
+		}
+		else {
+			rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; no database select state, assume study type: disease_mapping"); 
+		}
+			
 		RIFMapsParameter rifMapsParameter1 = new RIFMapsParameter(	
 			"relative_risk"		/* resultsColumn */,
 			"quantile"		/* Classifier function name */, 
@@ -301,22 +329,24 @@ public class RIFMapsParameters {
 			9				/* numberOfBreaks */, 
 			true			/* invert */);
 		rifMapsParameters.put("viewermap", rifMapsParameter1);
-				
-		RIFMapsParameter rifMapsParameter2 = new RIFMapsParameter(
-			"smoothed_smr"		/* resultsColumn */,
-			"quantile"		/* Classifier function name */, 
-			"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-			9				/* numberOfBreaks */, 
-			true			/* invert */);		
-		rifMapsParameters.put("diseasemap1", rifMapsParameter2);
 		
-		RIFMapsParameter rifMapsParameter3 = new RIFMapsParameter(	
-			"posterior_probability"		/* resultsColumn */,	
-			"AtlasProbability"			/* Classifier function name */, 
-			"RdYlGn"					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-			atlasProbabilityBreaks		/* breaks */, 
-			false						/* invert */);		
-		rifMapsParameters.put("diseasemap2", rifMapsParameter3);
+		if (this.studyType == StudyType.DISEASE_MAPPING) { // No Bayesian smoothing in risk analysis studies
+			RIFMapsParameter rifMapsParameter2 = new RIFMapsParameter(
+				"smoothed_smr"		/* resultsColumn */,
+				"quantile"		/* Classifier function name */, 
+				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+				9				/* numberOfBreaks */, 
+				true			/* invert */);		
+			rifMapsParameters.put("diseasemap1", rifMapsParameter2);
+			
+			RIFMapsParameter rifMapsParameter3 = new RIFMapsParameter(	
+				"posterior_probability"		/* resultsColumn */,	
+				"AtlasProbability"			/* Classifier function name */, 
+				"RdYlGn"					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+				atlasProbabilityBreaks		/* breaks */, 
+				false						/* invert */);		
+			rifMapsParameters.put("diseasemap2", rifMapsParameter3);
+		}
 	}
 
 	/**
@@ -331,10 +361,10 @@ public class RIFMapsParameters {
 		BufferedReader reader = new TomcatFile(
 				new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
 
-		Json5Parse json5Parse = new Json5Parse(reader);
-		
-		JSONObject frontEndJson = json5Parse.toJson(); // Check it parses OK
+		Json5Parse frontEndJson5Parse = new Json5Parse(reader);
+		JSONObject frontEndJson = frontEndJson5Parse.toJson(); // Check it parses OK
 		JSONObject parametersJson = frontEndJson.optJSONObject("parameters");
+		
 		JSONObject printStateJson = null;
 
 //		rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + frontEndJson.toString(2));
@@ -403,43 +433,51 @@ public class RIFMapsParameters {
 				}
 				String brewerName=mapOptions.optString("brewerName");
 				JSONArray breaksArray = mapOptions.optJSONArray("breaks");
-				if (breaksArray != null) { // User defined
-					intervals=(breaksArray.length()-1);
-					double[] breaks = new double[intervals+1];
-					for (int i = 0; i < breaksArray.length(); i++) {
-						breaks[i]=breaksArray.getDouble(i);
+				if ((studyType == StudyType.RISK_ANALYSIS && feature.equals("relative_risk")) || 
+				    (studyType == StudyType.DISEASE_MAPPING)) {
+					
+					if (breaksArray != null) { // User defined
+						intervals=(breaksArray.length()-1);
+						double[] breaks = new double[intervals+1];
+						for (int i = 0; i < breaksArray.length(); i++) {
+							breaks[i]=breaksArray.getDouble(i);
+						}
+						try {					
+							RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
+								feature						/* resultsColumn */,	
+								method						/* User style name */, 
+								brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+								breaks						/* Breaks */, 
+								invert						/* invert */);	
+							rifMapsParameters.put(mapName, rifMapsParameter);
+							rifMapsParameter.parameterLog(mapName);
+						}
+						catch (Exception exception) {
+							rifLogger.warning(this.getClass(), 
+								"Unable to parse user defined mapOptions from: " + mapOptions.toString(2));
+						}							
 					}
-					try {					
-						RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
-							feature						/* resultsColumn */,	
-							method						/* User style name */, 
-							brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-							breaks						/* Breaks */, 
-							invert						/* invert */);	
-						rifMapsParameters.put(mapName, rifMapsParameter);
-						rifMapsParameter.parameterLog(mapName);
+					else { // Predefined 
+						try {					
+							RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
+								feature						/* resultsColumn */,	
+								method						/* Classifier function name */, 
+								brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+								intervals					/* numberOfBreaks */, 
+								invert						/* invert */);	
+							rifMapsParameters.put(mapName, rifMapsParameter);
+							rifMapsParameter.parameterLog(mapName);
+						}
+						catch (Exception exception) {
+							rifLogger.warning(this.getClass(), 
+								"Unable to parse predefined mapOptions from: " + mapOptions.toString(2) +
+								"; for rif40_studies.study_id: " + studyID);
+						}							
 					}
-					catch (Exception exception) {
-						rifLogger.warning(this.getClass(), 
-							"Unable to parse user defined mapOptions from: " + mapOptions.toString(2));
-					}							
 				}
-				else { // Predefined 
-					try {					
-						RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
-							feature						/* resultsColumn */,	
-							method						/* Classifier function name */, 
-							brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-							intervals					/* numberOfBreaks */, 
-							invert						/* invert */);	
-						rifMapsParameters.put(mapName, rifMapsParameter);
-						rifMapsParameter.parameterLog(mapName);
-					}
-					catch (Exception exception) {
-						rifLogger.warning(this.getClass(), 
-							"Unable to parse predefined mapOptions from: " + mapOptions.toString(2) +
-							"; for rif40_studies.study_id: " + studyID);
-					}							
+				else {			
+					rifLogger.info(this.getClass(), 
+						"Risk Analysis feature disabled: " + feature);
 				}
 			}	
 		}
