@@ -61,8 +61,9 @@ title: RIF To-do List
 
 5.	Risk Analysis: Done, but more work needed on maps (do not include selection shapes)
 
-6  Data Extract ZIP file. PH completed initial middleware support.
+6.  Data Extract ZIP file. PH completed initial middleware support.
 
+	* Risk analysis support: add shapes to maps, export shapes to shapefiles;
 	* Check manual R script using CSV files still work, and support for Unixen;
 	* Improve map layout; US maps are wrong;
 	* Add support for printing what the user selects in the mapping screens. Initial (default) setup and been done in the database. This will also
@@ -102,7 +103,7 @@ title: RIF To-do List
     various browser/security issues. We need a new middleware method to save the rifSubmission.txt as a
 	.json file [see above]. [Done PH - implemented using middleware]. Files are now in JSON5 format to make fore readable
 
-4.	Some of the references to parent and child scopes are messy and non-angular and may need looking at. But it does work. General best 
+4.	Some of the references to parent and child scopes are messy and non-angular and may need looking at. But it does work. Generally best 
     replaced by services (e.g. the AlertService to access the AlertController)
 
 5.	Main CSS needs removal of redundant code
@@ -142,6 +143,7 @@ title: RIF To-do List
 	* Chrome is the worst browser and often does not refresh unless the map setup is reapplied;
 	* Needs caching (i.e. the middleware slowes it down). This is particularly noticeable on
 	  slow systems;
+	  
 	Second set:
 	* Fixed problems when changing from one geography to another between studies;
 	* Choropleth map defaults disabled as being run before thee map data has complete loading. Synchronisation in the 

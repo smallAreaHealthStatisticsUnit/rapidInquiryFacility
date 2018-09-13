@@ -2901,4 +2901,8 @@ SELECT a.*, b.coa2011
   (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/commit/d26ab96f001145f9d6d4e6a987acc94d62a3cbee)
 * Create and apply pull #72 for Error handling ICD10 chapters and ranges as investigation conditions #58;
 * Investigate and fix risk analysis export NPE crash: caused by smoothed_smr, posterior_probability fields with no data;
+* RIF demo with Prof.  Elliott; meeting decided to plan for RIF testing using Using the Heathrow and/or Incinerators studies to test the RIF 
+  [issue #74](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/74)
+* Merge pull #73: Investigate and fix risk analysis export NPE crash;
+* Update TODOs;  
 
