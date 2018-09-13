@@ -20,6 +20,8 @@ import org.sahsu.rif.services.system.files.TomcatFile;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
+import org.sahsu.rif.services.concepts.StudyType;
+
 /**
  *
  * <hr>
@@ -81,11 +83,6 @@ import org.sahsu.rif.generic.system.RIFServiceException;
  */
 	
 public class RIFMapsParameters {
-
-	
-	enum StudyType {
-		RISK_ANALYSIS, 
-		DISEASE_MAPPING};
 
 	private StudyType studyType = StudyType.DISEASE_MAPPING;	
 	
@@ -303,18 +300,17 @@ public class RIFMapsParameters {
 		
 		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");
 		String selectStateText=manager.getColumnFromResultSet(rif40Studies, "select_state", true /* allowNulls */, false /*  allowNoRows */);
-		boolean isDiseaseMappingStudy=true;
 		
 		if (selectStateText != null) {
 			JSONObject selectStateJson = new JSONObject(selectStateText); // Check it parses OK
 			String studyTypeStr = selectStateJson.optString("studyType");
-			if (studyTypeStr != null && studyTypeStr.equals("risk_analysis_study")) {
-				isDiseaseMappingStudy=false;
+			if (studyTypeStr != null && studyTypeStr.equals(StudyType.RISK_ANALYSIS.type())) {
 				rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; use database select state study type: risk analysis"); 
 				this.studyType = StudyType.RISK_ANALYSIS;
 			}
-			else if (studyType != null && studyType.equals("disease_mapping_study")) {
+			else if (studyType != null && studyType.equals(StudyType.DISEASE_MAPPING.type())) {
 				rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; use database select state study type: disease mapping"); 
+				this.studyType = StudyType.DISEASE_MAPPING;
 			}
 			else {
 				rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; no database select state study type, assume: disease_mapping;" +
@@ -325,16 +321,16 @@ public class RIFMapsParameters {
 		else {
 			rifLogger.info(getClass(), "rif40_studies.study_id: " + studyID + "; no database select state, assume study type: disease_mapping"); 
 		}
+			
+		RIFMapsParameter rifMapsParameter1 = new RIFMapsParameter(	
+			"relative_risk"		/* resultsColumn */,
+			"quantile"		/* Classifier function name */, 
+			"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+			9				/* numberOfBreaks */, 
+			true			/* invert */);
+		rifMapsParameters.put("viewermap", rifMapsParameter1);
 		
-		if (isDiseaseMappingStudy) {
-			RIFMapsParameter rifMapsParameter1 = new RIFMapsParameter(	
-				"relative_risk"		/* resultsColumn */,
-				"quantile"		/* Classifier function name */, 
-				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-				9				/* numberOfBreaks */, 
-				true			/* invert */);
-			rifMapsParameters.put("viewermap", rifMapsParameter1);
-					
+		if (this.studyType == StudyType.DISEASE_MAPPING) { // No Bayesian smoothing in risk analysis studies
 			RIFMapsParameter rifMapsParameter2 = new RIFMapsParameter(
 				"smoothed_smr"		/* resultsColumn */,
 				"quantile"		/* Classifier function name */, 
@@ -350,15 +346,6 @@ public class RIFMapsParameters {
 				atlasProbabilityBreaks		/* breaks */, 
 				false						/* invert */);		
 			rifMapsParameters.put("diseasemap2", rifMapsParameter3);
-		}
-		else { // Risk analysis
-			RIFMapsParameter rifMapsParameter1 = new RIFMapsParameter(	
-				"relative_risk"		/* resultsColumn */,
-				"quantile"		/* Classifier function name */, 
-				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-				9				/* numberOfBreaks */, 
-				true			/* invert */);
-			rifMapsParameters.put("viewermap", rifMapsParameter1);		
 		}
 	}
 
