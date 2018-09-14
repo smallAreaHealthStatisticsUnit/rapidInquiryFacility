@@ -59,7 +59,8 @@ Links to the original documents are in brackets. My comments are in bold.
   > * Partition and index
 - Information Governance tool.
 - “Eliminate `HealthOutcomeManager`” -- **I think this is out of date, as that class is actually used now**. ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
-- ICD 9 (various) -- **This will be needed at some point [probably before end 2018] **.
+- ICD 9 (various) -- **This will be needed at some point**.
+  > Probably before end 2018.
 - Improve logging ([todo]({{ site.baseurl }}/development/TODO)) -- **I also want to do this; todo says “PH done September 2017”, so it’s talking 
   about something else. I’d like to modernise the whole thing, switching to SLF4J  & Logback; and also vastly improve the internal handling**.
   - “Issues with log4j log rotation” ([todo]({{ site.baseurl }}/development/TODO)) -- **Should be fixed by the above, or can be addressed separately**.
@@ -85,8 +86,8 @@ Links to the original documents are in brackets. My comments are in bold.
         at java.lang.Thread.run(Unknown Source)
         at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
   ```
-  > The solution is to restart tomcat. Server reload needs to stop R. This requires a ```@WebListener
-  > [Context Listener (javax.servlet.ServletContextListener)]```.  
+  > The solution is to restart tomcat. Server reload needs to stop R. This requires a ```@WebListener [Context Listener (javax.servlet.ServletContextListener)]```.  
+  > There is a risk this will still not work as JRI itself may not detach the DLL and this will need to be done manually.
 - **Review all non-completed front-end items in ([todo]({{ site.baseurl }}/development/TODO)) with Peter**
   > Have update old TODO and moved most items to this file.
 - “Missing information not stored in the database: Retrieve information on a completed study. Used in the info button in disease mapping and data 
@@ -116,3 +117,19 @@ Links to the original documents are in brackets. My comments are in bold.
   >   promises chains needs to be improved;
   >	* Zoom to study extent sometimes does not work on drawing the map;
 - > Add local basemap cache to RIF for standard Openstreetmap basemap. Will need a webapp for the files and the UTRL changed to be a local version
+- > Possible refactor of the front end Javascript the submission mapping tools (rifd-dsub-maptable) to fit in with the Leaflet stuff used in disease 
+  > mapping and data viewer as there is a lot of duplication. It works fine as it is though, just a maintenance issue. 
+  > Especially: rifp-dsub-maptable.html, rifs-util-mapping.js [#63](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/63);
+- > Database:
+  > * Data loading scripts needs to be made make independent - i.e. run from a single script like the SQL server ones, with one file/object;
+  > * Patches need to be merged.
+- > TileMaker is currently working with some minor faults but needs to:
+  > 1. Run the generated scripts. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
+  >    file handlers in Node.js;
+  > 2. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present) [#79](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79);
+  > 3. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
+  >    than the TileMaker screen. Probably the best solution is to use Angular;
+  > 4. Support for database logons;
+  > 5. Needs to calculate geographic centroids using the database.
+- > Outstanding issues not mentioned above:
+  > * [#77 Error messages with new default basemaps functionality when there is no Internet](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/77);

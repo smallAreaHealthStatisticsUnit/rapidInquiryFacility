@@ -213,7 +213,7 @@ title: RIF To-do List
 	  overly complex directives as self modification will cause a re-run!
 	* Code was restructured to remove mal-synchronisation issues and to parallelise tile and data fetching
 
-  **BEWARE: THIS ISSUE COULD RETURN: ALWAYS TEXT CHANGES TO ANY MAP CODE FOR LEAKS**
+  **BEWARE: THIS ISSUE COULD RETURN: ALWAYS TEST CHANGES TO ANY MAP CODE FOR LEAKS**
   
 # Database
 
@@ -378,12 +378,12 @@ One medium and three low medium isses were highlighted for fixing.
 
 TileMaker is currently working with some minor faults but needs to:
 
-1. Support for geogrpahic centroids];
+1. Support for geogrpahic centroids [Done];
 2. Run the generated scripts. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
    file handlers in Node.js;
 3. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
-4. Support very large shapefiles (e.g. COA2011);
-5. Needs a manual!
+4. Support very large shapefiles (e.g. COA2011) [Done];
+5. Needs a manual [Done]!
 6. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
    than the TileMaker screen. Probably the best solution is to use Angular;
 7. Support for database logons;
