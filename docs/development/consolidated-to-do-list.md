@@ -73,7 +73,7 @@ Links to the original documents are in brackets. My comments are in bold.
   ```
   Cannot find JRI native library!
   Please make sure that the JRI native library is in a directory listed in java.library.path.
-
+  
   java.lang.UnsatisfiedLinkError: Native Library C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll already loaded in another classloader
         at java.lang.ClassLoader.loadLibrary0(Unknown Source)
         at java.lang.ClassLoader.loadLibrary(Unknown Source)
@@ -86,24 +86,34 @@ Links to the original documents are in brackets. My comments are in bold.
         at java.lang.Thread.run(Unknown Source)
         at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
   ```
-  The solution is to restart tomcat. Server reload needs to stop R. This requires a ```@WebListener
-  [Context Listener (javax.servlet.ServletContextListener)]```.  
+  > The solution is to restart tomcat. Server reload needs to stop R. This requires a ```@WebListener
+  > [Context Listener (javax.servlet.ServletContextListener)]```.  
 - **Review all non-completed front-end items in ([todo]({{ site.baseurl }}/development/TODO)) with Peter**
+  > Have update old TODO and moved most items to this file.
 - “Missing information not stored in the database: Retrieve information on a completed study. Used in the info button in disease mapping and data 
   viewer. The database cannot return all the required information. This requires changes to both the backend and middleware. [Planned PH]” -- 
-  **discuss with Peter** ([todo]({{ site.baseurl }}/development/TODO)). This is believed to be complete
+  **discuss with Peter** ([todo]({{ site.baseurl }}/development/TODO)). 
+  > This is believed to be complete
 - Setting various web headers ([todo]({{ site.baseurl }}/development/TODO))
-- Data Extract ZIP file. PH completed initial middleware support.
-  * Risk analysis support: add shapes to maps, export shapes to shapefiles (issue #61);
-  * Check manual R script using CSV files still work, and support for Unixen;
-  * Improve map layout; US maps are wrong;
-  * Add support for printing what the user selects in the mapping screens. Initial (default) setup and been done in the database. This will also
-	include map centre and bounds;
-  * Allow the use of more fields; handle fields with no data so they do not cause and NPE (pull #73 partially fixed this);
-  * Allow the user to change the resolution of the images;
-  * Additional outputs as required;
-- Map synchronisation issues (#57):  
-	* Choropleth map defaults disabled as being run before thee map data has complete loading. Synchronisation in the 
-	  promises chains needs to be improved;
-	* Zoom to study extent sometimes does not work on drawing the map;
-- Add local basemap cache to RIF for standard Openstreetmap basemap. Will need a webapp for the files and the UTRL changed to be a local version
+  > These are done; although Security testing may turn up the need for more.
+- Data Extract ZIP file. 
+  > PH completed initial middleware support.
+  > * Risk analysis support: add shapes to maps, export shapes to shapefiles [#61](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/61);
+  > * Check manual R script using CSV files still work, and support for Unixen;
+  > * Improve map layout; US maps are wrong;
+  > * Add support for printing what the user selects in the mapping screens. Initial (default) setup and been done in the database. This will also
+  >	  include map centre and bounds;
+  > * Allow the use of more fields; handle fields with no data so they do not cause and NPE (pull #73 partially fixed this);
+  > * Allow the user to change the resolution of the images;
+  > * Additional outputs as required;
+  > * Maps if feasible:
+  >   * Investigate vector grid styling, e.g. grid labels (I don't think it is possible)
+  >   * Get SVG to support layers: http://batik.2283329.n4.nabble.com/Combine-SVG-out-of-single-SVG-files-td3616984.html
+  > * Graphs if feasible:
+  >   * Add support for css <style> tags in jfreechart SVG generator. Also support for rgb to hex
+  >     conversion for end color when graphic bar renderer used.
+- > Map synchronisation issues (#57):  
+  >	* Choropleth map defaults disabled as being run before thee map data has complete loading. Synchronisation in the 
+  >   promises chains needs to be improved;
+  >	* Zoom to study extent sometimes does not work on drawing the map;
+- > Add local basemap cache to RIF for standard Openstreetmap basemap. Will need a webapp for the files and the UTRL changed to be a local version
