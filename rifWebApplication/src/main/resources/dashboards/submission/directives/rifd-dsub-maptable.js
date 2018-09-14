@@ -58,13 +58,19 @@ angular.module("RIF")
 							};
 						if (parameters && parameters.selectorBands) {
 							selectorBands=parameters.selectorBands
-						}		
-						$scope.centroid_type="UNKNOWN";		
+						}	
+						var disableMouseClicksAt = 5000;
+						if (parameters && parameters.disableMouseClicksAt) {
+							disableMouseClicksAt=parameters.disableMouseClicksAt
+						}							
+						$scope.centroid_type="UNKNOWN";
+						$scope.noMouseClocks=false;						
 						$scope.geoJSONLayers = [];
 								
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);		
 						var shapes = $scope.areamap.createPane('shapes');
-						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups
+						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups					
+						
 						// returns a list of all elements under the cursor
 						// https://gist.github.com/Rooster212/4549f9ab0acb2fc72fe3
 /*						function elementsFromPoint(x,y) {
@@ -97,7 +103,6 @@ angular.module("RIF")
 							// return our results
 							return elements;
 						} */
-
 						// Modified from: https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd
 						function shapesClickThrough(e, map, geojsonLayers) {
 							if (e._stopped) { 
@@ -200,12 +205,12 @@ angular.module("RIF")
 							} 							
 							removed.node.style.display = removed.display;
 						}
-						L.DomEvent.on(shapes, 'mouseover', function(e) {
-							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
-						});
-						L.DomEvent.on(shapes, 'mouseout', function(e) {
-							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
-						}); 
+//						L.DomEvent.on(shapes, 'mouseover', function(e) {
+//							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
+//						});
+//						L.DomEvent.on(shapes, 'mouseout', function(e) {
+//							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
+//						}); 
 										
 						SubmissionStateService.setAreaMap($scope.areamap);
 						$scope.bShowHideSelectionShapes=(SelectStateService.getState().showHideSelectionShapes || true);
@@ -720,11 +725,20 @@ angular.module("RIF")
 									$scope.centroid_type=pctPopWeighted + "% population weighted";
 								}
 								
+								if (res.data.smoothed_results.length > disableMouseClicksAt) { // 5000 by default
+									$scope.noMouseClocks=true;
+								}
+								else {	
+									$scope.noMouseClocks=false;
+								}
+								
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] " + thisGeography + "; " + $scope.input.selectAt +
 									"; polygons: " + res.data.smoothed_results.length +
 									"; dbCentroidCount: " + dbCentroidCount +
 									"; popWeightedCount: " + popWeightedCount +
 									"; pctPopWeighted: " + pctPopWeighted +
+									"; disableMouseClicksAt: " + disableMouseClicksAt +
+									"; noMouseClocks: " + $scope.noMouseClocks +
 									"; centroid_type: " + $scope.centroid_type);
 									
 								$scope.info.update();
@@ -736,6 +750,7 @@ angular.module("RIF")
 								$scope.centroid_type="Leaflet calculated geographic";
                             }).then(function () {
 								var latlngListDups=0;
+								$scope.areamap.spin(true);  // on
                                 $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
                                    attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
                                    interactive: true,
@@ -782,72 +797,74 @@ angular.module("RIF")
 												}
 												feature.properties.circleId = latlngListById[feature.properties.area_id].circleId;
 												
-                                                layer.on('mouseover', function (e) {
-//													alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer " + e.type + ": " + 
-//														feature.properties.name + "; " + e.target._leaflet_id);
-                                                    //if drawing then return
-                                                    if ($scope.input.bDrawing) {
-                                                        return;
-                                                    }
-                                                    this.setStyle({
-                                                        color: 'gray',
-                                                        weight: 1.5,
-                                                        fillOpacity: function () {
-                                                            //set tranparency from slider
-                                                            return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
-                                                        }()
-                                                    });
-                                                    $scope.thisPolygon = feature.properties.name;
-													// Centroids: feature.properties.latLng [app] and 
-													// feature.properties.geographic_centroid{} [tilemaker]
-													
-													if (feature.properties.circleId) {
-														$scope.highLightedCircleId=feature.properties.circleId;
-														var circle=centroidMarkers.getLayer(feature.properties.circleId);
-														circle.setStyle({
-															radius: 3,
-															weight: 2
+												if (!$scope.noMouseClocks) {
+													layer.on('mouseover', function (e) {
+	//													alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer " + e.type + ": " + 
+	//														feature.properties.name + "; " + e.target._leaflet_id);
+														//if drawing then return
+														if ($scope.input.bDrawing) {
+															return;
+														}
+														this.setStyle({
+															color: 'gray',
+															weight: 1.5,
+															fillOpacity: function () {
+																//set tranparency from slider
+																return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
+															}()
 														});
-													}
-                                                    $scope.$digest();
-                                                });
-                                                layer.on('mouseout', function (e) {
-                                                    $scope.geoJSON._geojsons.default.resetStyle(e.target);
-                                                    $scope.thisPolygon = "";
-													if ($scope.highLightedCircleId) {
-														var circle=centroidMarkers.getLayer(feature.properties.circleId);
-														circle.setStyle({
-															radius: 2,
-															weight: 1
-														});
-														$scope.highLightedCircleId=undefined;
-													}
-                                                    $scope.$digest();
-                                                });
-                                                layer.on('click', function (e) {
-                                                    //if drawing then return
-                                                    if ($scope.input.bDrawing) {
-                                                        return;
-                                                    }
-                                                    var thisPoly = e.target.feature.properties.area_id;
-                                                    var bFound = false;
-                                                    for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                                        if ($scope.selectedPolygon[i].id === thisPoly) {
-                                                            bFound = true;
-                                                            $scope.selectedPolygon.splice(i, 1);  // delete
-                                                            break;
-                                                        }
-                                                    }
-                                                    if (!bFound) {
-                                                        $scope.selectedPolygon.push({
-															id: feature.properties.area_id, 
-															gid: feature.properties.gid, label: 
-															feature.properties.name, 
-															band: $scope.currentBand});
-                                                    }
-                                                    $scope.$digest(); // Force $watch sync
-                                                });
-                                            }
+														$scope.thisPolygon = feature.properties.name;
+														// Centroids: feature.properties.latLng [app] and 
+														// feature.properties.geographic_centroid{} [tilemaker]
+														
+														if (feature.properties.circleId) {
+															$scope.highLightedCircleId=feature.properties.circleId;
+															var circle=centroidMarkers.getLayer(feature.properties.circleId);
+															circle.setStyle({
+																radius: 3,
+																weight: 2
+															});
+														}
+														$scope.$digest();
+													});
+													layer.on('mouseout', function (e) {
+														$scope.geoJSON._geojsons.default.resetStyle(e.target);
+														$scope.thisPolygon = "";
+														if ($scope.highLightedCircleId) {
+															var circle=centroidMarkers.getLayer(feature.properties.circleId);
+															circle.setStyle({
+																radius: 2,
+																weight: 1
+															});
+															$scope.highLightedCircleId=undefined;
+														}
+														$scope.$digest();
+													});
+													layer.on('click', function (e) {
+														//if drawing then return
+														if ($scope.input.bDrawing) {
+															return;
+														}
+														var thisPoly = e.target.feature.properties.area_id;
+														var bFound = false;
+														for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+															if ($scope.selectedPolygon[i].id === thisPoly) {
+																bFound = true;
+																$scope.selectedPolygon.splice(i, 1);  // delete
+																break;
+															}
+														}
+														if (!bFound) {
+															$scope.selectedPolygon.push({
+																id: feature.properties.area_id, 
+																gid: feature.properties.gid, label: 
+																feature.properties.name, 
+																band: $scope.currentBand});
+														}
+														$scope.$digest(); // Force $watch sync
+													});
+												}
+											}
                                         }
                                     } // End of layers definition
                                 });
@@ -1124,11 +1141,42 @@ angular.module("RIF")
 									$timeout(function() {
 
 										$scope.zoomToSelection(); // Zoom to selection	
-										$timeout(function() {								
+										$timeout(function() {	
+
+											$scope.areamap.spin(false);  // off	
+						
+											$scope.areamap.on('zoomstart', function(ev) {
+												$scope.areamap.spin(true);  // on
+											});
+											$scope.areamap.on('zoomend', function(ev) {
+												$scope.areamap.spin(false);  // off
+											});
+											$scope.areamap.on('movestart', function(ev) {
+												$scope.areamap.spin(true);  // on
+											});
+											$scope.areamap.on('moveend', function(ev) {
+												$scope.areamap.spin(false);  // off
+											});												
 											$scope.redrawMap();
 										}, 100);			
 									}, 100);			
 								});
+							}
+							else {
+								$scope.areamap.spin(false);  // off	
+			
+								$scope.areamap.on('zoomstart', function(ev) {
+									$scope.areamap.spin(true);  // on
+								});
+								$scope.areamap.on('zoomend', function(ev) {
+									$scope.areamap.spin(false);  // off
+								});
+								$scope.areamap.on('movestart', function(ev) {
+									$scope.areamap.spin(true);  // on
+								});
+								$scope.areamap.on('moveend', function(ev) {
+									$scope.areamap.spin(false);  // off
+								});									
 							}
 						}
 
@@ -1378,6 +1426,7 @@ angular.module("RIF")
 							if ($scope.info._map == undefined) { // Add back info control
 								$scope.info.addTo($scope.areamap);
 							}
+//							$scope.areamap.spin(false);  // off
 							$scope.zoomToSelection(); // Zoom to selection
 							$scope.safeApply(0, function() {
 								$scope.redrawMap();
@@ -1419,6 +1468,7 @@ angular.module("RIF")
 							
                         // selection event fired from service
                         $scope.$on('makeDrawSelection', function (event, data) {
+//							$scope.areamap.spin(true);  // on
                             $scope.makeDrawSelection(data);
                         });
                         $scope.makeDrawSelection = function (shape) {
@@ -1915,9 +1965,15 @@ angular.module("RIF")
 									this._div.innerHTML += '<b>Areas selected: ' + (bandCount[savedShape.band] || 0) + '/' +
 										latlngList.length +  '</b><br />';
 								}
-								else if ($scope.shapes.getLayers().length > 0) {
+								else if ($scope.shapes.getLayers().length > 0&& $scope.noMouseClocks) {
+									this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br></h4>';
+								}
+								else if ($scope.shapes.getLayers().length > 0 && !$scope.noMouseClocks) {
 									this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br>' +
 										'Hide selection shapes to mouse over area names</h4>';
+								}
+								else if ($scope.noMouseClocks) {
+									this._div.innerHTML = '<h4>Mouse over area names not available</h4>';
 								}
 								else {
 									this._div.innerHTML = '<h4>Mouse over area names</h4>';
