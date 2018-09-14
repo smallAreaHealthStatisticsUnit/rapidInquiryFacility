@@ -15,15 +15,20 @@ The original documents are referred to below as:
 
 ## The List
 
-Links to the original documents are in brackets. My comments are in bold. Peter Hambly comments are in <mark style=color:back;background-color:yellow">red</mark>
+Links to the original documents are in brackets. My comments are in bold. 
+<mark style=color:back;background-color:yellow">Peter Hambly comments are in Yellow</mark>
 
-- Optimise performance on very large datasets ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). <mark style=color:back;background-color:yellow">This work is envisaged to require:
-  * Use of partitioning for Health data (especially denomninators);
-  * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
+- Optimise performance on very large datasets ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). 
+  <mark style=color:back;background-color:yellow">This work is envisaged to require:
+  <ul>
+    <li>Use of partitioning for Health data (especially denomninators);</li>
+    <li>Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
     occurs so that the database only fetches the years of data actually required by the study, index are not disabled and the query plan remains 
-	structurally the same;
-  * RIF leaflet maps perform acceptably at high resolutions (issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably; 
-    also issue #66.</mark>
+	structurally the same;</li>
+    <li>RIF leaflet maps perform acceptably at high resolutions (issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably; 
+    also issue #66.</li>
+  </ul>
+  </mark>
 - Audit trail (kind of already there, in that SQL statements and similar are put into the log) 
   ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). These are also logged in the database.
 - “New technical features will include enhancement of flexibility by clearly defined XML interfaces, giving the RIF a batch mode for the first time 
