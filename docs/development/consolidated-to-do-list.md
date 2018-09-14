@@ -20,7 +20,7 @@ The original documents are referred to below as:
 Links to the original documents are in brackets. My comments are in bold.
 > Peter Hambly comments are in blockquotes
 
-- (#80) Optimise performance on very large datasets ([redev]({{ site.baseurl }}/development/The-RIF-re-development)).
+- ([#80](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/80)) Optimise performance on very large datasets ([redev]({{ site.baseurl }}/development/The-RIF-re-development)).
   > This work is envisaged to require:
   > * Use of partitioning for Health data (especially denomninators);
   > * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination
@@ -29,7 +29,7 @@ Links to the original documents are in brackets. My comments are in bold.
   > * RIF leaflet maps perform acceptably at high resolutions [issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/78);
   >   also issue [#66 GeoJSON mouse over support with shapefile shape](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66).
   >	  This is difficult and potentially time consuming.
-- (#81) Audit trail (kind of already there, in that SQL statements and similar are put into the log)
+- ([#81](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/81)) Audit trail (kind of already there, in that SQL statements and similar are put into the log)
   ([redev]({{ site.baseurl }}/development/The-RIF-re-development)).
   > All SQL is also logged in the database.
   > Add *t_rif40_warnings/rif40_warnings* table and view to contain warning messages on a study basis. Can be created
@@ -39,28 +39,28 @@ Links to the original documents are in brackets. My comments are in bold.
   > * Males/females not present when requested in numerator or denominator;
   > * ICD codes not present when requested in numerator;
   > * Maljoin detection
-- (#82) "New technical features will include enhancement of flexibility by clearly defined XML interfaces, giving the RIF a batch mode for the first time
+- ([#82](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/82)) "New technical features will include enhancement of flexibility by clearly defined XML interfaces, giving the RIF a batch mode for the first time
    and allowing for the export of the data into other tools. Statistical processing will be built in modular manner so it can be easily extended.
    Additionally, there are plans to integrate RIF risk analysis with the "
    [BREEZE AERMOD / ISC new generation air quality modelling system](http://www.breeze-software.com/aermod/)". It is also hoped to support Wind roses." ([redev]({{ site.baseurl }}/development/The-RIF-re-development))
   > The save/load study functionality is sufficient for a batch mode, although long term it would be good for regression testing;
   > BREEZE AERMOD / ISC and Wind roses are basically new input forms for risk analysis band selection. To this list can be added multi layer shapefiles
     and the ability to re-project shapefiles from National grid to WGS84 automatically;
-- (#83) “Existing RIF statistical functionality such as Satscan (for cluster dectection), INLA and LinBUGS/WinBUGS (for Bayesian Smoothing) will
+- ([#83](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/83)) “Existing RIF statistical functionality such as Satscan (for cluster dectection), INLA and LinBUGS/WinBUGS (for Bayesian Smoothing) will
   continue to be supported” -- **INLA is certainly used; not sure about the rest**. ([redev]({{ site.baseurl }}/development/The-RIF-re-development))
   > Satscan and LinBUGS/WinBUGS be supported via the extract ZIP file - i.e. create a script to run them and produce worked examples. Satscan is available
     as an R package [rstatscan](https://www.satscan.org/rsatscan/rsatscan.html) but this calls statscan and therefore is limited to Windows only Tomcats.
 	The R package [SpatialEpi](https://cran.r-project.org/web/packages/SpatialEpi/SpatialEpi.pdf) contains a function called kulldorff, which performs
 	the purely spatial scan statistic with either the Poisson or Bernoulli probability model. The package also contains many other useful methods
 	that are unrelated to scan statistics and not part of the SaTScan software.
-- (#84) Data Loader project ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
+- ([#84](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/84)) Data Loader project ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
   > I would recommend a new simple loading tool as part of the main RIF web application that just loads data in a predefined format direct into the
   > database. It would be able to:
   > * Convert age and sex to *AGE_SEX_GROUP*;
   > * Add additional required geography fields as long as the highest resolution is provided;
   > * Verify the defined primary key;
   > * Partition and index;
-- (#85) Information Governance tool (requires *rif_manager*):
+- ([#85](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/85)) Information Governance tool (requires *rif_manager*):
   > * Add new users;
   > * Manage table permissions (grant SELECT on *table/view* to *role*
   > * Add new roles, manage what users have what role, including *rif_manager*;
@@ -74,13 +74,13 @@ Links to the original documents are in brackets. My comments are in bold.
   > Probably before end 2018. This is issue [#64](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/64);
 - (#86) Improve logging ([todo]({{ site.baseurl }}/development/TODO)) -- **I also want to do this; todo says “PH done September 2017”, so it’s talking
   about something else. I’d like to modernise the whole thing, switching to SLF4J  & Logback; and also vastly improve the internal handling**.
-  - (#86) “Issues with log4j log rotation” ([todo]({{ site.baseurl }}/development/TODO)) -- **Should be fixed by the above, or can be addressed separately**.
+  - ([#86](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/86)) “Issues with log4j log rotation” ([todo]({{ site.baseurl }}/development/TODO)) -- **Should be fixed by the above, or can be addressed separately**.
   > Logging of SQL Exceptions needs to include:
   > * SQL Statement;
   >	* Bind values;
   >	* Row number;
   > Log console output in batches to Front End logger;
-- (#87) Rengine not being shutdown correctly on reload of service ([todo]({{ site.baseurl }}/development/TODO)) -- **investigate**.
+- ([#87](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/87)) Rengine not being shutdown correctly on reload of service ([todo]({{ site.baseurl }}/development/TODO)) -- **investigate**.
   > Run a study, RIF service web application will fail to load R DLL as it is still attached to an old thread.
   ```
   Cannot find JRI native library!
@@ -107,7 +107,7 @@ Links to the original documents are in brackets. My comments are in bold.
   > This is believed to be complete
 - Setting various web headers ([todo]({{ site.baseurl }}/development/TODO))
   > These are done; although Security testing may turn up the need for more.
-- (#88) Data Extract ZIP file.
+- ([#88](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/88)) Data Extract ZIP file.
   > PH completed initial middleware support.
   > * Risk analysis support: add shapes to maps, export shapes to shapefiles [#61](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/61);
   > * Check manual R script using CSV files still work, and support for Unixen;
@@ -127,17 +127,17 @@ Links to the original documents are in brackets. My comments are in bold.
   >	* Choropleth map defaults disabled as being run before thee map data has complete loading. Synchronisation in the
   >   promises chains needs to be improved;
   >	* Zoom to study extent sometimes does not work on drawing the map;
-- (#89) > Add local basemap cache to RIF for standard Openstreetmap basemap. Will need a webapp for the files and the UTRL changed to be a local version
+- ([#89](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/89)) > Add local basemap cache to RIF for standard Openstreetmap basemap. Will need a webapp for the files and the UTRL changed to be a local version
 - > Possible refactor of the front end Javascript the submission mapping tools (rifd-dsub-maptable) to fit in with the Leaflet stuff used in disease
   > mapping and data viewer as there is a lot of duplication. It works fine as it is though, just a maintenance issue.
   > Especially: rifp-dsub-maptable.html, rifs-util-mapping.js [#63](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/63);
-- (#90) > Database:
+- ([#90](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/90)) > Database:
   > * Data loading scripts needs to be made make independent - i.e. run from a single script like the SQL server ones, with one file/object;
   > * Patches need to be merged.
-- (#91) > TileMaker is currently working with some minor faults but needs to:
+- ([#91](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/91)) > TileMaker is currently working with some minor faults but needs to:
   > 1. Run the generated scripts. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
   >    file handlers in Node.js;
-  > 2. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present). This affects SQL Server only. 
+  > 2. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present). This affects SQL Server only.
   >    [#79](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79);
   > 3. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
   >    than the TileMaker screen. Probably the best solution is to use Angular;
