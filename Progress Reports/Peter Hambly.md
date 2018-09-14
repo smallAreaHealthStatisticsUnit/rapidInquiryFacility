@@ -2902,7 +2902,10 @@ SELECT a.*, b.coa2011
 * Create and apply pull #72 for Error handling ICD10 chapters and ranges as investigation conditions #58;
 * Investigate and fix risk analysis export NPE crash: caused by smoothed_smr, posterior_probability fields with no data;
 * RIF demo with Prof.  Elliott; meeting decided to plan for RIF testing using Using the Heathrow and/or Incinerators studies to test the RIF 
-  [issue #74](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/74)
+  [issue #74](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/74);
 * Merge pull #73: Investigate and fix risk analysis export NPE crash;
-* Update TODOs;  
+* Update TODOs;
+* Investigate UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present). This affects SQL Server only. 
+  Issue [#79](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79). Effects database, hopefully not the various 
+  Java/Javascript drivers.   
 
