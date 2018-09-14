@@ -20,18 +20,26 @@ Links to the original documents are in brackets. My comments are in bold.
 
 - Optimise performance on very large datasets ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). 
   >  This work is envisaged to require:
-  * Use of partitioning for Health data (especially denomninators);
-  * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
-    occurs so that the database only fetches the years of data actually required by the study, index are not disabled and the query plan remains 
-	structurally the same;
-  * RIF leaflet maps perform acceptably at high resolutions (issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably; 
-    also issue #66.
+     * Use of partitioning for Health data (especially denomninators);
+     * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
+       occurs so that the database only fetches the years of data actually required by the study, index are not disabled and the query plan remains 
+   	   structurally the same;
+     * RIF leaflet maps perform acceptably at high resolutions [issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/78); 
+       also issue [#66](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66).
 - Audit trail (kind of already there, in that SQL statements and similar are put into the log) 
-  ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). These are also logged in the database.
-- “New technical features will include enhancement of flexibility by clearly defined XML interfaces, giving the RIF a batch mode for the first time 
+  ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). 
+  > All SQL is also logged in the database.
+  > Add *t_rif40_warnings/rif40_warnings* table and view to contain warning messages on a study basis. Can be created
+  > by the extract or R the scripts. Add traps for:
+  > * Out of range or null covariates by year;
+  > * Missing years of numerator or denominator data;
+  > * Males/females not present when requested in numerator or denominator;
+  > * ICD codes not present when requested in numerator;
+  > * Maljoin detection
+- "New technical features will include enhancement of flexibility by clearly defined XML interfaces, giving the RIF a batch mode for the first time 
    and allowing for the export of the data into other tools. Statistical processing will be built in modular manner so it can be easily extended. 
-   Additionally, there are plans to integrate RIF risk analysis with the BREEZE AERMOD / ISC new generation air quality modelling system 
-   (http://www.breeze-software.com/aermod/). It is also hoped to support Wind roses.” ([redev]({{ site.baseurl }}/development/The-RIF-re-development))
+   Additionally, there are plans to integrate RIF risk analysis with the "
+   [BREEZE AERMOD / ISC new generation air quality modelling system](http://www.breeze-software.com/aermod/)". It is also hoped to support Wind roses." ([redev]({{ site.baseurl }}/development/The-RIF-re-development))
   > The save/load study functionality is sufficient for a batch mode, although long term it would be good for regression testing;
   > BREEZE AERMOD / ISC and Wind roses are basically new input forms for risk analysis band selection. To this list can be added multi layer shapefiles 
     and the ability to re-project shapefiles from National grid to WGS84 automatically;
@@ -43,15 +51,22 @@ Links to the original documents are in brackets. My comments are in bold.
 	the purely spatial scan statistic with either the Poisson or Bernoulli probability model. The package also contains many other useful methods 
 	that are unrelated to scan statistics and not part of the SaTScan software.
 - Data Loader project ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
+  > I would recommend a new simple loading tool as part of the main RIF web application that just loads data in a predefined format direct into the 
+  > database. It would be able to:
+  > * Convert age and sex to *AGE_SEX_GROUP*;
+  > * Add additional required geography fields as long as the highest resolution is provided;
+  > * Verify the defined primary key
+  > * Partition and index
+- Information Governance tool.
 - “Eliminate `HealthOutcomeManager`” -- **I think this is out of date, as that class is actually used now**. ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
 - ICD 9 (various) -- **This will be needed at some point [probably before end 2018] **.
 - Improve logging ([todo]({{ site.baseurl }}/development/TODO)) -- **I also want to do this; todo says “PH done September 2017”, so it’s talking 
   about something else. I’d like to modernise the whole thing, switching to SLF4J  & Logback; and also vastly improve the internal handling**.
   - “Issues with log4j log rotation” ([todo]({{ site.baseurl }}/development/TODO)) -- **Should be fixed by the above, or can be addressed separately**.
   > Logging of SQL Exceptions needs to include:
-    * SQL Statement;
-	* Bind values;
-	* Row number;
+  > * SQL Statement;
+  >	* Bind values;
+  >	* Row number;
   > Log console output in batches to Front End logger;
 - Rengine not being shutdown correctly on reload of service ([todo]({{ site.baseurl }}/development/TODO)) -- **investigate**. 
   > Run a study, RIF service web application will fail to load R DLL as it is still attached to an old thread.
