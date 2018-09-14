@@ -73,7 +73,6 @@ Links to the original documents are in brackets. My comments are in bold.
   ```
   Cannot find JRI native library!
   Please make sure that the JRI native library is in a directory listed in java.library.path.
-  
   java.lang.UnsatisfiedLinkError: Native Library C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll already loaded in another classloader
         at java.lang.ClassLoader.loadLibrary0(Unknown Source)
         at java.lang.ClassLoader.loadLibrary(Unknown Source)
