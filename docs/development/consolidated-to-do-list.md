@@ -56,9 +56,17 @@ Links to the original documents are in brackets. My comments are in bold.
   > database. It would be able to:
   > * Convert age and sex to *AGE_SEX_GROUP*;
   > * Add additional required geography fields as long as the highest resolution is provided;
-  > * Verify the defined primary key
-  > * Partition and index
-- Information Governance tool.
+  > * Verify the defined primary key;
+  > * Partition and index;
+- > Information Governance tool (requires *rif_manager*):
+  > * Add new users;
+  > * Manage table permissions (grant SELECT on *table/view* to *role*
+  > * Add new roles, manage what users have what role, including *rif_manager*;
+  > * Display user view of privileges. An Oracle example is: [Pete Finnigan find_all_privs.sql](http://www.petefinnigan.com/find_all_privs.sql);
+  > * Ability to submit but not run a study; running requires approval;
+  > * Per user/role low cell counts restrictions;
+  > * Per user/role resolution restrictions;
+  > * Create restricted views of tables;
 - “Eliminate `HealthOutcomeManager`” -- **I think this is out of date, as that class is actually used now**. ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
 - ICD 9 (various) -- **This will be needed at some point**.
   > Probably before end 2018. This is issue [#64](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/64);
