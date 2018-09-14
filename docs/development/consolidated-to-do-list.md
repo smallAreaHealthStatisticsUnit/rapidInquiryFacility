@@ -16,39 +16,45 @@ The original documents are referred to below as:
 ## The List
 
 Links to the original documents are in brackets. My comments are in bold. 
-<mark style="color:back;background-color:yellow">Peter Hambly comments are in Yellow</mark>
+> Peter Hambly comments are in blockquotes
 
 - Optimise performance on very large datasets ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). 
-  <span style="color:back;background-color:yellow">This work is envisaged to require:
-  <ul>
-    <li>Use of partitioning for Health data (especially denomninators);</li>
-    <li>Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
+  >  This work is envisaged to require:
+  * Use of partitioning for Health data (especially denomninators);
+  * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
     occurs so that the database only fetches the years of data actually required by the study, index are not disabled and the query plan remains 
-	structurally the same;</li>
-    <li>RIF leaflet maps perform acceptably at high resolutions (issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably; 
-    also issue #66.</li>
-  </ul>
-  </span>
+	structurally the same;
+  * RIF leaflet maps perform acceptably at high resolutions (issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably; 
+    also issue #66.
 - Audit trail (kind of already there, in that SQL statements and similar are put into the log) 
   ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). These are also logged in the database.
 - “New technical features will include enhancement of flexibility by clearly defined XML interfaces, giving the RIF a batch mode for the first time 
    and allowing for the export of the data into other tools. Statistical processing will be built in modular manner so it can be easily extended. 
    Additionally, there are plans to integrate RIF risk analysis with the BREEZE AERMOD / ISC new generation air quality modelling system 
    (http://www.breeze-software.com/aermod/). It is also hoped to support Wind roses.” ([redev]({{ site.baseurl }}/development/The-RIF-re-development))
-- “Existing RIF statistical functionality such as Satscan (for cluster dectection), INLA and LinBUGS/WinBUGS (for Bayesian Smoothing) will continue to be supported” -- **INLA is certainly used; not sure about the rest**. ([redev]({{ site.baseurl }}/development/The-RIF-re-development))
+  > The save/load study functionality is sufficient for a batch mode, although long term it would be good for regression testing;
+  > BREEZE AERMOD / ISC and Wind roses are basically new input forms for risk analysis band selection. To this list can be added multi layer shapefiles 
+    and the ability to re-project shapefiles from National grid to WGS84 automatically;
+- “Existing RIF statistical functionality such as Satscan (for cluster dectection), INLA and LinBUGS/WinBUGS (for Bayesian Smoothing) will 
+  continue to be supported” -- **INLA is certainly used; not sure about the rest**. ([redev]({{ site.baseurl }}/development/The-RIF-re-development))
+  > Satscan and LinBUGS/WinBUGS be supported via the extract ZIP file - i.e. create a script to run them and produce worked examples. Satscan is available
+    as an R package [rstatscan](https://www.satscan.org/rsatscan/rsatscan.html) but this calls statscan and therefore is limited to Windows only Tomcats.
+	The R package [SpatialEpi](https://cran.r-project.org/web/packages/SpatialEpi/SpatialEpi.pdf) contains a function called kulldorff, which performs 
+	the purely spatial scan statistic with either the Poisson or Bernoulli probability model. The package also contains many other useful methods 
+	that are unrelated to scan statistics and not part of the SaTScan software.
 - Data Loader project ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
 - “Eliminate `HealthOutcomeManager`” -- **I think this is out of date, as that class is actually used now**. ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
 - ICD 9 (various) -- **This will be needed at some point [probably before end 2018] **.
 - Improve logging ([todo]({{ site.baseurl }}/development/TODO)) -- **I also want to do this; todo says “PH done September 2017”, so it’s talking 
   about something else. I’d like to modernise the whole thing, switching to SLF4J  & Logback; and also vastly improve the internal handling**.
   - “Issues with log4j log rotation” ([todo]({{ site.baseurl }}/development/TODO)) -- **Should be fixed by the above, or can be addressed separately**.
-  - <span style="color:back;background-color:yellow">Logging of SQL Exceptions needs to include:
+  > Logging of SQL Exceptions needs to include:
     * SQL Statement;
 	* Bind values;
 	* Row number;
-  - Log console output in batches to Front End logger;</span>
-- Rengine not being shutdown correctly on reload of service ([todo]({{ site.baseurl }}/development/TODO)) -- **investigate**. Run a study, RIF service 
-  web application will fail to load R DLL as it is still attached to an old thread.
+  > Log console output in batches to Front End logger;
+- Rengine not being shutdown correctly on reload of service ([todo]({{ site.baseurl }}/development/TODO)) -- **investigate**. 
+  > Run a study, RIF service web application will fail to load R DLL as it is still attached to an old thread.
   ```
   Cannot find JRI native library!
   Please make sure that the JRI native library is in a directory listed in java.library.path.
