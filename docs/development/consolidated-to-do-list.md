@@ -137,7 +137,8 @@ Links to the original documents are in brackets. My comments are in bold.
 - (#91) > TileMaker is currently working with some minor faults but needs to:
   > 1. Run the generated scripts. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
   >    file handlers in Node.js;
-  > 2. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present) [#79](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79);
+  > 2. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present). This affects SQL Server only. 
+  >    [#79](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79);
   > 3. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
   >    than the TileMaker screen. Probably the best solution is to use Angular;
   > 4. Support for database logons;
