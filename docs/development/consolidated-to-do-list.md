@@ -19,7 +19,7 @@ Links to the original documents are in brackets. My comments are in bold.
 <mark style="color:back;background-color:yellow">Peter Hambly comments are in Yellow</mark>
 
 - Optimise performance on very large datasets ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). 
-  <mark style="color:back;background-color:yellow">This work is envisaged to require:
+  <span style="color:back;background-color:yellow">This work is envisaged to require:
   <ul>
     <li>Use of partitioning for Health data (especially denomninators);</li>
     <li>Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
@@ -28,7 +28,7 @@ Links to the original documents are in brackets. My comments are in bold.
     <li>RIF leaflet maps perform acceptably at high resolutions (issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably; 
     also issue #66.</li>
   </ul>
-  </mark>
+  </span>
 - Audit trail (kind of already there, in that SQL statements and similar are put into the log) 
   ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). These are also logged in the database.
 - “New technical features will include enhancement of flexibility by clearly defined XML interfaces, giving the RIF a batch mode for the first time 
@@ -42,11 +42,11 @@ Links to the original documents are in brackets. My comments are in bold.
 - Improve logging ([todo]({{ site.baseurl }}/development/TODO)) -- **I also want to do this; todo says “PH done September 2017”, so it’s talking 
   about something else. I’d like to modernise the whole thing, switching to SLF4J  & Logback; and also vastly improve the internal handling**.
   - “Issues with log4j log rotation” ([todo]({{ site.baseurl }}/development/TODO)) -- **Should be fixed by the above, or can be addressed separately**.
-  - Logging of SQL Exceptions needs to include:
+  - <span style="color:back;background-color:yellow">Logging of SQL Exceptions needs to include:
     * SQL Statement;
 	* Bind values;
 	* Row number;
-  - Log console output in batches to Front End logger;
+  - Log console output in batches to Front End logger;</span>
 - Rengine not being shutdown correctly on reload of service ([todo]({{ site.baseurl }}/development/TODO)) -- **investigate**. Run a study, RIF service 
   web application will fail to load R DLL as it is still attached to an old thread.
   ```
