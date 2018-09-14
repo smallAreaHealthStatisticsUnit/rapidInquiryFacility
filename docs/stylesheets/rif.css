@@ -24,7 +24,7 @@ a.link-no-style {
 body {
 	margin: 0 10%;
 }
- 
+/* 
 blockquote {
     display: block;
     margin-block-start: 1em;
@@ -34,7 +34,7 @@ blockquote {
     color: #6a737d;
     border-left: 0.25em solid #dfe2e5;
 } 
-/*
+*/
 blockquote {
   background: #f9f9f9;
   border-left: 10px solid #ccc;
@@ -54,4 +54,4 @@ blockquote:before {
 }
 blockquote p {
   display: inline;
-} */
+} 
