@@ -19,13 +19,14 @@ Links to the original documents are in brackets. My comments are in bold.
 > Peter Hambly comments are in blockquotes
 
 - Optimise performance on very large datasets ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). 
-  >  This work is envisaged to require:
-     * Use of partitioning for Health data (especially denomninators);
-     * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
-       occurs so that the database only fetches the years of data actually required by the study, index are not disabled and the query plan remains 
-   	   structurally the same;
-     * RIF leaflet maps perform acceptably at high resolutions [issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/78); 
-       also issue [#66](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66).
+  > This work is envisaged to require:
+  > * Use of partitioning for Health data (especially denomninators);
+  > * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that partition elimination 
+  >   occurs so that the database only fetches the years of data actually required by the study, index are not disabled and the query plan remains 
+  >   structurally the same;
+  > * RIF leaflet maps perform acceptably at high resolutions [issue #78 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/78); 
+  >   also issue [#66 GeoJSON mouse over support with shapefile shape](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66). 
+  >	  This is difficult and potentially time consuming.
 - Audit trail (kind of already there, in that SQL statements and similar are put into the log) 
   ([redev]({{ site.baseurl }}/development/The-RIF-re-development)). 
   > All SQL is also logged in the database.
@@ -60,7 +61,7 @@ Links to the original documents are in brackets. My comments are in bold.
 - Information Governance tool.
 - “Eliminate `HealthOutcomeManager`” -- **I think this is out of date, as that class is actually used now**. ([kevroad]({{ site.baseurl }}/development/Kevs-Suggested-Road-Map-with-the-Middleware))
 - ICD 9 (various) -- **This will be needed at some point**.
-  > Probably before end 2018.
+  > Probably before end 2018. This is issue [#64](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/64);
 - Improve logging ([todo]({{ site.baseurl }}/development/TODO)) -- **I also want to do this; todo says “PH done September 2017”, so it’s talking 
   about something else. I’d like to modernise the whole thing, switching to SLF4J  & Logback; and also vastly improve the internal handling**.
   - “Issues with log4j log rotation” ([todo]({{ site.baseurl }}/development/TODO)) -- **Should be fixed by the above, or can be addressed separately**.
@@ -112,7 +113,7 @@ Links to the original documents are in brackets. My comments are in bold.
   > * Graphs if feasible:
   >   * Add support for css <style> tags in jfreechart SVG generator. Also support for rgb to hex
   >     conversion for end color when graphic bar renderer used.
-- > Map synchronisation issues (#57):  
+- > Map synchronisation issues [#57](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/57);  
   >	* Choropleth map defaults disabled as being run before thee map data has complete loading. Synchronisation in the 
   >   promises chains needs to be improved;
   >	* Zoom to study extent sometimes does not work on drawing the map;
@@ -133,3 +134,10 @@ Links to the original documents are in brackets. My comments are in bold.
   > 5. Needs to calculate geographic centroids using the database.
 - > Outstanding issues not mentioned above:
   > * [#77 Error messages with new default basemaps functionality when there is no Internet](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/77);
+  > * [#76 Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/76);
+  > * [#75 Internet Explorer 11 only works with a browser console only](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/75);
+  > * [#67 Print state support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/67);
+  > * [#65 Sort (ex disease) map info boxes - merge into 1 box, add support for homogeneity, exposure covariates in risk analysis](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/65);
+  > * [#62 studyType mismatch for map: viewermap; study ID: ...](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/62);
+  > * [#56 Error loading study from database via middleware generated file](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/56);
+  
