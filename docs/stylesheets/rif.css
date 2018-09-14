@@ -24,21 +24,25 @@ a.link-no-style {
 body {
 	margin: 0 10%;
 }
-
-/* blockquote {
+ 
+blockquote {
     display: block;
     margin-block-start: 1em;
     margin-block-end: 1em;
     margin-inline-start: 40px;
     margin-inline-end: 40px;
-} */
-
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+} 
+/*
 blockquote {
   background: #f9f9f9;
   border-left: 10px solid #ccc;
   margin: 1.5em 10px;
   padding: 0.5em 10px;
   quotes: "\201C""\201D""\2018""\2019";
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
 }
 blockquote:before {
   color: #ccc;
@@ -50,4 +54,4 @@ blockquote:before {
 }
 blockquote p {
   display: inline;
-}
+} */
