@@ -489,6 +489,9 @@ angular.module("RIF")
 										if (properties['$$hashKey']) {
 											properties['$$hashKey']=undefined;
 										}
+										if (!scope.bProgress) {
+											scope.bProgress = true;
+										}
                                         $rootScope.$broadcast('makeDrawSelection', {
                                             data: circle,
 											properties: properties,
@@ -501,9 +504,10 @@ angular.module("RIF")
                                     }
                                 }
 								
-								alertScope.showSuccess("Added " +i + " band(s) from " + 
+								alertScope.showSuccess("Adding " +i + " band(s) from " + 
 									points + " points using " +
 									getSelectionMethodAsString());
+								scope.bProgress = false;
                                 $rootScope.$broadcast('completedDrawSelection', { maxBand: i});
                             } else if (scope.isPolygon) {
                                 if (scope.selectionMethod === 2) { // make selection by band attribute in file
@@ -633,6 +637,10 @@ angular.module("RIF")
 									if (shape.band > maxBand) {
 										maxBand = shape.band;
 									}
+									
+									if (!scope.bProgress) {
+										scope.bProgress = true;
+									}
                                     //make the selection
                                     scope.makeDrawSelection(shape);
                                 } // End of shapefile polygon processing for loop
@@ -656,7 +664,7 @@ angular.module("RIF")
 									"; bandsUsed: " + JSON.stringify(bandsUsed, null , 1) +
 									"; bandValues: " + JSON.stringify(bandValues, null , 1));
 								if (maxBand > 0) {
-									alertScope.showSuccess("Added " + 
+									alertScope.showSuccess("Adding " + 
 										Object.keys(bandsUsed).length + "/" + maxBand + " band(s) from " + 
 										Object.keys(poly._layers).length + " polygons using " +
 										getSelectionMethodAsString(attributeName));
@@ -675,6 +683,7 @@ angular.module("RIF")
 //									return false;
 //								} 
 								
+								scope.bProgress = false;
                                 $rootScope.$broadcast('completedDrawSelection', {maxBand: maxBand});
                             } // End of isPolygon()
 

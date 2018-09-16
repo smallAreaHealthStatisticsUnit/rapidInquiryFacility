@@ -66,7 +66,8 @@ angular.module("RIF")
 						$scope.centroid_type="UNKNOWN";
 						$scope.noMouseClocks=false;						
 						$scope.geoJSONLayers = [];
-								
+						$scope.selectionData = [];
+						
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);		
 						var shapes = $scope.areamap.createPane('shapes');
 						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups					
@@ -621,6 +622,7 @@ angular.module("RIF")
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
 		
 								var latlngListDups=0;
+								var latlngListErrors=0;
 								$scope.centroid_type="Not known";
                                 for (var i = 0; i < res.data.smoothed_results.length; i++) {
 													
@@ -674,40 +676,54 @@ angular.module("RIF")
 									}
 									else if (res.data.smoothed_results[i] && res.data.smoothed_results[i].x && res.data.smoothed_results[i].y) {
 										dbCentroidCount++;
-										latlngList.push({
-											latLng: L.latLng([p.y, p.x]), 
-											popWeighted: false,
-											name: p.name, 
-											id: p.id,
-											band: -1
-										});
-										circle = new L.CircleMarker([p.y, p.x], {
-											radius: 2,
-											fillColor: "blue",
-											color: "#000",
-											weight: 1,
-											opacity: 1,
-											fillOpacity: 0.8
-										});
-										
-										centroidMarkers.addLayer(circle);
+										var dbLatLng;
+										try {
+											dbLatLng=L.latLng([p.y, p.x]);
 
-										if (latlngListById[p.id]) {
-											latlngListDups++;
-										}
-										else {
-											latlngListById[p.id] = {
-												latLng: L.latLng([p.y, p.x]), 
-												name: p.name,
+											latlngList.push({
+												latLng: dbLatLng, 
 												popWeighted: false,
-												circleId: centroidMarkers.getLayerId(circle)
+												name: p.name, 
+												id: p.id,
+												band: -1
+											});
+											circle = new L.CircleMarker([p.y, p.x], {
+												radius: 2,
+												fillColor: "blue",
+												color: "#000",
+												weight: 1,
+												opacity: 1,
+												fillOpacity: 0.8
+											});
+											
+											centroidMarkers.addLayer(circle);
+
+											if (latlngListById[p.id]) {
+												latlngListDups++;
+											}
+											else {
+												latlngListById[p.id] = {
+													latLng: dbLatLng, 
+													name: p.name,
+													popWeighted: false,
+													circleId: centroidMarkers.getLayerId(circle)
+												}
+											}											
+										}
+										catch (e) {
+											latlngListErrors++;
+											if (latlngListErrors < 10) {
+												alertScope.showWarning("Unable to create centroid: " + JSON.stringify(p), e);
 											}
 										}
 									}									
-                                }
+                                } // End of for loop
 								
 								if (latlngListDups > 0) {
 									alertScope.showWarning("Duplicate IDs in centroid list");
+								}
+								if (latlngListErrors > 0) {
+									alertScope.showError(latlngListErrors + " errors in centroid list");
 								}
 								
 								var pctPopWeighted=Math.round(10000*popWeightedCount/dbCentroidCount)/100;
@@ -1211,8 +1227,14 @@ angular.module("RIF")
                                 $scope.input.studyResolution = $scope.input.selectAt;
                             }
                             //get table
-                            getMyMap();
-							
+							try {
+								getMyMap();
+							}
+							catch (e) {
+								alertScope.consoleError("[rifd-dsub-maptable.js] Unable to fetch map: ", e);
+                                alertScope.showError("Unable to fetch map: " + e.message);
+                            }
+								
                         }
 
                         function handleGeographyError() {
@@ -1422,18 +1444,29 @@ angular.module("RIF")
                         // completed selection event fired from service
 						$scope.$on('completedDrawSelection', function (event, data) {
 							
-							alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection");
-							if ($scope.info._map == undefined) { // Add back info control
-								$scope.info.addTo($scope.areamap);
-							}
-//							$scope.areamap.spin(false);  // off
-							$scope.zoomToSelection(); // Zoom to selection
-							$scope.safeApply(0, function() {
-								$scope.redrawMap();
-							});					
+							$scope.areamap.spin(true);  // on	
+							async.eachSeries($scope.selectionData, function iteratee(item, callback) {
+								async.setImmediate(function() {
+									makeDrawSelection(item, callback);
+								});
+							}, function done(err) {
+								if (err) {
+									alertScope.showError("[rifd-dsub-maptable.js] completedDrawSelection error: " + err);
+								}
+								
+								$scope.areamap.spin(false);  // off	
+								$scope.selectionData = [];
+								alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection");
+								if ($scope.info._map == undefined) { // Add back info control
+									$scope.info.addTo($scope.areamap);
+								}
+								$scope.zoomToSelection(); // Zoom to selection
+								$scope.safeApply(0, function() {
+									$scope.redrawMap();
+								});	
+							});
                         });
-						
-							
+									
 						$scope.createAreaNameList = function () { // Not from latlngList - not in scope when restored
 							var newAreaNameList = {};
 							
@@ -1468,10 +1501,9 @@ angular.module("RIF")
 							
                         // selection event fired from service
                         $scope.$on('makeDrawSelection', function (event, data) {
-//							$scope.areamap.spin(true);  // on
-                            $scope.makeDrawSelection(data);
+                            $scope.selectionData.push(data);
                         });
-                        $scope.makeDrawSelection = function (shape) {
+                        makeDrawSelection = function (shape, makeDrawSelectionCallback) {
 							
 							// Create savedShape for SelectStateService
 							var savedShape = {
@@ -1518,6 +1550,13 @@ angular.module("RIF")
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] Remove freehand polygon; " + layer._leaflet_id);
 											$scope.areamap.removeLayer(layer);
 										});
+										
+									if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+										makeDrawSelectionCallback("Freehand selection not permitted for risk analysis");
+									}	
+									else {
+										throw new Error("No makeDrawSelectionCallback() function");
+									}	
 									return;
 								}
 								else {
@@ -1733,7 +1772,7 @@ angular.module("RIF")
 									SelectStateService.getState().studySelection.studyShapes.length);
 							}
 							
-							function latlngListCallback () { 
+							function latlngListEnd () { 
 								$scope.areaNameList = {};
 								var areaCheck = {};
 								var duplicateAreaCheckIds = [];
@@ -1811,81 +1850,106 @@ angular.module("RIF")
 									if ($scope.currentBand < Math.max.apply(null, $scope.possibleBands)) {
 										$scope.currentBand++;
 									}
-								}												
+								}
+
+								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+									makeDrawSelectionCallback();
+								}
+								else {
+									throw new Error("No makeDrawSelectionCallback() function");
+								}								
 							}
 
 							var itemsProcessed = 0;
-                            latlngList.forEach(
-								function asyncFunction(latLng) { // Check centroids of areas lie within the shape
-									//is point in defined polygon?
-									var test;
-									if (shape.circle) {
-										test = GISService.getPointincircle(latLng.latLng, shape);
-									} else {
-										test = GISService.getPointinpolygon(latLng.latLng, shape);
-									}
-									if (test) { // Intersects
-										var thisLatLng = latLng.latLng;
-										var thisPoly = latLng.name;
-										var thisPolyID = latLng.id;
-										var bFound = false;
-										
+							async.eachOfLimit(latlngList, 10 /* parallelisation */, function latlngListIteratee(latLng, indexKey, latlngListCallback) {
+								if (indexKey % 100 == 0) {
+									async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
+										latlngListFunction(latLng, latlngListCallback);
+									});
+								}
+								else {
+									latlngListFunction(latLng, latlngListCallback);
+								}
+							}, function done(err) {
+								if (err) {
+									alertScope.showError("[rifd-dsub-maptable.js] latlngList error: " + err);
+								}
+								latlngListEnd();
+							});			
+							
+							function latlngListFunction(latLng, latlngListCallbackFunction) { // Check centroids of areas lie within the shape
+								//is point in defined polygon?
+								var test;
+								if (shape.circle) {
+									test = GISService.getPointincircle(latLng.latLng, shape);
+								} else {
+									test = GISService.getPointinpolygon(latLng.latLng, shape);
+								}
+								if (test) { // Intersects
+									var thisLatLng = latLng.latLng;
+									var thisPoly = latLng.name;
+									var thisPolyID = latLng.id;
+									var bFound = false;
+									
 //										alertScope.consoleDebug("[rifd-dsub-maptable.js] latlngList.forEach(" +
 //											itemsProcessed + ")");
-										// Selects the correct polygons
-										for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-											if ($scope.selectedPolygon[i].id === thisPolyID) { // Found
-												if ($scope.selectedPolygon[i].band == undefined ||
-													$scope.selectedPolygon[i].band === -1) { 
-															// If not set in concentric shapes
-													if (latlngList[itemsProcessed].band == undefined ||
-														latlngList[itemsProcessed].band === -1) { 
-															// If not set on map
-														if (shape.band === -1) {  // Set band
-															$scope.selectedPolygon[i].band=$scope.currentBand;
-														}
-														else {
-															$scope.selectedPolygon[i].band=shape.band;
-														}		
+									// Selects the correct polygons
+									for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+										if ($scope.selectedPolygon[i].id === thisPolyID) { // Found
+											if ($scope.selectedPolygon[i].band == undefined ||
+												$scope.selectedPolygon[i].band === -1) { 
+														// If not set in concentric shapes
+												if (latlngList[itemsProcessed].band == undefined ||
+													latlngList[itemsProcessed].band === -1) { 
+														// If not set on map
+													if (shape.band === -1) {  // Set band
+														$scope.selectedPolygon[i].band=$scope.currentBand;
 													}
+													else {
+														$scope.selectedPolygon[i].band=shape.band;
+													}		
 												}
-												bFound = true;
-												break;
 											}
+											bFound = true;
+											break;
 										}
-																				
+									}
+																			
 //										alertScope.consoleDebug("[rifd-dsub-maptable.js] latlngList.forEach(" +
 //											itemsProcessed + ") bFound: " + bFound + 
 //											"; latLng: " + JSON.stringify(latLng));
-											
-										if (!bFound) {
-											if (shape.band === -1) {
-												$scope.selectedPolygon.push({
-													id: thisPolyID, 
-													gid: thisPolyID, 
-													label: thisPoly, 
-													band: $scope.currentBand, 
-													centroid: thisLatLng
-												});
-												latlngList[itemsProcessed].band=$scope.currentBand;
-											} else {
-												$scope.selectedPolygon.push({
-													id: thisPolyID, 
-													gid: thisPolyID, 
-													label: thisPoly, 
-													band: shape.band, 
-													centroid: thisLatLng
-												});
-												latlngList[itemsProcessed].band=shape.band;
-											}
+										
+									if (!bFound) {
+										if (shape.band === -1) {
+											$scope.selectedPolygon.push({
+												id: thisPolyID, 
+												gid: thisPolyID, 
+												label: thisPoly, 
+												band: $scope.currentBand, 
+												centroid: thisLatLng
+											});
+											latlngList[itemsProcessed].band=$scope.currentBand;
+										} else {
+											$scope.selectedPolygon.push({
+												id: thisPolyID, 
+												gid: thisPolyID, 
+												label: thisPoly, 
+												band: shape.band, 
+												centroid: thisLatLng
+											});
+											latlngList[itemsProcessed].band=shape.band;
 										}
 									}
-									itemsProcessed++;
-									if (itemsProcessed === latlngList.length) {
-										latlngListCallback();
-									}
 								}
-							);
+								itemsProcessed++;
+								if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
+									latlngListCallbackFunction();
+								}
+								else {
+									throw new Error("No latlngListCallback() function");
+								}
+							}
+
                         }; // End of makeDrawSelection()
 						
                         //remove drawn items event fired from service
