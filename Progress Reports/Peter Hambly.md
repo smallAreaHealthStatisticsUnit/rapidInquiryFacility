@@ -2909,3 +2909,10 @@ SELECT a.*, b.coa2011
   Issue [#79](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79). Effects database, hopefully not the various 
   Java/Javascript drivers.   
 
+#### 17th to 21st September
+
+* Risk analysis selection at the highest levels: MSOA, LSOA. 
+  * Improve asynchronous code to better manage browser load;
+  * Added spinners and shape processing feedback;
+  * Fix shapefile table CSS problems;
+  * Confirmed "Could not match polygons from database with selected polygons list" error effects main branch as well;
