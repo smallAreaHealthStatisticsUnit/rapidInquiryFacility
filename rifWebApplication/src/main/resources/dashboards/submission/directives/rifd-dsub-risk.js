@@ -53,8 +53,9 @@ angular.module("RIF")
             };
         })
         .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'SelectStateService', 'AlertService',
+				'$window', '$interval',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
-            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, SelectStateService, AlertService) {
+            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, SelectStateService, AlertService, $window, $interval) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
                     link: function (scope, element, attr) {
@@ -74,24 +75,28 @@ angular.module("RIF")
 							selectorBands=parameters.selectorBands
 						}	
 						var initialShapefileGridOptions = {
-							enableSorting: true,
-							enableRowSelection: false,
 							enableFiltering: true,
+							enableRowSelection: true,
 							enableColumnResizing: true,
 							enableRowHeaderSelection: false,
-							enableHorizontalScrollbar: uiGridConstants.scrollbars.ALWAYS,
-							enableVerticalScrollbar: uiGridConstants.scrollbars.ALWAYS,
+							enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+							enableVerticalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+							selectionRowHeaderWidth: 35,
+							multiSelect: true,			
 							minRowsToShow: 5,
-							maxVisibleColumnCount: 4,
+							maxVisibleColumnCount: 8,
 							rowHeight: 20,
-							multiSelect: false,
-							onRegisterApi: function(gridApi) { scope.gridApi = gridApi; },
 							columnDefs: [],
 							data: []
 						};
 						
 						var shapefileGridOptions = angular.copy(initialShapefileGridOptions);
-							
+						shapefileGridOptions.onRegisterApi = shapefileGridLoaded;
+						
+						function shapefileGridLoaded(gridApi) { 
+								scope.gridApi = gridApi; 									
+						};	
+						
 						// Also defined in rifs-util-leafletdraw.js
                         var factory = L.icon({
                             iconUrl: 'images/factory.png',
@@ -263,9 +268,8 @@ angular.module("RIF")
 									
                                     reader.onloadend = function () {
 										SelectStateService.getState().studySelection.fileList.push(scope.shapeFile);
-										AlertService.consoleDebug("[rifd-dsub-risk.js] Read shapeFile " + file.name + " [" + 
-											SelectStateService.getState().studySelection.fileList.length + "]: " + 
-											JSON.stringify(scope.shapeFile, null, 1));
+										AlertService.consoleDebug("[rifd-dsub-risk.js] Read shapeFile " + file.name + "; " + 
+											SelectStateService.getState().studySelection.fileList.length + " files");
 									};
 									
                                     reader.readAsArrayBuffer(file);
@@ -299,7 +303,8 @@ angular.module("RIF")
                                 //switch off progress bar
                                 scope.bProgress = false;
 								shapefileGridOptions = angular.copy(initialShapefileGridOptions);
-								
+								shapefileGridOptions.onRegisterApi = shapefileGridLoaded;
+						
                                 if (!scope.isPolygon & !scope.isPoint) {
                                     alertScope.showError("This is not a valid point or polygon zipped shapefile");
                                 }
@@ -353,12 +358,33 @@ angular.module("RIF")
 								}
 								
 								if (shapefileGridOptions.data.length > 0) {
-									alertScope.consoleDebug("[rifd-dsub-risk.js] scope.shapefileGridOptions: " +
-										JSON.stringify(shapefileGridOptions, null, 1));
+//									alertScope.consoleDebug("[rifd-dsub-risk.js] scope.shapefileGridOptions: " +
+//										JSON.stringify(shapefileGridOptions, null, 1));
 									scope.shapefileGridOptions = shapefileGridOptions;
 									scope.hasGrid = true;
 									if (scope.gridApi) {
-										scope.gridApi.core.refresh();
+							
+										$interval(function () {
+											if (shapefileGrid[0]) {
+												scope.gridApi.core.handleWindowResize(); // It got bigger once the shapefile was loaded						
+												scope.gridApi.core.refresh();	
+											}											
+											}, 2000 /* mS */, 1).then(function () {
+												var shapefileGrid = angular.element( document.querySelector( '#shapefileGrid' ) );
+												if (shapefileGrid[0]) {
+													var shapefileGridHeight = shapefileGrid[0].offsetheight;
+													var windowHeight =$window.innerHeight; 
+													if (shapefileGridHeight == undefined && windowHeight) {
+														shapefileGrid[0].offsetheight=Math.round(windowHeight/2);
+														shapefileGridHeight = shapefileGrid[0].offsetheight;
+													}
+													AlertService.consoleDebug("[rifd-dsub-risk.js]: readShpFile done height #shapefileGrid: " + shapefileGridHeight +
+														"; window: " + $window.innerHeight);
+												}	
+												else {
+													AlertService.consoleDebug("[rifd-dsub-risk.js]: readShpFile no #shapefileGrid element");
+												}	
+										});
 									}
 								}
                             });
