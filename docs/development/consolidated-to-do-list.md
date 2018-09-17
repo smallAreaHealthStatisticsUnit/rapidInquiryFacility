@@ -3,7 +3,7 @@ layout: default
 title: Consolidated To-do List
 ---
 
-**Updated 2018-09-14** git pullAll the relevant entries below have now been turned into GitHub Issues. The numbers of the associated issues are given at the start of each entry. This document is therefore effectively obsolete. We'll keep it around for reference for now, though.
+**Updated 2018-09-14** All the relevant entries below have now been turned into GitHub Issues. The numbers of the associated issues are given at the start of each entry. This document is therefore effectively obsolete. We'll keep it around for reference for now, though.
 
 **Created 2018-09-03** by Martin McCallion, from various documents relating to Kev’s departure a year or more ago, and existing `TODO.md` documents. I intend to turn everything  here into issues in the GitHub project, as that will be a better way of managing the project into the future.
 
