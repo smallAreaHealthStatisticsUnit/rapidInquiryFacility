@@ -79,6 +79,7 @@ var Spinner = /** @class */ (function () {
     };
     return Spinner;
 }());
+// This causes a syntax error. It is only a grumble
 export { Spinner };
 /**
  * Sets multiple style properties at once.
