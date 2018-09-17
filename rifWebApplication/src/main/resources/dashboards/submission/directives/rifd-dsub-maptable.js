@@ -309,6 +309,7 @@ angular.module("RIF")
                         $scope.selectedPolygon = $scope.input.selectedPolygon;                       
                         $scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 						
+						$scope.shapeLoadUpdate = "";
                         //band colour look-up for selected districts
                         $scope.possibleBands = $scope.input.bands;
                         $scope.currentBand = 1; //from dropdown
@@ -623,6 +624,7 @@ angular.module("RIF")
 		
 								var latlngListDups=0;
 								var latlngListErrors=0;
+								var latlngListWarnings=0;
 								$scope.centroid_type="Not known";
                                 for (var i = 0; i < res.data.smoothed_results.length; i++) {
 													
@@ -634,52 +636,88 @@ angular.module("RIF")
 									if (res.data.smoothed_results[i].pop_y == 'null') {
 										res.data.smoothed_results[i].pop_y=undefined;
 									}
+									if (res.data.smoothed_results[i].x & isNaN(res.data.smoothed_results[i].x)) { // Not a number
+										res.data.smoothed_results[i].x=undefined;
+										latlngListWarnings++;
+									}
+									if (res.data.smoothed_results[i].y && isNaN(res.data.smoothed_results[i].y)) {
+										res.data.smoothed_results[i].y=undefined;
+										latlngListWarnings++;
+									}
+									if (res.data.smoothed_results[i].pop_x && isNaN(res.data.smoothed_results[i].pop_x)) { // Not a number
+										res.data.smoothed_results[i].pop_x=undefined;
+										latlngListWarnings++;
+									}
+									if (res.data.smoothed_results[i].pop_y && isNaN(res.data.smoothed_results[i].pop_y)) {
+										res.data.smoothed_results[i].pop_y=undefined;
+										latlngListWarnings++;
+									}
 									
                                     var p = res.data.smoothed_results[i];	
 
 									if (res.data.smoothed_results[i] && res.data.smoothed_results[i].pop_x && res.data.smoothed_results[i].pop_y) {
 										popWeightedCount++;
-										
-										latlngList.push({
-											latLng: L.latLng([p.pop_y, p.pop_x]), 
-											popWeighted: true,
-											name: p.name, 
-											id: p.id,
-											band: -1
-										});
-										circle = new L.CircleMarker([p.pop_y, p.pop_x], {
-											radius: 2,
-											fillColor: "green",
-											color: "#000",
-											weight: 1,
-											opacity: 1,
-											fillOpacity: 0.8
-										});
-										
-										centroidMarkers.addLayer(circle);
-
-										if (latlngListById[p.id]) {
-											latlngListDups++;
+										var pwLatLng=undefined;
+										try {
+											pwLatLng=L.latLng([p.y, p.x]);
 										}
-										else {
-											latlngListById[p.id] = {
-												latLng: L.latLng([p.pop_y, p.pop_x]), 
-												name: p.name,
-												popWeighted: true,
-												circleId: centroidMarkers.getLayerId(circle)
+										catch (e) {
+											latlngListErrors++;
+											if (latlngListErrors < 10) {
+												alertScope.showWarning("Unable to create population weighted centroid: " + JSON.stringify(p), e);
 											}
 										}
 										
-										if (res.data.smoothed_results[i] && res.data.smoothed_results[i].x && res.data.smoothed_results[i].y) {
-											dbCentroidCount++;
+										if (pwLatLng) {
+											latlngList.push({
+												latLng: pwLatLng, 
+												popWeighted: true,
+												name: p.name, 
+												id: p.id,
+												band: -1
+											});
+											circle = new L.CircleMarker([p.pop_y, p.pop_x], {
+												radius: 2,
+												fillColor: "green",
+												color: "#000",
+												weight: 1,
+												opacity: 1,
+												fillOpacity: 0.8
+											});
+											
+											centroidMarkers.addLayer(circle);
+
+											if (latlngListById[p.id]) {
+												latlngListDups++;
+											}
+											else {
+												latlngListById[p.id] = {
+													latLng: pwLatLng, 
+													name: p.name,
+													popWeighted: true,
+													circleId: centroidMarkers.getLayerId(circle)
+												}
+											}
+											
+											if (res.data.smoothed_results[i] && res.data.smoothed_results[i].x && res.data.smoothed_results[i].y) {
+												dbCentroidCount++;
+											}
 										}
 									}
 									else if (res.data.smoothed_results[i] && res.data.smoothed_results[i].x && res.data.smoothed_results[i].y) {
 										dbCentroidCount++;
-										var dbLatLng;
+										var dbLatLng=undefined;
 										try {
 											dbLatLng=L.latLng([p.y, p.x]);
+										}
+										catch (e) {
+											latlngListErrors++;
+											if (latlngListErrors < 10) {
+												alertScope.showWarning("Unable to create database centroid: " + JSON.stringify(p), e);
+											}
+										}
 
+										if (dbLatLng) {
 											latlngList.push({
 												latLng: dbLatLng, 
 												popWeighted: false,
@@ -710,22 +748,15 @@ angular.module("RIF")
 												}
 											}											
 										}
-										catch (e) {
-											latlngListErrors++;
-											if (latlngListErrors < 10) {
-												alertScope.showWarning("Unable to create centroid: " + JSON.stringify(p), e);
-											}
-										}
-									}									
+									}										
                                 } // End of for loop
 								
 								if (latlngListDups > 0) {
-									alertScope.showWarning("Duplicate IDs in centroid list");
+									alertScope.showWarning(latlngListDups + " duplicate IDs in centroid list");
 								}
 								if (latlngListErrors > 0) {
 									alertScope.showError(latlngListErrors + " errors in centroid list");
 								}
-								
 								var pctPopWeighted=Math.round(10000*popWeightedCount/dbCentroidCount)/100;
 									
 								if (res.data.smoothed_results.length == popWeightedCount) {
@@ -739,6 +770,12 @@ angular.module("RIF")
 								}
 								else {
 									$scope.centroid_type=pctPopWeighted + "% population weighted";
+								}
+								
+								if (latlngListWarnings > 0) {
+									alertScope.showWarning(latlngListWarnings + 
+										" coordinates in centroid list were invalid; calculated instead from GeoJSON shape");
+									$scope.centroid_type=$scope.centroid_type + "; " + latlngListWarnings + " invalid centroids";
 								}
 								
 								if (res.data.smoothed_results.length > disableMouseClicksAt) { // 5000 by default
@@ -777,7 +814,8 @@ angular.module("RIF")
                                             onEachFeature: function (feature, layer) {
 												$scope.geoJSONLayers.push(layer);
                                                 //get as centroid marker layer. 
-                                                if (!bWeightedCentres) {
+                                                if (!bWeightedCentres || 										// Not using weighted centres 
+													latlngListById[feature.properties.area_id] == undefined) {	// No weighted centres for this area
                                                     var p = layer.getBounds().getCenter();
                                                     latlngList.push({
 														latLng: L.latLng([p.lat, p.lng]), 
@@ -911,45 +949,47 @@ angular.module("RIF")
                                             $scope.areamap.fitBounds(maxbounds);
                                         }
                                     });
-                                });
+                                }).then(function (res) {
 
                                 //Get overall layer properties
-                                user.getTileMakerTilesAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-                                    if (angular.isUndefined(res.data.objects)) {
-                                        alertScope.showError("Could not get district polygons from database");
-                                        return;
-                                    }                                  
-                                    //populate the table
-									var foundCount=0;
-                                    for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
-                                        var thisPoly = res.data.objects.collection.geometries[i];
-                                        var bFound = false;
-                                        for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                            if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
-                                                res.data.objects.collection.geometries[i].properties.band = $scope.selectedPolygon[j].band;
-                                                bFound = true;
-												foundCount++;
-                                                break;
-                                            }
-                                        }
-                                        if (!bFound) {
-                                            res.data.objects.collection.geometries[i].properties.band = 0;
-                                        }
-                                    }
-                                    $scope.gridOptions.data = ModalAreaService.fillTable(res.data);
-                                    $scope.totalPolygonCount = res.data.objects.collection.geometries.length;
-									
-									if (foundCount != $scope.selectedPolygon.length) {
-                                        alertScope.showError("Could not match polygons from database with selected polygons list");
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
-											"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
-											"; $scope.selectedPolygon.length: " + $scope.selectedPolygon.length);
-									}
-                                });
-                            }).then(function () {
-								// Add back selected shapes
-								addSelectedShapes();	
-							});
+									user.getTileMakerTilesAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+										if (angular.isUndefined(res.data.objects)) {
+											alertScope.showError("Could not get district polygons from database");
+											return;
+										}                                  
+										//populate the table
+										var foundCount=0;
+										for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
+											var thisPoly = res.data.objects.collection.geometries[i];
+											var bFound = false;
+											for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+												if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
+													res.data.objects.collection.geometries[i].properties.band = $scope.selectedPolygon[j].band;
+													bFound = true;
+													foundCount++;
+//													break;
+												}
+											}
+											if (!bFound) {
+												res.data.objects.collection.geometries[i].properties.band = 0;
+											}
+										}
+										$scope.gridOptions.data = ModalAreaService.fillTable(res.data);
+										$scope.totalPolygonCount = res.data.objects.collection.geometries.length;
+										
+										if (foundCount != $scope.selectedPolygon.length) {
+											alertScope.showError("Could not match polygons from database with selected polygons list");
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
+												"; res.data.objects.collection.geometries.length: " + res.data.objects.collection.geometries.length + 
+												"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
+												"; $scope.selectedPolygon.length: " + $scope.selectedPolygon.length);
+										}
+									});
+								}).then(function () {
+									// Add back selected shapes
+									addSelectedShapes();	
+								});
+                            });
                         };
 
                         /*
@@ -1160,19 +1200,7 @@ angular.module("RIF")
 										$timeout(function() {	
 
 											$scope.areamap.spin(false);  // off	
-						
-											$scope.areamap.on('zoomstart', function(ev) {
-												$scope.areamap.spin(true);  // on
-											});
-											$scope.areamap.on('zoomend', function(ev) {
-												$scope.areamap.spin(false);  // off
-											});
-											$scope.areamap.on('movestart', function(ev) {
-												$scope.areamap.spin(true);  // on
-											});
-											$scope.areamap.on('moveend', function(ev) {
-												$scope.areamap.spin(false);  // off
-											});												
+											enableMapSpinners();											
 											$scope.redrawMap();
 										}, 100);			
 									}, 100);			
@@ -1180,22 +1208,25 @@ angular.module("RIF")
 							}
 							else {
 								$scope.areamap.spin(false);  // off	
-			
-								$scope.areamap.on('zoomstart', function(ev) {
-									$scope.areamap.spin(true);  // on
-								});
-								$scope.areamap.on('zoomend', function(ev) {
-									$scope.areamap.spin(false);  // off
-								});
-								$scope.areamap.on('movestart', function(ev) {
-									$scope.areamap.spin(true);  // on
-								});
-								$scope.areamap.on('moveend', function(ev) {
-									$scope.areamap.spin(false);  // off
-								});									
+								enableMapSpinners();
 							}
 						}
 
+						function enableMapSpinners() {
+							$scope.areamap.on('zoomstart', function(ev) {
+								$scope.areamap.spin(true);  // on
+							});
+							$scope.areamap.on('zoomend', function(ev) {
+								$scope.areamap.spin(false);  // off
+							});
+							$scope.areamap.on('movestart', function(ev) {
+								$scope.areamap.spin(true);  // on
+							});
+							$scope.areamap.on('moveend', function(ev) {
+								$scope.areamap.spin(false);  // off
+							});								
+						}
+						
                         function handleGeoLevelSelect(res) {
                             $scope.geoLevels.length = 0;
                             for (var i = 0; i < res.data[0].names.length; i++) {
@@ -1445,7 +1476,12 @@ angular.module("RIF")
 						$scope.$on('completedDrawSelection', function (event, data) {
 							
 							$scope.areamap.spin(true);  // on	
-							async.eachSeries($scope.selectionData, function iteratee(item, callback) {
+							
+							$scope.shapeLoadUpdate = "0 / " + $scope.selectionData.length + " shapes, 0%";
+							async.eachOfSeries($scope.selectionData, function iteratee(item, indexKey, callback) {
+								
+								$scope.shapeLoadUpdate = (indexKey) + " / " + $scope.selectionData.length + " shapes, " + 
+									(Math.round(((indexKey)/$scope.selectionData.length)*100)) + "%";
 								async.setImmediate(function() {
 									makeDrawSelection(item, callback);
 								});
@@ -1454,6 +1490,7 @@ angular.module("RIF")
 									alertScope.showError("[rifd-dsub-maptable.js] completedDrawSelection error: " + err);
 								}
 								
+							$scope.shapeLoadUpdate = $scope.selectionData.length + " shapes loaded";
 								$scope.areamap.spin(false);  // off	
 								$scope.selectionData = [];
 								alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection");
@@ -1862,11 +1899,16 @@ angular.module("RIF")
 
 							var itemsProcessed = 0;
 							async.eachOfLimit(latlngList, 10 /* parallelisation */, function latlngListIteratee(latLng, indexKey, latlngListCallback) {
-								if (indexKey % 100 == 0) {
+								if (indexKey % 50 == 0) {
 									async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
 										latlngListFunction(latLng, latlngListCallback);
 									});
 								}
+								else if (indexKey % 500 == 0) {
+									setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
+										latlngListFunction(latLng, latlngListCallback);
+									}, 100);
+								}	
 								else {
 									latlngListFunction(latLng, latlngListCallback);
 								}
@@ -1903,6 +1945,10 @@ angular.module("RIF")
 													latlngList[itemsProcessed].band === -1) { 
 														// If not set on map
 													if (shape.band === -1) {  // Set band
+														$scope.selectedPolygon[i].band=$scope.currentBand;
+													}
+													else if ($scope.selectedPolygon[i].band > 0 &&
+													    $scope.selectedPolygon[i].band < shape.band) {  // Do not set band
 														$scope.selectedPolygon[i].band=$scope.currentBand;
 													}
 													else {
