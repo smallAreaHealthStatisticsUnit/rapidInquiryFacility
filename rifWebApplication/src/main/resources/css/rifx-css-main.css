@@ -326,6 +326,14 @@ select {
     right: 0.5%;
 }
 
+.shapeCounter {
+    position: absolute;
+    bottom: 0.5%;
+    text-transform: uppercase;
+    font-size: 15px;
+    left: 30%;
+}
+
 .counter {
     font-weight: bold;
     color: #FF7D40
