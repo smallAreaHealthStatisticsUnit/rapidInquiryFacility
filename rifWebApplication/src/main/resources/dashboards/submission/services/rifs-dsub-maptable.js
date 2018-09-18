@@ -77,11 +77,11 @@ angular.module("RIF")
                         //Populate the polygon attribute table
                         fillTable: function (data) {
                             var rowCollection = [];
-                            for (var i = 0; i < data.objects.collection.geometries.length; i++) {
+                            for (var i = 0; i < data.attributes.length; i++) {
                                 var obj = {
-                                    area_id: data.objects.collection.geometries[i].properties.area_id,
-                                    label: data.objects.collection.geometries[i].properties.name,
-                                    band: data.objects.collection.geometries[i].properties.band
+                                    area_id: data.attributes[i].area_id,
+                                    label: data.attributes[i].name,
+                                    band: undefined
                                 };
                                 rowCollection.push(obj);
                             }

@@ -952,14 +952,14 @@ angular.module("RIF")
                                 }).then(function (res) {
 
                                 //Get overall layer properties
-									user.getTileMakerTilesAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-										if (angular.isUndefined(res.data.objects)) {
-											alertScope.showError("Could not get district polygons from database");
+									user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+										if (angular.isUndefined(res.data.attributes)) {
+											alertScope.showError("Could not get tile attributes from database");
 											return;
 										}      
 										else {								
-											$scope.totalPolygonCount = res.data.objects.collection.geometries.length;
-											checkSelectedPolygonList(res.data.objects.collection);
+											$scope.totalPolygonCount = res.data.attributes.length;
+											checkSelectedPolygonList(res.data);
 											
 											//populate the table
 											$scope.gridOptions.data = ModalAreaService.fillTable(res.data);											
@@ -990,7 +990,7 @@ angular.module("RIF")
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
 						
-						function checkSelectedPolygonList(collection) {
+						function checkSelectedPolygonList(data) {
 							var foundCount=0;
 							var dupCount=0;
 							var dupBandCount=0;
@@ -1022,15 +1022,15 @@ angular.module("RIF")
 										
 							var notFoundPolys = [];
 							var geojsonPolys = [];
-							var collectionLength = collection.geometries.length;
+							var collectionLength = data.attributes.length;
 							               
 							for (var i = 0; i < collectionLength; i++) {
-								var thisPoly = collection.geometries[i];
-								geojsonPolys.push(thisPoly.properties.area_id)
+								var thisPoly = data.attributes[i];
+								geojsonPolys.push(thisPoly.area_id)
 								var bFound = false;
 								for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-									if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
-										collection.geometries[i].properties.band = $scope.selectedPolygon[j].band; // Set the band
+									if ($scope.selectedPolygon[j].id === thisPoly.area_id) {
+										data.attributes[i].band = $scope.selectedPolygon[j].band; // Set the band
 										$scope.selectedPolygon[j].found=true;
 										bFound = true;
 										foundCount++;
@@ -1038,7 +1038,7 @@ angular.module("RIF")
 									}
 								}
 								if (!bFound) {
-									collection.geometries[i].properties.band = 0;
+									data.attributes[i].band = 0;
 								}
 							}
 							
@@ -1048,8 +1048,7 @@ angular.module("RIF")
 								}
 							}
 							notFoundPolys.sort(); // Alphabetically!
-							
-							
+											
 							var hasErrors=false;
 							if (dupCount > 0) {
 								alertScope.showError(dupCount + 
@@ -1072,7 +1071,7 @@ angular.module("RIF")
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
 									"; dupCount: " + dupCount +
 									"; dupBandCount: " + dupBandCount +
-									"; collection.geometries.length: " + collectionLength + 
+									"; data.attributes: " + collectionLength + 
 									"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
 									"; $scope.selectedPolygon.length: " + $scope.selectedPolygon.length + 
 									"; $scope.selectedPolygonCount: " + $scope.selectedPolygonCount /* + 

@@ -975,6 +975,44 @@ public class WebService {
 			
 			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
 		}
+
+	protected Response getTileMakerAttributes(
+		final HttpServletRequest servletRequest,
+		final String userID,
+		final String geographyName,
+		final String geoLevelSelectName) {
+		
+		String result;
+		
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+			Geography geography = Geography.newInstance(geographyName, "");
+			GeoLevelSelect geoLevelSelect = GeoLevelSelect.newInstance(geoLevelSelectName);
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			result
+				= studyResultRetrievalService.getTileMakerAttributes(
+					user,
+					geography,
+					geoLevelSelect);
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                ".getTileMakerAttributes error", exception);
+			result
+				= serialiseException(
+					servletRequest,
+					exception);
+		}
+		
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);
+	}
 	
 	protected Response getTileMakerTiles(
 		final HttpServletRequest servletRequest,
