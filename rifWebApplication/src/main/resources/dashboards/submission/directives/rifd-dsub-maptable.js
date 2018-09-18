@@ -41,10 +41,10 @@
 angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
-			'SelectStateService', 'ParametersService', 'StudyAreaStateService', '$q',
+			'SelectStateService', 'ParametersService', 'StudyAreaStateService',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService,
-					SelectStateService, ParametersService, StudyAreaStateService, $q) {
+					SelectStateService, ParametersService, StudyAreaStateService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -65,7 +65,7 @@ angular.module("RIF")
 						}							
 						$scope.centroid_type="UNKNOWN";
 						$scope.noMouseClocks=false;						
-//						$scope.geoJSONLayers = [];
+						$scope.geoJSONLayers = [];
 						$scope.selectionData = [];
 						
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);		
@@ -315,10 +315,7 @@ angular.module("RIF")
                         $scope.currentBand = 1; //from dropdown
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = $scope.input.transparency;
-						
-						var eachFeatureArray = [];
-                        var bWeightedCentres = true;
-						
+
                         /*
                          * TOOL STRIP 
                          * These repeat stuff in the leafletTools directive - possible refactor
@@ -528,23 +525,15 @@ angular.module("RIF")
                         //Show-hide centroids
                         $scope.showCentroids = function () {
 					
-							$scope.areamap.spin(true);  // on
-							
                             if ($scope.areamap.hasLayer(centroidMarkers)) {
+                                $scope.areamap.removeLayer(centroidMarkers);
 								$scope.bShowHideCentroids = false;
 								SelectStateService.getState().showHideCentroids = false;
-                                $scope.areamap.removeLayer(centroidMarkers);
                             } else {
 								$scope.bShowHideCentroids = true;
 								SelectStateService.getState().showHideCentroids = true;
                                 $scope.areamap.addLayer(centroidMarkers);
                             }
-							
-							$timeout(function() {
-								$scope.areamap.whenReady(function () {
-									$scope.areamap.spin(false);  // off
-								});
-							}, 500);
                         }; 
 						
                         // Show-hide shapes and associated info
@@ -612,67 +601,7 @@ angular.module("RIF")
                             }
 //							SelectStateService.verifyStudySelection(); 	// Don't - it is not setup
 						};
-						
-						eachFeaureFunction = function (feature, layer, eachFeatureCallback) {
-							try {
-//								$scope.geoJSONLayers.push(layer);
-								//get as centroid marker layer. 
-								if (!bWeightedCentres || 										// Not using weighted centres 
-									latlngListById[feature.properties.area_id] == undefined) {	// No weighted centres for this area
-									var p = layer.getBounds().getCenter();
-									latlngList.push({
-										latLng: L.latLng([p.lat, p.lng]), 
-										name: feature.properties.name, 
-										id: feature.properties.area_id,
-										band: -1
-									});
-									feature.properties.latLng = L.latLng([p.lat, p.lng]);
-									var circle = new L.CircleMarker([p.lat, p.lng], {
-										radius: 2,
-										fillColor: "red",
-										color: "#000",
-										weight: 1,
-										opacity: 1,
-										fillOpacity: 0.8
-									});
-									
-									centroidMarkers.addLayer(circle);
-									
-									if (latlngListById[feature.properties.area_id]) {
-										latlngListDups++;
-									}
-									else {
-										latlngListById[feature.properties.area_id] = {
-											latLng: L.latLng([p.lat, p.lng]), 
-											name: p.name,
-											circleId: centroidMarkers.getLayerId(circle)
-										}
-									}
-								}
-								else { // Using database centroids
-									feature.properties.latLng = latlngListById[feature.properties.area_id].latLng;
-								}
-								feature.properties.circleId = latlngListById[feature.properties.area_id].circleId;
-								
-								
-								if (eachFeatureCallback && typeof eachFeatureCallback === "function") {
-									eachFeatureCallback();
-								}
-								else {
-									throw new Error("No eachFeatureCallback() function");
-								}
-							}
-							catch(e) {
-								if (eachFeatureCallback && typeof eachFeatureCallback === "function") {
-									eachFeatureCallback(e.message);
-								}
-								else {
-									throw new Error("No eachFeatureCallback() function");
-								}
-							}
-							
-						}
-						
+
                         /*
                          * RENDER THE MAP AND THE TABLE
                          */
@@ -686,9 +615,9 @@ angular.module("RIF")
                             latlngList = []; // centroids!
                             latlngListById = []; // centroids!
                             centroidMarkers = new L.layerGroup();
-							
+
                             //Get the centroids from DB
-                            bWeightedCentres = true;
+                            var bWeightedCentres = true;
 							var popWeightedCount=0;
 							var dbCentroidCount=0;
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
@@ -730,12 +659,12 @@ angular.module("RIF")
 										popWeightedCount++;
 										var pwLatLng=undefined;
 										try {
-											pwLatLng=L.latLng([p.pop_y, p.pop_x]);
+											pwLatLng=L.latLng([p.y, p.x]);
 										}
 										catch (e) {
 											latlngListErrors++;
 											if (latlngListErrors < 10) {
-												alertScope.showWarning("Unable to create population weighted centroid from: [" + p.pop_y + ", " + p.pop_x + "]", e);
+												alertScope.showWarning("Unable to create population weighted centroid: " + JSON.stringify(p), e);
 											}
 										}
 										
@@ -784,7 +713,7 @@ angular.module("RIF")
 										catch (e) {
 											latlngListErrors++;
 											if (latlngListErrors < 10) {
-												alertScope.showWarning("Unable to create database centroid from: [" + p.y + ", " + p.x + "]", e);
+												alertScope.showWarning("Unable to create database centroid: " + JSON.stringify(p), e);
 											}
 										}
 
@@ -826,7 +755,7 @@ angular.module("RIF")
 									alertScope.showWarning(latlngListDups + " duplicate IDs in centroid list");
 								}
 								if (latlngListErrors > 0) {
-									alertScope.showError(latlngListErrors + " errors creating centroid list");
+									alertScope.showError(latlngListErrors + " errors in centroid list");
 								}
 								var pctPopWeighted=Math.round(10000*popWeightedCount/dbCentroidCount)/100;
 									
@@ -874,7 +803,6 @@ angular.module("RIF")
 								$scope.centroid_type="Leaflet calculated geographic";
                             }).then(function () {
 								var latlngListDups=0;
-								eachFeatureArray = [];
 								$scope.areamap.spin(true);  // on
                                 $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
                                    attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
@@ -884,10 +812,45 @@ angular.module("RIF")
                                             renderer: L.canvas(),
                                             style: style,
                                             onEachFeature: function (feature, layer) {
-												eachFeatureArray.push({ // So can be queued
-													feature: feature,
-													layer: layer});
+												$scope.geoJSONLayers.push(layer);
+                                                //get as centroid marker layer. 
+                                                if (!bWeightedCentres || 										// Not using weighted centres 
+													latlngListById[feature.properties.area_id] == undefined) {	// No weighted centres for this area
+                                                    var p = layer.getBounds().getCenter();
+                                                    latlngList.push({
+														latLng: L.latLng([p.lat, p.lng]), 
+														name: feature.properties.name, 
+														id: feature.properties.area_id,
+														band: -1
+													});
+													feature.properties.latLng = L.latLng([p.lat, p.lng]);
+                                                    var circle = new L.CircleMarker([p.lat, p.lng], {
+                                                        radius: 2,
+                                                        fillColor: "red",
+                                                        color: "#000",
+                                                        weight: 1,
+                                                        opacity: 1,
+                                                        fillOpacity: 0.8
+                                                    });
 													
+                                                    centroidMarkers.addLayer(circle);
+													
+													if (latlngListById[feature.properties.area_id]) {
+														latlngListDups++;
+													}
+													else {
+														latlngListById[feature.properties.area_id] = {
+															latLng: L.latLng([p.lat, p.lng]), 
+															name: p.name,
+															circleId: centroidMarkers.getLayerId(circle)
+														}
+													}
+                                                }
+												else { // Using database centroids
+													feature.properties.latLng = latlngListById[feature.properties.area_id].latLng;
+												}
+												feature.properties.circleId = latlngListById[feature.properties.area_id].circleId;
+												
 												if (!$scope.noMouseClocks) {
 													layer.on('mouseover', function (e) {
 	//													alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer " + e.type + ": " + 
@@ -958,11 +921,26 @@ angular.module("RIF")
 											}
                                         }
                                     } // End of layers definition
-                                }); // End of L.topoJsonGridLayer
-								
+                                });
                                 $scope.areamap.addLayer($scope.geoJSON);
-                            }).then(function (res) {
-	                            //Get max bounds
+								
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideCentroid: " + SelectStateService.getState().showHideCentroids +
+								 "; $scope.bShowHideCentroids: " + $scope.bShowHideCentroids + 
+//								 "; centroidMarkers: " + JSON.stringify(centroidMarkers) + 
+								 "; $scope.areamap.hasLayer(centroidMarkers): " + $scope.areamap.hasLayer(centroidMarkers));
+								if (SelectStateService.getState().showHideCentroids) {
+									$scope.bShowHideCentroids = true;
+									if (!$scope.areamap.hasLayer(centroidMarkers)) {
+										$scope.areamap.addLayer(centroidMarkers);
+									}
+								} else {
+									if ($scope.areamap.hasLayer(centroidMarkers)) {
+										$scope.areamap.removeLayer(centroidMarkers);
+									}
+									$scope.bShowHideCentroids = false;
+								}			
+								
+                                //Get max bounds
                                 user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
                                     var lowestLevel = res.data[0].names[0];
                                     user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
@@ -970,38 +948,29 @@ angular.module("RIF")
                                         if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
                                             $scope.areamap.fitBounds(maxbounds);
                                         }
-                                    }).then(function (res) {
+                                    });
+                                }).then(function (res) {
 
-										//Get overall layer properties
-										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-											if (angular.isUndefined(res.data.attributes)) {
-												alertScope.showError("Could not get tile attributes from database");
-												return;
-											}      
-											else {								
-												$scope.totalPolygonCount = res.data.attributes.length;
-												checkSelectedPolygonList(res.data);
-												
-												//populate the table
-												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);											
-											}
-										}).then(function () {
-											// Add back selected shapes
+                                //Get overall layer properties
+									user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+										if (angular.isUndefined(res.data.attributes)) {
+											alertScope.showError("Could not get tile attributes from database");
+											return;
+										}      
+										else {								
+											$scope.totalPolygonCount = res.data.attributes.length;
+											checkSelectedPolygonList(res.data);
 											
-											var d1 = $q.defer();
-											var p1 = d1.promise;
-											d1.resolve(addSelectedShapes());
-											p1.then(function (value) {
-												
-												$scope.areamap.whenReady(function() {
-													 processEachFeatureArray();			// Adds centroids
-												});
-											});
-										});
+											//populate the table
+											$scope.gridOptions.data = ModalAreaService.fillTable(res.data);											
+										}
 									});
+								}).then(function () {
+									// Add back selected shapes
+									addSelectedShapes();	
 								});
-							});		
-                        }; // End of getMyMap()
+                            });
+                        };
 
                         /*
                          * GET THE SELECT AND VIEW RESOLUTIONS
@@ -1288,7 +1257,24 @@ angular.module("RIF")
 										}
 										
 									}
-								}					
+								}
+								
+								$scope.areamap.whenReady(function() {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] end addSelectedShapes(): shapes layerGroup has " +
+										$scope.shapes.getLayers().length + " layers" +
+										"; centered: " + JSON.stringify($scope.center));
+										
+									$timeout(function() {
+
+										$scope.zoomToSelection(); // Zoom to selection	
+										$timeout(function() {	
+
+											$scope.areamap.spin(false);  // off	
+											enableMapSpinners();											
+											$scope.redrawMap();
+										}, 100);			
+									}, 100);			
+								});
 							}
 							else {
 								$scope.areamap.spin(false);  // off	
@@ -1296,72 +1282,6 @@ angular.module("RIF")
 							}
 						}
 
-						function processEachFeatureArray() {
-											
-							alertScope.consoleDebug("[rifd-dsub-maptable.js] end addSelectedShapes(): shapes layerGroup has " +
-								$scope.shapes.getLayers().length + " layers" +
-								"; centered: " + JSON.stringify($scope.center));
-
-							alertScope.consoleDebug("[rifd-dsub-maptable.js] start add " + eachFeatureArray.length + 
-								" feature centroids");
-										
-							async.eachOfLimit(eachFeatureArray, 10 /* parallelisation */, 
-								function eachFeatureArrayIteratee(eachFeature, indexKey, eachFeatureCallback) {
-									if (indexKey % 50 == 0) {
-										async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
-											eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
-										});
-									}
-									else if (indexKey % 500 == 0) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] processing feature " + indexKey + "/" + eachFeatureArray.length + 
-											" feature centroids");										
-										setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
-											eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
-										}, 100);
-									}	
-									else {
-										eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
-									}
-								}, function done(err) {
-									if (err) {
-										alertScope.showError("[rifd-dsub-maptable.js] eachFeaureFunction error: " + err);
-									}		
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] end add " + eachFeatureArray.length + 
-										" feature centroids");
-									eachFeatureArray = [];
-									
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideCentroid: " + SelectStateService.getState().showHideCentroids +
-									 "; $scope.bShowHideCentroids: " + $scope.bShowHideCentroids + 
-	//								 "; centroidMarkers: " + JSON.stringify(centroidMarkers) + 
-									 "; $scope.areamap.hasLayer(centroidMarkers): " + $scope.areamap.hasLayer(centroidMarkers));
-									if (SelectStateService.getState().showHideCentroids) {
-										$scope.bShowHideCentroids = true;
-										if (!$scope.areamap.hasLayer(centroidMarkers)) {
-											$scope.areamap.addLayer(centroidMarkers);
-										}
-									} else {
-										if ($scope.areamap.hasLayer(centroidMarkers)) {
-											$scope.areamap.removeLayer(centroidMarkers);
-										}
-										$scope.bShowHideCentroids = false;
-									}	
-								
-									$scope.areamap.whenReady(function() {
-										$timeout(function() {
-
-											$scope.zoomToSelection(); // Zoom to selection	
-											$timeout(function() {	
-
-												$scope.areamap.spin(false);  // off	
-												enableMapSpinners();											
-												$scope.redrawMap();
-											}, 100);			
-										}, 100);	
-									});	
-						
-								}); // End of async.eachOfLimit()							
-						}
-								
 						function enableMapSpinners() {
 							$scope.areamap.on('zoomstart', function(ev) {
 								$scope.areamap.spin(true);  // on
@@ -2055,8 +1975,6 @@ angular.module("RIF")
 									});
 								}
 								else if (indexKey % 500 == 0) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + indexKey + "/" + latlngList.length + 
-										" to check if in shape");									
 									setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
 										latlngListFunction(latLng, latlngListCallback);
 									}, 100);
