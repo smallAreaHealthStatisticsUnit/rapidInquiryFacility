@@ -956,33 +956,13 @@ angular.module("RIF")
 										if (angular.isUndefined(res.data.objects)) {
 											alertScope.showError("Could not get district polygons from database");
 											return;
-										}                                  
-										//populate the table
-										var foundCount=0;
-										for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
-											var thisPoly = res.data.objects.collection.geometries[i];
-											var bFound = false;
-											for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-												if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
-													res.data.objects.collection.geometries[i].properties.band = $scope.selectedPolygon[j].band;
-													bFound = true;
-													foundCount++;
-//													break;
-												}
-											}
-											if (!bFound) {
-												res.data.objects.collection.geometries[i].properties.band = 0;
-											}
-										}
-										$scope.gridOptions.data = ModalAreaService.fillTable(res.data);
-										$scope.totalPolygonCount = res.data.objects.collection.geometries.length;
-										
-										if (foundCount != $scope.selectedPolygon.length) {
-											alertScope.showError("Could not match polygons from database with selected polygons list");
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
-												"; res.data.objects.collection.geometries.length: " + res.data.objects.collection.geometries.length + 
-												"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
-												"; $scope.selectedPolygon.length: " + $scope.selectedPolygon.length);
+										}      
+										else {								
+											$scope.totalPolygonCount = res.data.objects.collection.geometries.length;
+											checkSelectedPolygonList(res.data.objects.collection);
+											
+											//populate the table
+											$scope.gridOptions.data = ModalAreaService.fillTable(res.data);											
 										}
 									});
 								}).then(function () {
@@ -1009,6 +989,97 @@ angular.module("RIF")
                             }
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
+						
+						function checkSelectedPolygonList(collection) {
+							var foundCount=0;
+							var dupCount=0;
+							var dupBandCount=0;
+							
+							$scope.selectedPolygon.sort(function(a, b) {
+								if (a.id < b.id) {
+									return -1;
+								}
+								else if (a.id > b.id) {
+									return 1;
+								}
+								else { // Same
+									return 0;
+								}
+							}); // Alphabetically by id!
+							
+							for (var i = 0; i < $scope.selectedPolygon.length; i++) { // Check for duplicates
+								$scope.selectedPolygon[i].found=false;
+								if (i > 0 && $scope.selectedPolygon[i].id === $scope.selectedPolygon[i-1].id) {
+									if (i > 0 && $scope.selectedPolygon[i].band === $scope.selectedPolygon[i-1].band) {
+										dupBandCount++;
+										$scope.selectedPolygon.splice(i, 1);  // delete duplicate
+									}
+									else {
+										dupCount++;
+									}
+								}
+							}
+										
+							var notFoundPolys = [];
+							var geojsonPolys = [];
+							var collectionLength = collection.geometries.length;
+							               
+							for (var i = 0; i < collectionLength; i++) {
+								var thisPoly = collection.geometries[i];
+								geojsonPolys.push(thisPoly.properties.area_id)
+								var bFound = false;
+								for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+									if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
+										collection.geometries[i].properties.band = $scope.selectedPolygon[j].band; // Set the band
+										$scope.selectedPolygon[j].found=true;
+										bFound = true;
+										foundCount++;
+//													break;
+									}
+								}
+								if (!bFound) {
+									collection.geometries[i].properties.band = 0;
+								}
+							}
+							
+							for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+								if ($scope.selectedPolygon[i].found == false) {
+									notFoundPolys.push($scope.selectedPolygon[i].id);
+								}
+							}
+							notFoundPolys.sort(); // Alphabetically!
+							
+							
+							var hasErrors=false;
+							if (dupCount > 0) {
+								alertScope.showError(dupCount + 
+									" duplicates with differing bands were found in the selected polygons list");
+								hasErrors=true;
+							}
+							if (dupBandCount > 0) {
+								alertScope.showWarning(dupBandCount + " fixable duplicates were found in the selected polygons list");
+							}
+							
+							if (foundCount != $scope.selectedPolygon.length) {
+								alertScope.showError("Could not match " + notFoundPolys.length + " polygons from database with selected polygons list");
+								hasErrors=true;
+							}
+							
+							if (hasErrors) {
+//								alertScope.consoleDebug("[rifd-dsub-maptable.js] $scope.selectedPolygon: " + 
+//									JSON.stringify($scope.selectedPolygon, null, 1));
+								
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
+									"; dupCount: " + dupCount +
+									"; dupBandCount: " + dupBandCount +
+									"; collection.geometries.length: " + collectionLength + 
+									"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
+									"; $scope.selectedPolygon.length: " + $scope.selectedPolygon.length + 
+									"; $scope.selectedPolygonCount: " + $scope.selectedPolygonCount /* + 
+									"; geojsonPolys(" + geojsonPolys.length + "): " + JSON.stringify(geojsonPolys, null, 1) +
+									"; notFoundPolys(" + notFoundPolys.length + "): " + JSON.stringify(notFoundPolys, null, 1) */);
+							}
+						}										
 						
 						function addSelectedShapes() {
 							var selectedShapes=undefined;
