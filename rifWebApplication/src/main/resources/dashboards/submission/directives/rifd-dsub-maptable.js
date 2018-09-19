@@ -530,15 +530,18 @@ angular.module("RIF")
 					
 							$scope.areamap.spin(true);  // on
 							
-                            if ($scope.areamap.hasLayer(centroidMarkers)) {
-								$scope.bShowHideCentroids = false;
-								SelectStateService.getState().showHideCentroids = false;
-                                $scope.areamap.removeLayer(centroidMarkers);
-                            } else {
-								$scope.bShowHideCentroids = true;
-								SelectStateService.getState().showHideCentroids = true;
-                                $scope.areamap.addLayer(centroidMarkers);
-                            }
+							// Delays are to help the spinner
+							$timeout(function() {
+								if ($scope.areamap.hasLayer(centroidMarkers)) {
+									$scope.bShowHideCentroids = false;
+									SelectStateService.getState().showHideCentroids = false;
+									$scope.areamap.removeLayer(centroidMarkers);
+								} else {
+									$scope.bShowHideCentroids = true;
+									SelectStateService.getState().showHideCentroids = true;
+									$scope.areamap.addLayer(centroidMarkers);
+								}
+							}, 500);
 							
 							$timeout(function() {
 								$scope.areamap.whenReady(function () {
@@ -1305,21 +1308,23 @@ angular.module("RIF")
 							alertScope.consoleDebug("[rifd-dsub-maptable.js] start add " + eachFeatureArray.length + 
 								" feature centroids");
 										
-							async.eachOfLimit(eachFeatureArray, 10 /* parallelisation */, 
+							async.eachOfSeries(eachFeatureArray, 
 								function eachFeatureArrayIteratee(eachFeature, indexKey, eachFeatureCallback) {
-									if (indexKey % 50 == 0) {
-										async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
-											eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
-										});
-									}
-									else if (indexKey % 500 == 0) {
+									if (indexKey % 500 == 0) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] processing feature " + indexKey + "/" + eachFeatureArray.length + 
-											" feature centroids");										
+											" feature centroids; call setTimeout()");										
 										setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
 											eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
 										}, 100);
+									}									
+									else if (indexKey % 50 == 0) {	
+										async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
+											eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
+										});
 									}	
 									else {
+//										alertScope.consoleDebug("[rifd-dsub-maptable.js] processing feature " + indexKey + "/" + eachFeatureArray.length + 
+//											" feature centroids");	
 										eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
 									}
 								}, function done(err) {
@@ -1359,7 +1364,7 @@ angular.module("RIF")
 										}, 100);	
 									});	
 						
-								}); // End of async.eachOfLimit()							
+								}); // End of async.eachOfSeries()							
 						}
 								
 						function enableMapSpinners() {
@@ -1628,13 +1633,21 @@ angular.module("RIF")
 							$scope.areamap.spin(true);  // on	
 							
 							$scope.shapeLoadUpdate = "0 / " + $scope.selectionData.length + " shapes, 0%";
-							async.eachOfSeries($scope.selectionData, function iteratee(item, indexKey, callback) {
-								
+							async.eachOfSeries($scope.selectionData, 
+								function iteratee(item, indexKey, callback) {
 								$scope.shapeLoadUpdate = (indexKey) + " / " + $scope.selectionData.length + " shapes, " + 
 									(Math.round(((indexKey)/$scope.selectionData.length)*100)) + "%";
-								async.setImmediate(function() {
-									makeDrawSelection(item, callback);
-								});
+								
+								if (indexKey % 50 == 0) {
+									setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
+										makeDrawSelection(item, callback);
+									}, 100);
+								}	
+								else {	
+									async.setImmediate(function() {
+										makeDrawSelection(item, callback);
+									});
+								}
 							}, function done(err) {
 								if (err) {
 									alertScope.showError("[rifd-dsub-maptable.js] completedDrawSelection error: " + err);
@@ -2048,19 +2061,20 @@ angular.module("RIF")
 							}
 
 							var itemsProcessed = 0;
-							async.eachOfLimit(latlngList, 10 /* parallelisation */, function latlngListIteratee(latLng, indexKey, latlngListCallback) {
-								if (indexKey % 50 == 0) {
-									async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
-										latlngListFunction(latLng, latlngListCallback);
-									});
-								}
-								else if (indexKey % 500 == 0) {
+							async.eachOfSeries(latlngList, 
+								function latlngListIteratee(latLng, indexKey, latlngListCallback) {
+								if (indexKey % 500 == 0) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + indexKey + "/" + latlngList.length + 
 										" to check if in shape");									
 									setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
 										latlngListFunction(latLng, latlngListCallback);
 									}, 100);
 								}	
+								else if (indexKey % 50 == 0) {
+									async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
+										latlngListFunction(latLng, latlngListCallback);
+									});
+								}
 								else {
 									latlngListFunction(latLng, latlngListCallback);
 								}
