@@ -68,7 +68,8 @@ angular.module("RIF")
 //						$scope.geoJSONLayers = [];
 						$scope.selectionData = [];
 						
-                        $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);		
+                        $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);	
+
 						var shapes = $scope.areamap.createPane('shapes');
 						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups					
 						
@@ -107,7 +108,7 @@ angular.module("RIF")
 						// Modified from: https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd
 						function shapesClickThrough(e, map, geojsonLayers) {
 							if (e._stopped) { 
-//								alertScope("[rifd-dsub-maptable.js] shapesClickThrough " +  
+//								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough " +  
 //									"(" + e.target._leaflet_id + "): " + e.type + "; STOPPED");
 									L.DomEvent.stop(e);
 								return; 
@@ -315,6 +316,7 @@ angular.module("RIF")
                         $scope.currentBand = 1; //from dropdown
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = $scope.input.transparency;
+						$scope.geoJSONLoadCount = 0;
 						
 						var eachFeatureArray = [];
                         var bWeightedCentres = true;
@@ -878,23 +880,22 @@ angular.module("RIF")
                                 alertScope.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
                                 bWeightedCentres = false;
 								$scope.centroid_type="Leaflet calculated geographic";
-                            }).then(function () {
-								return asyncCreateTopoJsonLayer(topojsonURL);
-                            }).then(function (res) {
-								if (res) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer: " + res);
-								}
-								
-	                            //Get max bounds
-                                user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
-                                    var lowestLevel = res.data[0].names[0];
-                                    user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
-                                        maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-                                        if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
-                                            $scope.areamap.fitBounds(maxbounds);
-                                        }
-                                    }).then(function (res) {
-
+                            }).then(function () { // No res etc
+								//Get max bounds
+								user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
+									var lowestLevel = res.data[0].names[0];
+									user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
+										maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+										if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
+											$scope.areamap.fitBounds(maxbounds);
+										}
+									}).then(function (res) {
+										return asyncCreateTopoJsonLayer(topojsonURL);
+									}).then(function (res) {
+										if (res) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer: " + res);
+										}
+							                              
 										//Get overall layer properties
 										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
 											if (angular.isUndefined(res.data.attributes)) {
@@ -1043,15 +1044,18 @@ angular.module("RIF")
 									reject("failed to create topoJsonGridLayer");
 								}
 								else {
-									$scope.areamap.addLayer($scope.geoJSON); // First layer is ready
-									$timeout(function() {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] addLayer topoJsonGridLayer eachFeatureArray: " + 
-											eachFeatureArray.length);
-										$scope.areamap.whenReady(function () {
+									$scope.geoJSON.on('loading', function(layer) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loading...");
+									});
+									$scope.geoJSON.on('load', function(layer) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loaded.");
+										$scope.geoJSONLoadCount++;
+										if ($scope.geoJSONLoadCount == 1) {
 											resolve("map ready topoJsonGridLayer eachFeatureArray: " + 
 												eachFeatureArray.length);
-										});
-									}, 100);
+										}
+									});
+									$scope.areamap.addLayer($scope.geoJSON);
 								}
 							}); // End of $q constructor
 						}
