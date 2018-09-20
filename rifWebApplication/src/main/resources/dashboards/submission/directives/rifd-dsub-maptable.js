@@ -41,10 +41,10 @@
 angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
-			'SelectStateService', 'ParametersService', 'StudyAreaStateService', '$q',
+			'SelectStateService', 'ParametersService', 'StudyAreaStateService', '$q', '$timeout',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService,
-					SelectStateService, ParametersService, StudyAreaStateService, $q) {
+					SelectStateService, ParametersService, StudyAreaStateService, $q, $timeout) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -685,7 +685,7 @@ angular.module("RIF")
                                 $scope.areamap.removeLayer($scope.geoJSON);
                             }
 
-                            var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt);
+                            var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt); //  With no x/y/z returns URL
                             latlngList = []; // centroids!
                             latlngListById = []; // centroids!
                             centroidMarkers = new L.layerGroup();
@@ -694,7 +694,7 @@ angular.module("RIF")
                             bWeightedCentres = true;
 							var popWeightedCount=0;
 							var dbCentroidCount=0;
-                            user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+                            user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) { // Success case 
 		
 								var latlngListDups=0;
 								var latlngListErrors=0;
@@ -870,12 +870,88 @@ angular.module("RIF")
 									
 								$scope.info.update();
 								
-                            }, function () {
+                            }, function (err) { // Error case
+								if (err) {
+									alertScope.consoleError("[rifd-dsub-maptable.js] user.getTileMakerCentroids " + err);
+								}
                                 //couldn't get weighted centres so generate geographic with leaflet
                                 alertScope.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
                                 bWeightedCentres = false;
 								$scope.centroid_type="Leaflet calculated geographic";
                             }).then(function () {
+								return asyncCreateTopoJsonLayer(topojsonURL);
+                            }).then(function (res) {
+								if (res) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer: " + res);
+								}
+								
+	                            //Get max bounds
+                                user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
+                                    var lowestLevel = res.data[0].names[0];
+                                    user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
+                                        maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+                                        if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
+                                            $scope.areamap.fitBounds(maxbounds);
+                                        }
+                                    }).then(function (res) {
+
+										//Get overall layer properties
+										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+											if (angular.isUndefined(res.data.attributes)) {
+												alertScope.showError("Could not get tile attributes from database");
+												return;
+											}      
+											else {								
+												$scope.totalPolygonCount = res.data.attributes.length;
+												checkSelectedPolygonList(res.data);
+												
+												//populate the table
+												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);											
+											}
+										}).then(function () {
+											// Add back selected shapes
+											
+											var d1 = $q.defer();
+											var p1 = d1.promise;
+											d1.resolve(addSelectedShapes());
+											p1.then(function (value) {
+												
+												$scope.areamap.whenReady(function() {
+													 processEachFeatureArray();			// Adds centroids
+												});
+											});
+										});
+									});
+								});
+							}, function(err) { // Error case
+								if (err) {
+									alertScope.consoleError("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer: " + err);
+								}
+							});		
+                        }; // End of getMyMap()
+
+                        /*
+                         * GET THE SELECT AND VIEW RESOLUTIONS
+                         */
+                        $scope.geoLevels = [];
+                        $scope.geoLevelsViews = [];
+                        user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
+
+                        $scope.geoLevelChange = function () {
+                            //Clear the map
+                            $scope.selectedPolygon.length = 0;
+                            if ($scope.areamap.hasLayer(centroidMarkers)) {
+								$scope.bShowHideCentroids = false;
+								SelectStateService.getState().showHideCentroids = false;
+                                $scope.areamap.removeLayer(centroidMarkers);
+                            }
+                            user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
+                        };
+						
+						function asyncCreateTopoJsonLayer(topojsonURL) {
+							
+							return $q(function(resolve, reject) {
+								
 								var latlngListDups=0;
 								eachFeatureArray = [];
 								$scope.areamap.spin(true);  // on
@@ -890,7 +966,7 @@ angular.module("RIF")
 												eachFeatureArray.push({ // So can be queued
 													feature: feature,
 													layer: layer});
-													
+														
 												if (!$scope.noMouseClocks) {
 													layer.on('mouseover', function (e) {
 	//													alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer " + e.type + ": " + 
@@ -963,67 +1039,23 @@ angular.module("RIF")
                                     } // End of layers definition
                                 }); // End of L.topoJsonGridLayer
 								
-                                $scope.areamap.addLayer($scope.geoJSON);
-                            }).then(function (res) {
-	                            //Get max bounds
-                                user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
-                                    var lowestLevel = res.data[0].names[0];
-                                    user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
-                                        maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-                                        if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
-                                            $scope.areamap.fitBounds(maxbounds);
-                                        }
-                                    }).then(function (res) {
-
-										//Get overall layer properties
-										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-											if (angular.isUndefined(res.data.attributes)) {
-												alertScope.showError("Could not get tile attributes from database");
-												return;
-											}      
-											else {								
-												$scope.totalPolygonCount = res.data.attributes.length;
-												checkSelectedPolygonList(res.data);
-												
-												//populate the table
-												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);											
-											}
-										}).then(function () {
-											// Add back selected shapes
-											
-											var d1 = $q.defer();
-											var p1 = d1.promise;
-											d1.resolve(addSelectedShapes());
-											p1.then(function (value) {
-												
-												$scope.areamap.whenReady(function() {
-													 processEachFeatureArray();			// Adds centroids
-												});
-											});
+								if ($scope.geoJSON == undefined) {
+									reject("failed to create topoJsonGridLayer");
+								}
+								else {
+									$scope.areamap.addLayer($scope.geoJSON); // First layer is ready
+									$timeout(function() {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] addLayer topoJsonGridLayer eachFeatureArray: " + 
+											eachFeatureArray.length);
+										$scope.areamap.whenReady(function () {
+											resolve("map ready topoJsonGridLayer eachFeatureArray: " + 
+												eachFeatureArray.length);
 										});
-									});
-								});
-							});		
-                        }; // End of getMyMap()
-
-                        /*
-                         * GET THE SELECT AND VIEW RESOLUTIONS
-                         */
-                        $scope.geoLevels = [];
-                        $scope.geoLevelsViews = [];
-                        user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
-
-                        $scope.geoLevelChange = function () {
-                            //Clear the map
-                            $scope.selectedPolygon.length = 0;
-                            if ($scope.areamap.hasLayer(centroidMarkers)) {
-								$scope.bShowHideCentroids = false;
-								SelectStateService.getState().showHideCentroids = false;
-                                $scope.areamap.removeLayer(centroidMarkers);
-                            }
-                            user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
-                        };
-						
+									}, 100);
+								}
+							}); // End of $q constructor
+						}
+					
 						function checkSelectedPolygonList(data) {
 							var foundCount=0;
 							var dupCount=0;
@@ -1312,8 +1344,8 @@ angular.module("RIF")
 								function eachFeatureArrayIteratee(eachFeature, indexKey, eachFeatureCallback) {
 									if (indexKey % 500 == 0) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] processing feature " + indexKey + "/" + eachFeatureArray.length + 
-											" feature centroids; call setTimeout()");										
-										setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
+											" feature centroids; call $timeout()");										
+										$timeout(function() { // Be nice to the stack if you are going to be aggressive!
 											eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
 										}, 100);
 									}									
@@ -1476,7 +1508,7 @@ angular.module("RIF")
 								LeafletBaseMapService.setNoBaseMap("areamap", true);
 							}
                             //hack to refresh map
-                            setTimeout(function () {
+                            $timeout(function () {
                                 $scope.areamap.invalidateSize();
                             }, 50);
 						}
@@ -1639,7 +1671,7 @@ angular.module("RIF")
 									(Math.round(((indexKey)/$scope.selectionData.length)*100)) + "%";
 								
 								if (indexKey % 50 == 0) {
-									setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
+									$timeout(function() { // Be nice to the stack if you are going to be aggressive!
 										makeDrawSelection(item, callback);
 									}, 100);
 								}	
@@ -2066,7 +2098,7 @@ angular.module("RIF")
 								if (indexKey % 500 == 0) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + indexKey + "/" + latlngList.length + 
 										" to check if in shape");									
-									setTimeout(function() { // Be nice to the stack if you are going to be aggressive!
+									$timeout(function() { // Be nice to the stack if you are going to be aggressive!
 										latlngListFunction(latLng, latlngListCallback);
 									}, 100);
 								}	
