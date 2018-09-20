@@ -36,8 +36,8 @@
  * This is just a generic interceptor found on the web somewhere
  */
 angular.module("RIF")
-        .factory('authInterceptor', ['$q', '$injector',
-            function ($q, $injector) {
+        .factory('authInterceptor', ['$q', '$injector', 'AlertService', 
+            function ($q, $injector, AlertService) {
                 return {
                     request: function (config) {
                         var AuthService = $injector.get('user');
@@ -58,7 +58,39 @@ angular.module("RIF")
                         return config;
                     },
                     response: function (res) {
-                        //called with the response object from the server
+                        //called with the response object from the server				
+												
+						// Message tracer: REST GET Calls only. Does NOT trace tile GETs						
+                        if (!angular.isUndefined(res.config)) {
+							var url=res.config.url;
+							var restService=undefined;
+							var isRest=false;
+							if (url.search("http://") == 0 || url.search("https://") == 0) { // Starts with
+								isRest=true;
+							}
+							if (url.indexOf("?") > 0) {
+								restService=url.slice(url.lastIndexOf("/")+1, url.indexOf("?"));
+							}
+							else {
+								restService=url.substring(url.lastIndexOf("/")+1);
+							}
+							if (restService == undefined) {
+								url = "[no restService]: " + url;
+							}
+							else if (restService == "login") { // Hide password
+								url = restService;
+							}
+							else if (restService == "isLoggedIn" || 
+									 restService == "getCurrentStatusAllStudies" || 
+									 restService == "rifFrontEndLogger") {
+								url = undefined;
+							}
+							
+							if (isRest && url && res.config.method == "GET") {
+								AlertService.consoleDebug("[rifs-back-interceptor.js] " + res.config.method + ": " + url);
+							}	
+						}						
+						
                         if (!angular.isUndefined(res.data[0])) {
                             if (!angular.isUndefined(res.data[0].errorMessages)) {
                                 var scope = $injector.get('$rootScope');
@@ -69,20 +101,20 @@ angular.module("RIF")
 								 */
 								if (res.data[0].errorMessages[0] ==
 									'API method "isLoggedIn" has a null "userID" parameter.') {
-									scope.$root.$$childHead.consoleError(res.data[0].errorMessages[0]);
+									AlertService.consoleError(res.data[0].errorMessages[0]);
 								}
 								else if (res.data[0].errorMessages[0] ==
 									'Record "User" field "User ID" cannot be empty.') {
-									scope.$root.$$childHead.consoleError(res.data[0].errorMessages[0]);
+									AlertService.consoleError(res.data[0].errorMessages[0]);
 								}
 								else if (res.data[0].errorMessages[0] ==
 									'Unable to roll back database transaction.') {
-									scope.$root.$$childHead.consoleError(res.data[0].errorMessages[0]);
+									AlertService.consoleError(res.data[0].errorMessages[0]);
 								}
 								else {
-									scope.$root.$$childHead.showError(res.data[0].errorMessages[0]);
+									AlertService.showError(res.data[0].errorMessages[0]);
 								}
-                                return $q.reject();
+                                return $q.reject(res.data[0].errorMessages[0]);
                             }
                         }
                         return res;
