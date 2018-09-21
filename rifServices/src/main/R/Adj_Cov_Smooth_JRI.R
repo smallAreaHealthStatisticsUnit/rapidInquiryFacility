@@ -189,6 +189,7 @@ establishTableNames <-function(vstudyID) {
 #
 # Create rif40_run_R_env.bat
 #
+		script_name <- "Adj_Cov_Smooth_csv.R"
 		rif40_run_R_env=paste(
 					paste0("SET USERID=", userID),
 					paste0("SET DB_NAME=", db_name),
@@ -202,6 +203,7 @@ establishTableNames <-function(vstudyID) {
 					paste0("SET INVESTIGATIONID=", investigationId),
 					paste0("SET MODEL=", model),
 					paste0("SET COVARIATENAME=", paste0(names.adj)),
+					paste0("SET SCRIPT_NAME=", paste0(script_name)),
 				sep="\n");
 		
 		rif40_run_R_envB<-file.path(scratchSpace, "rif40_run_R_env.bat") # Target

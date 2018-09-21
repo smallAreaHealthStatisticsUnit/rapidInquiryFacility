@@ -234,6 +234,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
 				}
 
+				// Create the scripts for rerunning the study. We do this before checking the
+				// return value because having the scripts can be useful if there was an error.
+
+
 				exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
 				if (exitValueFromR != null) {
 					exitValue = exitValueFromR.asInt();
@@ -255,63 +259,39 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				 		strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
 				 	}
 				 	rErrorTrace = strBuilder.toString();
+				} else {
+				 	rifLogger.warning(getClass(), "JRI R ERROR: errorTraceFromR is NULL");
 				}
-				else {
-				 	rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
-				}
-			}
-			catch(Exception error) {
+			} catch(Exception error) {
+
+				rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error);
+			} finally {
 				try {
 					loggingConsole.rFlushConsole(rengine);
-				}
-				catch(Exception error2) {
-					rifLogger.error(this.getClass(), "JRI rFlushConsole() ERROR", error2);
-				}
-				finally {
-					rifLogger.error(this.getClass(), "JRI R script ERROR", error);
-					exitValue = 1;
-				}
-			} 
-			finally {
-				try {
-					loggingConsole.rFlushConsole(rengine);
-				}
-				catch(Exception error2) {
-					rifLogger.error(this.getClass(), "JRI rFlushConsole() ERROR", error2);
-				}
-				finally {
+				} catch(Exception error2) {
+					rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error2);
+				} finally {
 					rifMemoryManager.printThreadMemory();
-					if (exitValue != 0) {
-						try {
-							rengine.end();
-						}
-						catch(Exception error3) {
-							rifLogger.error(this.getClass(), "JRI rengine.destroy() ERROR", error3);
-						}
-						finally {
-							rifLogger.info(this.getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
-							
-						}				
 
-						RIFServiceExceptionFactory rifServiceExceptionFactory =
-								new RIFServiceExceptionFactory();
-						throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
+					try {
+						rengine.end();
 					}
-					else {	
-						try {
-							rengine.end();
-						}
-						catch(Exception error3) {
-							rifLogger.error(this.getClass(), "JRI rengine.end() ERROR", error3);
-							exitValue = 1;
-						}
-						finally {
-							rifLogger.info(this.getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
-						}			
+					catch(Exception error3) {
+						rifLogger.error(getClass(), "JRI rengine.end() ERROR", error3);
+					}
+					finally {
+						rifLogger.info(getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
+
 					}
 				}
 			}
 
+			if (exitValue != 0) {
+
+				RIFServiceExceptionFactory rifServiceExceptionFactory =
+						new RIFServiceExceptionFactory();
+				throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
+			}
 		}
 		catch (RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);

@@ -102,14 +102,14 @@ SET DUMPFRAMESTOCSV=FALSE
 REM
 REM Run R
 REM
-ECHO "%R_HOME%\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^^
+ECHO "%R_HOME%\bin\x64\RScript" %SCRIPT_NAME% ^^
 ECHO --db_driver_prefix=%DB_DRIVER_PREFIX% --db_driver_class_name=%DB_DRIVER_CLASS_NAME% --odbcDataSource=%ODBCDATASOURCE% ^^
 ECHO --dbHost=%DB_HOST% --dbPort=%DB_PORT% --dbName=%DB_NAME% ^^
 ECHO --studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^^
 ECHO --model=%MODEL% --covariateName=%COVARIATENAME% ^^
 ECHO --userID=%USERID% --password=XXXXXXXXXXXXXXXXXXXXXX ^^
 ECHO --scratchspace="%SCRATCHSPACE%" --dumpframestocsv=%DUMPFRAMESTOCSV%
-"%R_HOME%\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^
+"%R_HOME%\bin\x64\RScript" %SCRIPT_NAME% ^
 	--db_driver_prefix=%DB_DRIVER_PREFIX% --db_driver_class_name=%DB_DRIVER_CLASS_NAME% --odbcDataSource=%ODBCDATASOURCE% ^
 	--dbHost=%DB_HOST% --dbPort=%DB_PORT% --dbName=%DB_NAME% ^
 	--studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^
