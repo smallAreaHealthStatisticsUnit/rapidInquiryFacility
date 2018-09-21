@@ -1095,6 +1095,7 @@ angular.module("RIF")
 						function checkSelectedPolygonList(data) {
 							
 							return $q(function(resolve, reject) {
+
 								var foundCount=0;
 								var dupCount=0;
 								var dupBandCount=0;
@@ -1110,9 +1111,12 @@ angular.module("RIF")
 										return 0;
 									}
 								}); // Alphabetically by id!
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] sorted $scope.selectedPolygon: " + 
+									$scope.selectedPolygon.length);
 								
+								var selectedPolygonObj = {};
 								for (var i = 0; i < $scope.selectedPolygon.length; i++) { // Check for duplicates
-									$scope.selectedPolygon[i].found=false;
+//									$scope.selectedPolygon[i].found=false;
 									if (i > 0 && $scope.selectedPolygon[i].id === $scope.selectedPolygon[i-1].id) {
 										if (i > 0 && $scope.selectedPolygon[i].band === $scope.selectedPolygon[i-1].band) {
 											dupBandCount++;
@@ -1122,36 +1126,36 @@ angular.module("RIF")
 											dupCount++;
 										}
 									}
+									selectedPolygonObj[$scope.selectedPolygon[i].id] = $scope.selectedPolygon[i];
 								}
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] de-duplicate $scope.selectedPolygon: " + 
+									$scope.selectedPolygon.length);
 											
-								var notFoundPolys = [];
-								var geojsonPolys = [];
+//								var notFoundPolys = [];
+//								var geojsonPolys = [];
 								var collectionLength = data.attributes.length;
 											   
 								for (var i = 0; i < collectionLength; i++) {
 									var thisPoly = data.attributes[i];
-									geojsonPolys.push(thisPoly.area_id)
-									var bFound = false;
-									for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-										if ($scope.selectedPolygon[j].id === thisPoly.area_id) {
-											data.attributes[i].band = $scope.selectedPolygon[j].band; // Set the band
-											$scope.selectedPolygon[j].found=true;
-											bFound = true;
-											foundCount++;
-	//													break;
-										}
+//									geojsonPolys.push(thisPoly.area_id)
+									if (selectedPolygonObj[thisPoly.area_id]) {
+										data.attributes[i].band = selectedPolygonObj[thisPoly.area_id].band; // Set the band
+//										selectedPolygonObj[thisPoly.area_id].found=true;
+										foundCount++;
 									}
-									if (!bFound) {
+									else {
 										data.attributes[i].band = 0;
 									}
 								}
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] checked $scope.selectedPolygon: " + 
+									$scope.selectedPolygon.length);
 								
-								for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-									if ($scope.selectedPolygon[i].found == false) {
-										notFoundPolys.push($scope.selectedPolygon[i].id);
-									}
-								}
-								notFoundPolys.sort(); // Alphabetically!
+//								for (key in selectedPolygonObj) {
+//									if (selectedPolygonObj[key].found == false) {
+//										notFoundPolys.push(selectedPolygonObj[key]);
+//									}
+//								}
+//								notFoundPolys.sort(); // Alphabetically!
 												
 								var hasErrors=false;
 								if (dupCount > 0) {
@@ -1164,7 +1168,7 @@ angular.module("RIF")
 								}
 								
 								if (foundCount != $scope.selectedPolygon.length) {
-									alertScope.showError("Could not match " + notFoundPolys.length + " polygons from database with selected polygons list");
+									alertScope.showError("Could not match " + ($scope.selectedPolygon.length - foundCount) + " polygons from database with selected polygons list");
 									hasErrors=true;
 								}
 								
@@ -1393,10 +1397,7 @@ angular.module("RIF")
 
 						function processEachFeatureArray() {
 
-							return $q(function(resolve, reject) {											
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] end addSelectedShapes(): shapes layerGroup has " +
-									$scope.shapes.getLayers().length + " layers" +
-									"; centered: " + JSON.stringify($scope.center));
+							return $q(function(resolve, reject) {					
 
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] start add " + eachFeatureArray.length + 
 									" feature centroids");
@@ -1425,6 +1426,7 @@ angular.module("RIF")
 									}, function done(err) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] end add " + eachFeatureArray.length + 
 											" feature centroids");
+										$scope.shapeLoadUpdate = "Loaded " + eachFeatureArray.length + " centroids";	
 										eachFeatureArray = [];
 										
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideCentroid: " + SelectStateService.getState().showHideCentroids +
