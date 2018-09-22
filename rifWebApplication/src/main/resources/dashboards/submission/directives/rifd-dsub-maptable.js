@@ -230,65 +230,6 @@ angular.module("RIF")
                             alertScope.consoleError("[rifd-dsub-maptable.js] error in areamap" +
 								(errorEvent.message || "(no message)"));
 						});	
-						
-                        ///Called on DOM render completion to ensure basemap is rendered
-                        $timeout(function () {
-                            //add baselayer
-                            $scope.renderMap("areamap");
-
-                            //Store the current zoom and view on map changes
-                            $scope.areamap.on('zoomend', function (e) {
-                                $scope.input.center.zoom = $scope.areamap.getZoom();
-                            });
-                            $scope.areamap.on('moveend', function (e) {
-                                $scope.input.center.lng = $scope.areamap.getCenter().lng;
-                                $scope.input.center.lat = $scope.areamap.getCenter().lat;
-                            });
-
-                            //slider
-                            var slider = L.control.slider(function (v) {
-                                $scope.changeOpacity(v);
-                            }, {
-                                id: slider,
-                                position: 'topleft',
-                                orientation: 'horizontal',
-                                min: 0,
-                                max: 1,
-                                step: 0.01,
-                                value: $scope.transparency,
-                                title: 'Transparency',
-                                logo: '',
-                                syncSlider: true
-                            }).addTo($scope.areamap);
-
-                            //Custom toolbar
-                            var tools = mapTools.getSelectionTools($scope);
-                            for (var i = 0; i < tools.length; i++) {
-                                new tools[i]().addTo($scope.areamap);
-                            }
-
-                            //scalebar and fullscreen
-                            L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.areamap);
-                            $scope.areamap.addControl(new L.Control.Fullscreen());
-
-                            //drop down for bands
-                            var dropDown = mapTools.getBandDropDown($scope);
-                            new dropDown().addTo($scope.areamap);
-
-                            //Set initial map extents
-                            $scope.center = $scope.input.center;
-//
-// TO STOP LEAFLET NOT DISPLAYING SELECTED AREAS (experimental)
-//                            $scope.areamap.setView([$scope.center.lat, $scope.center.lng], $scope.center.zoom);
-
-                            //Attributions to open in new window
-                            L.control.condensedAttribution({
-                                prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
-                            }).addTo($scope.areamap);
-
-                            $scope.areamap.doubleClickZoom.disable();
-                            $scope.areamap.band = Math.max.apply(null, $scope.possibleBands);
-                        });
 
                         /*
                          * LOCAL VARIABLES
@@ -691,6 +632,67 @@ angular.module("RIF")
 							
 						}
 						
+						function setupMap() { // Return promise
+							// Called on DOM render completion to ensure basemap is rendered
+							return $timeout(function () {
+								//add baselayer
+								$scope.renderMap("areamap");
+
+								//Store the current zoom and view on map changes
+								$scope.areamap.on('zoomend', function (e) {
+									$scope.input.center.zoom = $scope.areamap.getZoom();
+								});
+								$scope.areamap.on('moveend', function (e) {
+									$scope.input.center.lng = $scope.areamap.getCenter().lng;
+									$scope.input.center.lat = $scope.areamap.getCenter().lat;
+								});
+
+								//slider
+								var slider = L.control.slider(function (v) {
+									$scope.changeOpacity(v);
+								}, {
+									id: slider,
+									position: 'topleft',
+									orientation: 'horizontal',
+									min: 0,
+									max: 1,
+									step: 0.01,
+									value: $scope.transparency,
+									title: 'Transparency',
+									logo: '',
+									syncSlider: true
+								}).addTo($scope.areamap);
+
+								//Custom toolbar
+								var tools = mapTools.getSelectionTools($scope);
+								for (var i = 0; i < tools.length; i++) {
+									new tools[i]().addTo($scope.areamap);
+								}
+
+								//scalebar and fullscreen
+								L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.areamap);
+								$scope.areamap.addControl(new L.Control.Fullscreen());
+
+								//drop down for bands
+								var dropDown = mapTools.getBandDropDown($scope);
+								new dropDown().addTo($scope.areamap);
+
+								//Set initial map extents
+								$scope.center = $scope.input.center;
+	//
+	// TO STOP LEAFLET NOT DISPLAYING SELECTED AREAS (experimental)
+	//                            $scope.areamap.setView([$scope.center.lat, $scope.center.lng], $scope.center.zoom);
+
+								//Attributions to open in new window
+								L.control.condensedAttribution({
+									prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
+								}).addTo($scope.areamap);
+
+								$scope.areamap.doubleClickZoom.disable();
+								$scope.areamap.band = Math.max.apply(null, $scope.possibleBands);
+							});		
+						}
+						
                         /*
                          * RENDER THE MAP AND THE TABLE
                          */
@@ -974,7 +976,13 @@ angular.module("RIF")
                          */
                         $scope.geoLevels = [];
                         $scope.geoLevelsViews = [];
-                        user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
+						
+						setupMap().then(function(res) {
+							user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
+						},
+						function(err) {
+							promisesErrorHandler("setupMap", err);
+						});
 
                         $scope.geoLevelChange = function () {
                             //Clear the map
