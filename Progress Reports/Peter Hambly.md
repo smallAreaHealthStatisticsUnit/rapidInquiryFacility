@@ -2916,3 +2916,7 @@ SELECT a.*, b.coa2011
   * Added spinners and shape processing feedback;
   * Fix shapefile table CSS problems;
   * Confirmed "Could not match polygons from database with selected polygons list" error effects main branch as well;
+  * Fix for "Could not match polygons from database with selected polygons list"
+    * Added getTileMakerAttributes rest call to replace getTileMakerTilesAttributes; some of the smaller areas where optimised out in the base tile.
+  * RIF timescales meeting;
+  * Restructure of map selection code to ensure it works in the correct order;
