@@ -668,7 +668,7 @@ angular.module("RIF")
 										scope.bProgress = true;
 									}
                                     //make the selection
-                                    scope.makeDrawSelection(shape);
+									$rootScope.$broadcast('makeDrawSelection', shape);
                                 } // End of shapefile polygon processing for loop
 								
 								var bandsUsed={};
