@@ -336,6 +336,7 @@ angular.module("RIF")
 							$scope.selectedPolygonCount = 0;
                             $scope.input.selectedPolygon.length = 0;
 							$scope.selectedPolygonCount = 0;
+							$scope.shapeLoadUpdate = "";
 							if ($scope.input.type === "Risk Analysis") {
 								SelectStateService.initialiseRiskAnalysis();
 							}
@@ -711,7 +712,6 @@ angular.module("RIF")
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) { // Success case 
 		
 								var latlngListDups=0;
-								var latlngListErrors=0;
 								var latlngListWarnings=0;
 								$scope.centroid_type="Not known";
                                 for (var i = 0; i < res.data.smoothed_results.length; i++) {
@@ -746,13 +746,14 @@ angular.module("RIF")
 									if (res.data.smoothed_results[i] && res.data.smoothed_results[i].pop_x && res.data.smoothed_results[i].pop_y) {
 										popWeightedCount++;
 										var pwLatLng=undefined;
-										try {
+										try { // Try to convert, will use GeoJSON if it fails
 											pwLatLng=L.latLng([p.pop_y, p.pop_x]);
 										}
 										catch (e) {
-											latlngListErrors++;
-											if (latlngListErrors < 10) {
-												alertScope.showWarning("Unable to create population weighted centroid from: [" + p.pop_y + ", " + p.pop_x + "]; using GeoJSON", e);
+											latlngListWarnings++;
+											if (latlngListWarnings < 10) {
+												alertScope.consoleError("[rifd-dsub-maptable.js] Unable to create population weighted centroid from: [" + 
+													p.pop_y + ", " + p.pop_x + "]; using GeoJSON", e);
 											}
 										}
 										
@@ -799,9 +800,10 @@ angular.module("RIF")
 											dbLatLng=L.latLng([p.y, p.x]);
 										}
 										catch (e) {
-											latlngListErrors++;
-											if (latlngListErrors < 10) {
-												alertScope.showWarning("Unable to create database centroid from: [" + p.y + ", " + p.x + "]; using GeoJSON", e);
+											latlngListWarnings++;
+											if (latlngListWarnings < 10) {
+												alertScope.consoleError("[rifd-dsub-maptable.js] Unable to create database centroid from: [" + 
+													p.y + ", " + p.x + "]; using GeoJSON", e);
 											}
 										}
 
@@ -841,9 +843,6 @@ angular.module("RIF")
 								
 								if (latlngListDups > 0) {
 									alertScope.showWarning(latlngListDups + " duplicate IDs in centroid list");
-								}
-								if (latlngListErrors > 0) {
-									alertScope.showError(latlngListErrors + " errors creating centroid list");
 								}
 								var pctPopWeighted=Math.round(10000*popWeightedCount/dbCentroidCount)/100;
 									
@@ -1286,6 +1285,7 @@ angular.module("RIF")
 									}	
 									
 									var errorCount=0;
+									var start=new Date().getTime();
 									$scope.shapeLoadUpdate = "0 / " + selectedShapes.length + " shapes, 0%";
 									async.eachOfSeries(selectedShapes, 
 										function selectedShapesIteratee(eachFeature, i, selectedShapesCallback) {
@@ -1407,12 +1407,21 @@ angular.module("RIF")
 											}
 											selectedShapesCallback();
 										}, function done(err) {	
-											$scope.shapeLoadUpdate = selectedShapes.length + " shapes loaded";
-											if (errorCount > 0) {
-												reject(errorCount + "errors adding " + selectedShapes.length + "selected shapes");
+											var end=new Date().getTime();
+											var elapsed=(Math.round((end - start)/100))/10; // in S	
+											
+											if (selectedShapes.length > 0) {
+												$scope.shapeLoadUpdate = selectedShapes.length + " shapes loaded in " + elapsed + " S";
 											}
 											else {
-												resolve("added " + selectedShapes.length + "selected shapes");
+												$scope.shapeLoadUpdate = "no shapes loaded";
+											}
+											if (errorCount > 0) {
+												reject(errorCount + "errors adding " + selectedShapes.length + " selected shapes in " + 
+													elapsed + " S");
+											}
+											else {
+												resolve("added " + selectedShapes.length + " selected shapes in " + elapsed + " S");
 											}
 										}); // End of async.eachOfSeries()				
 								}
@@ -1748,7 +1757,8 @@ angular.module("RIF")
 						$scope.$on('completedDrawSelection', function (event, data) {
 							
 							$scope.areamap.spin(true);  // on	
-							
+							var start=new Date().getTime();
+								
 							$scope.shapeLoadUpdate = "0 / " + $scope.selectionData.length + " shapes, 0%";
 							async.eachOfSeries($scope.selectionData, 
 								function iteratee(item, indexKey, callback) {
@@ -1770,10 +1780,12 @@ angular.module("RIF")
 									alertScope.showError("[rifd-dsub-maptable.js] completedDrawSelection error: " + err);
 								}
 								
-							$scope.shapeLoadUpdate = $scope.selectionData.length + " shapes loaded";
+								var end=new Date().getTime();
+								var elapsed=(Math.round((end - start)/100))/10; // in S	
+								$scope.shapeLoadUpdate = $scope.selectionData.length + " shapes loaded in " + elapsed + " S";
 								$scope.areamap.spin(false);  // off	
 								$scope.selectionData = [];
-								alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection");
+								alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection in " + elapsed + " S");
 								if ($scope.info._map == undefined) { // Add back info control
 									$scope.info.addTo($scope.areamap);
 								}
@@ -2088,7 +2100,7 @@ angular.module("RIF")
 											bounds=circle.getBounds();
 										}
 										else if (savedShape.geojson) {
-											bounds=savedShape.geojson.getBounds();
+											bounds = polygon.getBounds();
 										}
 										
 										if (bounds.isValid()) {
@@ -2137,7 +2149,8 @@ angular.module("RIF")
 									}	
 									catch (e) { // For a better message
 										alertScope.consoleError("[rifd-dsub-maptable.js] makeDrawSelection() error in bbox creation: " + 
-											e.message, e);
+											e.message +
+											"; bounds: " + (bounds ? bounds.toBBoxString() : "undefined"), e);
 										bboxErrors++;
 									}	
 								}, 100);
@@ -2296,20 +2309,23 @@ angular.module("RIF")
 									if (shape.circle) {
 										test = GISService.getPointincircle(latLng.latLng, shape);
 									}
-									else if (shape.bbox.contains(latLng.latLng)) { 
+									else if (shape.bbox.contains(latLng.latLng)) { // This does NOT work!
 										// Shape bounding box contains point
 										test = GISService.getPointinpolygon(latLng.latLng, shape);
 									}
 									else { // Test above
-										excludedByBbox++;
+										// This code should only be commented out when we are sure shape.bbox.contains(latLng.latLng) is working OK
 										test = GISService.getPointinpolygon(latLng.latLng, shape);
-										if (test) {											
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] latlngListFunction bbox contains() error: " +
+										if (test) {	// It is in polygon, shape.bbox.contains(latLng.latLng) produce false when it should be true		
+											excludedByBbox++;								
+											alertScope.consoleError("[rifd-dsub-maptable.js] latlngListFunction bbox contains() failed to match point: " +
 												"; latLng.latLng: " + JSON.stringify(latLng.latLng) +
 												"; shape.bbox: " + shape.bbox.toBBoxString() +
 												"; shape.bbox.isValid(): " + shape.bbox.isValid() +
 												"; shape.bbox.contains(latLng.latLng)): " + shape.bbox.contains(latLng.latLng));
 										}
+										// Replace with:
+										// excludedByBbox++;	0
 									}
 								}
 								else if (shape.circle) {
