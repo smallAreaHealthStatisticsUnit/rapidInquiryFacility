@@ -905,12 +905,13 @@ angular.module("RIF")
 									}).then(function (res) {
 										return asyncCreateTopoJsonLayer(topojsonURL);
 									}).then(function (res) {
-										if (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer: " + res);
-										}
-							                              
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer OK: " + (res ? res : "no status"));
+									                   
 										//Get overall layer properties
+										// Edge appears to crash here when retrieving study selection data, but not when choosing
 										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerAttributes: " + 
+												(res ? res : "no status"));
 											if (angular.isUndefined(res.data.attributes)) {
 												alertScope.showError("Could not get tile attributes from database");
 												return; // Stop processing
@@ -921,29 +922,28 @@ angular.module("RIF")
 												//populate the table
 												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);		
 												alertScope.consoleDebug("[rifd-dsub-maptable.js] ModalAreaService.fillTable: " + 
-													$scope.totalPolygonCount);		
+													$scope.totalPolygonCount + " rows");		
 												return checkSelectedPolygonList(res.data); // promise						
 											}
+										}, function (err) {
+											promisesErrorHandler("user.getTileMakerAttributes", err);
 										}).then(function (res) {
-											if (res) {
-												alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + res);
-											}
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
+												(res ? res : "no status"));
 											// Add back selected shapes
 											
 											return processEachFeatureArray(); // Adds centroids using a promise
 										}, function(err) { // Error case
 											promisesErrorHandler("checkSelectedPolygonList", err);
 										}).then(function (res) {
-											if (res) {
-												alertScope.consoleDebug("[rifd-dsub-maptable.js] processEachFeatureArray: " + res);
-											}
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] processEachFeatureArray: " + 
+												(res ? res : "no status"));
 											return addSelectedShapes(); // promise
 										}, function(err) { // Error case
 											promisesErrorHandler("processEachFeatureArray", err);
 										}).then(function (res) {
-											if (res) {
-												alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes: " + res);
-											};
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes: " + 
+												(res ? res : "no status"));
 												
 											$scope.zoomToSelection(); // Zoom to selection	
 											$timeout(function() {	
@@ -963,12 +963,12 @@ angular.module("RIF")
                         }; // End of getMyMap()
 
 						function promisesErrorHandler(functionName, err) { // Abort the chain of promises processing
-							if (err) {
-								alertScope.consoleError("[rifd-dsub-maptable.js] " + functionName + " had error: " + err);
-							}			
+							alertScope.consoleError("[rifd-dsub-maptable.js] " + functionName + " had error: " + 
+								(err ? err : "no error specified"));
 							$scope.areamap.spin(false);  // off	
 							enableMapSpinners();
-							throw new Error("promisesErrorHandler: " + err);
+							throw new Error("promisesErrorHandler: " + functionName + " had error: " + 
+								(err ? err : "no error specified"));
 						}
 						
                         /*
@@ -1001,7 +1001,7 @@ angular.module("RIF")
                         };
 						
 						function asyncCreateTopoJsonLayer(topojsonURL) {
-							$scope.geoJSONLoadCoun=0;
+							$scope.geoJSONLoadCount=0;
 							return $q(function(resolve, reject) {
 								
 								var latlngListDups=0;
@@ -1103,20 +1103,27 @@ angular.module("RIF")
 								}
 								else {
 									$scope.geoJSON.on('loading', function(layer) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loading: " + ($scope.geoJSONLoadCount+1));
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loading " + $scope.input.selectAt + ": " + ($scope.geoJSONLoadCount+1));
 										if ($scope.geoJSONLoadCount == 0) {
 											$scope.shapeLoadUpdate = "Loading " + $scope.input.selectAt + "...";
 										}
 									});
 									$scope.geoJSON.on('load', function(layer) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loaded: " + ($scope.geoJSONLoadCount+1));
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loaded " + $scope.input.selectAt + ": " + ($scope.geoJSONLoadCount+1));
 										$scope.geoJSONLoadCount++;
-										if ($scope.geoJSONLoadCount == 1) {
+										$timeout(function() { // Slow things down a bit for MS Edge to avoid crash [DID NOT WORK]
+											if ($scope.geoJSONLoadCount == 1) {
+													$scope.shapeLoadUpdate = "Loaded " + $scope.input.selectAt;
+													$scope.totalPolygonCount = eachFeatureArray.length;
+											}
+										}, 100).then(function(res) {
 											resolve("map ready topoJsonGridLayer eachFeatureArray: " + 
-												eachFeatureArray.length);
-											$scope.shapeLoadUpdate = "Loaded " + $scope.input.selectAt;
-											$scope.totalPolygonCount = eachFeatureArray.length;
-										}
+												eachFeatureArray.length + "; res: " + (res ? res : "no status"));
+										},
+										function(err) {
+											reject("map ready topoJsonGridLayer with error eachFeatureArray: " + 
+												eachFeatureArray.length + "; res: " + (err ? err : "no error"));
+										});
 									});
 									$scope.areamap.addLayer($scope.geoJSON);
 								}
