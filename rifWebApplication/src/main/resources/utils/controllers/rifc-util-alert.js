@@ -123,10 +123,10 @@ angular.module("RIF")
 					user.rifFrontEndLogger(
 						user.currentUser, 
 						messageType,
-						browser.name + "; v" + browser.version,
+						browser.name + "; v" + browser.version, // Browser type
 						message.substring(0, 300), // Limit to 300 characters
 						errorMessage.substring(0, 300), // Limit to 300 characters
-						errorStack,
+						errorStack.substring(0, 300), // Limit to 300 characters,
 						actualTime,
 	//					actualTime.toDateString() + "; " + actualTime.toTimeString(),
 						relativeTime).then(function (res) {
