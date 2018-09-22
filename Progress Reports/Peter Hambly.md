@@ -2920,3 +2920,12 @@ SELECT a.*, b.coa2011
     * Added getTileMakerAttributes rest call to replace getTileMakerTilesAttributes; some of the smaller areas where optimised out in the base tile.
   * RIF timescales meeting;
   * Restructure of map selection code to ensure it works in the correct order;
+  * Selection list improvements using object to remove need to scan list, implement bounding box exclusion check for shapes, logging improvements;
+  * Tested to COA level: selected 54,998/227,750 COAs using COMARE nuclear installation shapefile in 11,289.3s on Edge. Probably need to remove 
+    async.eachOfSeries(CentroidList,  ...) and replace with conventional for loop;
+  * Edge crashes restoring COA COMARE test study, Firefox OK;
+  * Issues:
+    * More browser testing: Chrome. Edge fault beleived to be caused by debugger. Edge is slower but more reliable than firefox;
+    * "exit" button takes forever if centroids displayed. Needs spinner if possible;
+	* Load saved study then clear selection fails to initialise areas correctly. Wrong areas being displayed;
+    * "exit" should remove shapes;	
