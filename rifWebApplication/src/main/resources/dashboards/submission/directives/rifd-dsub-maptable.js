@@ -265,6 +265,8 @@ angular.module("RIF")
 						
 						var eachFeatureArray = [];
                         var bWeightedCentres = true;
+						var popWeightedCount=0;
+						var dbCentroidCount=0;
 						
                         /*
                          * TOOL STRIP 
@@ -709,10 +711,138 @@ angular.module("RIF")
 							
                             //Get the centroids from DB
                             bWeightedCentres = true;
-							var popWeightedCount=0;
-							var dbCentroidCount=0;
+							
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) { // Success case 
-		
+								return processCentroids(res);	
+                            }, function (err) { // Error case
+								promisesErrorHandler("user.getTileMakerCentroids", err);
+								
+                                //couldn't get weighted centres so generate geographic with leaflet
+                                alertScope.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
+                                bWeightedCentres = false;
+								$scope.centroid_type="Leaflet calculated geographic";
+                            }).then(function (res) { // No res etc
+								//Get max bounds
+								user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
+									var lowestLevel = res.data[0].names[0];
+									user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
+										maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+										if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
+											$scope.areamap.fitBounds(maxbounds);
+										}
+									}).then(function (res) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerTilesAttributes OK: " + 
+											(res ? res : "no status"))
+										return asyncCreateTopoJsonLayer(topojsonURL);
+									}).then(function (res) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer OK: " + 
+											(res ? res : "no status"));
+										return processEachFeatureArray(); // Adds centroids using a promise 
+									}, function(err) { // Error case
+										promisesErrorHandler("processEachFeatureArray", err);
+																					
+									}).then(function (res) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] processEachFeatureArray OK: " + (res ? res : "no status"));
+									                   
+										//Get overall layer properties
+										// Edge appears to crash here when retrieving study selection data, but not when choosing
+										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerAttributes: " + 
+												(res ? res : "no status"));
+											if (angular.isUndefined(res.data.attributes)) {
+												alertScope.showError("Could not get tile attributes from database");
+												return; // Stop processing
+											}      
+											else {								
+												$scope.totalPolygonCount = res.data.attributes.length;
+											
+												//populate the table
+												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);		
+												alertScope.consoleDebug("[rifd-dsub-maptable.js] ModalAreaService.fillTable: " + 
+													$scope.totalPolygonCount + " rows");		
+												return checkSelectedPolygonList(res.data); // promise						
+											}
+										}, function (err) {
+											promisesErrorHandler("user.getTileMakerAttributes", err);
+											/*
+										}).then(function (res) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
+												(res ? res : "no status"));
+											// Add back selected shapes
+											
+											return processEachFeatureArray(); // Adds centroids using a promise 
+										}, function(err) { // Error case
+											promisesErrorHandler("checkSelectedPolygonList", err);
+											*/
+										}).then(function (res) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
+//											alertScope.consoleDebug("[rifd-dsub-maptable.js] processEachFeatureArray: " + 
+												(res ? res : "no status"));
+											// Add selected shapes
+											return addSelectedShapes(); // promise
+										}, function(err) { // Error case
+											promisesErrorHandler("addSelectedShapes", err);
+										}).then(function (res) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes: " + 
+												(res ? res : "no status"));
+												
+											$scope.zoomToSelection(); // Zoom to selection	
+											$timeout(function() {	
+
+												$scope.areamap.spin(false);  // off	
+												enableMapSpinners();											
+												$scope.redrawMap();
+											}, 100);
+										}, function(err) { // Error case
+											promisesErrorHandler("addSelectedShapes", err);
+										})
+									});
+								});
+							}, function(err) { // Error case
+								promisesErrorHandler("user.getTileMakerCentroids", err);
+							});		
+                        }; // End of getMyMap()
+
+						function promisesErrorHandler(functionName, err) { // Abort the chain of promises processing
+							alertScope.consoleError("[rifd-dsub-maptable.js] " + functionName + " had error: " + 
+								(err ? err : "no error specified"));
+							$scope.areamap.spin(false);  // off	
+							enableMapSpinners();
+							throw new Error("promisesErrorHandler: " + functionName + " had error: " + 
+								(err ? err : "no error specified"));
+						}
+						
+                        /*
+                         * GET THE SELECT AND VIEW RESOLUTIONS
+                         */
+                        $scope.geoLevels = [];
+                        $scope.geoLevelsViews = [];
+						
+						setupMap().then(function(res) {
+							user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
+						},
+						function(err) {
+							promisesErrorHandler("setupMap", err);
+						});
+
+                        $scope.geoLevelChange = function () {
+                            //Clear the map
+                            $scope.selectedPolygon.length = 0;
+							$scope.selectedPolygonObj = {};
+							$scope.selectedPolygonCount = 0;
+                            $scope.input.selectedPolygon.length = 0;
+							$scope.selectedPolygonCount = 0;
+							$scope.geoJSONLoadCount = 0;
+                            if ($scope.areamap.hasLayer(centroidMarkers)) {
+								$scope.bShowHideCentroids = false;
+								SelectStateService.getState().showHideCentroids = false;
+                                $scope.areamap.removeLayer(centroidMarkers);
+                            }
+                            user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
+                        };
+						
+						function processCentroids(res) {
+							return $q(function(resolve, reject) {
 								var latlngListDups=0;
 								var latlngListWarnings=0;
 								$scope.centroid_type="Not known";
@@ -885,121 +1015,10 @@ angular.module("RIF")
 									
 								$scope.info.update();
 								
-                            }, function (err) { // Error case
-								if (err) {
-									alertScope.consoleError("[rifd-dsub-maptable.js] user.getTileMakerCentroids " + err);
-								}
-                                //couldn't get weighted centres so generate geographic with leaflet
-                                alertScope.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
-                                bWeightedCentres = false;
-								$scope.centroid_type="Leaflet calculated geographic";
-                            }).then(function () { // No res etc
-								//Get max bounds
-								user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
-									var lowestLevel = res.data[0].names[0];
-									user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
-										maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-										if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
-											$scope.areamap.fitBounds(maxbounds);
-										}
-									}).then(function (res) {
-										return asyncCreateTopoJsonLayer(topojsonURL);
-									}).then(function (res) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer OK: " + (res ? res : "no status"));
-									                   
-										//Get overall layer properties
-										// Edge appears to crash here when retrieving study selection data, but not when choosing
-										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerAttributes: " + 
-												(res ? res : "no status"));
-											if (angular.isUndefined(res.data.attributes)) {
-												alertScope.showError("Could not get tile attributes from database");
-												return; // Stop processing
-											}      
-											else {								
-												$scope.totalPolygonCount = res.data.attributes.length;
-											
-												//populate the table
-												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);		
-												alertScope.consoleDebug("[rifd-dsub-maptable.js] ModalAreaService.fillTable: " + 
-													$scope.totalPolygonCount + " rows");		
-												return checkSelectedPolygonList(res.data); // promise						
-											}
-										}, function (err) {
-											promisesErrorHandler("user.getTileMakerAttributes", err);
-										}).then(function (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
-												(res ? res : "no status"));
-											// Add back selected shapes
-											
-											return processEachFeatureArray(); // Adds centroids using a promise
-										}, function(err) { // Error case
-											promisesErrorHandler("checkSelectedPolygonList", err);
-										}).then(function (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] processEachFeatureArray: " + 
-												(res ? res : "no status"));
-											return addSelectedShapes(); // promise
-										}, function(err) { // Error case
-											promisesErrorHandler("processEachFeatureArray", err);
-										}).then(function (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes: " + 
-												(res ? res : "no status"));
-												
-											$scope.zoomToSelection(); // Zoom to selection	
-											$timeout(function() {	
-
-												$scope.areamap.spin(false);  // off	
-												enableMapSpinners();											
-												$scope.redrawMap();
-											}, 100);
-										}, function(err) { // Error case
-											promisesErrorHandler("addSelectedShapes", err);
-										})
-									});
-								});
-							}, function(err) { // Error case
-								promisesErrorHandler("asyncCreateTopoJsonLayer", err);
-							});		
-                        }; // End of getMyMap()
-
-						function promisesErrorHandler(functionName, err) { // Abort the chain of promises processing
-							alertScope.consoleError("[rifd-dsub-maptable.js] " + functionName + " had error: " + 
-								(err ? err : "no error specified"));
-							$scope.areamap.spin(false);  // off	
-							enableMapSpinners();
-							throw new Error("promisesErrorHandler: " + functionName + " had error: " + 
-								(err ? err : "no error specified"));
+								resolve("processed centroids");						
+							}); // End of $q constructor
 						}
-						
-                        /*
-                         * GET THE SELECT AND VIEW RESOLUTIONS
-                         */
-                        $scope.geoLevels = [];
-                        $scope.geoLevelsViews = [];
-						
-						setupMap().then(function(res) {
-							user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
-						},
-						function(err) {
-							promisesErrorHandler("setupMap", err);
-						});
-
-                        $scope.geoLevelChange = function () {
-                            //Clear the map
-                            $scope.selectedPolygon.length = 0;
-							$scope.selectedPolygonObj = {};
-							$scope.selectedPolygonCount = 0;
-                            $scope.input.selectedPolygon.length = 0;
-							$scope.selectedPolygonCount = 0;
-							$scope.geoJSONLoadCount = 0;
-                            if ($scope.areamap.hasLayer(centroidMarkers)) {
-								$scope.bShowHideCentroids = false;
-								SelectStateService.getState().showHideCentroids = false;
-                                $scope.areamap.removeLayer(centroidMarkers);
-                            }
-                            user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
-                        };
-						
+							
 						function asyncCreateTopoJsonLayer(topojsonURL) {
 							$scope.geoJSONLoadCount=0;
 							return $q(function(resolve, reject) {
