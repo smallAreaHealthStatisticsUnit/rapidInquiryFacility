@@ -343,18 +343,36 @@ angular.module("RIF")
 					actualTime,
 					relativeTime) {
                     //http://localhost:8080/rifServices/studySubmission/pg/rifFrontEndLogger?userID=dwmorley&messageType=INFO&browserType=XXX&message=Hello
-					var uri=servicesConfig.studySubmissionURL + 'rifFrontEndLogger?userID=' + username +
-						'&messageType=' + messageType + 
-						'&browserType=' + browserType + 
-						'&message=' + encodeURIComponent((message || "NO MESSAGE!"));
-					if (errorMessage) {
-						uri+='&errorMessage=' + encodeURIComponent(errorMessage);
+					var uri=undefined;
+					try {
+						uri=servicesConfig.studySubmissionURL + 'rifFrontEndLogger?userID=' + username +
+							'&messageType=' + messageType + 
+							'&browserType=' + encodeURIComponent(browserType) + 
+							'&message=' + encodeURIComponent((message || "NO MESSAGE!"));
+						if (errorMessage) {
+							uri+='&errorMessage=' + encodeURIComponent(errorMessage);
+						}
+						if (errorStack) {
+							uri+='&errorStack=' + encodeURIComponent(errorStack);
+						}
+						uri+='&actualTime=' + encodeURIComponent(actualTime) + 
+							'&relativeTime=' + encodeURIComponent(relativeTime);
+						return $http.get(uri);
 					}
-					if (errorStack) {
-						uri+='&errorStack=' + encodeURIComponent(errorStack);
+					catch(e) {
+						if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+							if (isIE()) {
+								if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+									console.log("[rifs-back-requests.js] rifFrontEndLogger error: " + JSON.stringify(e) + // IE safe
+										"\n" + message); 
+								}
+							}
+							else {
+								console.log("[rifs-back-requests.js] rifFrontEndLogger error: " + JSON.stringify(e) + // IE safe
+									"\n" + message); 
+							}
+						}  						
+						return undefined;
 					}
-					uri+='&actualTime=' + encodeURIComponent(actualTime) + 
-						'&relativeTime=' + encodeURIComponent(relativeTime);
-                    return $http.get(uri);
                 };
             }]);
