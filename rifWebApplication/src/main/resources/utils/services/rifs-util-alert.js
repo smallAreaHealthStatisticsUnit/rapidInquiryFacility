@@ -41,11 +41,19 @@ angular.module("RIF")
 			
                     return {
 						addMessage: function (time, messageLevel, msg, rifError) {
+							var err; // Get stack
+							if (rifError) {
+								err=rifError;
+							}
+							else {
+								err=new Error("Auto created by service");
+							}
+							
 							var msg=angular.copy({ 
 								time: time,
 								messageLevel: messageLevel, 
 								message: msg,
-								error: rifError
+								error: err
 							});
 							$rootScope.messagesList.push(msg);
 //							$rootScope.$broadcast('consoleMessage', { 
@@ -61,11 +69,19 @@ angular.module("RIF")
 							return angular.copy($rootScope.messagesList);
 						},
                         rifMessage: function (messageLevel, msg, rifHide, rifError) {
+							var err; // Get stack
+							if (rifError) {
+								err=rifError;
+							}
+							else {
+								err=new Error("Auto created by service");
+							}
+											
                             $rootScope.$broadcast('rifMessage', { 
 								messageLevel: messageLevel, 
 								msg: msg,
 								rifHide: rifHide,
-								rifError: rifError
+								rifError: err
 							});
                         },
                         consoleDebug: function (msg, rifError) {
@@ -81,10 +97,18 @@ angular.module("RIF")
 							});
                         },
                         consoleError: function (msg, rifError) {
+							var err; // Get stack
+							if (rifError) {
+								err=rifError;
+							}
+							else {
+								err=new Error("Auto created by service");
+							}
+											
                             $rootScope.$broadcast('consoleMessage', { 
 								messageLevel: "ERROR", 
 								msg: msg,
-								rifError: rifError
+								rifError: err
 							});
                         }
                     };

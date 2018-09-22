@@ -135,13 +135,11 @@ angular.module("RIF")
                 user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
                     $scope.summary = res.data.smoothed_results;
                     $scope.statusTableOptions.data = $scope.summary;
-                }, handleStudyError);
-
-                function handleStudyError(e) {
-                    $scope.showError("Could not retrieve status of studies");
-                    $scope.consoleLog("[rifc-dsub-status.js] Could not retrieve status of studies: " + 
-						JSON.stringify(e));
-                }
+                }, function (e) {
+                    $scope.consoleError("[rifc-dsub-status.js] Could not retrieve status of studies: " + 
+						JSON.stringify(e), e);
+                    $scope.showError("Could not retrieve status of studies", e);
+                });
 
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({

@@ -41,17 +41,43 @@ angular.module("RIF")
                 return {
                     request: function (config) {
                         var AuthService = $injector.get('user');
+						var currentStateName = $injector.get('$state').current.name
                         //login check here on all outgoing RIF requests to middleware
                         if (!angular.isUndefined(config.headers.rifUser)) {
                             try {
-                                AuthService.isLoggedIn(AuthService.currentUser).then(loggedIn, loggedIn);
+                                AuthService.isLoggedIn(AuthService.currentUser).then(loggedIn, isLoggedInError);
                                 function loggedIn(res) {
                                     if (angular.isUndefined(res) || angular.isUndefined(res.data) || res.data[0].result === "false") {
                                         //Redirect to login screen
-                                        $injector.get('$state').transitionTo('state0');
+										if (currentStateName == 'state0') {
+											AlertService.consoleError("AuthService.isLoggedIn() failed; already in state0; res: " + 
+												((res && res.data) ? JSON.stringify(res.data) : "no res.data"));
+										}
+										else {
+											AlertService.consoleError("AuthService.isLoggedIn() failed; transition from: " + 
+											currentStateName + 
+												" to state0; res: " + ((res && res.data) ? JSON.stringify(res.data) : "no res.data"));
+											$injector.get('$state').transitionTo('state0');
+										}
                                     }
                                 }
+                                function isLoggedInError(err) {
+									//Redirect to login screen
+									
+									if (currentStateName == 'state0') {
+										AlertService.consoleError("AuthService.isLoggedIn() error; already in state0; error: " + 
+											(err ? err : "no error"));
+									}
+									else {
+										AlertService.consoleError("AuthService.isLoggedIn() error; transition from: " + 
+											currentStateName + 
+											" to state0; error: " + (err ? err : "no error"));
+										$injector.get('$state').transitionTo('state0');
+									}
+                                }								
                             } catch (e) {
+								AlertService.consoleError("Exception in AuthService.isLoggedIn; transition from: " + $injector.get('$state').name + 
+									" to state0: " + e.message, e);
                                 $injector.get('$state').transitionTo('state0');
                             }
                         }
@@ -120,11 +146,11 @@ angular.module("RIF")
                         return res;
                     },
                     requestError: function (rejection) {
-                        return $q.reject(rejection);
+                        return $q.reject("requestError: " + rejection);
                     },
                     responseError: function (rejection) {
                         //for non-200 status
-                        return $q.reject(rejection);
+                        return $q.reject("responseError: " + rejection);
                     }
                 };
             }])

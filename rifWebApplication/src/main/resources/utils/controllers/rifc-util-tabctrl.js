@@ -360,7 +360,13 @@ angular.module("RIF")
 							}				
 							bPoll = true;
 							$scope.bPoll = angular.copy(bPoll);
-                        });
+                        }, function (e) {
+							bPoll = false; // Prevent function stacking
+							$scope.consoleError("[rifc-util-tabctrl.js] Auto retrieve of study status failed: " + 
+								JSON.stringify(e), e);
+							$scope.showError("Auto retrieve of study status failed", e);
+							$interval.cancel(stop);
+						});
                     }
                 }, ms);
 
@@ -446,7 +452,7 @@ angular.module("RIF")
 					ExportStateService.resetState();
 					SelectStateService.resetState();
 							
-                    $injector.get('$state').transitionTo('state0');
+                    $injector.get('$state').transitionTo('state0'); // Logout
                 }
             }])
         .controller('ModalLogoutYesNoInstanceCtrl',
