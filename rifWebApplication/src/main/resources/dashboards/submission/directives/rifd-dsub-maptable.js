@@ -26,9 +26,13 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
- 
+ *
  * David Morley
- * @author dmorley
+ * Original @author dmorley
+ *
+ * Re-structured to use promises chains throughout and tuned for UK COA 220,000 areas maps
+ * Peter Hambly
+ * @author phambly
  */
 
 /*
@@ -72,147 +76,6 @@ angular.module("RIF")
 
 						var shapes = $scope.areamap.createPane('shapes');
 						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups					
-						
-						// returns a list of all elements under the cursor
-						// https://gist.github.com/Rooster212/4549f9ab0acb2fc72fe3
-/*						function elementsFromPoint(x,y) {
-							var elements = [], previousPointerEvents = [], current, i, d;
-
-							if(typeof document.elementsFromPoint === "function")
-								return document.elementsFromPoint(x,y);
-							if(typeof document.msElementsFromPoint === "function")
-								return document.msElementsFromPoint(x,y);
-							
-							// get all elements via elementFromPoint, and remove them from hit-testing in order
-							while ((current = document.elementFromPoint(x,y)) && elements.indexOf(current)===-1 && current != null) {
-								  
-								// push the element and its current style
-								elements.push(current);
-								previousPointerEvents.push({
-									value: current.style.getPropertyValue('pointer-events'),
-									priority: current.style.getPropertyPriority('pointer-events')
-								});
-								  
-								// add "pointer-events: none", to get to the underlying element
-								current.style.setProperty('pointer-events', 'none', 'important'); 
-							}
-
-							// restore the previous pointer-events values
-							for(i = previousPointerEvents.length; d=previousPointerEvents[--i]; ) {
-								elements[i].style.setProperty('pointer-events', d.value?d.value:'', d.priority); 
-							}
-							  
-							// return our results
-							return elements;
-						} */
-						// Modified from: https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd
-						function shapesClickThrough(e, map, geojsonLayers) {
-							if (e._stopped) { 
-//								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough " +  
-//									"(" + e.target._leaflet_id + "): " + e.type + "; STOPPED");
-									L.DomEvent.stop(e);
-								return; 
-							}
-
-							var target = e.target;
-							var stopped;
-							var removed;
-							var ev = new MouseEvent(e.type, e)
-
-							removed = {node: target, display: target.style.display};
-							target.style.display = 'none';
-							
-/*						if (map) {
-								var layerPoint = map.latLngToLayerPoint(latlngList[0].latLng);
-								var containerPoint = map.latLngToContainerPoint(latlngList[0].latLng);
-								var mousePoint = map.mouseEventToContainerPoint(e);
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
-									"; latlngList[0]: " + JSON.stringify(latlngList[0]) + 
-									"; client: [" + e.clientX + "," + e.clientY + "]" + 
-//									"; layerPoint: [" + layerPoint.x + "," + layerPoint.y + "]" + 
-//									"; containerPoint: [" + containerPoint.x + "," + containerPoint.y + "]" +
-									"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
-							}
-							else {
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
-									"; latlngList[0]: " + JSON.stringify(latlngList[0]) + "; client: [" + e.clientX + "," + e.clientY + "]");
-							} */
-							
-							// Look for closest geoJSON layer. Mouse could be anywhere in the shape so centroids will not match					
-							var geojsonLayer=L.GeometryUtil.closestLayer(map, geojsonLayers, map.mouseEventToLatLng(e));
-							var properties;
-							var leafletId;
-							var leafletIdFound=false;
-							if (geojsonLayer) {
-								properties = geojsonLayer.layer.feature.properties;
-								leafletId = geojsonLayer.layer._leaflet_id;
-							}
-							
-							// This does not work as the geoJSON tile layer is blocking mouse clicks for some reason
-/*							var elementList = elementsFromPoint(e.clientX, e.clientY);
-							for (var k=0; k<elementList.length; k++) {
-								target=elementList[k];
-								if (target && target !== shapes && target._leaflet_id) { // Leaflet only targets												
-									stopped = !target.dispatchEvent(ev);
-									if (stopped || ev._stopped) {
-										L.DomEvent.stop(e);
-									}
-									if (target._leaflet_id && leafletId && target._leaflet_id == leafletId) {
-										leafletIdFound=true;
-									}
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
-										"(" + e.target._leaflet_id + "; for: " + (e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
-										"; PROPAGATE to: (" +
-										(target._leaflet_id || 'N/A') + ")" +
-										"; leafletIdFound: " + leafletIdFound); 
-								}
-								else if (!target._leaflet_id) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
-										"(no target._leaflet_id for: " + e.currentTarget._leaflet_id + "): " + e.type); 
-								}
-								else if (!target) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
-										"(no target for: " + e.currentTarget._leaflet_id + "): " + e.type); 
-								}
-								else if (target === shapes) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
-										"(target === shapes for: " + e.currentTarget._leaflet_id + "): " + e.type); 
-								} 
-							} */
-
-							if (!leafletIdFound) { // Did not propagate (clicks disabled by early 1.0 leaflet; may work with later versions)	
-								var mousePoint = map.mouseEventToContainerPoint(e);	
-								if (geojsonLayer && map && leafletId && properties) {
-//									map._layers[leafletId].fire(e.type);
-									// Do manually. This again does not work as you only get one click per entry/exit from a shape layer
-/*									if (e.type == 'mouseover') {
-                                        $scope.thisPolygon = properties.name;
-									}
-									else if (e.type == 'mouseout')  {
-                                        $scope.thisPolygon = "";
-									}
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough direct to geoJSON for: " + 
-										(e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
-										"; name: " + properties.name  +
-										"; leafletId: " + leafletId +
-										"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
-                                    $scope.$digest(); */
-								}
-								else {
-									alertScope.consoleError("[rifd-dsub-maptable.js] unable shapesClickThrough direct to geoJSON for: " + 
-										(e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
-										"; properties: " + JSON.stringify(properties)  +
-										"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
-								}
-							} 							
-							removed.node.style.display = removed.display;
-						}
-//						L.DomEvent.on(shapes, 'mouseover', function(e) {
-//							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
-//						});
-//						L.DomEvent.on(shapes, 'mouseout', function(e) {
-//							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
-//						}); 
 										
 						SubmissionStateService.setAreaMap($scope.areamap);
 						$scope.bShowHideSelectionShapes=(SelectStateService.getState().showHideSelectionShapes || true);
@@ -637,7 +500,14 @@ angular.module("RIF")
 							}
 							
 						}
-						
+
+                        /*
+						 * Function: 	setupMap()
+						 * Parameters:  None
+						 * Returns:		Promise
+						 * Called from: Directive initialisation
+                         * Description:	Initialise basemap, controls etc
+                         */		 
 						function setupMap() { // Return promise
 							// Called on DOM render completion to ensure basemap is rendered
 							return $timeout(function () {
@@ -700,7 +570,11 @@ angular.module("RIF")
 						}
 						
                         /*
-                         * RENDER THE MAP AND THE TABLE
+						 * Function: 	getMyMap()
+						 * Parameters:  None
+						 * Returns:		Nothing
+						 * Called from:
+                         * Description:	Render the map and the table
                          */
                         getMyMap = function () {
 							start=new Date().getTime();	
@@ -785,7 +659,7 @@ angular.module("RIF")
 										}).then(function (res) {
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
 												(res ? res : "no status"));
-											// Add selected shapes
+											// Add selected shapes to map
 											return addSelectedShapes(); // promise
 										}, function(err) { // Error case
 											promisesErrorHandler("addSelectedShapes", err); // Abort	
@@ -828,7 +702,9 @@ angular.module("RIF")
                         $scope.geoLevels = [];
                         $scope.geoLevelsViews = [];
 						
+						// Initialise basemap, controls etc
 						setupMap().then(function(res) {
+							// Then setup map
 							user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
 						},
 						function(err) {
@@ -1584,6 +1460,13 @@ angular.module("RIF")
 						}
 						
                         function handleGeoLevelSelect(res) {
+							
+							function handleDefaultGeoLevels(res) {
+								//get the select levels
+								$scope.input.selectAt = res.data[0].names[0];
+								$scope.input.studyResolution = res.data[0].names[0];
+								$scope.geoLevelChange();
+							}
                             $scope.geoLevels.length = 0;
                             for (var i = 0; i < res.data[0].names.length; i++) {
                                 $scope.geoLevels.push(res.data[0].names[i]);
@@ -1598,12 +1481,11 @@ angular.module("RIF")
                                 user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                             }
                         }
-                        function handleDefaultGeoLevels(res) {
-                            //get the select levels
-                            $scope.input.selectAt = res.data[0].names[0];
-                            $scope.input.studyResolution = res.data[0].names[0];
-                            $scope.geoLevelChange();
-                        }
+						
+						/*
+						 * Called from: setupMap() via handleGeoLevelSelect(), $scope.geoLevelChange() 
+						 * Calls: 		getMyMap() to setup map content and tables
+						 */
                         function handleGeoLevelViews(res) {
                             $scope.geoLevelsViews.length = 0;
                             for (var i = 0; i < res.data[0].names.length; i++) {
@@ -1613,7 +1495,7 @@ angular.module("RIF")
                             if ($scope.geoLevelsViews.indexOf($scope.input.studyResolution) === -1) {
                                 $scope.input.studyResolution = $scope.input.selectAt;
                             }
-                            //get table
+                            // Setup map content and tables
 							try {
 								getMyMap();
 							}
@@ -1903,6 +1785,7 @@ angular.module("RIF")
                         $scope.$on('makeDrawSelection', function (event, data) {
                             $scope.selectionData.push(data);
                         });
+						
                         makeDrawSelection = function (shape, makeDrawSelectionCallback) {
 							
 							// Create savedShape for SelectStateService
@@ -2485,7 +2368,7 @@ angular.module("RIF")
 								}
 							}
 
-                        }; // End of makeDrawSelection()
+                        } // End of makeDrawSelection()
 						
                         //remove drawn items event fired from service
                         $scope.$on('removeDrawnItems', function (event, data) {
@@ -2724,7 +2607,153 @@ angular.module("RIF")
                                 scope: $scope,
                                 keyboard: false
                             });
-                        };
+                        }; // End of $scope.openFromList()
+						
+//
+// EXPERIMENTAL pointer event code related to issue: #66
+//						
+						// returns a list of all elements under the cursor
+						// https://gist.github.com/Rooster212/4549f9ab0acb2fc72fe3
+/*						function elementsFromPoint(x,y) {
+							var elements = [], previousPointerEvents = [], current, i, d;
+
+							if(typeof document.elementsFromPoint === "function")
+								return document.elementsFromPoint(x,y);
+							if(typeof document.msElementsFromPoint === "function")
+								return document.msElementsFromPoint(x,y);
+							
+							// get all elements via elementFromPoint, and remove them from hit-testing in order
+							while ((current = document.elementFromPoint(x,y)) && elements.indexOf(current)===-1 && current != null) {
+								  
+								// push the element and its current style
+								elements.push(current);
+								previousPointerEvents.push({
+									value: current.style.getPropertyValue('pointer-events'),
+									priority: current.style.getPropertyPriority('pointer-events')
+								});
+								  
+								// add "pointer-events: none", to get to the underlying element
+								current.style.setProperty('pointer-events', 'none', 'important'); 
+							}
+
+							// restore the previous pointer-events values
+							for(i = previousPointerEvents.length; d=previousPointerEvents[--i]; ) {
+								elements[i].style.setProperty('pointer-events', d.value?d.value:'', d.priority); 
+							}
+							  
+							// return our results
+							return elements;
+						} */
+						// Modified from: https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd
+						// NOT CURRENTLY IN USE
+						function shapesClickThrough(e, map, geojsonLayers) {
+							if (e._stopped) { 
+//								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough " +  
+//									"(" + e.target._leaflet_id + "): " + e.type + "; STOPPED");
+									L.DomEvent.stop(e);
+								return; 
+							}
+
+							var target = e.target;
+							var stopped;
+							var removed;
+							var ev = new MouseEvent(e.type, e)
+
+							removed = {node: target, display: target.style.display};
+							target.style.display = 'none';
+							
+/*						if (map) {
+								var layerPoint = map.latLngToLayerPoint(latlngList[0].latLng);
+								var containerPoint = map.latLngToContainerPoint(latlngList[0].latLng);
+								var mousePoint = map.mouseEventToContainerPoint(e);
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
+									"; latlngList[0]: " + JSON.stringify(latlngList[0]) + 
+									"; client: [" + e.clientX + "," + e.clientY + "]" + 
+//									"; layerPoint: [" + layerPoint.x + "," + layerPoint.y + "]" + 
+//									"; containerPoint: [" + containerPoint.x + "," + containerPoint.y + "]" +
+									"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
+							}
+							else {
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
+									"; latlngList[0]: " + JSON.stringify(latlngList[0]) + "; client: [" + e.clientX + "," + e.clientY + "]");
+							} */
+							
+							// Look for closest geoJSON layer. Mouse could be anywhere in the shape so centroids will not match					
+							var geojsonLayer=L.GeometryUtil.closestLayer(map, geojsonLayers, map.mouseEventToLatLng(e));
+							var properties;
+							var leafletId;
+							var leafletIdFound=false;
+							if (geojsonLayer) {
+								properties = geojsonLayer.layer.feature.properties;
+								leafletId = geojsonLayer.layer._leaflet_id;
+							}
+							
+							// This does not work as the geoJSON tile layer is blocking mouse clicks for some reason
+/*							var elementList = elementsFromPoint(e.clientX, e.clientY);
+							for (var k=0; k<elementList.length; k++) {
+								target=elementList[k];
+								if (target && target !== shapes && target._leaflet_id) { // Leaflet only targets												
+									stopped = !target.dispatchEvent(ev);
+									if (stopped || ev._stopped) {
+										L.DomEvent.stop(e);
+									}
+									if (target._leaflet_id && leafletId && target._leaflet_id == leafletId) {
+										leafletIdFound=true;
+									}
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+										"(" + e.target._leaflet_id + "; for: " + (e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
+										"; PROPAGATE to: (" +
+										(target._leaflet_id || 'N/A') + ")" +
+										"; leafletIdFound: " + leafletIdFound); 
+								}
+								else if (!target._leaflet_id) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+										"(no target._leaflet_id for: " + e.currentTarget._leaflet_id + "): " + e.type); 
+								}
+								else if (!target) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+										"(no target for: " + e.currentTarget._leaflet_id + "): " + e.type); 
+								}
+								else if (target === shapes) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+										"(target === shapes for: " + e.currentTarget._leaflet_id + "): " + e.type); 
+								} 
+							} */
+
+							if (!leafletIdFound) { // Did not propagate (clicks disabled by early 1.0 leaflet; may work with later versions)	
+								var mousePoint = map.mouseEventToContainerPoint(e);	
+								if (geojsonLayer && map && leafletId && properties) {
+//									map._layers[leafletId].fire(e.type);
+									// Do manually. This again does not work as you only get one click per entry/exit from a shape layer
+/*									if (e.type == 'mouseover') {
+                                        $scope.thisPolygon = properties.name;
+									}
+									else if (e.type == 'mouseout')  {
+                                        $scope.thisPolygon = "";
+									}
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough direct to geoJSON for: " + 
+										(e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
+										"; name: " + properties.name  +
+										"; leafletId: " + leafletId +
+										"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
+                                    $scope.$digest(); */
+								}
+								else {
+									alertScope.consoleError("[rifd-dsub-maptable.js] unable shapesClickThrough direct to geoJSON for: " + 
+										(e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
+										"; properties: " + JSON.stringify(properties)  +
+										"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
+								}
+							} 							
+							removed.node.style.display = removed.display;
+						}
+//						L.DomEvent.on(shapes, 'mouseover', function(e) {
+//							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
+//						});
+//						L.DomEvent.on(shapes, 'mouseout', function(e) {
+//							shapesClickThrough(e, $scope.areamap, $scope.geoJSONLayers);
+//						}); 
+						
                     }
                 };
             }]);
