@@ -2919,13 +2919,38 @@ SELECT a.*, b.coa2011
   * Fix for "Could not match polygons from database with selected polygons list"
     * Added getTileMakerAttributes rest call to replace getTileMakerTilesAttributes; some of the smaller areas where optimised out in the base tile.
   * RIF timescales meeting;
-  * Restructure of map selection code to ensure it works in the correct order;
+  * Restructure of map selection code to ensure it works in the correct order using promised;
   * Selection list improvements using object to remove need to scan list, implement bounding box exclusion check for shapes, logging improvements;
   * Tested to COA level: selected 54,998/227,750 COAs using COMARE nuclear installation shapefile in 11,289.3s on Edge. Probably need to remove 
     async.eachOfSeries(CentroidList,  ...) and replace with conventional for loop;
-  * Edge crashes restoring COA COMARE test study, Firefox OK;
+  * Edge crashes restoring COA COMARE test study but can create intersects, Firefox OK. Attempts to fix by reorder the code failed; it crashes soon 
+    after loading COA GeoJSON tiles;
+	```
+	Faulting application name: MicrosoftEdgeCP.exe, version: 11.0.17134.48, time stamp: 0x5ae3f17b
+	Faulting module name: EdgeContent.dll, version: 11.0.17134.285, time stamp: 0x9a1d5114
+	Exception code: 0xc0000409
+	Fault offset: 0x00000000000af52a
+	Faulting process id: 0x74fc
+	Faulting application start time: 0x01d452523afd7278
+	Faulting application path: C:\Windows\SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\MicrosoftEdgeCP.exe
+	Faulting module path: C:\WINDOWS\SYSTEM32\EdgeContent.dll
+	Report Id: dbb8cbb2-4628-4664-b135-b5a4f803f5b7
+	Faulting package full name: Microsoft.MicrosoftEdge_42.17134.1.0_neutral__8wekyb3d8bbwe
+	Faulting package-relative application ID: ContentProcess
+	```
   * Issues:
-    * More browser testing: Chrome. Edge fault beleived to be caused by debugger. Edge is slower but more reliable than firefox;
+    * More browser testing at COA level: Firefox OK, but GC is annoying; Edge: very nearly. Chrome, Opera cannot handle COA (2GB/3GB memory limits). 
+	  IE not tested;
+	* Edge fault believed to be caused by debugger. Edge is slower but more reliable than Firefox;
     * "exit" button takes forever if centroids displayed. Needs spinner if possible;
 	* Load saved study then clear selection fails to initialise areas correctly. Wrong areas being displayed;
     * "exit" should remove shapes;	
+ * Performance to load 28 COMARE nuclear installation sites at 5Km and 25Km:
+
+   | Geo Level   | Load from file | Intersect | Selected areas      |
+   |-------------|----------------|-----------|---------------------| 
+   | MSOA (Ward) | 6.8s           | 15.5s     | 2,040/8,480         |  
+   | LSOA        | 21s            | 43.4s     | 10,124/41,729       |  
+   | COA         | 177.2s         | 203.5s    | 54,998/227,750      |  
+   
+#### 24th to 28th September
