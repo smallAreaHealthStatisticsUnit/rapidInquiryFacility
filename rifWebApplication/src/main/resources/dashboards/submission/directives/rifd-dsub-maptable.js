@@ -692,6 +692,7 @@ angular.module("RIF")
 								(err ? err : "no error specified"));
 							$scope.areamap.spin(false);  // off	
 							enableMapSpinners();
+							$scope.shapeLoadUpdate="Map load failed";
 							throw new Error("promisesErrorHandler: " + functionName + " had error: " + 
 								(err ? err : "no error specified"));
 						}
@@ -732,6 +733,8 @@ angular.module("RIF")
 								var latlngListDups=0;
 								var latlngListWarnings=0;
 								$scope.centroid_type="Not known";
+								popWeightedCount=0;
+								dbCentroidCount=0;
                                 for (var i = 0; i < res.data.smoothed_results.length; i++) {
 													
 									var circle = undefined;
@@ -761,7 +764,9 @@ angular.module("RIF")
 									
                                     var p = res.data.smoothed_results[i];	
 
-									if (res.data.smoothed_results[i] && res.data.smoothed_results[i].pop_x && res.data.smoothed_results[i].pop_y) {
+									if (res.data.smoothed_results[i] && 
+									    res.data.smoothed_results[i].pop_x && 
+										res.data.smoothed_results[i].pop_y) {
 										popWeightedCount++;
 										var pwLatLng=undefined;
 										try { // Try to convert, will use GeoJSON if it fails
@@ -805,13 +810,11 @@ angular.module("RIF")
 													circleId: centroidMarkers.getLayerId(circle)
 												}
 											}
-											
-											if (res.data.smoothed_results[i] && res.data.smoothed_results[i].x && res.data.smoothed_results[i].y) {
-												dbCentroidCount++;
-											}
 										}
 									}
-									else if (res.data.smoothed_results[i] && res.data.smoothed_results[i].x && res.data.smoothed_results[i].y) {
+									else if (res.data.smoothed_results[i] && 
+									    res.data.smoothed_results[i].x && 
+										res.data.smoothed_results[i].y) {
 										dbCentroidCount++;
 										var dbLatLng=undefined;
 										try {
@@ -867,14 +870,23 @@ angular.module("RIF")
 								if (res.data.smoothed_results.length == popWeightedCount) {
 									$scope.centroid_type="population weighted";
 								}
+								else if (popWeightedCount > 0) {
+									$scope.centroid_type=pctPopWeighted + "% population weighted";
+								}
 								else if (res.data.smoothed_results.length == dbCentroidCount) {
 									$scope.centroid_type="database geographic";
 								}
-								else if (0 == dbCentroidCount) {
-									throw new Error("user.getTileMakerCentroids: dbCentroidCount=0");
+								else if (0 == dbCentroidCount) { // No centroids at all
+									throw new Error("user.getTileMakerCentroids: dbCentroidCount=0" +
+										"; popWeightedCount: " + popWeightedCount +
+										"; res.data.smoothed_results.length: " + res.data.smoothed_results.length +
+										"; pctPopWeighted: " + pctPopWeighted);
 								}
 								else {
-									$scope.centroid_type=pctPopWeighted + "% population weighted";
+									throw new Error("user.getTileMakerCentroids() invalid condition: dbCentroidCount=" + dbCentroidCount +
+										"; popWeightedCount: " + popWeightedCount +
+										"; res.data.smoothed_results.length: " + res.data.smoothed_results.length +
+										"; pctPopWeighted: " + pctPopWeighted);
 								}
 								
 								if (latlngListWarnings > 0) {
