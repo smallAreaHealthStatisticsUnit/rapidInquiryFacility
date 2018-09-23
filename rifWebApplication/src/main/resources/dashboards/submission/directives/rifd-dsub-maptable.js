@@ -263,11 +263,15 @@ angular.module("RIF")
                         $scope.transparency = $scope.input.transparency;
 						$scope.geoJSONLoadCount = 0;
 						
+                        $scope.latlngListById = []; // centroids!
+						
 						var eachFeatureArray = [];
                         var bWeightedCentres = true;
 						var popWeightedCount=0;
 						var dbCentroidCount=0;
-						
+
+						var start=new Date().getTime();	
+									
                         /*
                          * TOOL STRIP 
                          * These repeat stuff in the leafletTools directive - possible refactor
@@ -579,7 +583,7 @@ angular.module("RIF")
 //								$scope.geoJSONLayers.push(layer);
 								//get as centroid marker layer. 
 								if (!bWeightedCentres || 										// Not using weighted centres 
-									latlngListById[feature.properties.area_id] == undefined) {	// No weighted centres for this area
+									$scope.latlngListById[feature.properties.area_id] == undefined) {	// No weighted centres for this area
 									var p = layer.getBounds().getCenter();
 									latlngList.push({
 										latLng: L.latLng([p.lat, p.lng]), 
@@ -599,11 +603,11 @@ angular.module("RIF")
 									
 									centroidMarkers.addLayer(circle);
 									
-									if (latlngListById[feature.properties.area_id]) {
+									if ($scope.latlngListById[feature.properties.area_id]) {
 										latlngListDups++;
 									}
 									else {
-										latlngListById[feature.properties.area_id] = {
+										$scope.latlngListById[feature.properties.area_id] = {
 											latLng: L.latLng([p.lat, p.lng]), 
 											name: p.name,
 											circleId: centroidMarkers.getLayerId(circle)
@@ -611,9 +615,9 @@ angular.module("RIF")
 									}
 								}
 								else { // Using database centroids
-									feature.properties.latLng = latlngListById[feature.properties.area_id].latLng;
+									feature.properties.latLng = $scope.latlngListById[feature.properties.area_id].latLng;
 								}
-								feature.properties.circleId = latlngListById[feature.properties.area_id].circleId;
+								feature.properties.circleId = $scope.latlngListById[feature.properties.area_id].circleId;
 								
 								
 								if (eachFeatureCallback && typeof eachFeatureCallback === "function") {
@@ -699,6 +703,7 @@ angular.module("RIF")
                          * RENDER THE MAP AND THE TABLE
                          */
                         getMyMap = function () {
+							start=new Date().getTime();	
 
                             if ($scope.areamap.hasLayer($scope.geoJSON)) {
                                 $scope.areamap.removeLayer($scope.geoJSON);
@@ -706,23 +711,25 @@ angular.module("RIF")
 
                             var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt); //  With no x/y/z returns URL
                             latlngList = []; // centroids!
-                            latlngListById = []; // centroids!
+                            $scope.latlngListById = []; // centroids!
                             centroidMarkers = new L.layerGroup();
 							
-                            //Get the centroids from DB
-                            bWeightedCentres = true;
-							
+                            //Get the centroids from DB (from the lookup table - not the root tile)
+                            bWeightedCentres = true;							
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) { // Success case 
-								return processCentroids(res);	
-                            }, function (err) { // Error case
-								promisesErrorHandler("user.getTileMakerCentroids", err);
+							// Create LatLng List for centroids
+							return createLatLngList(res);	
+								}, function (err) { // Error case: not an error - processing continues
+								alertScope.consoleError("[rifd-dsub-maptable.js] user.getTileMakerCentroids had error: " + 
+									(err ? err : "no error specified"));
 								
                                 //couldn't get weighted centres so generate geographic with leaflet
                                 alertScope.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
-                                bWeightedCentres = false;
+                                bWeightedCentres = false;	// Force use of GeoJSON centroids
 								$scope.centroid_type="Leaflet calculated geographic";
                             }).then(function (res) { // No res etc
-								//Get max bounds
+							
+								//Get map max bounds
 								user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
 									var lowestLevel = res.data[0].names[0];
 									user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
@@ -733,19 +740,21 @@ angular.module("RIF")
 									}).then(function (res) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerTilesAttributes OK: " + 
 											(res ? res : "no status"))
+										// Add topoJSON tiles to map
 										return asyncCreateTopoJsonLayer(topojsonURL);
 									}).then(function (res) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer OK: " + 
 											(res ? res : "no status"));
-										return processEachFeatureArray(); // Adds centroids using a promise 
-									}, function(err) { // Error case
-										promisesErrorHandler("processEachFeatureArray", err);
-																					
-									}).then(function (res) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] processEachFeatureArray OK: " + (res ? res : "no status"));
-									                   
-										//Get overall layer properties
+										// Adds centroids to map from GeoJSON. Build eachFeatureArray for centroids using LatLng list 
+										// or $scope.latlngListById
 										// Edge appears to crash here when retrieving study selection data, but not when choosing
+										return addCentroidsToMap(); 
+									}, function(err) { // Error case
+										promisesErrorHandler("addCentroidsToMap", err); // Abort												
+									}).then(function (res) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] addCentroidsToMap OK: " + (res ? res : "no status"));
+									                   
+										// Get overall layer properties from lookup table
 										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerAttributes: " + 
 												(res ? res : "no status"));
@@ -756,32 +765,30 @@ angular.module("RIF")
 											else {								
 												$scope.totalPolygonCount = res.data.attributes.length;
 											
-												//populate the table
+												// Populate the grid table
 												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);		
 												alertScope.consoleDebug("[rifd-dsub-maptable.js] ModalAreaService.fillTable: " + 
-													$scope.totalPolygonCount + " rows");		
+													$scope.totalPolygonCount + " rows");
+												/* Check selected polygon list matches:
+												 *		Sort $scope.selectedPolygon alphabetically by id
+												 *		Build/rebuild sibling $scope.selectedPolygonObj object used for quick access via id
+												 *      Scan data to check in $scope.selectedPolygonObj, set band if required
+												 *      Check for duplicates
+												 *		Check for area IDs not found in the Lat/long list
+												 *		Fail if a) not all $scope.selectedPolygonObj are in data or b) duplicates are found
+												 *		or c) area IDs were not found in the Lat/long list	
+												 */						 
 												return checkSelectedPolygonList(res.data); // promise						
 											}
 										}, function (err) {
-											promisesErrorHandler("user.getTileMakerAttributes", err);
-											/*
+											promisesErrorHandler("user.getTileMakerAttributes", err); // Abort	
 										}).then(function (res) {
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
-												(res ? res : "no status"));
-											// Add back selected shapes
-											
-											return processEachFeatureArray(); // Adds centroids using a promise 
-										}, function(err) { // Error case
-											promisesErrorHandler("checkSelectedPolygonList", err);
-											*/
-										}).then(function (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
-//											alertScope.consoleDebug("[rifd-dsub-maptable.js] processEachFeatureArray: " + 
 												(res ? res : "no status"));
 											// Add selected shapes
 											return addSelectedShapes(); // promise
 										}, function(err) { // Error case
-											promisesErrorHandler("addSelectedShapes", err);
+											promisesErrorHandler("addSelectedShapes", err); // Abort	
 										}).then(function (res) {
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes: " + 
 												(res ? res : "no status"));
@@ -789,22 +796,25 @@ angular.module("RIF")
 											$scope.zoomToSelection(); // Zoom to selection	
 											$timeout(function() {	
 
-												$scope.areamap.spin(false);  // off	
-												enableMapSpinners();											
-												$scope.redrawMap();
+												$scope.areamap.spin(false);  	// off	
+												enableMapSpinners();			// Turn on zoom/pan spinners									
+												$scope.redrawMap();				// Force redraw
 											}, 100);
 										}, function(err) { // Error case
-											promisesErrorHandler("addSelectedShapes", err);
+											promisesErrorHandler("addSelectedShapes", err); // Abort	
 										})
 									});
+								}, 
+								function(err) { // Error case
+									promisesErrorHandler("user.getTileMakerTilesAttributes", err); // Abort	
 								});
 							}, function(err) { // Error case
-								promisesErrorHandler("user.getTileMakerCentroids", err);
+								promisesErrorHandler("user.getTileMakerCentroids", err); // Abort	
 							});		
                         }; // End of getMyMap()
 
 						function promisesErrorHandler(functionName, err) { // Abort the chain of promises processing
-							alertScope.consoleError("[rifd-dsub-maptable.js] " + functionName + " had error: " + 
+							alertScope.showError("[rifd-dsub-maptable.js] " + functionName + " had error: " + 
 								(err ? err : "no error specified"));
 							$scope.areamap.spin(false);  // off	
 							enableMapSpinners();
@@ -841,7 +851,7 @@ angular.module("RIF")
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
 						
-						function processCentroids(res) {
+						function createLatLngList(res) {
 							return $q(function(resolve, reject) {
 								var latlngListDups=0;
 								var latlngListWarnings=0;
@@ -908,11 +918,11 @@ angular.module("RIF")
 											
 											centroidMarkers.addLayer(circle);
 
-											if (latlngListById[p.id]) {
+											if ($scope.latlngListById[p.id]) {
 												latlngListDups++;
 											}
 											else {
-												latlngListById[p.id] = {
+												$scope.latlngListById[p.id] = {
 													latLng: pwLatLng, 
 													name: p.name,
 													popWeighted: true,
@@ -958,11 +968,11 @@ angular.module("RIF")
 											
 											centroidMarkers.addLayer(circle);
 
-											if (latlngListById[p.id]) {
+											if ($scope.latlngListById[p.id]) {
 												latlngListDups++;
 											}
 											else {
-												latlngListById[p.id] = {
+												$scope.latlngListById[p.id] = {
 													latLng: dbLatLng, 
 													name: p.name,
 													popWeighted: false,
@@ -1149,6 +1159,18 @@ angular.module("RIF")
 							}); // End of $q constructor
 						}
 					
+						/*
+						 * Function:    checkSelectedPolygonList()
+						 * Parameter:   res.data from user.getTileMakerAttributes()
+						 * Returns:     A promise
+						 * Description: Sort $scope.selectedPolygon alphabetically by id
+						 *				Build/rebuild sibling $scope.selectedPolygonObj object used for quick access via id
+						 *              Scan data to check in $scope.selectedPolygonObj, set band if required
+						 *              Check for duplicates
+						 *				Check for area IDs not found in the Lat/long list
+						 *				Fail if a) not all $scope.selectedPolygonObj are in data or b) duplicates are found
+						 *  			or c) area IDs were not found in the Lat/long list
+						 */
 						function checkSelectedPolygonList(data) {
 							
 							return $q(function(resolve, reject) {
@@ -1156,7 +1178,9 @@ angular.module("RIF")
 								var foundCount=0;
 								var dupCount=0;
 								var dupBandCount=0;
+								var missingLatLng=0;
 								
+								// Sort $scope.selectedPolygon alphabetically by id 
 								$scope.selectedPolygon.sort(function(a, b) {
 									if (a.id < b.id) {
 										return -1;
@@ -1171,9 +1195,15 @@ angular.module("RIF")
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] sorted $scope.selectedPolygon: " + 
 									$scope.selectedPolygon.length);
 								
+								// Build/rebuild sibling $scope.selectedPolygonObj object used for quick access via id
+								// Check for duplicates
+								// Check for area IDs not found in the Lat/long list
 								$scope.selectedPolygonObj = {};
 								for (var i = 0; i < $scope.selectedPolygon.length; i++) { // Check for duplicates
 //									$scope.selectedPolygon[i].found=false;
+									if ($scope.latlngListById[$scope.selectedPolygon[i].id] == undefined) {
+										missingLatLng++;
+									}
 									if (i > 0 && $scope.selectedPolygon[i].id === $scope.selectedPolygon[i-1].id) {
 										if (i > 0 && $scope.selectedPolygon[i].band === $scope.selectedPolygon[i-1].band) {
 											dupBandCount++;
@@ -1194,7 +1224,7 @@ angular.module("RIF")
 //								var notFoundPolys = [];
 //								var geojsonPolys = [];
 								var collectionLength = data.attributes.length;
-											   
+								// Scan data to check in $scope.selectedPolygonObj, set band if required 			   
 								for (var i = 0; i < collectionLength; i++) {
 									var thisPoly = data.attributes[i];
 //									geojsonPolys.push(thisPoly.area_id)
@@ -1209,20 +1239,28 @@ angular.module("RIF")
 								}
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] checked $scope.selectedPolygon: " + 
 									$scope.selectedPolygon.length);
-								
+	
+// For finding missing polygons:	
 //								for (key in $scope.selectedPolygonObj) {
 //									if ($scope.selectedPolygonObj[key].found == false) {
 //										notFoundPolys.push($scope.selectedPolygonObj[key]);
 //									}
 //								}
 //								notFoundPolys.sort(); // Alphabetically!
-												
+								
+								// Fail if a) not all $scope.selectedPolygonObj are in data or b) duplicates are found	
+								// or c) area IDs were not found in the Lat/long list							
 								var hasErrors=false;
 								if (dupCount > 0) {
 									alertScope.showError(dupCount + 
 										" duplicates with differing bands were found in the selected polygons list");
 									hasErrors=true;
 								}
+								if (missingLatLng > 0) {
+									alertScope.showError(missingLatLng + 
+										" area IDs were not found in the Lat/long list");
+									hasErrors=true;
+								}								
 								if (dupBandCount > 0) {
 									alertScope.showWarning(dupBandCount + " fixable duplicates were found in the selected polygons list");
 								}
@@ -1319,7 +1357,6 @@ angular.module("RIF")
 									}	
 									
 									var errorCount=0;
-									var start=new Date().getTime();
 									$scope.shapeLoadUpdate = "0 / " + selectedShapes.length + " shapes, 0%";
 									async.eachOfSeries(selectedShapes, 
 										function selectedShapesIteratee(eachFeature, i, selectedShapesCallback) {
@@ -1445,17 +1482,17 @@ angular.module("RIF")
 											var elapsed=(Math.round((end - start)/100))/10; // in S	
 											
 											if (selectedShapes.length > 0) {
-												$scope.shapeLoadUpdate = selectedShapes.length + " shapes loaded in " + elapsed + " S";
+												$scope.shapeLoadUpdate = selectedShapes.length + " shapes loaded; total time: " + elapsed + " S";
 											}
 											else {
 												$scope.shapeLoadUpdate = "no shapes loaded";
 											}
 											if (errorCount > 0) {
-												reject(errorCount + "errors adding " + selectedShapes.length + " selected shapes in " + 
-													elapsed + " S");
+												reject(errorCount + "errors adding " + selectedShapes.length + 
+													" selected shapes; total time: " + elapsed + " S");
 											}
 											else {
-												resolve("added " + selectedShapes.length + " selected shapes in " + elapsed + " S");
+												resolve("added " + selectedShapes.length + " selected shapes; total time: " + elapsed + " S");
 											}
 										}); // End of async.eachOfSeries()				
 								}
@@ -1465,7 +1502,7 @@ angular.module("RIF")
 							});
 						}
 
-						function processEachFeatureArray() {
+						function addCentroidsToMap() {
 
 							return $q(function(resolve, reject) {					
 
@@ -1791,7 +1828,7 @@ angular.module("RIF")
 						$scope.$on('completedDrawSelection', function (event, data) {
 							
 							$scope.areamap.spin(true);  // on	
-							var start=new Date().getTime();
+							start=new Date().getTime();
 								
 							$scope.shapeLoadUpdate = "0 / " + $scope.selectionData.length + " shapes, 0%";
 							async.eachOfSeries($scope.selectionData, 
