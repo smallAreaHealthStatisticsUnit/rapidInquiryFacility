@@ -2216,35 +2216,51 @@ angular.module("RIF")
 							var itemsProcessed = 0;
 							var bboxErrors = 0;
 							var excludedByBbox = 0;
-							
+							var useAsync = false; // Do not use async version - it is much slower					
 							addBbox().then(function(res) {
-								async.eachOfSeries(latlngList, 
-									function latlngListIteratee(latLng, indexKey, latlngListCallback) {
-									if (indexKey == 0) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + indexKey + "/" + latlngList.length + 
-											" to check if in shape: " + JSON.stringify(shape.bbox));	
-									}
-									if (indexKey % 500 == 0) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + indexKey + "/" + latlngList.length + 
-											" to check if in shape: " + JSON.stringify(shape.bbox));									
-										$timeout(function() { // Be nice to the stack if you are going to be aggressive!
+								if (useAsync) {
+									async.eachOfSeries(latlngList, 
+										function latlngListIteratee(latLng, indexKey, latlngListCallback) {
+										if (indexKey == 0) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] async processing latLng " + indexKey + "/" + latlngList.length + 
+												" to check if in shape: " + JSON.stringify(shape.bbox));	
+										}
+										else if (indexKey % 500 == 0) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] async processing latLng " + indexKey + "/" + latlngList.length + 
+												" to check if in shape: " + JSON.stringify(shape.bbox));									
+											$timeout(function() { // Be nice to the stack if you are going to be aggressive!
+												latlngListFunction(latLng, latlngListCallback);
+											}, 100);
+										}	
+										else if (indexKey % 50 == 0) {
+											async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
+												latlngListFunction(latLng, latlngListCallback);
+											});
+										}
+										else {
 											latlngListFunction(latLng, latlngListCallback);
-										}, 100);
-									}	
-									else if (indexKey % 50 == 0) {
-										async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
-											latlngListFunction(latLng, latlngListCallback);
-										});
-									}
-									else {
-										latlngListFunction(latLng, latlngListCallback);
-									}
-								}, function done(err) {
-									if (err) {
-										alertScope.showError("[rifd-dsub-maptable.js] latlngList error: " + err);
+										}
+									}, function done(err) {
+										if (err) {
+											alertScope.showError("[rifd-dsub-maptable.js] latlngList error: " + err);
+										}
+										latlngListEnd();
+									});	
+								}		
+								else { // Non async version
+									for (var i=0; i<latlngList.length; i++) {
+										if (i == 0) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + i + "/" + latlngList.length + 
+												" to check if in shape: " + JSON.stringify(shape.bbox));	
+										}
+										else if (i % 500 == 0) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + i + "/" + latlngList.length + 
+												" to check if in shape: " + JSON.stringify(shape.bbox));
+										}												
+										latlngListFunction(latlngList[i], undefined /* no latlngListCallback - not using async */);
 									}
 									latlngListEnd();
-								});		
+								}	
 							}, function (err) {
 								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
 									makeDrawSelectionCallback(err);
@@ -2363,9 +2379,7 @@ angular.module("RIF")
 								if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
 									latlngListCallbackFunction();
 								}
-								else {
-									throw new Error("No latlngListCallback() function");
-								}
+								// Otherwise not using async
 							}
 
                         } // End of makeDrawSelection()
