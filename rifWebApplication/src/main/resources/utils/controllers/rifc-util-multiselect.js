@@ -77,8 +77,8 @@ angular.module("RIF")
                         if (angular.isDefined($scope.selectedPolygon)) {
                             //working on the study areas
 							if (CommonMappingStateService.getState("areamap").selectedPolygonObj[thisPolyID]) {
-								$scope.selectedPolygon.splice(i, 1);
 								AlertService.consoleDebug("[rifc-util-multiselect.js] remove: " + thisPolyID);
+								$scope.selectedPolygon.splice(i, 1);
 								CommonMappingStateService.getState("areamap").selectedPolygon.splice(i, 1);
 								delete CommonMappingStateService.getState("areamap").selectedPolygonObj[thisPolyID];
 							}

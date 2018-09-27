@@ -1119,6 +1119,9 @@ angular.module("RIF")
 										CommonMappingStateService.getState("areamap").selectedPolygonObj[CommonMappingStateService.getState("areamap").selectedPolygon[i].id] = CommonMappingStateService.getState("areamap").selectedPolygon[i];
 									}
 								}
+								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon;
+								$scope.selectedPolygonCount = CommonMappingStateService.getState("areamap").selectedPolygon.length;
+								
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] de-duplicate selectedPolygon: " + 
 									CommonMappingStateService.getState("areamap").selectedPolygon.length);
 											
@@ -1167,6 +1170,19 @@ angular.module("RIF")
 								}
 								
 								if (foundCount != CommonMappingStateService.getState("areamap").selectedPolygon.length) {
+									
+									if (CommonMappingStateService.getState("areamap").selectedPolygon.length < 10) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] unmatchable selectedPolygon[" + 
+											CommonMappingStateService.getState("areamap").selectedPolygon.length + "]: " +
+											JSON.stringify(CommonMappingStateService.getState("areamap").selectedPolygon) +
+											"; foundCount: " + foundCount);										
+									}
+									else {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] unmatchable selectedPolygon: " + 
+											CommonMappingStateService.getState("areamap").selectedPolygon.length + 
+											"; foundCount: " + foundCount);										
+									}
+	
 									alertScope.showError("Could not match " + (CommonMappingStateService.getState("areamap").selectedPolygon.length - foundCount) + " polygons from database with selected polygons list");
 									hasErrors=true;
 								}
@@ -1645,6 +1661,7 @@ angular.module("RIF")
                             //Update the area counter
                             $scope.selectedPolygonCount = newNames.length;
 							CommonMappingStateService.getState("areamap").selectedPolygon = newNames;
+							$scope.selectedPolygon = newNames;
 							
                             if (!$scope.geoJSON) {
                                 return;
