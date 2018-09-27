@@ -1,6 +1,7 @@
 package org.sahsu.rif.services.datastorage.common;
 
-import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -83,9 +84,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
 			final String studyID) throws RIFServiceException {
 		
-		StringBuilder rifScriptPath = new StringBuilder();
-		StringBuilder adjCovSmoothJri = new StringBuilder();
-		StringBuilder performSmoothingActivity = new StringBuilder();
 		String rErrorTrace="No R error tracer (see Tomcat log)";
 
 		try {		
@@ -191,33 +189,32 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator +
 				                                logMsg.toString());
 
-				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
-				rifScriptPath.append(File.separator);
-				adjCovSmoothJri.append(rifScriptPath);
+				Path scriptPath = FileSystems.getDefault().getPath(
+						rifStartupOptions.getClassesDirectory());
+				Path adjCovSmoothJri = scriptPath.resolve("Adj_Cov_Smooth_JRI.R");
+				Path performSmoothingActivity = scriptPath.resolve("performSmoothingActivity.R");
 
 				if (rifStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER) {
-					sourceRScript(rengine, rifScriptPath + "OdbcHandler.R");
+					sourceRScript(rengine, scriptPath.resolve("OdbcHandler.R").toString());
 				}
 				else {
-					sourceRScript(rengine, rifScriptPath + "JdbcHandler.R");
+					sourceRScript(rengine, scriptPath.resolve("JdbcHandler.R").toString());
 				}
 
 
 				// We do either Risk Analysis or Smoothing
 				REXP exitValueFromR;
+				sourceRScript(rengine, scriptPath.resolve("CreateWindowsScript.R").toString());
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
 					rifLogger.info(getClass(), "Calling Risk Analysis R function");
-					sourceRScript(rengine, rifScriptPath + "performRiskAnal.R");
+					sourceRScript(rengine, scriptPath.resolve("performRiskAnal.R").toString());
 					// rengine.eval("returnValues <- performRiskAnal");
 					/* TODO: that's the script name, not the name of a function in it; but
 					 * there doesn't at present appear to be a suitable one.
 					 */
 
 					// ========== Temp hack to let things run ===========
-					adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
-					performSmoothingActivity.append(rifScriptPath);
-					performSmoothingActivity.append("performSmoothingActivity.R");
 					sourceRScript(rengine, adjCovSmoothJri.toString());
 					sourceRScript(rengine, performSmoothingActivity.toString());
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
@@ -226,9 +223,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 					rifLogger.info(getClass(), "Calling Disease Mapping R function");
 					// Run the actual smoothing
-					adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
-					performSmoothingActivity.append(rifScriptPath);
-					performSmoothingActivity.append("performSmoothingActivity.R");
 					sourceRScript(rengine, adjCovSmoothJri.toString());
 					sourceRScript(rengine, performSmoothingActivity.toString());
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
@@ -292,16 +286,14 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 						new RIFServiceExceptionFactory();
 				throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
 			}
-		}
-		catch (RIFServiceException rifServiceException) {
+		} catch (RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
 			throw rifServiceException;
-		}
-		catch(Exception rException) {
+		} catch(Exception rException) {
 			rifLogger.error(this.getClass(), "JRI R engine exception", rException);		
-			RIFServiceExceptionFactory rifServiceExceptionFactory
-			= new RIFServiceExceptionFactory();
-			throw rifServiceExceptionFactory.createREngineException(rifScriptPath.toString());
+			RIFServiceExceptionFactory rifServiceExceptionFactory = new RIFServiceExceptionFactory();
+			throw rifServiceExceptionFactory.createREngineException(
+					rifStartupOptions.getClassesDirectory());
 		}		
 	}
 
