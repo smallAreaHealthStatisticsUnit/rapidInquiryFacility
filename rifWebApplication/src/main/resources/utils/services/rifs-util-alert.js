@@ -39,6 +39,23 @@ angular.module("RIF")
                 function ($rootScope) {
 					$rootScope.messagesList = [];
 			
+					function rifMessage2(messageLevel, msg, rifHide, rifError) {
+						var err; // Get stack
+						if (rifError) {
+							err=rifError;
+						}
+						else {
+							err=new Error("Auto created by service");
+						}
+										
+						$rootScope.$broadcast('rifMessage', { 
+							messageLevel: messageLevel, 
+							msg: msg,
+							rifHide: rifHide,
+							rifError: err
+						});						
+					}
+					
                     return {
 						addMessage: function (time, messageLevel, msg, rifError) {
 							var err; // Get stack
@@ -69,21 +86,21 @@ angular.module("RIF")
 							return angular.copy($rootScope.messagesList);
 						},
                         rifMessage: function (messageLevel, msg, rifHide, rifError) {
-							var err; // Get stack
-							if (rifError) {
-								err=rifError;
-							}
-							else {
-								err=new Error("Auto created by service");
-							}
-											
-                            $rootScope.$broadcast('rifMessage', { 
-								messageLevel: messageLevel, 
-								msg: msg,
-								rifHide: rifHide,
-								rifError: err
-							});
+							rifMessage2(messageLevel, msg, rifHide, rifError);
                         },
+						// Back compatibility controller style messages
+						showError: function (msg, rifError) {
+							rifMessage2("ERROR", msg, true, rifError);
+						},
+						showWarning: function (msg) {
+							rifMessage2("WARNING", msg, true);
+						},
+						showSuccess: function (msg) {
+							rifMessage2("SUCCESS", msg, true);
+						},
+						showErrorNoHide: function (msg, rifError) {
+							rifMessage2("ERROR", msg, false, rifError);
+						},	
                         consoleDebug: function (msg, rifError) {
                             $rootScope.$broadcast('consoleMessage', { 
 								messageLevel: "DEBUG", 

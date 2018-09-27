@@ -434,8 +434,8 @@ angular.module("RIF")
 					elapsed);				
 			}
 			
-            $scope.showError = function (msg) {
-				rifMessage("ERROR", msg, true);
+            $scope.showError = function (msg, rifError) {
+				rifMessage("ERROR", msg, true, rifError);
             };
             $scope.showWarning = function (msg) {
 				rifMessage("WARNING", msg, true);
@@ -443,8 +443,8 @@ angular.module("RIF")
             $scope.showSuccess = function (msg) {
 				rifMessage("SUCCESS", msg, true);
             };
-            $scope.showErrorNoHide = function (msg) {
-				rifMessage("ERROR", msg, false);
+            $scope.showErrorNoHide = function (msg, rifError) {
+				rifMessage("ERROR", msg, false, rifError);
             };						
             $scope.showWarningNoHide = function (msg) {
 				rifMessage("WARNING", msg, false);

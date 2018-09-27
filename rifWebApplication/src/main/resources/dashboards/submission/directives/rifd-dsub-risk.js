@@ -52,10 +52,11 @@ angular.module("RIF")
                 }
             };
         })
-        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'SelectStateService', 'AlertService',
-				'$window', '$interval',
+        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'SelectStateService', 
+				'AlertService', 'CommonMappingStateService', '$window', '$interval',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
-            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, SelectStateService, AlertService, $window, $interval) {
+            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, SelectStateService, 
+				AlertService, CommonMappingStateService, $window, $interval) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
                     link: function (scope, element, attr) {
@@ -129,6 +130,7 @@ angular.module("RIF")
 							scope.hasGrid = false;
 							scope.shapefileGridOptions = {};
 							scope.disableSubmit=false;
+							scope.possibleBands = CommonMappingStateService.getState('areamap').possibleBands;
 							
                             //remove any existing AOI layer
                             poly = null;
