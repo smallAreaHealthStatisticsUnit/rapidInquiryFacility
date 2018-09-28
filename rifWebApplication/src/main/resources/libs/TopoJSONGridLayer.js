@@ -457,16 +457,17 @@ Stack: undefined
 				
                 var toAdd = data.features.filter(function (feature) { 	// Return a filtered array: features needing to be added
 																		// and in areaIdObj{} object
-                    var canBeAdded=!this.hasLayerWithId(sublayer, feature.id ? feature.id : feature.properties.id);
-					var inAreaIdObj=false;
-					if (this.options.areaIdObjKeys == 0) {
-						inAreaIdObj=true;
+                    if (this.hasLayerWithId(sublayer, feature.id ? feature.id : feature.properties.id)) { // Already added
+						return false;
+					}
+					else if (this.options.areaIdObjKeys == 0) {
+						 return true;
 					}
 					else if (feature.properties && feature.properties.area_id && this.options.areaIdObj[feature.properties.area_id]) {
-						inAreaIdObj=true;
+						 return true;
 					}
 					
-					return (canBeAdded && inAreaIdObj);
+					return false;
                 }, this /* thisValue: i.e. TopoJSONGridLayer object */);
 //				if (data.features.length > 0 ) {
 //					this.consoleDebug("[TopoJSONGridLayer.js] layer: " + sublayer + "; data.features: " + data.features.length + 
