@@ -123,10 +123,10 @@ angular.module("RIF")
 					user.rifFrontEndLogger(
 						(user.currentUser || "NOUSER"), 
 						(messageType || "NOMESSAGETYPE"),
-						browser.name + "; v" + browser.version, // Browser type
-						(message.substring(0, 300) || "NOMESSAGE"), // Limit to 300 characters
-						errorMessage.substring(0, 300), // Limit to 300 characters
-						errorStack.substring(0, 400), // Limit to 400 characters,
+						(browser ? browser.name + "; v" + browser.version : "UNKNOWN"), // Browser type
+						(message ? message.substring(0, 300) : "NOMESSAGE"), // Limit to 300 characters
+						(errorMessage ? errorMessage.substring(0, 300) : undefined), // Limit to 300 characters
+						(errorStack ? errorStack.substring(0, 400) : undefined), // Limit to 400 characters,
 						actualTime,
 	//					actualTime.toDateString() + "; " + actualTime.toTimeString(),
 						relativeTime).then(function (res) {
