@@ -933,9 +933,23 @@ angular.module("RIF")
 							return $q(function(resolve, reject) {
 								
 								var latlngListDups=0;
+								var areaIdObj={};
+								if ($scope.noMouseClocks && CommonMappingStateService.getState("areamap").selectedPolygon.length > 0) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering");
+									areaIdObj=CommonMappingStateService.getState("areamap").selectedPolygonObj;
+								}
+								else {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer disable areaId filtering");
+								}
 								eachFeatureArray = [];
 								CommonMappingStateService.getState("areamap").map.spin(true);  // on
                                 $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
+								   areaIdObj: areaIdObj,
+								   consoleDebug: function(msg) {
+									   if (msg) {
+											alertScope.consoleDebug(msg);
+									   }
+								   },
                                    attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
                                    interactive: true,
 								   layers: {

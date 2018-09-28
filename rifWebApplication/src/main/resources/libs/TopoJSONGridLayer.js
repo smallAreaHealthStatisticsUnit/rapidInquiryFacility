@@ -43,6 +43,15 @@
 				if (options.consoleDebug) {
 					this.options.consoleDebug = options.consoleDebug;
 				}
+				if (options.areaIdObj) {
+					this.options.areaIdObj = options.areaIdObj;
+					this.options.areaIdObjKeys = Object.keys(this.options.areaIdObj).length;
+					this.consoleDebug("[TopoJSONGridLayer.js] areaIdObj filter enabled, keys: " + this.options.areaIdObjKeys);
+				}
+				else {
+					this.consoleDebug("[TopoJSONGridLayer.js] areaIdObj filter disabled.");
+					this.options.areaIdObjKeys = 0;
+				}
 				
                 this.geoJsonClass = (this.options.geoJsonClass ? this.options.geoJsonClass : L.GeoJSON);
 				if (!options.useCache) { // Add pouchDB
@@ -427,7 +436,7 @@ Stack: undefined
                 else {
                     var tileLayer = this;
                     Object.keys(data).forEach(function (key) {
-                        tileLayer.addSubLayerData(key, data[key]);
+						tileLayer.addSubLayerData(key, data[key]);
                     });
                 }
             },
@@ -445,22 +454,39 @@ Stack: undefined
                     this._geojsons[sublayer] = new this.geoJsonClass(null, this.options.layers[sublayer]).addTo(this._map);	
                     this.checkZoomConditions(this._map.getZoom());
                 }
-                var toAdd = data.features.filter(function (feature) {
-                    return !this.hasLayerWithId(sublayer, feature.id ? feature.id : feature.properties.id);
-                }, this);
+				
+                var toAdd = data.features.filter(function (feature) { 	// Return a filtered array: features needing to be added
+																		// and in areaIdObj{} object
+                    var canBeAdded=!this.hasLayerWithId(sublayer, feature.id ? feature.id : feature.properties.id);
+					var inAreaIdObj=false;
+					if (this.options.areaIdObjKeys == 0) {
+						inAreaIdObj=true;
+					}
+					else if (feature.properties && feature.properties.area_id && this.options.areaIdObj[feature.properties.area_id]) {
+						inAreaIdObj=true;
+					}
+					
+					return (canBeAdded && inAreaIdObj);
+                }, this /* thisValue: i.e. TopoJSONGridLayer object */);
+//				if (data.features.length > 0 ) {
+//					this.consoleDebug("[TopoJSONGridLayer.js] layer: " + sublayer + "; data.features: " + data.features.length + 
+//						"; toAdd: " + toAdd.length);
+//				}				
 
                 if (!this._features[sublayer]) {
                     this._features[sublayer] = {};
                 }
                 toAdd.forEach(function (feature) {
                     var id = feature.id ? feature.id : feature.properties.id;
+					var areaId = feature.properties ? feature.properties.area_id : undefined;
+
 					if (this._features[sublayer][id]) {
 						subLayerUpdates++;
 					}
 					else {
 						subLayerAdds++;
 					}
-                    this._features[sublayer][id] = feature;
+					this._features[sublayer][id] = feature;
                 }, this);
 
                 var geoJSONlayer=this._geojsons[sublayer].addData({ // Add geoJSON data. This creates multiple layers
