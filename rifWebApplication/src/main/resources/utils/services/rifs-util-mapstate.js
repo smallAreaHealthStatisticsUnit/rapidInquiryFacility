@@ -36,8 +36,8 @@
  */
 
 angular.module("RIF")
-        .factory('CommonMappingStateService',
-                function () {
+        .factory('CommonMappingStateService', ['AlertService',
+                function (AlertService) {
                     
 					var mapNames = {
 						"areamap": "Study and comparison area map",
@@ -63,7 +63,86 @@ angular.module("RIF")
 										drawnItems: undefined,
 										info: undefined,
 										areaNameList: undefined,
-										selectedPolygon: undefined,
+										selectedPolygon: [],				
+										selectedPolygonObj: {},
+										clearSselectedPolygon: function() { // Clear selectedPolygon list
+											this.selectedPolygon.length = 0;
+											this.selectedPolygonObj = {};
+											AlertService.consoleDebug("[rifs-util-mapstate.js] clearSselectedPolygon(): " + 
+												this.selectedPolygon.length);
+											return this.selectedPolygon;
+										},
+										initialiseSselectedPolygon: function(arr) {	// Initialise selectedPolygon from an array arr of items	
+											if (arr && arr.length > 0) {
+												this.selectedPolygon.length = 0;
+												this.selectedPolygonObj = {};				
+												for (var i = 0; i < arr.length; i++) { // Maintain keyed list for faster checking
+													this.selectedPolygonObj[arr[i].id] = arr[i];
+												}
+												this.selectedPolygon = arr;
+												AlertService.consoleDebug("[rifs-util-mapstate.js] initialiseSselectedPolygon(): " + 
+													this.selectedPolygon.length);
+											}
+											return this.selectedPolygon;
+										},
+										sortSselectedPolygon: function() { // Sort selectedPolygon list alphabetically by id 
+											this.selectedPolygon.sort(function(a, b) {
+												if (a.id < b.id) {
+													return -1;
+												}
+												else if (a.id > b.id) {
+													return 1;
+												}
+												else { // Same
+													return 0;
+												}
+											}); // Alphabetically by id!
+											return this.selectedPolygon;
+										},
+										addToSselectedPolygon: function(item) {	// Add item to selectedPolygon
+											if (item && item.id) {
+												if (this.selectedPolygonObj[item.id]) {
+													throw new Error("Duplicate items: " + item.id + " in selectedPolygon list");
+												}
+												this.selectedPolygonObj[item.id] = item;
+												this.selectedPolygon.push(item);
+												AlertService.consoleDebug("[rifs-util-mapstate.js] addToSselectedPolygon(" +
+													JSON.stringify(item) + "): " + 
+													this.selectedPolygon.length);
+											}
+											else {
+												throw new Error("Null item/id: " + JSON.stringify(item));
+											}
+											return this.selectedPolygon;
+										},
+										removeFromSselectedPolygon: function(id) { // Remove item from selectedPolygon
+											if (id) {
+												if (this.selectedPolygonObj[id]) {
+													var found=false;
+													for (var i = 0; i < this.selectedPolygon.length; i++) { 
+														if (this.selectedPolygon[i].id == id) {
+															found=true;
+															AlertService.consoleDebug("[rifs-util-mapstate.js] removeFromSselectedPolygon(" +
+																JSON.stringify(this.selectedPolygonObj[id]) + "): " + 
+																(this.selectedPolygon.length-1));
+															this.selectedPolygon.splice(i, 1);
+															delete this.selectedPolygonObj[id];
+															break;
+														}
+													}	
+													if (!found) {
+														throw new Error("Cannot find item: " + id + " in selectedPolygon list");
+													}	
+												}
+												else {
+													throw new Error("Cannot find item: " + id + " in selectedPolygon object");
+												}
+											}
+											else {
+												throw new Error("Null id");
+											}
+											return this.selectedPolygon;
+										},						
 										currentBand: undefined,
 										possibleBands: undefined,
 										description: mapNames[key]
@@ -76,4 +155,4 @@ angular.module("RIF")
 							return s[mapName];
 						}
                     };
-                });
+                }]);
