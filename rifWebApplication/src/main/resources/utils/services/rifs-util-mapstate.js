@@ -65,14 +65,18 @@ angular.module("RIF")
 										areaNameList: undefined,
 										selectedPolygon: [],				
 										selectedPolygonObj: {},
-										clearSselectedPolygon: function() { // Clear selectedPolygon list
+										maxbounds: undefined,						
+										currentBand: undefined,
+										possibleBands: undefined,
+										description: mapNames[key],
+										clearSelectedPolygon: function() { // Clear selectedPolygon list
 											this.selectedPolygon.length = 0;
 											this.selectedPolygonObj = {};
 											AlertService.consoleDebug("[rifs-util-mapstate.js] clearSselectedPolygon(): " + 
 												this.selectedPolygon.length);
 											return this.selectedPolygon;
 										},
-										initialiseSselectedPolygon: function(arr) {	// Initialise selectedPolygon from an array arr of items	
+										initialiseSelectedPolygon: function(arr) {	// Initialise selectedPolygon from an array arr of items	
 											if (arr && arr.length > 0) {
 												this.selectedPolygon.length = 0;
 												this.selectedPolygonObj = {};				
@@ -80,12 +84,12 @@ angular.module("RIF")
 													this.selectedPolygonObj[arr[i].id] = arr[i];
 												}
 												this.selectedPolygon = arr;
-												AlertService.consoleDebug("[rifs-util-mapstate.js] initialiseSselectedPolygon(): " + 
-													this.selectedPolygon.length);
 											}
+											AlertService.consoleDebug("[rifs-util-mapstate.js] initialiseSelectedPolygon(): " + 
+												this.selectedPolygon.length);
 											return this.selectedPolygon;
 										},
-										sortSselectedPolygon: function() { // Sort selectedPolygon list alphabetically by id 
+										sortSelectedPolygon: function() { // Sort selectedPolygon list alphabetically by id 
 											this.selectedPolygon.sort(function(a, b) {
 												if (a.id < b.id) {
 													return -1;
@@ -99,14 +103,14 @@ angular.module("RIF")
 											}); // Alphabetically by id!
 											return this.selectedPolygon;
 										},
-										addToSselectedPolygon: function(item) {	// Add item to selectedPolygon
+										addToSelectedPolygon: function(item) {	// Add item to selectedPolygon
 											if (item && item.id) {
 												if (this.selectedPolygonObj[item.id]) {
 													throw new Error("Duplicate items: " + item.id + " in selectedPolygon list");
 												}
 												this.selectedPolygonObj[item.id] = item;
 												this.selectedPolygon.push(item);
-												AlertService.consoleDebug("[rifs-util-mapstate.js] addToSselectedPolygon(" +
+												AlertService.consoleDebug("[rifs-util-mapstate.js] addToSelectedPolygon(" +
 													JSON.stringify(item) + "): " + 
 													this.selectedPolygon.length);
 											}
@@ -142,10 +146,7 @@ angular.module("RIF")
 												throw new Error("Null id");
 											}
 											return this.selectedPolygon;
-										},						
-										currentBand: undefined,
-										possibleBands: undefined,
-										description: mapNames[key]
+										}
 									}
 								}								
 							}

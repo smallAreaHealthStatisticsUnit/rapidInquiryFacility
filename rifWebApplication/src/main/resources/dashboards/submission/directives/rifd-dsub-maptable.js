@@ -102,10 +102,10 @@ angular.module("RIF")
                          * LOCAL VARIABLES
                          */
                         //map max bounds from topojson layer
-                        var maxbounds;
                         //If geog changed then clear selected
                         var thisGeography = SubmissionStateService.getState().geography;
                         if (thisGeography !== $scope.input.geography) {
+							alertScope.consoleLog("[rifd-dsub-maptable.js] Geography change: clear $scope.input.selectedPolygon");
                             $scope.input.selectedPolygon.length = 0;
                             $scope.input.selectAt = "";
                             $scope.input.studyResolution = "";
@@ -114,10 +114,12 @@ angular.module("RIF")
 						
 						// Also defined in rifs-util-leafletdraw.js
 
-                        //selectedPolygon array synchronises the map <-> table selections                        
-                        CommonMappingStateService.getState("areamap").initialiseSselectedPolygon(
-							$scope.input.selectedPolygon);       
-						$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSselectedPolygon();		
+                        //selectedPolygon array synchronises the map <-> table selections 
+						var selectedPolygon = angular.copy($scope.input.selectedPolygon); // Copy to prevent going out of scope						
+						alertScope.consoleLog("[rifd-dsub-maptable.js] initialiseSelectedPolygon() $scope.input.selectedPolygon: " +
+							selectedPolygon.length);                  
+                        CommonMappingStateService.getState("areamap").initialiseSelectedPolygon(selectedPolygon);       
+						$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon();		
                         $scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 						
 						$scope.shapeLoadUpdate = "";
@@ -143,11 +145,21 @@ angular.module("RIF")
                          * TOOL STRIP 
                          * These repeat stuff in the leafletTools directive - possible refactor
                          */
+
+                        $scope.geoLevelChange = function () {
+							alertScope.consoleLog("[rifd-dsub-maptable.js] $scope.geoLevelChange() clear $scope.input.selectedPolygon");
+                            //Clear the map
+							$scope.clear();
+
+                            user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
+                        };
+						
                         //Clear all selection from map and table
                         $scope.clear = function () {
+							alertScope.consoleLog("[rifd-dsub-maptable.js] $scope.clear() $scope.input.selectedPolygon");
                             $scope.input.selectedPolygon.length = 0;
 							$scope.selectedPolygonCount = 0;
-                            $scope.selectedPolygon = CommonMappingStateService.getState("areamap").clearSselectedPolygon();
+                            $scope.selectedPolygon = CommonMappingStateService.getState("areamap").clearSelectedPolygon();
 							$scope.shapeLoadUpdate = "";
 							if ($scope.input.type === "Risk Analysis") {
 								SelectStateService.initialiseRiskAnalysis();
@@ -156,16 +168,25 @@ angular.module("RIF")
 								SelectStateService.resetState();
 							}
 							
-                            if (CommonMappingStateService.getState("areamap").map.hasLayer(CommonMappingStateService.getState("areamap").shapes)) {
-                                CommonMappingStateService.getState("areamap").map.removeLayer(CommonMappingStateService.getState("areamap").shapes);
+                            if (CommonMappingStateService.getState("areamap").map.hasLayer(	// Reset shapes
+									CommonMappingStateService.getState("areamap").shapes)) {
+                                CommonMappingStateService.getState("areamap").map.removeLayer(
+									CommonMappingStateService.getState("areamap").shapes);
 								CommonMappingStateService.getState("areamap").shapes = new L.layerGroup();
-								CommonMappingStateService.getState("areamap").map.addLayer(CommonMappingStateService.getState("areamap").shapes);
+								CommonMappingStateService.getState("areamap").map.addLayer(
+									CommonMappingStateService.getState("areamap").shapes);
 								
 								CommonMappingStateService.getState("areamap").info.update();
                             }
+                            if (CommonMappingStateService.getState("areamap").map.hasLayer(centroidMarkers)) { // Remove centroids
+								$scope.bShowHideCentroids = false;
+								SelectStateService.getState().showHideCentroids = false;
+                                CommonMappingStateService.getState("areamap").map.removeLayer(centroidMarkers);
+                            }
 							
-							if (maxbounds) { //  Zoom back to maximum extent of geolevel
-								CommonMappingStateService.getState("areamap").map.fitBounds(maxbounds);
+							if (CommonMappingStateService.getState("areamap").maxbounds) { //  Zoom back to maximum extent of geolevel
+								CommonMappingStateService.getState("areamap").map.fitBounds(
+									CommonMappingStateService.getState("areamap").maxbounds);
 							}
                         };
 						
@@ -301,15 +322,16 @@ angular.module("RIF")
 						
                         //Select all in map and table
                         $scope.selectAll = function () {
-                            CommonMappingStateService.getState("areamap").clearSselectedPolygon();
+                            CommonMappingStateService.getState("areamap").clearSelectedPolygon();
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-								CommonMappingStateService.getState("areamap").addToSselectedPolygon({
+								CommonMappingStateService.getState("areamap").addToSelectedPolygon({
 									id: $scope.gridOptions.data[i].area_id, 
 									gid: $scope.gridOptions.data[i].area_id, 
 									label: $scope.gridOptions.data[i].label, 
 									band: CommonMappingStateService.getState("areamap").currentBand});
                             }                     
-							$scope.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon;        
+							$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon; 
+							$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon();        
 							$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
                         };
                         $scope.changeOpacity = function (v) {
@@ -333,8 +355,11 @@ angular.module("RIF")
 							$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
                         };
                         //Zoom to layer
-                        $scope.zoomToExtent = function () {
-                            CommonMappingStateService.getState("areamap").map.fitBounds(maxbounds);
+                        $scope.zoomToExtent = function () {	
+							if (CommonMappingStateService.getState("areamap").maxbounds) { //  Zoom back to maximum extent of geolevel
+								CommonMappingStateService.getState("areamap").map.fitBounds(
+									CommonMappingStateService.getState("areamap").maxbounds);
+							}
                         };
                         //Zoom to selection
                         $scope.zoomToSelection = function () {
@@ -609,9 +634,11 @@ angular.module("RIF")
 								user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
 									var lowestLevel = res.data[0].names[0];
 									user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
-										maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+										CommonMappingStateService.getState("areamap").maxbounds = 
+											L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
 										if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
-											CommonMappingStateService.getState("areamap").map.fitBounds(maxbounds);
+											CommonMappingStateService.getState("areamap").map.fitBounds(
+												CommonMappingStateService.getState("areamap").maxbounds);
 										}
 									}).then(function (res) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerTilesAttributes OK: " + 
@@ -669,7 +696,13 @@ angular.module("RIF")
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes: " + 
 												(res ? res : "no status"));
 												
-											$scope.zoomToSelection(); // Zoom to selection	
+											if ($scope.selectedPolygonCount > 0) {
+												$scope.zoomToSelection(); // Zoom to selection	
+											}
+											else {
+												$scope.zoomToExtent(); // Zoom to extent
+											}
+											
 											$timeout(function() {	
 
 												CommonMappingStateService.getState("areamap").map.spin(false);  	// off	
@@ -713,20 +746,6 @@ angular.module("RIF")
 						function(err) {
 							promisesErrorHandler("setupMap", err);
 						});
-
-                        $scope.geoLevelChange = function () {
-                            //Clear the map
-                            $scope.input.selectedPolygon = 0; 
-							$scope.selectedPolygon = CommonMappingStateService.getState("areamap").clearSselectedPolygon();
-							$scope.selectedPolygonCount = 0;
-							$scope.geoJSONLoadCount = 0;
-                            if (CommonMappingStateService.getState("areamap").map.hasLayer(centroidMarkers)) {
-								$scope.bShowHideCentroids = false;
-								SelectStateService.getState().showHideCentroids = false;
-                                CommonMappingStateService.getState("areamap").map.removeLayer(centroidMarkers);
-                            }
-                            user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
-                        };
 						
 						function createLatLngList(res) {
 							return $q(function(resolve, reject) {
@@ -1016,8 +1035,10 @@ angular.module("RIF")
 																e.target.feature.properties.name, 
 																band: CommonMappingStateService.getState("areamap").currentBand};
 															$scope.selectedPolygon = 
-																CommonMappingStateService.getState("areamap").addToSselectedPolygon(newSelectedPolygon);
-														}                            
+																CommonMappingStateService.getState("areamap").addToSelectedPolygon(newSelectedPolygon);
+														}       
+
+														$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon; 														
 														$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 														$scope.$digest(); // Force $watch sync
 													});
@@ -1097,7 +1118,7 @@ angular.module("RIF")
 										data.attributes[i].band = 0;
 									}
 								}
-								CommonMappingStateService.getState("areamap").sortSselectedPolygon(); // May force a watchCollection
+								CommonMappingStateService.getState("areamap").sortSelectedPolygon(); // May force a watchCollection
 								doWatchUpdate(CommonMappingStateService.getState("areamap").selectedPolygon,
 									CommonMappingStateService.getState("areamap").selectedPolygon); // Do a a watchCollection
 	
@@ -1157,7 +1178,8 @@ angular.module("RIF")
 										"; notFoundPolys(" + notFoundPolys.length + "): " + JSON.stringify(notFoundPolys, null, 1) */);
 								}
 								else {	
-									$scope.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon;
+									$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon; 														
+									$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon();
 									$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 									resolve("processed selected polygons list");
 								}
@@ -1611,12 +1633,13 @@ angular.module("RIF")
 		
                             //Update the area counter
                             $scope.selectedPolygonCount = newNames.length;
+							$scope.input.selectedPolygon = newNames; 
 							CommonMappingStateService.getState("areamap").selectedPolygon = newNames;
 							$scope.selectedPolygon = newNames;
 							
                             if (!$scope.geoJSON) {
                                 return;
-                            } else {
+                            } else if ($scope.geoJSON && $scope.geoJSON._geojsons && $scope.geoJSON._geojsons.default) {
                                 //Update map selection    
                                 $scope.geoJSON._geojsons.default.eachLayer(handleLayer);
                             }							
@@ -1748,7 +1771,14 @@ angular.module("RIF")
 								if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
 									CommonMappingStateService.getState("areamap").info.addTo(CommonMappingStateService.getState("areamap").map);
 								}
-								$scope.zoomToSelection(); // Zoom to selection
+								
+								if ($scope.selectedPolygonCount > 0) {
+									$scope.zoomToSelection(); // Zoom to selection	
+								}
+								else {
+									$scope.zoomToExtent(); // Zoom to extent
+								}
+								
 								$scope.safeApply(0, function() {
 									$scope.redrawMap();
 								});	

@@ -84,7 +84,7 @@ angular.module("RIF")
 								var newSelectedPolygon = {id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand};
 								AlertService.consoleDebug("[rifc-util-multiselect.js] add: " + thisPolyID +
 									"; newSelectedPolygon: " + JSON.stringify(newSelectedPolygon));
-								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").addToSselectedPolygon(newSelectedPolygon);
+								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").addToSelectedPolygon(newSelectedPolygon);
                             }
 							$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 
@@ -122,7 +122,7 @@ angular.module("RIF")
 									var newSelectedPolygon = {id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand};
 									AlertService.consoleDebug("[rifc-util-multiselect.js] add[" + i + "]: " + thisPolyID +
 										"; newSelectedPolygon: " + JSON.stringify(newSelectedPolygon));
-									CommonMappingStateService.getState("areamap").addToSselectedPolygon(newSelectedPolygon);
+									CommonMappingStateService.getState("areamap").addToSelectedPolygon(newSelectedPolygon);
 								}
 							
                             } else {
