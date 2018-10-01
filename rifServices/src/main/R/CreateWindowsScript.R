@@ -53,6 +53,29 @@ createWindowsScript <- function(script_name) {
 				Adj_Cov_Smooth_csvB, "\n"), sep="")
 		}
 
+		Adj_Cov_Smooth_CommonA <- file.path(catalina_home, "webapps", "rifServices", "WEB-INF",
+		"classes", "Adj_Cov_Smooth_Common.R") # Source
+		Adj_Cov_Smooth_CommonB <- file.path(scratchSpace, "Adj_Cov_Smooth_Common.R") # Target
+		if (!file.exists(Adj_Cov_Smooth_CommonB)) {
+			cat(paste("Copy: ", Adj_Cov_Smooth_CommonA, " to: ", Adj_Cov_Smooth_CommonB, "\n"), sep="")
+
+			tryCatch({
+				file.copy(Adj_Cov_Smooth_CommonA, Adj_Cov_Smooth_CommonB)
+			},
+			warning=function(w) {
+				cat(paste("UNABLE to copy: ", Adj_Cov_Smooth_CommonA, " to: ", Adj_Cov_Smooth_CommonB, w, "\n"), sep="")
+				exitValue <<- 0
+			},
+			error=function(e) {
+				cat(paste("ERROR copying: ", Adj_Cov_Smooth_CommonA, " to: ", Adj_Cov_Smooth_CommonB, e,
+				"\n"), sep="")
+				exitValue <<- 1
+			}) # End of tryCatch
+		} else {
+			cat(paste("WARNING! No need to copy: ", Adj_Cov_Smooth_CommonA, " to: ",
+			Adj_Cov_Smooth_CommonB, "\n"), sep="")
+		}
+
 		rif40_run_RA <- file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", 
 			"rif40_run_R.bat") # Source
 		rif40_run_RB <- file.path(scratchSpace, "rif40_run_R.bat") # Target
