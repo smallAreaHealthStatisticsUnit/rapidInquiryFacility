@@ -1,34 +1,7 @@
 ####
-## The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
-## that rapidly addresses epidemiological and public health questions using 
-## routinely collected health and population data and generates standardised 
-## rates and relative risks for any given health outcome, for specified age 
-## and year ranges, for any given geographical area.
-##
-## Copyright 2016 Imperial College London, developed by the Small Area
-## Health Statistics Unit. The work of the Small Area Health Statistics Unit 
-## is funded by the Public Health England as part of the MRC-PHE Centre for 
-## Environment and Health. Funding for this project has also been received 
-## from the United States Centers for Disease Control and Prevention.  
-##
-## This file is part of the Rapid Inquiry Facility (RIF) project.
-## RIF is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## RIF is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-## GNU Lesser General Public License for more details.
-##
-## You should have received a copy of the GNU Lesser General Public License
-## along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
-## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
-## Boston, MA 02110-1301 USA
-
 ## Brandon Parkes
 ## @author bparkes
+## @author Martin McCallion
 ##
 
 ############################################################################################################
@@ -41,25 +14,18 @@
 #
 ############################################################################################################
 
-## CHECK & AUTO INSTALL MISSING PACKAGES
-## CHECK .libPaths(), add lib="" argument and RUN AS ADMIN IF NEEDED
-#packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "rJava")
-#if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
-#  install.packages(setdiff(packages, rownames(installed.packages())))  
-#}
-#if (!require(INLA)) {
-#	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
-#}
-
+library(RODBC)
 library(pryr)
 library(plyr)
 library(abind)
 library(INLA)
 library(maptools)
 library(spdep)
-library(RODBC)
 library(Matrix)
+library(here)
 
+source(here::here("Adj_Cov_Smooth_Common.R"))
+source(here::here("performSmoothingActivity.R"))
 
 ##====================================================================
 # SCRIPT VARIABLES
@@ -72,12 +38,9 @@ errorCount <- 0	# Smoothing error count
 #CATALINA_HOME
 catalina_home<-Sys.getenv("CATALINA_HOME")
 
-##====================================================================
-# SCRIPT VARIABLES
-##====================================================================
-#Variables that hold database connectivity information.  For now, we
-#will rely on named ODBC sources but in future the script should be 
-#altered to use host:port/databaseName
+# Variables that hold database connectivity information.  For now, we
+# will rely on named ODBC sources but in future the script should be
+# altered to use host:port/databaseName
 userID <- ""
 password <- ""
 dbName <- "rif_studies"
@@ -128,175 +91,6 @@ investigationId <- "272"
 #name of adjustment (covariate) variable (except age group and sex). 
 #todo add more adjustment variables and test the capabilities. 
 names.adj<-c('ses')
-
-##==========================================================================
-#FUNCTION: establishTableNames
-#DESCRIPTION: uses the study_id number to determine the names of
-#tables that are used in the script.  There are three tables that are
-#important for this activity and their meanings are as follows:
-#rif_studies.s[study_id]_extract - contains the extract data table created
-#by the middleware
-#
-#rif_studies.s[study_id]_map - the skeleton table that the RIF middleware
-#creates to hold smoothed results
-#
-##==========================================================================
-establishTableNames <-function(vstudyID) {
- 
-#The name of the extract table that is created by the middleware for a given
-#study.  It is of the format rif_studies.s[study_id]_extract
-	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
-  	
-#Numbered directory support (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem 
-#performance on Windows Tomcat servers 
-	centile <- as.integer(vstudyID) %/% 100 # 1273 = 12
-	# Number directory: d1201-1300\
-	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100)
-	
-#The name of the skeleton table created by the RIF middleware to hold smoothed results
-#for a given study.  Initially the values for smoothed columns will be empty.  It is 
-#of the format rif_studies.s[study_id]_map 
-	mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
-
-# Name of Rdata CSV file for debugging results save
-# This needs to be passed in via interface
-
-	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
-	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
-		scratchSpace <<- file.path(defaultScratchSpace, numberDir, paste0("s", vstudyID), "data")
-	}
-
-	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
-		dumpFramesToCsv <<- defaultDumpFramesToCsv
-	}		
-	temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
-	temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
-	adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
-  
-#The name of the temporary table that this script uses to hold the data frame
-#containing smoothed results.  It should have a 1:1 correspondence between
-#its fields and fields that appear in the map table skeleton.
-  
-	temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")
-
-}
-
-
-#make and ODBC connection
-#dbHost = 'networkRif'
-#dbName = 'rif_studies'
-#studyID = '1'
-
-##================================================================================
-##FUNCTION: check.integer
-##DESCRIPTION
-##Check if string is an integer 
-##
-## Inspiration:
-##
-## https://stackoverflow.com/questions/3476782/check-if-the-number-is-integer
-## https://rosettacode.org/wiki/Determine_if_a_string_is_numeric#R
-##
-## Test cases: 
-##
-## isNotRounded is the best test; isInteger is useless (see manual for why!); isIntRegexp needs a better regexp! [string "1e4" give the wrong answer]
-##> check.integer("1e4")
-#[1] "check.integer: 1e4; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE"
-#[1] FALSE <<<< WRONG!
-#
-##
-## Beware:
-##
-# isNotRounded will return false when used on a data frame: check.integer(result$area_id[1])
-#> check.integer(result$area_id[1]) where the data is "01.001.01000"
-#[1] "check.integer: 01.001.01000; as.numeric(str): 1; isNumeric: TRUE; isInteger: FALSE; isNotRounded: TRUE; isIntRegexp: FALSE"
-#[1] FALSE
-##
-#> check.integer(1)
-#[1] "check.integer: 1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
-#[1] TRUE
-#> check.integer(1.1)
-#[1] "check.integer: 1.1; as.numeric(str): 1.1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-#> check.integer("1")
-#[1] "check.integer: 1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
-#[1] TRUE
-#> check.integer("1e4")
-#[1] "check.integer: 1e4; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE"
-#[1] FALSE <<<< WRONG!
-#> check.integer(1e4)
-#[1] "check.integer: 10000; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
-#[1] TRUE
-#> check.integer("Hello")
-#[1] "check.integer: Hello; as.numeric(str): NA; isNumeric: FALSE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-#> check.integer("01.01.1000")
-#[1] "check.integer: 01.01.1000; as.numeric(str): NA; isNumeric: FALSE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-#> check.integer("1.001")
-#[1] "check.integer: 1.001; as.numeric(str): 1.001; isNumeric: TRUE; isInteger: TRUE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-#> check.integer("0011001")
-#[1] "check.integer: 0011001; as.numeric(str): 11001; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
-#[1] TRUE
-#> check.integer("00.11001")
-#[1] "check.integer: 00.11001; as.numeric(str): 0.11001; isNumeric: TRUE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-##================================================================================
-check.integer <- function(N) {
-	str<-N # COPY
-	isNumeric<-suppressWarnings(!is.na(as.numeric(str)))
-	isInteger<-suppressWarnings(!is.na(as.integer(str)) && as.integer(str))
-	isNotRounded<-suppressWarnings(isNumeric && as.numeric(str) == round(as.numeric(str)))
-	isIntRegexp<-suppressWarnings(!grepl("[^[:digit:]]", format(N,  digits = 20, scientific = FALSE)))
-	
-	check.integer.Result<-(isNumeric && isInteger && isNotRounded && isIntRegexp)
-#
-# DO NOT UNCOMMENT THIS - IT WILL SLOW DOWN R SEVERAL 1000 TIMES!
-#	
-#	cat(paste0("check.integer: ", str,
-#		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
-#		"; isNumeric: ", isNumeric,
-#		"; isInteger: ", isInteger,
-#		"; isNotRounded: ", isNotRounded,
-#		"; isIntRegexp: ", isIntRegexp,
-#		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
-	
-    return(check.integer.Result)
-}
-
-# Error tracing function
-# https://stackoverflow.com/questions/40629715/how-to-show-error-location-in-trycatch
-withErrorTracing = function(expr, silentSuccess=FALSE) {
-    hasFailed = FALSE
-    messages = list()
-    warnings = list()
-		
-    errorTracer = function(obj) {
-
-        # Storing the call stack 
-        calls = sys.calls()
-        calls = calls[1:length(calls)-1]
-        # Keeping the calls only
-        trace = limitedLabels(c(calls, attr(obj, "calls")))
-
-        # Printing the 2nd and 3rd traces that contain the line where the error occured
-        # This is the part you might want to edit to suit your needs
-        #print(paste0("Error occuring: ", trace[length(trace):1][2:3]))
-        cat("Stack tracer >>>\n\n", trace[length(trace):1], "\n<<< End of stack tracer.\n")
-        # Muffle any redundant output of the same message
-        optionalRestart = function(r) { res = findRestart(r); if (!is.null(res)) invokeRestart(res) }
-        optionalRestart("muffleMessage")
-        optionalRestart("muffleWarning")
-    }
-
-    vexpr = withCallingHandlers(withVisible(expr),  error=errorTracer)
-    if (silentSuccess && !hasFailed) {
-        cat(paste(warnings, collapse=""))
-    }
-    if (vexpr$visible) vexpr$value else invisible(vexpr$value)
-	return
-}
 
 ##================================================================================
 ##FUNCTION: runRSmoothingFunctions

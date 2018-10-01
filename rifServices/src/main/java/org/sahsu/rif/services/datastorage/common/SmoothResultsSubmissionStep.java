@@ -225,12 +225,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					// Run the actual smoothing
 					sourceRScript(rengine, adjCovSmoothJri.toString());
 					sourceRScript(rengine, performSmoothingActivity.toString());
+					sourceRScript(rengine, scriptPath.resolve(
+							"Adj_Cov_Smooth_Common.R").toString());
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
 				}
-
-				// Create the scripts for rerunning the study. We do this before checking the
-				// return value because having the scripts can be useful if there was an error.
-
 
 				exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
 				if (exitValueFromR != null) {
