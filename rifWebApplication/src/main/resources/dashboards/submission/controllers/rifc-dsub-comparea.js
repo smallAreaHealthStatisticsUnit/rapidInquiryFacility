@@ -39,9 +39,9 @@
 
 angular.module("RIF")
         .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 
-			'SubmissionStateService', 'StudyAreaStateService', 'SelectStateService',
+			'SubmissionStateService', 'StudyAreaStateService', 'SelectStateService', 'ModelService',
             function ($scope, $uibModal, CompAreaStateService, SubmissionStateService, 
-				StudyAreaStateService, SelectStateService) {
+				StudyAreaStateService, SelectStateService, ModelService) {
                 $scope.tree = SubmissionStateService.getState().comparisonTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -58,7 +58,13 @@ angular.module("RIF")
                         if (input.selectedPolygon.length === 0) {
                             SubmissionStateService.getState().comparisonTree = false;
                             $scope.tree = false;
-                        } else {
+                        } 
+
+						else if (!ModelService.verifyStudyState()) { // Check study types - FAILS
+                            SubmissionStateService.getState().comparisonTree = false;
+                            $scope.tree = false;
+                        }						
+						else {
                             //check resolutions are compatible
                             if (StudyAreaStateService.getState().studyResolution !== "") {
                                 if (input.geoLevels.indexOf(input.studyResolution) >

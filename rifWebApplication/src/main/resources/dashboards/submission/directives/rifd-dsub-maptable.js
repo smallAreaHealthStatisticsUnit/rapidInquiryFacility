@@ -45,11 +45,11 @@
 angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
-			'SelectStateService', 'ParametersService', 'StudyAreaStateService', 'CommonMappingStateService', 
+			'SelectStateService', 'ParametersService', 'StudyAreaStateService', 'CompAreaStateService', 'CommonMappingStateService', 
 			'DrawSelectionService', '$q', '$timeout',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     LeafletBaseMapService, $timeout, user, SubmissionStateService,
-					SelectStateService, ParametersService, StudyAreaStateService, CommonMappingStateService,
+					SelectStateService, ParametersService, StudyAreaStateService, CompAreaStateService, CommonMappingStateService,
 					DrawSelectionService, $q, $timeout) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
@@ -154,6 +154,52 @@ angular.module("RIF")
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
 						
+						/* Function: 	setStudyType()
+						 * Description: Reset study state to $scope.input.type
+						 */
+						function setStudyType(callCount) {
+
+							if (callCount > 2) {
+								throw new Error("setStudyType() recursion protector: " + callCount);
+							}
+							
+							if ($scope.input.type === "Risk Analysis") {
+								SelectStateService.initialiseRiskAnalysis();
+								SelectStateService.getState().studyType="risk_analysis_study";
+								
+                                CommonMappingStateService.getState("areamap").possibleBands = [1, 2, 3, 4, 5, 6];
+                                CommonMappingStateService.getState("areamap").map.band = 6;
+							}
+							else if ($scope.input.type === "Disease Mapping") {			
+								SelectStateService.resetState();
+								SelectStateService.getState().studyType="disease_mapping_study";
+								
+                                CommonMappingStateService.getState("areamap").possibleBands = [1];
+                                CommonMappingStateService.getState("areamap").currentBand = 1;
+                                CommonMappingStateService.getState("areamap").map.band = 1;
+							}							
+							else if ($scope.input.type == undefined) {
+								if (SubmissionStateService.getState().studyType != undefined &&
+								    StudyAreaStateService.getState().type       != undefined &&
+								    SubmissionStateService.getState().studyType === 
+											StudyAreaStateService.getState().type &&
+									$scope.input.name == "ComparisionAreaMap"	/* In Comparison area modal */) {
+									$scope.input.type=StudyAreaStateService.getState().type;
+									setStudyType((callCount + 1));
+								}
+								else {
+									throw new Error("setStudyType: undefined $scope.input.type");
+								}
+							}
+							else {
+								throw new Error("setStudyType: invalid $scope.input.type: " + $scope.input.type);
+							}
+                            SubmissionStateService.getState().studyType = $scope.input.type;
+							StudyAreaStateService.getState().type = $scope.input.type;		
+							CompAreaStateService.getState().type = $scope.input.type;		
+							alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(): " + SubmissionStateService.getState().studyType);					
+						}
+							
                         //Clear all selection from map and table
                         $scope.clear = function () {
 							alertScope.consoleLog("[rifd-dsub-maptable.js] $scope.clear() $scope.input.selectedPolygon");
@@ -161,12 +207,8 @@ angular.module("RIF")
 							$scope.selectedPolygonCount = 0;
                             $scope.selectedPolygon = CommonMappingStateService.getState("areamap").clearSelectedPolygon();
 							$scope.shapeLoadUpdate = "";
-							if ($scope.input.type === "Risk Analysis") {
-								SelectStateService.initialiseRiskAnalysis();
-							}
-							else {			
-								SelectStateService.resetState();
-							}
+							
+							setStudyType(1);
 							
                             if (CommonMappingStateService.getState("areamap").map.hasLayer(	// Reset shapes
 									CommonMappingStateService.getState("areamap").shapes)) {
@@ -446,23 +488,11 @@ angular.module("RIF")
 								
                             //clear selection
                             $scope.clear();
-                            //offer the correct number of bands
-                            SubmissionStateService.getState().studyType = $scope.input.type;
-							StudyAreaStateService.getState().type = $scope.input.type;
-                            if ($scope.input.type === "Risk Analysis") {
-                                CommonMappingStateService.getState("areamap").possibleBands = [1, 2, 3, 4, 5, 6];
-                                CommonMappingStateService.getState("areamap").map.band = 6;
-								
-								SelectStateService.initialiseRiskAnalysis();
-								SelectStateService.getState().studyType="risk_analysis_study";
-                            } else {
-                                CommonMappingStateService.getState("areamap").possibleBands = [1];
-                                CommonMappingStateService.getState("areamap").currentBand = 1;
-                                CommonMappingStateService.getState("areamap").map.band = 1;
-								
-								SelectStateService.resetState();
-								SelectStateService.getState().studyType="disease_mapping_study";
-                            }	
+							
+							// Reset study state to $scope.input.type
+							setStudyType(1);
+							
+                            //offer the correct number of bands			
 							$scope.possibleBands=CommonMappingStateService.getState("areamap").possibleBands;
 							$scope.currentBand=CommonMappingStateService.getState("areamap").currentBand;
 //							SelectStateService.verifyStudySelection(); 	// Don't - it is not setup
@@ -2014,15 +2044,8 @@ angular.module("RIF")
                                     //parse the csv file
                                     var listOfIDs = JSON.parse(JSONService.getCSV2JSON($scope.content));
                                     //attempt to fill 'selectedPolygon' with valid entries
-                                    $scope.clear();
-									
-									if ($scope.input.type === "Risk Analysis") {
-										SelectStateService.initialiseRiskAnalysis();
-									}
-									else {			
-										SelectStateService.resetState();
-									}
-									
+                                    $scope.clear();	
+											
                                     var bPushed = false;
                                     var bInvalid = false;
                                     for (var i = 0; i < listOfIDs.length; i++) {

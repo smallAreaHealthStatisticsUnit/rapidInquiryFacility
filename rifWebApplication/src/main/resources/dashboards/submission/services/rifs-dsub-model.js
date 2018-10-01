@@ -48,10 +48,15 @@ angular.module("RIF")
                     type = 'risk_analysis_study';
                     areaType = 'risk_analysis_study_area';
                 } 
-				else {	
+				else if (SubmissionStateService.getState().studyType === "Disease Mapping") {
 					type = "disease_mapping_study";
 					areaType = "disease_mapping_study_area";
 				}
+				else {
+					throw new Error("Invalid SubmissionStateService.getState().studyType: " + 
+						SubmissionStateService.getState().studyType);
+				}
+				
                 if (SubmissionStateService.verifySubmissionState(strict) == false) {
 					throw new Error("Submission state verification failed");
 				}
@@ -85,9 +90,7 @@ angular.module("RIF")
 					model.rif_job_submission.study_selection = SelectStateService.getState();
 					AlertService.rifMessage('warning', "Study selection state has been lost");
 				}
-				else if (model.rif_job_submission.study_selection.studyType == undefined) {
-					model.rif_job_submission.study_selection.studyType = SelectStateService.getState().studyType;
-				}
+				model.rif_job_submission.study_selection.studyType = type;
 				
                 model["rif_job_submission"][type] = {
                     "name": SubmissionStateService.getState().studyName,
@@ -280,9 +283,21 @@ angular.module("RIF")
 							'; expecting: "Risk Analysis"');
 						errors++;
 					}
+					
 				}
 				else {
 					AlertService.consoleLog('[rifs-dsub-model.js] WARNING Invalid study type: ' + type);
+					errors++;
+				}
+				
+				
+				if (type == SelectStateService.getState().studyType) {
+						// OK 
+				}
+				else {
+					AlertService.consoleLog('[rifs-dsub-model.js] WARNING Invalid study selection state study type: ' + 
+						SelectStateService.getState().studyType +
+						'; expecting: "' + type + '"');
 					errors++;
 				}
 				
@@ -298,8 +313,40 @@ angular.module("RIF")
 					throw err;
 				}
 			}
+			
+			function verifyStudyState2() {
+				if (SubmissionStateService.getState().studyType != StudyAreaStateService.getState().type) {
+					AlertService.consoleLog("[rifc-dsub-runstudy.js] WARNING Study type mismatch: " +
+						"; SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType + " != " +
+						"; StudyAreaStateService.getState().type: " + StudyAreaStateService.getState().type);
+					AlertService.showError("Study type mismatch");
+				}
+				else {
+					if ((SelectStateService.getState().studyType == "disease_mapping_study" &&
+						 SubmissionStateService.getState().studyType == "Disease Mapping") ||
+					    (SelectStateService.getState().studyType == "risk_analysis_study" &&
+					  	 SubmissionStateService.getState().studyType == "Risk Analysis")) { // OK
+
+						//TODO: error if year params not set (if loaded from file)
+						AlertService.consoleLog("[rifc-dsub-runstudy.js] verifyStudyState() OK: " + 
+							SubmissionStateService.getState().studyType);
+						return true;
+					 }
+					 else {
+						AlertService.consoleLog("[rifc-dsub-runstudy.js] WARNING Study selection type mismatch: " +
+							"; SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType + " != " +
+							"; SelectStateService.getState().studyType: " + SelectStateService.getState().studyType);						 
+						AlertService.showError("Study selection type mismatch");
+					 }
+				}
+				
+				return false;				
+			}
 				
             return {
+				verifyStudyState: function() {
+					return verifyStudyState2();
+				},
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
                     var modelJSON = updateModel(true); // Study name must exist

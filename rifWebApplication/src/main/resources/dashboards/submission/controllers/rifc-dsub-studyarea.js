@@ -38,9 +38,9 @@
 
 angular.module("RIF")
         .controller('ModalStudyAreaCtrl', ['$state', '$scope', '$uibModal', 'StudyAreaStateService', 
-			'SubmissionStateService', 'CompAreaStateService', 'SelectStateService',
+			'SubmissionStateService', 'CompAreaStateService', 'SelectStateService', 'ModelService',
             function ($state, $scope, $uibModal, StudyAreaStateService, 
-			SubmissionStateService, CompAreaStateService, SelectStateService) {
+			SubmissionStateService, CompAreaStateService, SelectStateService, ModelService) {
                 $scope.tree = SubmissionStateService.getState().studyTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -57,7 +57,12 @@ angular.module("RIF")
                         if (input.selectedPolygon.length === 0) {
                             SubmissionStateService.getState().studyTree = false;
                             $scope.tree = false;
-                        } else {
+						}
+						else if (!ModelService.verifyStudyState()) { // Check study types - FAILS
+                            SubmissionStateService.getState().studyTree = false;
+                            $scope.tree = false;
+                        } 
+						else {
                             //if CompAreaStateService studyResolution is now greater than the new Study studyResolution
                             //then clear the comparison area tree and show a warning
                             //Study tree will not change
