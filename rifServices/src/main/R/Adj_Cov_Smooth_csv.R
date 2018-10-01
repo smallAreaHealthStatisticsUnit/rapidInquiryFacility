@@ -72,9 +72,6 @@ errorCount <- 0	# Smoothing error count
 #CATALINA_HOME
 catalina_home<-Sys.getenv("CATALINA_HOME")
 
-# Set the working directory based on the value from the Java class
-setwd(working_dir)
-
 ##====================================================================
 # SCRIPT VARIABLES
 ##====================================================================
@@ -518,7 +515,8 @@ processCommandLineArguments <- function() {
 hasperformSmoothingActivityScript<-FALSE
 if (exists("catalina_home")) {
 	cat("CATALINA_HOME=", catalina_home, "\n", sep="")
-	performSmoothingActivityScript<-file.path((catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "performSmoothingActivity.R")
+	performSmoothingActivityScript <- file.path(catalina_home, "webapps", "rifServices",
+												"WEB-INF", "classes", "performSmoothingActivity.R")
 	
 	if (file.exists(performSmoothingActivityScript)) {
 		hasperformSmoothingActivityScript<-TRUE
