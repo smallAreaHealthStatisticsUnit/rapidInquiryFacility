@@ -1496,7 +1496,7 @@ public class CommonUserService implements UserService {
 				y);	
 			
 			//check that zoomFactor
-			if ((zoomlevel <1) || (zoomlevel > 20)) {
+			if ((zoomlevel <0) || (zoomlevel > 11)) {
 				//zoom factor is out of range.
 				String errorMessage
 					= SERVICE_MESSAGES.getMessage(

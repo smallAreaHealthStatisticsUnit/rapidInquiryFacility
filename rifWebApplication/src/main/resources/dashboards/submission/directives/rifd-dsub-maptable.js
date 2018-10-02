@@ -648,9 +648,9 @@ angular.module("RIF")
                             //Get the centroids from DB (from the lookup table - not the root tile)
                             bWeightedCentres = true;							
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) { // Success case 
-							// Create LatLng List for centroids
-							return createLatLngList(res);	
-								}, function (err) { // Error case: not an error - processing continues
+								// Create LatLng List for centroids
+								return createLatLngList(res);	
+							}, function (err) { // Error case: not an error - processing continues
 								alertScope.consoleError("[rifd-dsub-maptable.js] user.getTileMakerCentroids had error: " + 
 									(err ? err : "no error specified"));
 								
@@ -666,12 +666,32 @@ angular.module("RIF")
 									user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
 										CommonMappingStateService.getState("areamap").maxbounds = 
 											L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-										if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
+//										if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
 											CommonMappingStateService.getState("areamap").map.fitBounds(
 												CommonMappingStateService.getState("areamap").maxbounds);
-										}
+//										}
+									}, function(err) { // Error case
+										promisesErrorHandler("user.getTileMakerTilesAttributes", err); // Abort												
 									}).then(function (res) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerTilesAttributes OK: " + 
+											(res ? res : "no status"));
+										// Delays are to allow the map to initialise
+										$timeout(function() {
+											
+											CommonMappingStateService.getState("areamap").map.whenReady(function() {
+												return $timeout(function() { //  Return promise
+													alertScope.consoleDebug("[rifd-dsub-maptable.js] map ready, zoomlevel: " +
+														CommonMappingStateService.getState("areamap").map.getZoom() +
+														"; range: " + CommonMappingStateService.getState("areamap").map.getMinZoom() +
+														" to " + CommonMappingStateService.getState("areamap").map.getMaxZoom());
+												});
+													
+											}, 100);
+										}, 200);
+									}, function(err) { // Error case
+										promisesErrorHandler("mapInitialise", err); // Abort												
+									}).then(function (res) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] mapInitialise OK: " + 
 											(res ? res : "no status"))
 										// Add topoJSON tiles to map
 										return asyncCreateTopoJsonLayer(topojsonURL);
@@ -748,7 +768,7 @@ angular.module("RIF")
 									promisesErrorHandler("user.getTileMakerTilesAttributes", err); // Abort	
 								});
 							}, function(err) { // Error case
-								promisesErrorHandler("user.getTileMakerCentroids", err); // Abort	
+								promisesErrorHandler("user.getGeoLevelSelectValues", err); // Abort	
 							});		
                         }; // End of getMyMap()
 
