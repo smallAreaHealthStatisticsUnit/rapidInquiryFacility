@@ -36,7 +36,7 @@ exitValue <- 0 	# 0 success, 1 failure
 errorCount <- 0	# Smoothing error count
 				
 #CATALINA_HOME
-catalina_home<-Sys.getenv("CATALINA_HOME")
+catalina_home <- Sys.getenv("CATALINA_HOME")
 
 # Variables that hold database connectivity information.  For now, we
 # will rely on named ODBC sources but in future the script should be
@@ -75,11 +75,13 @@ mapTableName <- ""
 #its fields and fields that appear in the map table skeleton.  
 temporarySmoothedResultsTableName <- ""
 
-#File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
-#Variable to control dumping franes (dumpFramesToCsv)
-defaultScratchSpace <- file.path("scratchSpace")
+# File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
+# Variable to control dumping franes (dumpFramesToCsv)
+# Scratchspace in this version should be the current directory, as the assumption is the script
+# will be run from there.
+defaultScratchSpace <- file.path(".")
 defaultDumpFramesToCsv <- FALSE
-scratchSpace <- ""
+scratchSpace <- "."
 dumpFramesToCsv <- ""
  
 #The name of the investigation. Is an input parameter, but default is set here for debug purposes
@@ -306,7 +308,7 @@ processCommandLineArguments <- function() {
 }
 
 #
-hasperformSmoothingActivityScript<-FALSE
+hasperformSmoothingActivityScript <- FALSE
 if (exists("catalina_home")) {
 	cat("CATALINA_HOME=", catalina_home, "\n", sep="")
 	performSmoothingActivityScript <- file.path(catalina_home, "webapps", "rifServices",
@@ -321,10 +323,10 @@ if (exists("catalina_home")) {
 	cat("CATALINA_HOME not set\n")
 	if (!hasperformSmoothingActivityScript) {
 
-		performSmoothingActivityScript<-"performSmoothingActivity.R"
+		performSmoothingActivityScript <-"performSmoothingActivity.R"
 	
 		if (file.exists(performSmoothingActivityScript)) {
-			hasperformSmoothingActivityScript<-TRUE
+			hasperformSmoothingActivityScript <- TRUE
 			cat("Source: ", performSmoothingActivityScript, "\n", sep="")
 			source(performSmoothingActivityScript)
 		}
