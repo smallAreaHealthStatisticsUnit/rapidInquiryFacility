@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Array;
+
 import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -64,7 +66,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		setEnableLogging(true);
 	}
 	
-	public	void updateSelectState(final Connection connection, final User user, final String studyID, final JSONObject studySelection) 
+	public void updateSelectState(final Connection connection, final User user, final String studyID, final JSONObject studySelection) 
 		throws RIFServiceException {
 	
 		if (studySelection == null) {
@@ -397,6 +399,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			addStudyStatement.setString(ithQueryParameter++, calculationMethod.getStatsMethod());
 
 			addStudyStatement.executeUpdate();
+			SQLQueryUtility.printWarnings(addStudyStatement); // Print output from T-SQL or PL/pgsql
 
 			//add information about who can share the study
 			InsertQueryFormatter studyShareQueryFormatter = InsertQueryFormatter.getInstance(
@@ -410,6 +413,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					studyShareQueryFormatter);
 			studyShareStatement.setString(1, user.getUserID());
 			studyShareStatement.executeUpdate();
+			SQLQueryUtility.printWarnings(studyShareStatement); // Print output from T-SQL or PL/pgsql
 		} finally {
 			//Cleanup database resources	
 			SQLQueryUtility.close(studyShareStatement);
@@ -530,6 +534,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 						minAgeGroupParameter);
 
 				statement.executeUpdate();
+				SQLQueryUtility.printWarnings(statement); // Print output from T-SQL or PL/pgsql
 
 				addCovariatesToStudy(
 						connection,
@@ -636,16 +641,19 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					= createPreparedStatement(
 					connection,
 					queryFormatter);
-			int i = 1;
+			int i = 1;			
+			ArrayList<String> list1 = new ArrayList<String>();
+			ArrayList<Integer> list2 = new ArrayList<Integer>();
 			for (MapArea currentMapArea : allMapAreas) {
-				statement.setString(1, currentMapArea.getLabel());
-
-				statement.setInt(2, i);
-
-				statement.executeUpdate();
-
+				list1.add(currentMapArea.getLabel());
+				list2.add(currentMapArea.getBand());
 				i++;
 			}
+			Array array1 = connection.createArrayOf("VARCHAR", list1.toArray());
+			Array array2 = connection.createArrayOf("INTEGER", list2.toArray());
+			statement.setArray(1, array1);
+			statement.setArray(2, array2);
+			statement.executeUpdate();
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -688,11 +696,15 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					connection,
 					geography,
 					comparisonArea);
-
+					
+			ArrayList<String> list = new ArrayList<String>();
+			
 			for (MapArea currentMapArea : allMapAreas) {
-				statement.setString(1, currentMapArea.getLabel());
-				statement.executeUpdate();
+				list.add(currentMapArea.getLabel());
 			}
+			Array array = connection.createArrayOf("VARCHAR", list.toArray());
+			statement.setArray(1, array);
+			statement.executeUpdate();
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -797,6 +809,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 						ithQueryParameter++,
 						maximumCovariateValue);
 				addCovariateStatement.executeUpdate();
+				SQLQueryUtility.printWarnings(addCovariateStatement); // Print output from T-SQL or PL/pgsql
 				ithQueryParameter = 1;
 			}
 		} finally {
@@ -919,6 +932,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					}
 
 					addHealthCodeStatement.executeUpdate();
+					SQLQueryUtility.printWarnings(addHealthCodeStatement); // Print output from T-SQL or PL/pgsql
 				}
 			}
 		} finally {
@@ -1041,4 +1055,62 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 		//@TODO: Implement when RIF is able to register R routines
 	}
+	
+	public void setStudyExtractToFail(final Connection connection, final String studyID, final String message, final String stack)
+		throws RIFServiceException {
+
+		InsertQueryFormatter studyQueryFormatter = InsertQueryFormatter.getInstance(
+				rifDatabaseProperties.getDatabaseType());
+		studyQueryFormatter.setIntoTable("rif40.rif40_study_status");
+		studyQueryFormatter.addInsertField("study_id");
+		studyQueryFormatter.addInsertField("study_state");
+		studyQueryFormatter.addInsertField("message");
+		if (stack != null) {
+			studyQueryFormatter.addInsertField("trace");
+		}
+
+		logSQLQuery("setStudyExtractToFail", studyQueryFormatter);
+
+		PreparedStatement statement1 = null;
+	
+		try {
+			statement1 = connection.prepareStatement(studyQueryFormatter.generateQuery());
+			statement1.setInt(1, Integer.parseInt(studyID));
+			statement1.setString(2, "G"); //  Extract failure, extract, results or maps not created
+			if (message != null) {
+				statement1.setString(3, message);
+			}
+			else {
+				statement1.setString(3, "Extract failure, extract, results or maps not created");
+			}
+			if (stack != null) {
+				statement1.setString(4, stack);
+			}
+			int rc = statement1.executeUpdate();
+		
+			if (rc != 1) { 
+				throw new RIFServiceException(
+					RIFServiceError.SETSTUDYEXTRACTTOFAIL_FAILED,
+					"setStudyExtractToFail query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " insert");
+			}
+			connection.commit();
+
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"studySubmissionStep.unableToSetStudyExtractToFail",
+					studyID, message);
+			throw new RIFServiceException(
+					RIFServiceError.SETSTUDYEXTRACTTOFAIL_FAILED,
+					errorMessage);
+		} finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement1);
+		}
+	}
+	
 }

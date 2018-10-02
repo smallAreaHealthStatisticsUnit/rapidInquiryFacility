@@ -15,15 +15,28 @@ import org.sahsu.rif.services.datastorage.common.SQLManager;
 public final class PGSQLGenerateResultsSubmissionStep implements GenerateResultsSubmissionStep {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 
 	private final SQLManager manager;
 
+	private String result = null;
+	private String stack = null;
+	
 	public PGSQLGenerateResultsSubmissionStep(final SQLManager manager) {
 
 		this.manager = manager;
 		manager.setEnableLogging(false);
 	}
-
+	
+	@Override
+	public String getResult() {
+		return result;
+	}	
+	@Override
+	public String getStack() {
+		return stack;
+	}
+	
 	/**
 	 * submit rif study submission.
 	 *
@@ -33,13 +46,15 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 	 * @throws RIFServiceException the RIF service exception
 	 */	
 	@Override
-	public void performStep(
+	public boolean performStep(
 		final Connection connection,
 		final String studyID)
 		throws RIFServiceException {
 				
 		PreparedStatement runStudyStatement = null;
 		ResultSet runStudyResultSet = null;
+		boolean res=false;
+		int rval=-1;
 
 		try {
 			
@@ -60,21 +75,42 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 					connection,
 					runStudyQueryFormatter);
 			runStudyStatement.setInt(1, Integer.valueOf(studyID));
-			runStudyStatement.setBoolean(2, true);
+			runStudyStatement.setBoolean(2, true); // Debug
 				
-			runStudyResultSet = runStudyStatement.executeQuery();
+			runStudyResultSet = runStudyStatement.executeQuery(); // Returns true/false
+			rval = runStudyResultSet.getInt(1);
 			runStudyResultSet.next();
 			
 			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			
 			SQLQueryUtility.commit(connection);
-			rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID
-			                                + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
+			if (rval == 1) {
+				result="OK";
+				res=true;
+			}
+			else {
+				result="Study failed with code: " + rval;
+			}
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 
 			manager.logSQLException(sqlException);
+			result=sqlException.getMessage();
+			StringBuilder builder = new StringBuilder(sqlException.getMessage())
+					                        .append("<br />")
+					                        .append("=============================================")
+					                        .append("<br />")
+					                        .append("Stack trace of cause follows")
+					                        .append("<br />")
+					                        .append("=============================================")
+					                        .append("<br />");
+			for (StackTraceElement element : sqlException.getStackTrace()) {
+				builder.append(element.toString()).append("<br />");
+			}
+			stack=builder.toString();
 		
+			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			SQLQueryUtility.commit(connection);
 
 			rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID
@@ -97,6 +133,7 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 			//Cleanup database resources
 			SQLQueryUtility.close(runStudyStatement);
 			SQLQueryUtility.close(runStudyResultSet);
+			return res;
 		}
 	}
 }

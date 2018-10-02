@@ -30,5 +30,8 @@ public interface GenerateResultsSubmissionStep {
 	 * @param studyID the ID of the study
 	 * @throws RIFServiceException if anything goes wrong
 	 */
-	void performStep(final Connection connection, final String studyID) throws RIFServiceException;
+	boolean performStep(final Connection connection, final String studyID) throws RIFServiceException;
+	
+	String getResult();
+	String getStack();
 }

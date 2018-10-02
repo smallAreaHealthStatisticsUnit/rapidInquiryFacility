@@ -19,6 +19,9 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 	
 	private final SQLManager manager;
 	
+	private String result = null;
+	private String stack = null;
+		
 	/**
 	 * Instantiates a new SQLRIF submission manager.
 	 */
@@ -29,15 +32,23 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 	}
 	
 	@Override
-	public void performStep(
+	public String getResult() {
+		return result;
+	}	
+	@Override
+	public String getStack() {
+		return stack;
+	}
+	
+	@Override
+	public boolean performStep(
 			final Connection connection,
 			final String studyID)
 		throws RIFServiceException {
 				
-		String result;
 		CallableStatement runStudyStatement = null;
 		ResultSet runStudyResultSet = null;
-		boolean res;
+		boolean res=false;
 		int rval=-1;
 
 		try {
@@ -58,7 +69,7 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 							  on Kev's layers to support CallableStatement; only String is supported */
 			
 			runStudyStatement.setInt(1, Integer.valueOf(studyID));
-			runStudyStatement.setInt(2, 1);		
+			runStudyStatement.setInt(2, 1);	// Debug ON
 			runStudyStatement.registerOutParameter(3, java.sql.Types.INTEGER);
 			
 			rifLogger.info(this.getClass(), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" + lineSeparator + 
@@ -75,7 +86,6 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 				rval = runStudyStatement.getInt(3);	
 			}
 		
-			result = String.valueOf(rval);	
 			
 			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from T-SQL
 			
@@ -84,20 +94,36 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 			if (rval == 1) {
 				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID
 				                                + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
+				result = "OK";	
+				res=true;
 			}
 			else {
 				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID
-				                                + " failed with code: " + result +
+				                                + " failed with code: " + String.valueOf(rval) +
 				                                " XXXXXXXXXXXXXXXXXXXXXX");
-
+				result = "Study failed with code: " + String.valueOf(rval);
 			}
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version, print warning dialogs
 
-			result="NULL [EXCEPTION THROWN BY DB]";
+			result=sqlException.getMessage();
+			StringBuilder builder = new StringBuilder(sqlException.getMessage())
+					                        .append("<br />")
+					                        .append("=============================================")
+					                        .append("<br />")
+					                        .append("Stack trace of cause follows")
+					                        .append("<br />")
+					                        .append("=============================================")
+					                        .append("<br />");
+			for (StackTraceElement element : sqlException.getStackTrace()) {
+				builder.append(element.toString()).append("<br />");
+			}
+			stack=builder.toString();
+			
 			rval=-3;
 
 			manager.logSQLException(sqlException);
+			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from T-SQL
 			SQLQueryUtility.commit(connection);
 			
 			/* DO NOT RETHROW!
@@ -115,6 +141,7 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 			//Cleanup database resources			
 			SQLQueryUtility.close(runStudyStatement);
 			SQLQueryUtility.close(runStudyResultSet);
+			return res;
 		}
 	}
 }

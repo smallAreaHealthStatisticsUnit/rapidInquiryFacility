@@ -202,11 +202,16 @@ public class RunStudyThread implements Runnable {
 		throws RIFServiceException {
 
 		try {			
-			generateResultsSubmissionStep.performStep(
+			if (generateResultsSubmissionStep.performStep(
 				connection, 
-				studyID);
-			StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
-
+				studyID)) {
+				StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
+			}
+			else {
+				createStudySubmissionStep.setStudyExtractToFail(connection, studyID, 
+					generateResultsSubmissionStep.getResult(),
+					generateResultsSubmissionStep.getStack());
+			}
 		}
 		catch (RIFServiceException rifServiceException) {
 			// because this is a database procedure that failed the transaction must be rolled back
@@ -288,4 +293,5 @@ public class RunStudyThread implements Runnable {
 		studyStateManager.rollbackStudy(
 			connection, studyID);
 	}
+	
 }
