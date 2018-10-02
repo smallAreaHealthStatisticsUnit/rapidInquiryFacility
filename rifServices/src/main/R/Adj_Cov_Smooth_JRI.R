@@ -62,6 +62,19 @@ runRSmoothingFunctions <- function() {
 
     cat(paste("In runRSmoothingFunctions in JRI script", "\n"))
 
+	#Numbered directory support (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem
+	#performance on Windows Tomcat servers
+	centile <- as.integer(studyID) %/% 100 # 1273 = 12
+	# Number directory: d1201-1300\
+	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100)
+
+	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
+		scratchSpace <<- file.path("scratchSpace")
+	}
+	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
+	scratchSpace <<- file.path(scratchSpace, numberDir, paste0("s", studyID), "data")
+
+
 	establishTableNames(studyID)
 	cat("Table names established\n")
 

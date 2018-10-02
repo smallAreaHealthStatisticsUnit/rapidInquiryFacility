@@ -81,7 +81,7 @@ temporarySmoothedResultsTableName <- ""
 # will be run from there.
 defaultScratchSpace <- file.path(".")
 defaultDumpFramesToCsv <- FALSE
-scratchSpace <- "."
+scratchSpace <<- "."
 dumpFramesToCsv <- ""
  
 #The name of the investigation. Is an input parameter, but default is set here for debug purposes
