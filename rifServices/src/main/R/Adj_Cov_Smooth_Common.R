@@ -17,7 +17,8 @@
 ##==========================================================================
 establishTableNames <-function(vstudyID) {
 
-	cat("In establishTableNames")
+	scratchStr = as.character(scratchSpace)
+	cat("In establishTableNames; scratchSpace is ", scratchStr, "\n")
 	#The name of the extract table that is created by the middleware for a given
 	#study.  It is of the format rif_studies.s[study_id]_extract
 	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
@@ -32,8 +33,8 @@ establishTableNames <-function(vstudyID) {
 
 	tryCatch({
 		#Put all scratch files in sub directory s<study_id>
-		if (!file.exists(scratchSpace)) {
-			dir.create(scratchSpace, recursive=TRUE)
+		if (!file.exists(scratchStr)) {
+			dir.create(scratchStr, recursive=TRUE)
 		}
 	},
 	warning=function(w) {

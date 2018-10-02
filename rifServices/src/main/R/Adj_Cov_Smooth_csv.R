@@ -79,9 +79,7 @@ temporarySmoothedResultsTableName <- ""
 # Variable to control dumping franes (dumpFramesToCsv)
 # Scratchspace in this version should be the current directory, as the assumption is the script
 # will be run from there.
-defaultScratchSpace <- file.path(".")
 defaultDumpFramesToCsv <- FALSE
-scratchSpace <<- "."
 dumpFramesToCsv <- ""
  
 #The name of the investigation. Is an input parameter, but default is set here for debug purposes
@@ -287,7 +285,7 @@ processCommandLineArguments <- function() {
 		   names.adj<-c('none')
 		}
       } else {
-		cat(paste("WARNING! Unexpected paremeter: ",  parametersDataFrame[i, 1], "=",  parametersDataFrame[i, 2], "\n", sep=""))
+		cat(paste("WARNING! Unexpected parameter: ",  parametersDataFrame[i, 1], "=",  parametersDataFrame[i, 2], "\n", sep=""))
 	  }
     }
 
@@ -307,40 +305,9 @@ processCommandLineArguments <- function() {
   }
 }
 
-#
-hasperformSmoothingActivityScript <- FALSE
-if (exists("catalina_home")) {
-	cat("CATALINA_HOME=", catalina_home, "\n", sep="")
-	performSmoothingActivityScript <- file.path(catalina_home, "webapps", "rifServices",
-												"WEB-INF", "classes", "performSmoothingActivity.R")
-	
-	if (file.exists(performSmoothingActivityScript)) {
-		hasperformSmoothingActivityScript<-TRUE
-		cat("Source: ", performSmoothingActivityScript, "\n", sep="")
-		source(performSmoothingActivityScript)
-	}	
-} else {
-	cat("CATALINA_HOME not set\n")
-	if (!hasperformSmoothingActivityScript) {
-
-		performSmoothingActivityScript <-"performSmoothingActivity.R"
-	
-		if (file.exists(performSmoothingActivityScript)) {
-			hasperformSmoothingActivityScript <- TRUE
-			cat("Source: ", performSmoothingActivityScript, "\n", sep="")
-			source(performSmoothingActivityScript)
-		}
-	}
-}
-
-if (hasperformSmoothingActivityScript) {
-#
-	parametersDataFrame=processCommandLineArguments()
-	print(parametersDataFrame)
-	returnValues <- runRSmoothingFunctions()
-} else {
-	returnValues <- list(exitValue=1, errorTrace="Cannot find R scripts")
-}
+parametersDataFrame=processCommandLineArguments()
+print(parametersDataFrame)
+returnValues <- runRSmoothingFunctions()
 
 if (returnValues$exitValue == 0) {
 	cat("R script ran OK\n")
