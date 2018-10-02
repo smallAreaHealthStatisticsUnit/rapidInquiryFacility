@@ -2954,3 +2954,13 @@ SELECT a.*, b.coa2011
    | COA         | 177.2s         | 203.5s    | 54,998/227,750      |  
    
 #### 24th to 28th September
+
+* RIF demonstrations to CDC, Ulf Stromberg, meeting;
+* Refactor to create CommonMappingStateService (for map data) and DrawSelectionService (for processing shapes);
+* Add areaId filter to TopoJSONGridLayer;
+* Testing;
+ 
+#### 1st to 5th October
+
+* Improved study type initialisation;
+* Testing;
