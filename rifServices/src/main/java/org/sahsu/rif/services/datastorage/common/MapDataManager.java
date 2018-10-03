@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
@@ -33,7 +34,8 @@ public final class MapDataManager extends BaseSQLManager {
 	ArrayList<MapArea> getAllRelevantMapAreas(
 			final Connection connection,
 			final Geography geography,
-			final AbstractGeographicalArea geographicalArea)
+			final AbstractGeographicalArea geographicalArea,
+			final boolean IsStudyArea)
 			throws RIFServiceException {
 
 		rifLogger.info(this.getClass(), "SQLMapDataManager getAllRelevantAreas!!!!!!!!!!!");
@@ -110,7 +112,7 @@ public final class MapDataManager extends BaseSQLManager {
 			queryFormatter.addQueryPhrase(".");
 			queryFormatter.addQueryPhrase(geoLevelToMap.getName());
 
-
+			HashMap<String, Integer> bandHash = new HashMap<String, Integer>();
 			int totalSelectedMapAreas = selectedMapAreas.size();
 			if (totalSelectedMapAreas > 0) {
 
@@ -133,6 +135,8 @@ public final class MapDataManager extends BaseSQLManager {
 					queryFormatter.addQueryPhrase("=\'");
 					queryFormatter.addQueryPhrase(selectedMapAreas.get(i).getIdentifier());
 					queryFormatter.addQueryPhrase("'");
+					
+					bandHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getBand());
 				}
 
 				queryFormatter.addQueryPhrase(")");
@@ -158,14 +162,36 @@ public final class MapDataManager extends BaseSQLManager {
 				String name
 						= resultSet.getString(2);
 
+				// Add band back		
+				int band=-1;
+				if (IsStudyArea) {
+					if (bandHash.containsKey(identifier)) {
+						band=bandHash.get(identifier);
+					}
+					if (band < 1) {
+						RIFServiceException rifServiceException
+							= new RIFServiceException(
+								RIFServiceError.UNABLE_TO_RETRIEVE_ALL_RELEVANT_MAP_AREAS,
+								"No valid band: " + band + "; found for study area selectedMapAreas: " + identifier + "(" + name + ")");
+						throw rifServiceException;
+					}
+				}
+				else {
+					band=0; /* Comparison area */
+				}
+				
 				MapArea mapArea
 						= MapArea.newInstance(
 						identifier,
 						identifier,
-						name);
+						name,
+						band);
 				allRelevantMapAreas.add(mapArea);
 
 			}
+		}
+		catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
 		}
 		catch(SQLException sqlException) {
 			logException(sqlException);

@@ -625,7 +625,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					= mapDataManager.getAllRelevantMapAreas(
 					connection,
 					geography,
-					diseaseMappingStudyArea);
+					diseaseMappingStudyArea,
+					true /* StudyArea */);
 
 			InsertQueryFormatter queryFormatter = InsertQueryFormatter.getInstance(
 					rifDatabaseProperties.getDatabaseType());
@@ -641,19 +642,34 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					= createPreparedStatement(
 					connection,
 					queryFormatter);
-			int i = 1;			
-			ArrayList<String> list1 = new ArrayList<String>();
-			ArrayList<Integer> list2 = new ArrayList<Integer>();
-			for (MapArea currentMapArea : allMapAreas) {
-				list1.add(currentMapArea.getLabel());
-				list2.add(currentMapArea.getBand());
-				i++;
+			
+			DatabaseType databaseType = rifDatabaseProperties.getDatabaseType();
+			if (databaseType == DatabaseType.POSTGRESQL) { 	// Do array insert
+				ArrayList<String> list1 = new ArrayList<String>();
+				ArrayList<Integer> list2 = new ArrayList<Integer>();
+				for (MapArea currentMapArea : allMapAreas) {
+					list1.add(currentMapArea.getLabel());
+					list2.add(currentMapArea.getBand());
+				}
+				Array array1 = connection.createArrayOf("VARCHAR", list1.toArray());
+				Array array2 = connection.createArrayOf("INTEGER", list2.toArray());
+				statement.setArray(1, array1);
+				statement.setArray(2, array2);
+				statement.executeUpdate();
 			}
-			Array array1 = connection.createArrayOf("VARCHAR", list1.toArray());
-			Array array2 = connection.createArrayOf("INTEGER", list2.toArray());
-			statement.setArray(1, array1);
-			statement.setArray(2, array2);
-			statement.executeUpdate();
+			else if (databaseType == DatabaseType.SQL_SERVER) { 	// Don't or you will get:
+													// java.sql.SQLFeatureNotSupportedException: This operation is not supported.
+													//		at com.microsoft.sqlserver.jdbc.SQLServerConnection.createArrayOf(SQLServerConnection.java:5073)
+				for (MapArea currentMapArea : allMapAreas) {
+					statement.setString(1, currentMapArea.getLabel());
+					statement.setInt(2, currentMapArea.getBand());
+					statement.executeUpdate();
+				}
+			}
+			else {
+				throw new IllegalStateException("Unknown database type in "
+				                                + "GenerateResultsSubmissionStep");
+			}			
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -695,16 +711,33 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					= mapDataManager.getAllRelevantMapAreas(
 					connection,
 					geography,
-					comparisonArea);
+					comparisonArea,
+					false /* ComparisonArea */);
 					
 			ArrayList<String> list = new ArrayList<String>();
-			
-			for (MapArea currentMapArea : allMapAreas) {
-				list.add(currentMapArea.getLabel());
+			DatabaseType databaseType = rifDatabaseProperties.getDatabaseType();
+			if (databaseType == DatabaseType.POSTGRESQL) { 	// Do array insert
+				for (MapArea currentMapArea : allMapAreas) {
+					list.add(currentMapArea.getLabel());
+				}		
+
+				Array array = connection.createArrayOf("VARCHAR", list.toArray());
+				statement.setArray(1, array);
+				statement.executeUpdate();
 			}
-			Array array = connection.createArrayOf("VARCHAR", list.toArray());
-			statement.setArray(1, array);
-			statement.executeUpdate();
+			else if (databaseType == DatabaseType.SQL_SERVER) { 	// Don't or you will get:
+													// java.sql.SQLFeatureNotSupportedException: This operation is not supported.
+													//		at com.microsoft.sqlserver.jdbc.SQLServerConnection.createArrayOf(SQLServerConnection.java:5073)
+				for (MapArea currentMapArea : allMapAreas) {
+					statement.setString(1, currentMapArea.getLabel());
+					statement.executeUpdate();
+				}
+			}
+			else {
+				throw new IllegalStateException("Unknown database type in "
+				                                + "GenerateResultsSubmissionStep");
+			}
+
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);

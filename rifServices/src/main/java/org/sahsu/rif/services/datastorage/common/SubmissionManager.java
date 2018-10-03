@@ -208,10 +208,12 @@ public class SubmissionManager extends BaseSQLManager {
 			while (resultSet.next()) {
 				String geographicalIdentifier
 						= resultSet.getString(1);
+				Integer band = resultSet.getInt(2);
 				MapArea mapArea = MapArea.newInstance(
 						geographicalIdentifier,
 						geographicalIdentifier,
-						geographicalIdentifier);
+						geographicalIdentifier,
+						band);
 				studyArea.addMapArea(mapArea);
 			}
 			study.setStudyArea(studyArea);
@@ -261,7 +263,8 @@ public class SubmissionManager extends BaseSQLManager {
 				MapArea mapArea = MapArea.newInstance(
 						geographicalIdentifier,
 						geographicalIdentifier,
-						geographicalIdentifier);
+						geographicalIdentifier,
+						0 /* No band */);
 				comparisonArea.addMapArea(mapArea);
 			}
 

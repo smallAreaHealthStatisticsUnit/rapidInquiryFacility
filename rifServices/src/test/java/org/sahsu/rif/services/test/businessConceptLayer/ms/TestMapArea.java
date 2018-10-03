@@ -119,7 +119,7 @@ public final class TestMapArea
 	 */
 	public void acceptValidInstance_COMMON() {
 		MapArea mapArea
-			= MapArea.newInstance("123", "123", "Brent");
+			= MapArea.newInstance("123", "123", "Brent", 1);
 		try {
 			mapArea.checkErrors(getValidationPolicy());
 		}
@@ -139,7 +139,8 @@ public final class TestMapArea
 				= MapArea.newInstance(
 					null, 
 					"123", 
-					"Brent");
+					"Brent",
+					1);
 			mapArea.checkErrors(getValidationPolicy());
 			fail();
 		}
@@ -152,7 +153,8 @@ public final class TestMapArea
 				= MapArea.newInstance(
 					"", 
 					"123", 
-					"Brent");
+					"Brent",
+					1);
 			mapArea.checkErrors(getValidationPolicy());
 			fail();
 		}
@@ -220,20 +222,20 @@ public final class TestMapArea
 	public void acceptSharedMapAreasInListAListB_COMMON() {
 		//List Destination: {24, 25, 26, 27, 28, 40}
 		ArrayList<MapArea> destinationList = new ArrayList<MapArea>();
-		destinationList.add(MapArea.newInstance("24", "24", "24"));
-		destinationList.add(MapArea.newInstance("25", "25", "25"));
-		destinationList.add(MapArea.newInstance("26", "26", "26"));
-		destinationList.add(MapArea.newInstance("27", "27", "27"));
-		destinationList.add(MapArea.newInstance("28", "28", "28"));
-		destinationList.add(MapArea.newInstance("40", "40", "40"));
+		destinationList.add(MapArea.newInstance("24", "24", "24", 1));
+		destinationList.add(MapArea.newInstance("25", "25", "25", 1));
+		destinationList.add(MapArea.newInstance("26", "26", "26", 1));
+		destinationList.add(MapArea.newInstance("27", "27", "27", 1));
+		destinationList.add(MapArea.newInstance("28", "28", "28", 1));
+		destinationList.add(MapArea.newInstance("40", "40", "40", 1));
 
 		//List Source: {21, 25, 27, 40, 92}
 		ArrayList<MapArea> sourceList = new ArrayList<MapArea>();
-		sourceList.add(MapArea.newInstance("21", "21", "21"));
-		sourceList.add(MapArea.newInstance("25", "25", "25"));
-		sourceList.add(MapArea.newInstance("27", "27", "27"));
-		sourceList.add(MapArea.newInstance("40", "40", "40"));
-		sourceList.add(MapArea.newInstance("92", "92", "92"));
+		sourceList.add(MapArea.newInstance("21", "21", "21", 1));
+		sourceList.add(MapArea.newInstance("25", "25", "25", 1));
+		sourceList.add(MapArea.newInstance("27", "27", "27", 1));
+		sourceList.add(MapArea.newInstance("40", "40", "40", 1));
+		sourceList.add(MapArea.newInstance("92", "92", "92", 1));
 		
 		//duplicates found in Source: {25, 27, 40}
 		ArrayList<MapArea> duplicates
@@ -261,20 +263,20 @@ public final class TestMapArea
 
 		//List Destination: {24, 25, 26, 27, 28, 40}
 		ArrayList<MapArea> destinationList = new ArrayList<MapArea>();
-		destinationList.add(MapArea.newInstance("24", "24", "24"));
-		destinationList.add(MapArea.newInstance("25", "25", "25"));
-		destinationList.add(MapArea.newInstance("26", "26", "26"));
-		destinationList.add(MapArea.newInstance("27", "27", "27"));
-		destinationList.add(MapArea.newInstance("28", "28", "28"));
-		destinationList.add(MapArea.newInstance("40", "40", "40"));
+		destinationList.add(MapArea.newInstance("24", "24", "24", 1));
+		destinationList.add(MapArea.newInstance("25", "25", "25", 1));
+		destinationList.add(MapArea.newInstance("26", "26", "26", 1));
+		destinationList.add(MapArea.newInstance("27", "27", "27", 1));
+		destinationList.add(MapArea.newInstance("28", "28", "28", 1));
+		destinationList.add(MapArea.newInstance("40", "40", "40", 1));
 
 		//List Source: {21, 25, 27, 40, 92}
 		ArrayList<MapArea> sourceList = new ArrayList<MapArea>();
-		sourceList.add(MapArea.newInstance("21", "21", "21"));
-		sourceList.add(MapArea.newInstance("25", "25", "25"));
-		sourceList.add(MapArea.newInstance("27", "27", "27"));
-		sourceList.add(MapArea.newInstance("40", "40", "40"));
-		sourceList.add(MapArea.newInstance("92", "92", "92"));
+		sourceList.add(MapArea.newInstance("21", "21", "21", 1));
+		sourceList.add(MapArea.newInstance("25", "25", "25", 1));
+		sourceList.add(MapArea.newInstance("27", "27", "27", 1));
+		sourceList.add(MapArea.newInstance("40", "40", "40", 1));
+		sourceList.add(MapArea.newInstance("92", "92", "92", 1));
 		
 		//non-duplicates in B: {21, 92}
 		ArrayList<MapArea> nonDuplicates
@@ -313,7 +315,7 @@ public final class TestMapArea
 	@Test
 	public void rejectSecurityViolations_MALICIOUS() {
 		MapArea maliciousMapArea 
-			= MapArea.newInstance(getTestMaliciousValue(), "123", "Brent");
+			= MapArea.newInstance(getTestMaliciousValue(), "123", "Brent", 1);
 		try {
 			maliciousMapArea.checkSecurityViolations();
 			fail();
@@ -323,7 +325,7 @@ public final class TestMapArea
 		}
 		
 		maliciousMapArea 
-			= MapArea.newInstance("123", "123", getTestMaliciousValue());
+			= MapArea.newInstance("123", "123", getTestMaliciousValue(), 1);
 		try {
 			maliciousMapArea.checkSecurityViolations();
 			fail();

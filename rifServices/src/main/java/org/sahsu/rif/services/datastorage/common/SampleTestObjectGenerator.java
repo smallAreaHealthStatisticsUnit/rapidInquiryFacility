@@ -306,28 +306,33 @@ public final class SampleTestObjectGenerator {
 		MapArea mapArea1 = MapArea.newInstance(
 			"01.009.002900.3", 
 			"01.009.002900.3", 
-			"Elliot LEVEL4(01.009.002900.3)");
+			"Elliot LEVEL4(01.009.002900.3)",
+			1);
 		mapArea1.setNewRecord(false);
 		MapArea mapArea2 = MapArea.newInstance(
 			"01.009.002800.5", 
 			"01.009.002800.5",
-			"Elliot LEVEL4(01.009.002800.5)");
+			"Elliot LEVEL4(01.009.002800.5)",
+			1);
 		mapArea2.setNewRecord(false);
 
 		MapArea mapArea3 = MapArea.newInstance(
 			"01.009.002900.1", 
 			"01.009.002900.1",
-			"Elliot LEVEL4(01.009.002900.1)");
+			"Elliot LEVEL4(01.009.002900.1)",
+			1);
 		mapArea3.setNewRecord(false);
 		MapArea mapArea4 = MapArea.newInstance(
 			"01.009.002900.2", 
 			"01.009.002900.2",
-			"Elliot LEVEL4(01.009.002900.2)");
+			"Elliot LEVEL4(01.009.002900.2)",
+			1);
 		mapArea4.setNewRecord(false);
 		MapArea mapArea5 = MapArea.newInstance(
 			"01.009.002800.4", 
 			"01.009.002800.4",
-			"Elliot LEVEL4(01.009.002800.4)");
+			"Elliot LEVEL4(01.009.002800.4)",
+			1);
 		mapArea5.setNewRecord(false);		
 		
 		ComparisonArea comparisonArea
@@ -597,25 +602,29 @@ public final class SampleTestObjectGenerator {
 		MapArea mapArea1 = MapArea.newInstance(
 			"01.001.000100.1", 
 			"01.001.000100.1", 
-			"Abellan LEVEL4(01.001.000100.1)");
+			"Abellan LEVEL4(01.001.000100.1)",
+			1);
 		mapArea1.setNewRecord(false);
 					
 		MapArea mapArea2 = MapArea.newInstance(
 			"01.001.000100.2", 
 			"01.001.000100.2", 
-			"Abellan LEVEL4(01.001.000100.2)");
+			"Abellan LEVEL4(01.001.000100.2)",
+			1);
 		mapArea2.setNewRecord(false);
 					
 		MapArea mapArea3 = MapArea.newInstance(
 			"01.001.000200.1", 
 			"01.001.000200.1", 
-			"Abellan LEVEL4(01.001.000200.1)");
+			"Abellan LEVEL4(01.001.000200.1)",
+			1);
 		mapArea3.setNewRecord(false);
 			
 		MapArea mapArea4 = MapArea.newInstance(
 			"01.001.000300.1", 
 			"01.001.000300.1", 
-			"Abellan LEVEL4(01.001.000300.1)");
+			"Abellan LEVEL4(01.001.000300.1)",
+			1);
 		mapArea4.setNewRecord(false);
 							
 		diseaseMappingStudyArea.addMapArea(mapArea1);
@@ -629,7 +638,8 @@ public final class SampleTestObjectGenerator {
 		MapArea mapArea5 = MapArea.newInstance(
 			"01.002", 
 			"01.002", 
-			"Abellan LEVEL2(01.002)");
+			"Abellan LEVEL2(01.002)",
+			0 /* Dummy */);
 		mapArea5.setNewRecord(false);
 		comparisonArea.addMapArea(mapArea5);
 		
