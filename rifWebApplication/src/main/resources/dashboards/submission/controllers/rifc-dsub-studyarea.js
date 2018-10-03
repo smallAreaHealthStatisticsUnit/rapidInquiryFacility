@@ -132,6 +132,11 @@ angular.module("RIF")
 							if (SelectStateService.getState().studySelection.studySelectedAreas.length > 0) {
 								var r=SelectStateService.verifyStudySelection
 							}
+							else {
+								$scope.showWarning("No study areas selected");
+                                SubmissionStateService.getState().studyTree = false;
+                                $scope.tree = false;
+							}
 						}
 						catch (e) {
 							$scope.showWarningNoHide("Unable to verify study area selection: " + e.message);

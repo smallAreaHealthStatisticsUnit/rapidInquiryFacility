@@ -118,6 +118,11 @@ angular.module("RIF")
 								
 								var r=SelectStateService.verifyStudySelection();
 							}
+							else {
+								$scope.showWarning("No comparison areas selected");
+                                SubmissionStateService.getState().comparisonTree = false;
+                                $scope.tree = false;
+							}
 						}
 						catch (e) {
 							$scope.showWarningNoHide("Unable to verify comparison area selection: " + e.message);

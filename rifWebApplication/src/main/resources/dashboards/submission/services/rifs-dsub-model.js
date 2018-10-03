@@ -301,6 +301,15 @@ angular.module("RIF")
 					errors++;
 				}
 				
+				if (modelJSON.rif_job_submission[type][areaType].map_areas.map_area.length == 0) {
+					AlertService.consoleLog('[rifs-dsub-model.js] WARNING no: ' + areaType + '; expecting: 1+');
+					errors++;
+				}
+				if (modelJSON.rif_job_submission[type]["comparison_area"].map_areas.map_area.length == 0) {
+					AlertService.consoleLog('[rifs-dsub-model.js] WARNING no: comparison_area; expecting: 1+');
+					errors++;
+				}
+					 
 //				AlertService.consoleDebug('[rifs-dsub-model.js] verifyModel studyType: ' + SubmissionStateService.getState().studyType +
 //					'; errors: ' + errors + 
 //					'; modelJSON["' + type + '"] name: ' + modelJSON["rif_job_submission"][type].name + 

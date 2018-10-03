@@ -1410,7 +1410,7 @@ getParameter("p 1")     yes     c d
 			}
 			reader.close();
 
-			rifLogger.debug(getClass(), "JSON from UI: " + buffer.toString());
+			rifLogger.debug(this.getClass(), "JSON from UI: " + buffer.toString());
 			
 			JSONObject jsonObject = new JSONObject(buffer.toString());
 			
