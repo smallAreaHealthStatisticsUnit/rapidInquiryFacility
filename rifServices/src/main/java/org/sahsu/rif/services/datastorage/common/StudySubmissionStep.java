@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Array;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 import java.io.BufferedReader;
 import java.io.IOException;
 
@@ -644,22 +645,36 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					queryFormatter);
 			
 			DatabaseType databaseType = rifDatabaseProperties.getDatabaseType();
+			ArrayList<String> list1 = new ArrayList<String>();
+			ArrayList<Integer> list2 = new ArrayList<Integer>();
+			for (MapArea currentMapArea : allMapAreas) {
+				list1.add(currentMapArea.getLabel());
+				list2.add(currentMapArea.getBand());
+			}
+			String list1String = String.join(", ", list1);
+			String list2String = list2.stream().map(Object::toString)
+					.collect(Collectors.joining(", "));
 			if (databaseType == DatabaseType.POSTGRESQL) { 	// Do array insert
-				ArrayList<String> list1 = new ArrayList<String>();
-				ArrayList<Integer> list2 = new ArrayList<Integer>();
-				for (MapArea currentMapArea : allMapAreas) {
-					list1.add(currentMapArea.getLabel());
-					list2.add(currentMapArea.getBand());
-				}
+
 				Array array1 = connection.createArrayOf("VARCHAR", list1.toArray());
 				Array array2 = connection.createArrayOf("INTEGER", list2.toArray());
 				statement.setArray(1, array1);
 				statement.setArray(2, array2);
+
+				rifLogger.info(this.getClass(), "Do Postgres study area array insert; 1: " + list1.size() + "; " + 
+					(list1String.length() > 100 ? list1String.substring(0, 100) : list1String) +				
+					"; 2: " + list2.size() + "; " + 
+					(list2String.length() > 100 ? list2String.substring(0, 100) : list2String));
 				statement.executeUpdate();
 			}
 			else if (databaseType == DatabaseType.SQL_SERVER) { 	// Don't or you will get:
 													// java.sql.SQLFeatureNotSupportedException: This operation is not supported.
 													//		at com.microsoft.sqlserver.jdbc.SQLServerConnection.createArrayOf(SQLServerConnection.java:5073)
+
+				rifLogger.info(this.getClass(), "Done SQL Server study area non array insert; 1: " + 
+					(list1String.length() > 100 ? list1String.substring(0, 100) : list1String) +				
+					"; 2: " + list2.size() + "; " + 
+					(list2String.length() > 100 ? list2String.substring(0, 100) : list2String));
 				for (MapArea currentMapArea : allMapAreas) {
 					statement.setString(1, currentMapArea.getLabel());
 					statement.setInt(2, currentMapArea.getBand());
@@ -669,7 +684,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			else {
 				throw new IllegalStateException("Unknown database type in "
 				                                + "GenerateResultsSubmissionStep");
-			}			
+			}	
+		} catch (Exception e) {		
+			logException(e);	
+			throw e;			
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -714,15 +732,19 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					comparisonArea,
 					false /* ComparisonArea */);
 					
-			ArrayList<String> list = new ArrayList<String>();
 			DatabaseType databaseType = rifDatabaseProperties.getDatabaseType();
+			ArrayList<String> list = new ArrayList<String>();
+			for (MapArea currentMapArea : allMapAreas) {
+				list.add(currentMapArea.getLabel());
+			}	
+			String listString = String.join(", ", list);
 			if (databaseType == DatabaseType.POSTGRESQL) { 	// Do array insert
-				for (MapArea currentMapArea : allMapAreas) {
-					list.add(currentMapArea.getLabel());
-				}		
+	
 
 				Array array = connection.createArrayOf("VARCHAR", list.toArray());
 				statement.setArray(1, array);
+				rifLogger.info(this.getClass(), "Do Postgres comparison area array insert; 1: " + list.size() + 
+					"; " + (listString.length() > 100 ? listString.substring(0, 100) : listString));
 				statement.executeUpdate();
 			}
 			else if (databaseType == DatabaseType.SQL_SERVER) { 	// Don't or you will get:
@@ -732,12 +754,16 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					statement.setString(1, currentMapArea.getLabel());
 					statement.executeUpdate();
 				}
+				rifLogger.info(this.getClass(), "Done SQL Server comparison area non array insert; 1: " + list.size() + 
+					"; " + (listString.length() > 100 ? listString.substring(0, 100) : listString));
 			}
 			else {
 				throw new IllegalStateException("Unknown database type in "
 				                                + "GenerateResultsSubmissionStep");
 			}
-
+		} catch (Exception e) {		
+			logException(e);	
+			throw e;		
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);

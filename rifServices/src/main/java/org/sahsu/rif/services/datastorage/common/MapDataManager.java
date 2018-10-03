@@ -38,7 +38,6 @@ public final class MapDataManager extends BaseSQLManager {
 			final boolean IsStudyArea)
 			throws RIFServiceException {
 
-		rifLogger.info(this.getClass(), "SQLMapDataManager getAllRelevantAreas!!!!!!!!!!!");
 		ArrayList<MapArea> allRelevantMapAreas = new ArrayList<>();
 
 		GeoLevelSelect geoLevelSelect
@@ -49,7 +48,13 @@ public final class MapDataManager extends BaseSQLManager {
 
 		ArrayList<MapArea> selectedMapAreas
 				= geographicalArea.getMapAreas();
-
+		if (IsStudyArea) {
+			rifLogger.info(this.getClass(), "SQLMapDataManager getAllRelevantMapAreas() study areas: " + selectedMapAreas.size());
+		}
+		else {
+			rifLogger.info(this.getClass(), "SQLMapDataManager getAllRelevantMapAreas() comparison areas: " + selectedMapAreas.size());
+		}
+		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 
@@ -156,6 +161,7 @@ public final class MapDataManager extends BaseSQLManager {
 					queryFormatter);
 
 			resultSet = statement.executeQuery();
+			int i=1;
 			while (resultSet.next()) {
 				String identifier
 						= resultSet.getString(1);
@@ -169,11 +175,12 @@ public final class MapDataManager extends BaseSQLManager {
 						band=bandHash.get(identifier);
 					}
 					if (band < 1) {
-						RIFServiceException rifServiceException
-							= new RIFServiceException(
-								RIFServiceError.UNABLE_TO_RETRIEVE_ALL_RELEVANT_MAP_AREAS,
-								"No valid band: " + band + "; found for study area selectedMapAreas: " + identifier + "(" + name + ")");
-						throw rifServiceException;
+						band=i; // Just hope it is diease mapping!
+//						RIFServiceException rifServiceException
+//							= new RIFServiceException(
+//								RIFServiceError.UNABLE_TO_RETRIEVE_ALL_RELEVANT_MAP_AREAS,
+//								"No valid band: " + band + "; found for study area selectedMapAreas: " + identifier + "(" + name + ")");
+//						throw rifServiceException;
 					}
 				}
 				else {
@@ -187,7 +194,7 @@ public final class MapDataManager extends BaseSQLManager {
 						name,
 						band);
 				allRelevantMapAreas.add(mapArea);
-
+				i++;
 			}
 		}
 		catch(RIFServiceException rifServiceException) {
