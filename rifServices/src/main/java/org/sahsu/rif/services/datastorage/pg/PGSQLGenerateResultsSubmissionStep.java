@@ -81,7 +81,7 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 			rval = runStudyResultSet.getInt(1);
 			runStudyResultSet.next();
 			
-			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
+			stack=SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			
 			SQLQueryUtility.commit(connection);
 			rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
@@ -96,21 +96,26 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 			//Record original exception, throw sanitised, human-readable version
 
 			manager.logSQLException(sqlException);
+			String sqlWarnings=SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			result=sqlException.getMessage();
 			StringBuilder builder = new StringBuilder(sqlException.getMessage())
-					                        .append("<br />")
+					                        .append(lineSeparator)
 					                        .append("=============================================")
-					                        .append("<br />")
+					                        .append(lineSeparator)
 					                        .append("Stack trace of cause follows")
-					                        .append("<br />")
+					                        .append(lineSeparator)
 					                        .append("=============================================")
-					                        .append("<br />");
+					                        .append(lineSeparator);
 			for (StackTraceElement element : sqlException.getStackTrace()) {
-				builder.append(element.toString()).append("<br />");
+				builder.append(element.toString()).append(lineSeparator);
 			}
+			builder.append("=============================================")
+					                        .append(lineSeparator)
+					                        .append("Output from PL/PGSQL")
+					                        .append(lineSeparator)
+											.append(sqlWarnings);
 			stack=builder.toString();
 		
-			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			SQLQueryUtility.commit(connection);
 
 			rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID

@@ -86,8 +86,7 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 				rval = runStudyStatement.getInt(3);	
 			}
 		
-			
-			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from T-SQL
+			stack=SQLQueryUtility.printWarnings(runStudyStatement); // Print output from T-SQL
 			
 			SQLQueryUtility.commit(connection);
 
@@ -106,24 +105,29 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version, print warning dialogs
 
+			manager.logSQLException(sqlException);
+			String sqlWarnings=SQLQueryUtility.printWarnings(runStudyStatement); // Print output from T-SQL
 			result=sqlException.getMessage();
 			StringBuilder builder = new StringBuilder(sqlException.getMessage())
-					                        .append("<br />")
+					                        .append(lineSeparator)
 					                        .append("=============================================")
-					                        .append("<br />")
+					                        .append(lineSeparator)
 					                        .append("Stack trace of cause follows")
-					                        .append("<br />")
+					                        .append(lineSeparator)
 					                        .append("=============================================")
-					                        .append("<br />");
+					                        .append(lineSeparator);
 			for (StackTraceElement element : sqlException.getStackTrace()) {
-				builder.append(element.toString()).append("<br />");
+				builder.append(element.toString()).append(lineSeparator);
 			}
+			builder.append("=============================================")
+					                        .append(lineSeparator)
+					                        .append("Output from T-SQL")
+					                        .append(lineSeparator)
+											.append(sqlWarnings);
 			stack=builder.toString();
 			
 			rval=-3;
 
-			manager.logSQLException(sqlException);
-			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from T-SQL
 			SQLQueryUtility.commit(connection);
 			
 			/* DO NOT RETHROW!
