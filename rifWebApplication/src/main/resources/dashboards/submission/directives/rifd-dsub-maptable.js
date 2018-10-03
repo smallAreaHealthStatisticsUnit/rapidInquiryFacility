@@ -1222,7 +1222,6 @@ angular.module("RIF")
 										"; data.attributes: " + collectionLength + 
 										"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
 										"; selectedPolygon.length " + CommonMappingStateService.getState("areamap").selectedPolygon.length +
-										": " + JSON.stringify(CommonMappingStateService.getState("areamap").slice(0, 10)) +  
 										"; selectedPolygonCount: " + $scope.selectedPolygonCount /* + 
 										"; geojsonPolys(" + geojsonPolys.length + "): " + JSON.stringify(geojsonPolys, null, 1) +
 										"; notFoundPolys(" + notFoundPolys.length + "): " + JSON.stringify(notFoundPolys, null, 1) */);

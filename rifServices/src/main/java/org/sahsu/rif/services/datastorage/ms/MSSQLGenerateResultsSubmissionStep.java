@@ -123,6 +123,8 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 					                        .append(lineSeparator)
 					                        .append("Output from T-SQL")
 					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator)
 											.append(sqlWarnings);
 			stack=builder.toString();
 			

@@ -97,7 +97,7 @@ angular.module("RIF")
 						keyboard: false,
 						resolve: {
 							getTrace: function() {
-								return row.trace.replace("\r\n", "<br>").replace("\n", "<br>");
+								return row.trace;
 							}
 						},
 					    scope: $scope 

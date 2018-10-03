@@ -113,6 +113,8 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 					                        .append(lineSeparator)
 					                        .append("Output from PL/PGSQL")
 					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator)
 											.append(sqlWarnings);
 			stack=builder.toString();
 		
