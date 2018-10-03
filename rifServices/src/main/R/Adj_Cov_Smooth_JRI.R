@@ -233,9 +233,4 @@ runRSmoothingFunctions <- function() {
 	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 
 	return(list(exitValue=exitValue, errorTrace=errorTrace))
-
-#	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "\n"), sep="")
-
-#	return(list(exitValue=exitValue))
-
 }

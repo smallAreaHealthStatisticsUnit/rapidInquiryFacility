@@ -84,7 +84,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
 			final String studyID) throws RIFServiceException {
 		
-		String rErrorTrace="No R error tracer (see Tomcat log)";
+		String rErrorTrace = "No R error tracer (see Tomcat log)";
 
 		try {		
 
@@ -145,7 +145,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				Rengine.DEBUG = 10;
 				rengine.eval("Rpid<-Sys.getpid()");
 				REXP rPid = rengine.eval("Rpid");
-				rifLogger.info(this.getClass(), "Rengine Started" +
+				rifLogger.info(getClass(), "Rengine Started" +
 				                                "; Rpid: " + rPid.asInt() +
 				                                "; JRI version: " + Rengine.getVersion() +
                                                 "; thread ID: " + Thread.currentThread().getId());
@@ -161,7 +161,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 				// Set connection details and parameters
 				StringBuilder logMsg = new StringBuilder();
-				for (Parameter parameter : getParameterArray()) {
+				for (Parameter parameter : getParameters()) {
 					String name = parameter.getName();
 					String value = parameter.getValue();
 
@@ -184,53 +184,40 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					}
 				}
 
+				rifLogger.info(getClass(), "R parameters: " + lineSeparator
+				                           + logMsg.toString());
+
 				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
-				
-				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator +
-				                                logMsg.toString());
 
 				Path scriptPath = FileSystems.getDefault().getPath(
 						rifStartupOptions.getClassesDirectory());
-				Path adjCovSmoothJri = scriptPath.resolve("Adj_Cov_Smooth_JRI.R");
-				Path performSmoothingActivity = scriptPath.resolve("performSmoothingActivity.R");
 
 				if (rifStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER) {
-					sourceRScript(rengine, scriptPath.resolve("OdbcHandler.R").toString());
+					sourceRScript(rengine, scriptPath.resolve("OdbcHandler.R"));
+				} else {
+					sourceRScript(rengine, scriptPath.resolve("JdbcHandler.R"));
 				}
-				else {
-					sourceRScript(rengine, scriptPath.resolve("JdbcHandler.R").toString());
-				}
-
 
 				// We do either Risk Analysis or Smoothing
-				REXP exitValueFromR;
-				sourceRScript(rengine, scriptPath.resolve("CreateWindowsScript.R").toString());
+				sourceRScript(rengine, scriptPath.resolve("CreateWindowsScript.R"));
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
 					rifLogger.info(getClass(), "Calling Risk Analysis R function");
-					sourceRScript(rengine, scriptPath.resolve("performRiskAnal.R").toString());
-					// rengine.eval("returnValues <- performRiskAnal");
-					/* TODO: that's the script name, not the name of a function in it; but
-					 * there doesn't at present appear to be a suitable one.
-					 */
-
-					// ========== Temp hack to let things run ===========
-					sourceRScript(rengine, adjCovSmoothJri.toString());
-					sourceRScript(rengine, performSmoothingActivity.toString());
-					rengine.eval("returnValues <- runRSmoothingFunctions()");
-					// ==================================================
+					sourceRScript(rengine, scriptPath.resolve("performRiskAnal.R"));
+					rengine.eval("returnValues <- runRRiskAnalFunctions()");
 				} else {
 
 					rifLogger.info(getClass(), "Calling Disease Mapping R function");
 					// Run the actual smoothing
-					sourceRScript(rengine, adjCovSmoothJri.toString());
-					sourceRScript(rengine, performSmoothingActivity.toString());
-					sourceRScript(rengine, scriptPath.resolve(
-							"Adj_Cov_Smooth_Common.R").toString());
+					Path adjCovSmoothJri = scriptPath.resolve("Adj_Cov_Smooth_JRI.R");
+					Path performSmoothingActivity = scriptPath.resolve("performSmoothingActivity.R");
+					sourceRScript(rengine, adjCovSmoothJri);
+					sourceRScript(rengine, performSmoothingActivity);
+					sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_Common.R"));
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
 				}
 
-				exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
+				REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
 				if (exitValueFromR != null) {
 					exitValue = exitValueFromR.asInt();
 				} else {
