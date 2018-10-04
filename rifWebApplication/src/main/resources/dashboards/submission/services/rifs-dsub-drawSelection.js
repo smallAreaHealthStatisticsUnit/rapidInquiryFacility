@@ -486,8 +486,8 @@ angular.module("RIF")
 								var duplicateAreaCheckIds = [];
 								
 								// Check for duplicate selectedPolygons 
-								for (var j = 0; j < CommonMappingStateService.getState(mapName).selectedPolygon.length; j++) {
-									var thisPolyID = CommonMappingStateService.getState(mapName).selectedPolygon[j].id;
+								for (var j = 0; j < CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).length; j++) {
+									var thisPolyID = CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name)[j].id;
 									if (areaCheck[thisPolyID]) {
 										areaCheck[thisPolyID].count++;
 									}
@@ -526,8 +526,9 @@ angular.module("RIF")
 									var thisPolyID = latlngList[i].id;
 									
 									// Update band
-									if (CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID]) {
-										latlngList[i].band=CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID].band;
+									if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID)) {
+										latlngList[i].band=CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name,
+											thisPolyID).band;
 										break;
 									} 	
 									// Sync table - done by submissionMapTable $scope.$watchCollection() above
@@ -546,7 +547,7 @@ angular.module("RIF")
 										
 								AlertService.consoleDebug("[rifd-dsub-maptable.js] CommonMappingStateService.getState(" + mapName + 
 									").selectedPolygon.length: " + 
-									CommonMappingStateService.getState(mapName).selectedPolygon.length);
+									CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).length);
 								
 								for (var band in CommonMappingStateService.getState(mapName).areaNameList) {
 									AlertService.consoleDebug("[rifd-dsub-maptable.js] areaNameList band: " + 
@@ -629,36 +630,43 @@ angular.module("RIF")
 //									AlertService.consoleDebug("[rifd-dsub-maptable.js] latlngList.forEach(" +
 //										itemsProcessed + ")");
 									// Selects the correct polygons
-									if (CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID]) { // Found
-										if (CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID].band == undefined ||
-											CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID].band === -1) { 
+									if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID)) { // Found
+										if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
+												thisPolyID).band == undefined ||
+											CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
+												thisPolyID).band === -1) { 
 													// If not set in concentric shapes
 											if (latlngList[itemsProcessed].band == undefined ||
 												latlngList[itemsProcessed].band === -1) { 
 													// If not set on map
 												if (shape.band === -1) {  // Set band
-													CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID].band=CommonMappingStateService.getState(mapName).currentBand;
+													CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name,
+														thisPolyID).band=CommonMappingStateService.getState(mapName).currentBand;
 												}
-												else if (CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID].band > 0 &&
-													CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID].band < shape.band) {  // Do not set band
-													CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID].band=CommonMappingStateService.getState(mapName).currentBand;
+												else if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
+														thisPolyID).band > 0 &&
+													CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
+														thisPolyID).band < shape.band) {  // Do not set band
+													CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
+														thisPolyID).band=CommonMappingStateService.getState(mapName).currentBand;
 												}
 												else {
-													CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID].band=shape.band;
+													CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
+														thisPolyID).band=shape.band;
 												}		
 											}
 										}
 									}
 									else {
 										if (shape.band === -1) {
-											CommonMappingStateService.getState(mapName).selectedPolygon.push({
+											CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).push({
 												id: thisPolyID, 
 												gid: thisPolyID, 
 												label: thisPoly, 
 												band: CommonMappingStateService.getState(mapName).currentBand, 
 												centroid: thisLatLng
 											});
-											CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID] = {
+											CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID) = {
 												id: thisPolyID, 
 												gid: thisPolyID, 
 												label: thisPoly, 
@@ -667,14 +675,15 @@ angular.module("RIF")
 											};
 											latlngList[itemsProcessed].band=CommonMappingStateService.getState(mapName).currentBand;
 										} else {
-											CommonMappingStateService.getState(mapName).selectedPolygon.push({
+											CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).push({
 												id: thisPolyID, 
 												gid: thisPolyID, 
 												label: thisPoly, 
 												band: shape.band, 
 												centroid: thisLatLng
 											});
-											CommonMappingStateService.getState(mapName).selectedPolygonObj[thisPolyID] = {
+											CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
+													thisPolyID) = {
 												id: thisPolyID, 
 												gid: thisPolyID, 
 												label: thisPoly, 

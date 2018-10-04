@@ -76,15 +76,17 @@ angular.module("RIF")
                         //We are doing a single click select on the table
                         if (angular.isDefined($scope.selectedPolygon)) {
                             //working on the study areas
-							if (CommonMappingStateService.getState("areamap").selectedPolygonObj[thisPolyID]) {
+							if (CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, thisPolyID)) {
 								AlertService.consoleDebug("[rifc-util-multiselect.js] remove: " + thisPolyID);
-								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").removeFromSselectedPolygon(thisPolyID);
+								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").removeFromSselectedPolygon($scope.input.name,
+									thisPolyID);
 							}
                             else {
 								var newSelectedPolygon = {id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand};
 								AlertService.consoleDebug("[rifc-util-multiselect.js] add: " + thisPolyID +
 									"; newSelectedPolygon: " + JSON.stringify(newSelectedPolygon));
-								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").addToSelectedPolygon(newSelectedPolygon);
+								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").addToSelectedPolygon($scope.input.name,
+									newSelectedPolygon);
                             }
 							$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 
@@ -118,11 +120,12 @@ angular.module("RIF")
                                 var thisPoly = myVisibleRows[i].entity.label;
                                 var thisPolyID = myVisibleRows[i].entity.area_id;
 								
-								if (!CommonMappingStateService.getState("areamap").selectedPolygonObj[thisPolyID]) {
+								if (!CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, thisPolyID)) {
 									var newSelectedPolygon = {id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand};
 									AlertService.consoleDebug("[rifc-util-multiselect.js] add[" + i + "]: " + thisPolyID +
 										"; newSelectedPolygon: " + JSON.stringify(newSelectedPolygon));
-									CommonMappingStateService.getState("areamap").addToSelectedPolygon(newSelectedPolygon);
+									CommonMappingStateService.getState("areamap").addToSelectedPolygon($scope.input.name,
+										newSelectedPolygon);
 								}
 							
                             } else {
@@ -139,7 +142,7 @@ angular.module("RIF")
                                 }
                             }
                         } // End of for loop
-						$scope.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon;
+						$scope.selectedPolygon = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name);
 						$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 
                     }

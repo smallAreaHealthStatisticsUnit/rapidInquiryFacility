@@ -46,8 +46,136 @@ angular.module("RIF")
 						"viewer": "Viewer map"
 					};
 					
-					var s = {};
+					function checkAreaType(areaType) { // Check: $scope.input.name
+						if (areaType == "ComparisionAreaMap" || areaType == "StudyAreaMap") { // OK
+						}
+						else {
+							throw new Error("checkAreaType() invalid areaType: " + areaType);
+						}
+					}
 					
+					var s = {};
+					var t = { // All possible mapping elements
+						map: undefined,
+						shapes: undefined,
+						drawnItems: undefined,
+						info: undefined,
+						areaNameList: undefined,
+						studyArea: {
+							selectedPolygon: [],				
+							selectedPolygonObj: {}
+						},
+						comparisonArea: {
+							selectedPolygon: [],				
+							selectedPolygonObj: {}
+						},
+						maxbounds: undefined,						
+						currentBand: undefined,
+						possibleBands: undefined,
+						description: undefined,
+						getSelectedPolygon: function(areaType) { // Get selectedPolygon list
+							checkAreaType(areaType);
+							return this.areaType.selectedPolygon;
+						},
+						getSelectedPolygonObj: function(areaType, thisPolyId) { // Get selectedPolygon list
+							checkAreaType(areaType);
+							return this.areaType.selectedPolygonObj[thisPolyId];
+						},
+						getAllSelectedPolygonObj: function(areaType) { // Get selectedPolygon list
+							checkAreaType(areaType);
+							return this.areaType.selectedPolygonObj;
+						},
+						clearSelectedPolygon: function(areaType) { // Clear selectedPolygon list
+							checkAreaType(areaType);
+							this.areaType.selectedPolygon.length = 0;
+							this.areaType.selectedPolygonObj = {};
+							AlertService.consoleDebug("[rifs-util-mapstate.js] clearSselectedPolygon(" + areaType+ "): " + 
+								this.areaType.selectedPolygon.length);
+							return this.areaType.selectedPolygon;
+						},
+						initialiseSelectedPolygon: function(areaType, arr) {	// Initialise selectedPolygon from an array arr of items
+							checkAreaType(areaType);	
+							var oldLength=((this.areaType && this.areaType.selectedPolygon) ? this.areaType.selectedPolygon.length : undefined);
+							if (arr && arr.length > 0) {
+								this.areaType.selectedPolygon.length = 0;		
+								for (var i = 0; i < arr.length; i++) { // Maintain keyed list for faster checking
+									this.areaType.selectedPolygonObj[arr[i].id] = arr[i];
+								}
+								this.areaType.selectedPolygon = arr;
+							}
+							else if (this.areaType == undefined) {
+								this.areaType = {
+									selectedPolygon: [],
+									selectedPolygonObj: {}
+								};		
+							}
+							AlertService.consoleDebug("[rifs-util-mapstate.js] initialiseSelectedPolygon(" + areaType+ ") from: " + 
+								oldLength + "; to: " + this.areaType.selectedPolygon.length);
+							return this.areaType.selectedPolygon;
+						},
+						sortSelectedPolygon: function(areaType) { // Sort selectedPolygon list alphabetically by id 
+							checkAreaType(areaType);	
+							this.areaType.selectedPolygon.sort(function(a, b) {
+								if (a.id < b.id) {
+									return -1;
+								}
+								else if (a.id > b.id) {
+									return 1;
+								}
+								else { // Same
+									return 0;
+								}
+							}); // Alphabetically by id!
+							return this.areaType.selectedPolygon;
+						},
+						addToSelectedPolygon: function(areaType, item) {	// Add item to selectedPolygon
+							checkAreaType(areaType);	
+							if (item && item.id) {
+								if (this.areaType.selectedPolygonObj[item.id]) {
+									throw new Error("Duplicate items: " + item.id + " in selectedPolygon " + areaType + " list");
+								}
+								this.areaType.selectedPolygonObj[item.id] = item;
+								this.areaType.selectedPolygon.push(item);
+								AlertService.consoleDebug("[rifs-util-mapstate.js] addToSelectedPolygon(" + areaType + ", " + 
+									JSON.stringify(item) + "): " + 
+									this.areaType.selectedPolygon.length);
+							}
+							else {
+								throw new Error("Null item/id: " + JSON.stringify(item) + "; areaType: " + areaType);
+							}
+							return this.areaType.selectedPolygon;
+						},
+						removeFromSselectedPolygon: function(areaType, id) { // Remove item from selectedPolygon
+							checkAreaType(areaType);	
+							if (id) {
+								if (this.areaType.selectedPolygonObj[id]) {
+									var found=false;
+									for (var i = 0; i < this.areaType.selectedPolygon.length; i++) { 
+										if (this.areaType.selectedPolygon[i].id == id) {
+											found=true;
+											AlertService.consoleDebug("[rifs-util-mapstate.js] removeFromSselectedPolygon(" + areaType + ", " +
+												JSON.stringify(this.areaType.selectedPolygonObj[id]) + "): " + 
+												(this.areaType.selectedPolygon.length-1));
+											this.areaType.selectedPolygon.splice(i, 1);
+											delete this.areaType.selectedPolygonObj[id];
+											break;
+										}
+									}	
+									if (!found) {
+										throw new Error("Cannot find item: " + id + " in selectedPolygon " + areaType + " list");
+									}	
+								}
+								else {
+									throw new Error("Cannot find item: " + id + " in selectedPolygon " + areaType + " object");
+								}
+							}
+							else {
+								throw new Error("removeFromSselectedPolygon() Null id: " + areaType);
+							}
+							return this.areaType.selectedPolygon;
+						}
+					};
+									
                     return {
                         getState: function (mapName) {
 							var found=false;
@@ -57,103 +185,41 @@ angular.module("RIF")
 								}
 								
 								if (s[key] == undefined) { // Initialise
-									s[key] = { // All possible mapping elements
-										map: undefined,
-										shapes: undefined,
-										drawnItems: undefined,
-										info: undefined,
-										areaNameList: undefined,
-										selectedPolygon: [],				
-										selectedPolygonObj: {},
-										maxbounds: undefined,						
-										currentBand: undefined,
-										possibleBands: undefined,
-										description: mapNames[key],
-										clearSelectedPolygon: function() { // Clear selectedPolygon list
-											this.selectedPolygon.length = 0;
-											this.selectedPolygonObj = {};
-											AlertService.consoleDebug("[rifs-util-mapstate.js] clearSselectedPolygon(): " + 
-												this.selectedPolygon.length);
-											return this.selectedPolygon;
-										},
-										initialiseSelectedPolygon: function(arr) {	// Initialise selectedPolygon from an array arr of items	
-											if (arr && arr.length > 0) {
-												this.selectedPolygon.length = 0;
-												this.selectedPolygonObj = {};				
-												for (var i = 0; i < arr.length; i++) { // Maintain keyed list for faster checking
-													this.selectedPolygonObj[arr[i].id] = arr[i];
-												}
-												this.selectedPolygon = arr;
-											}
-											AlertService.consoleDebug("[rifs-util-mapstate.js] initialiseSelectedPolygon(): " + 
-												this.selectedPolygon.length);
-											return this.selectedPolygon;
-										},
-										sortSelectedPolygon: function() { // Sort selectedPolygon list alphabetically by id 
-											this.selectedPolygon.sort(function(a, b) {
-												if (a.id < b.id) {
-													return -1;
-												}
-												else if (a.id > b.id) {
-													return 1;
-												}
-												else { // Same
-													return 0;
-												}
-											}); // Alphabetically by id!
-											return this.selectedPolygon;
-										},
-										addToSelectedPolygon: function(item) {	// Add item to selectedPolygon
-											if (item && item.id) {
-												if (this.selectedPolygonObj[item.id]) {
-													throw new Error("Duplicate items: " + item.id + " in selectedPolygon list");
-												}
-												this.selectedPolygonObj[item.id] = item;
-												this.selectedPolygon.push(item);
-												AlertService.consoleDebug("[rifs-util-mapstate.js] addToSelectedPolygon(" +
-													JSON.stringify(item) + "): " + 
-													this.selectedPolygon.length);
-											}
-											else {
-												throw new Error("Null item/id: " + JSON.stringify(item));
-											}
-											return this.selectedPolygon;
-										},
-										removeFromSselectedPolygon: function(id) { // Remove item from selectedPolygon
-											if (id) {
-												if (this.selectedPolygonObj[id]) {
-													var found=false;
-													for (var i = 0; i < this.selectedPolygon.length; i++) { 
-														if (this.selectedPolygon[i].id == id) {
-															found=true;
-															AlertService.consoleDebug("[rifs-util-mapstate.js] removeFromSselectedPolygon(" +
-																JSON.stringify(this.selectedPolygonObj[id]) + "): " + 
-																(this.selectedPolygon.length-1));
-															this.selectedPolygon.splice(i, 1);
-															delete this.selectedPolygonObj[id];
-															break;
-														}
-													}	
-													if (!found) {
-														throw new Error("Cannot find item: " + id + " in selectedPolygon list");
-													}	
-												}
-												else {
-													throw new Error("Cannot find item: " + id + " in selectedPolygon object");
-												}
-											}
-											else {
-												throw new Error("Null id");
-											}
-											return this.selectedPolygon;
-										}
-									}
+									s[key] = t;
+									s[key].description=mapNames[key];
 								}								
 							}
 							if (!found) {
 								throw new Error("[rifs-util-mapstate.js] invalid map name: " + mapName);
 							}
 							return s[mapName];
+						},
+						resetState: function (mapName) {
+							if (mapName) {
+								var found=false;
+								for (var key in mapNames) {
+									if (key == mapName) {
+										found=true;
+										s[key] = t; // Re-Initialise
+										s[key].description=mapNames[key];
+										AlertService.consoleDebug("[rifs-util-mapstate.js] resetState(" + key + "): " + 
+											s[key].description);
+									}							
+								}
+								if (!found) {
+									throw new Error("[rifs-util-mapstate.js] invalid map name: " + mapName);
+								}
+								return s[mapName];		
+							}
+							else {
+								for (var key in mapNames) {
+									s[key] = t; // Re-Initialise
+									s[key].description=mapNames[key];
+									AlertService.consoleDebug("[rifs-util-mapstate.js] resetState(" + key + "): " + 
+										s[key].description);
+								}	
+								return undefined;								
+							}
 						}
                     };
                 }]);

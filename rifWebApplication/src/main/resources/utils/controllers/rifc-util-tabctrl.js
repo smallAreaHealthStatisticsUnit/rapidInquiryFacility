@@ -38,11 +38,11 @@ angular.module("RIF")
         .controller('TabCtrl', ['$scope', 'user', '$injector', '$uibModal', '$interval', '$rootScope', 
 			'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
             'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
-			'SelectStateService',
+			'SelectStateService', 'CommonMappingStateService', 
             function ($scope, user, $injector, $uibModal, $interval, $rootScope, 
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService,
-					SelectStateService) {
+					SelectStateService, CommonMappingStateService) {
 
                 //The user to display
                 $scope.username = user.currentUser;
@@ -451,6 +451,7 @@ angular.module("RIF")
 					MappingStateService.resetState();
 					ExportStateService.resetState();
 					SelectStateService.resetState();
+                    CommonMappingStateService.resetState();
 							
                     $injector.get('$state').transitionTo('state0'); // Logout
                 }

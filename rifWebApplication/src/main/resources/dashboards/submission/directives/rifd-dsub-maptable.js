@@ -116,10 +116,10 @@ angular.module("RIF")
 
                         //selectedPolygon array synchronises the map <-> table selections 
 						var selectedPolygon = angular.copy($scope.input.selectedPolygon); // Copy to prevent going out of scope						
-						alertScope.consoleLog("[rifd-dsub-maptable.js] initialiseSelectedPolygon() $scope.input.selectedPolygon: " +
+						alertScope.consoleLog("[rifd-dsub-maptable.js] initialiseSelectedPolygon(" + $scope.input.name + ") $scope.input.selectedPolygon: " +
 							selectedPolygon.length);                  
-                        CommonMappingStateService.getState("areamap").initialiseSelectedPolygon(selectedPolygon);       
-						$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon();		
+                        CommonMappingStateService.getState("areamap").initialiseSelectedPolygon($scope.input.name, selectedPolygon);       
+						$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon($scope.input.name);		
                         $scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 						
 						$scope.shapeLoadUpdate = "";
@@ -205,7 +205,7 @@ angular.module("RIF")
 							alertScope.consoleLog("[rifd-dsub-maptable.js] $scope.clear() $scope.input.selectedPolygon");
                             $scope.input.selectedPolygon.length = 0;
 							$scope.selectedPolygonCount = 0;
-                            $scope.selectedPolygon = CommonMappingStateService.getState("areamap").clearSelectedPolygon();
+                            $scope.selectedPolygon = CommonMappingStateService.getState("areamap").clearSelectedPolygon($scope.input.name);
 							$scope.shapeLoadUpdate = "";
 							
 							setStudyType(1);
@@ -364,16 +364,16 @@ angular.module("RIF")
 						
                         //Select all in map and table
                         $scope.selectAll = function () {
-                            CommonMappingStateService.getState("areamap").clearSelectedPolygon();
+                            CommonMappingStateService.getState("areamap").clearSelectedPolygon($scope.input.name);
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-								CommonMappingStateService.getState("areamap").addToSelectedPolygon({
+								CommonMappingStateService.getState("areamap").addToSelectedPolygon($scope.input.name, {
 									id: $scope.gridOptions.data[i].area_id, 
 									gid: $scope.gridOptions.data[i].area_id, 
 									label: $scope.gridOptions.data[i].label, 
 									band: CommonMappingStateService.getState("areamap").currentBand});
                             }                     
-							$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon; 
-							$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon();        
+							$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name); 
+							$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon($scope.input.name);        
 							$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
                         };
                         $scope.changeOpacity = function (v) {
@@ -386,14 +386,14 @@ angular.module("RIF")
                         };
                         //Reset only the selected band back to 0
                         $scope.clearBand = function () {
-                            var i = CommonMappingStateService.getState("areamap").selectedPolygon.length;
+                            var i = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length;
                             while (i--) {
-                                if (CommonMappingStateService.getState("areamap").selectedPolygon[i].band === CommonMappingStateService.getState("areamap").currentBand) {
-									var thisPolyID = CommonMappingStateService.getState("areamap").selectedPolygon[i].id;
-									CommonMappingStateService.getState("areamap").removeFromSselectedPolygon(thisPolyID);
+                                if (CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)[i].band === CommonMappingStateService.getState("areamap").currentBand) {
+									var thisPolyID = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)[i].id;
+									CommonMappingStateService.getState("areamap").removeFromSselectedPolygon($scope.input.name, thisPolyID);
                                 }
                             }	    
-							$scope.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon;     							
+							$scope.selectedPolygon = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name);     							
 							$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
                         };
                         //Zoom to layer
@@ -408,7 +408,8 @@ angular.module("RIF")
                             var studyBounds = new L.LatLngBounds();
                             if (angular.isDefined($scope.geoJSON && $scope.geoJSON._geojsons && $scope.geoJSON._geojsons.default)) {
                                 $scope.geoJSON._geojsons.default.eachLayer(function (layer) {
-									if (CommonMappingStateService.getState("areamap").selectedPolygonObj[layer.feature.properties.area_id]) {
+									if (CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, 
+										layer.feature.properties.area_id)) {
                                         studyBounds.extend(layer.getBounds());
                                     }
                                 });
@@ -723,12 +724,12 @@ angular.module("RIF")
 												alertScope.consoleDebug("[rifd-dsub-maptable.js] ModalAreaService.fillTable: " + 
 													$scope.totalPolygonCount + " rows");
 												/* Check selected polygon list matches:
-												 *		Sort CommonMappingStateService.getState("areamap").selectedPolygon alphabetically by id
-												 *		Build/rebuild sibling CommonMappingStateService.getState("areamap").selectedPolygonObj object used for quick access via id
-												 *      Scan data to check in CommonMappingStateService.getState("areamap").selectedPolygonObj, set band if required
+												 *		Sort CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name) alphabetically by id
+												 *		Build/rebuild sibling CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name) object used for quick access via id
+												 *      Scan data to check in CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name), set band if required
 												 *      Check for duplicates
 												 *		Check for area IDs not found in the Lat/long list
-												 *		Fail if a) not all CommonMappingStateService.getState("areamap").selectedPolygonObj are in data or b) duplicates are found
+												 *		Fail if a) not all CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name) are in data or b) duplicates are found
 												 *		or c) area IDs were not found in the Lat/long list	
 												 */						 
 												return checkSelectedPolygonList(res.data); // promise						
@@ -992,9 +993,9 @@ angular.module("RIF")
 								
 								var latlngListDups=0;
 								var areaIdObj={};
-								if ($scope.noMouseClocks && CommonMappingStateService.getState("areamap").selectedPolygon.length > 0) {
+								if ($scope.noMouseClocks && CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering");
-									areaIdObj=CommonMappingStateService.getState("areamap").selectedPolygonObj;
+									areaIdObj=CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name);
 								}
 								else {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer disable areaId filtering");
@@ -1069,11 +1070,12 @@ angular.module("RIF")
 														}
 														var thisPolyID = e.target.feature.properties.area_id;
 														var bFound = false;
-														for (var i = 0; i < CommonMappingStateService.getState("areamap").selectedPolygon.length; i++) {
-															if (CommonMappingStateService.getState("areamap").selectedPolygon[i].id === thisPolyID) {
+														for (var i = 0; i < CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length; i++) {
+															if (CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)[i].id === thisPolyID) {
 																bFound = true;
 																$scope.selectedPolygon = 
-																	CommonMappingStateService.getState("areamap").removeFromSselectedPolygon(thisPolyID);
+																	CommonMappingStateService.getState("areamap").removeFromSselectedPolygon(
+																		$scope.input.name, thisPolyID);
 																break;
 															}
 														}
@@ -1085,10 +1087,11 @@ angular.module("RIF")
 																e.target.feature.properties.name, 
 																band: CommonMappingStateService.getState("areamap").currentBand};
 															$scope.selectedPolygon = 
-																CommonMappingStateService.getState("areamap").addToSelectedPolygon(newSelectedPolygon);
+																CommonMappingStateService.getState("areamap").addToSelectedPolygon($scope.input.name,
+																	newSelectedPolygon);
 														}       
 
-														$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon; 														
+														$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name); 														
 														$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 														$scope.$digest(); // Force $watch sync
 													});
@@ -1134,12 +1137,12 @@ angular.module("RIF")
 						 * Function:    checkSelectedPolygonList()
 						 * Parameter:   res.data from user.getTileMakerAttributes()
 						 * Returns:     A promise
-						 * Description: Sort CommonMappingStateService.getState("areamap").selectedPolygon alphabetically by id
-						 *				Build/rebuild sibling CommonMappingStateService.getState("areamap").selectedPolygonObj object used for quick access via id
-						 *              Scan data to check in CommonMappingStateService.getState("areamap").selectedPolygonObj, set band if required
+						 * Description: Sort CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name) alphabetically by id
+						 *				Build/rebuild sibling CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name) object used for quick access via id
+						 *              Scan data to check in CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name), set band if required
 						 *              Check for duplicates
 						 *				Check for area IDs not found in the Lat/long list
-						 *				Fail if a) not all CommonMappingStateService.getState("areamap").selectedPolygonObj are in data or b) duplicates are found
+						 *				Fail if a) not all CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name) are in data or b) duplicates are found
 						 *  			or c) area IDs were not found in the Lat/long list
 						 */
 						function checkSelectedPolygonList(data) {
@@ -1150,43 +1153,44 @@ angular.module("RIF")
 								var missingLatLng=0;
 											
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] checking selectedPolygon: " + 
-									CommonMappingStateService.getState("areamap").selectedPolygon.length);
+									CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length);
 									
 //								var notFoundPolys = [];
 //								var geojsonPolys = [];
 								var collectionLength = data.attributes.length;
-								// Scan data to check in CommonMappingStateService.getState("areamap").selectedPolygonObj, set band if required 			   
+								// Scan data to check in CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name), set band if required 			   
 								for (var i = 0; i < collectionLength; i++) {
 									var thisPoly = data.attributes[i];
 //									geojsonPolys.push(thisPoly.area_id)
-									if (CommonMappingStateService.getState("areamap").selectedPolygonObj[thisPoly.area_id]) {
-										data.attributes[i].band = CommonMappingStateService.getState("areamap").selectedPolygonObj[thisPoly.area_id].band; // Set the band
-//										CommonMappingStateService.getState("areamap").selectedPolygonObj[thisPoly.area_id].found=true;
+									if (CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, thisPoly.area_id)) {
+										data.attributes[i].band = CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, 
+											thisPoly.area_id).band; // Set the band
+//										CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, thisPoly.area_id).found=true;
 										foundCount++;
 									}
 									else {
 										data.attributes[i].band = 0;
 									}
 								}
-								CommonMappingStateService.getState("areamap").sortSelectedPolygon(); // May force a watchCollection
-								doWatchUpdate(CommonMappingStateService.getState("areamap").selectedPolygon,
-									CommonMappingStateService.getState("areamap").selectedPolygon); // Do a a watchCollection
+								CommonMappingStateService.getState("areamap").sortSelectedPolygon($scope.input.name); // May force a watchCollection
+								doWatchUpdate(CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name),
+									CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)); // Do a a watchCollection
 	
 // For finding missing polygons:	
-//								for (key in CommonMappingStateService.getState("areamap").selectedPolygonObj) {
-//									if (CommonMappingStateService.getState("areamap").selectedPolygonObj[key].found == false) {
-//										notFoundPolys.push(CommonMappingStateService.getState("areamap").selectedPolygonObj[key]);
+//								for (key in CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name)) {
+//									if (CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, key).found == false) {
+//										notFoundPolys.push(CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, key));
 //									}
 //								}
 //								notFoundPolys.sort(); // Alphabetically!
 	
-								for (var i = 0; i < CommonMappingStateService.getState("areamap").selectedPolygon.length; i++) { // Check for duplicates
-									if ($scope.latlngListById[CommonMappingStateService.getState("areamap").selectedPolygon[i].id] == undefined) {
+								for (var i = 0; i < CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length; i++) { // Check for duplicates
+									if ($scope.latlngListById[CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)[i].id] == undefined) {
 										missingLatLng++;
 									}
 								}
 								
-								// Fail if a) not all CommonMappingStateService.getState("areamap").selectedPolygonObj are in data or b) duplicates are found	
+								// Fail if a) not all CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name) are in data or b) duplicates are found	
 								// or c) area IDs were not found in the Lat/long list							
 								var hasErrors=false;
 								if (missingLatLng > 0) {
@@ -1194,41 +1198,41 @@ angular.module("RIF")
 										" area IDs were not found in the Lat/long list");
 									hasErrors=true;
 								}								
-								if (foundCount != CommonMappingStateService.getState("areamap").selectedPolygon.length) {
+								if (foundCount != CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length) {
 									
-									if (CommonMappingStateService.getState("areamap").selectedPolygon.length < 10) {
+									if (CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length < 10) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] unmatchable selectedPolygon[" + 
-											CommonMappingStateService.getState("areamap").selectedPolygon.length + "]: " +
-											JSON.stringify(CommonMappingStateService.getState("areamap").selectedPolygon) +
+											CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length + "]: " +
+											JSON.stringify(CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)) +
 											"; foundCount: " + foundCount);										
 									}
 									else {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] unmatchable selectedPolygon: " + 
-											CommonMappingStateService.getState("areamap").selectedPolygon.length + 
+											CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length + 
 											"; foundCount: " + foundCount);										
 									}
 	
-									alertScope.showError("Could not match " + (CommonMappingStateService.getState("areamap").selectedPolygon.length - foundCount) + " polygons from database with selected polygons list");
+									alertScope.showError("Could not match " + (CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length - foundCount) + " polygons from database with selected polygons list");
 									hasErrors=true;
 								}
 								
 								if (hasErrors) {
 									reject("error processing selected polygons list");
 										
-	//								alertScope.consoleDebug("[rifd-dsub-maptable.js] CommonMappingStateService.getState("areamap").selectedPolygon: " + 
-	//									JSON.stringify(CommonMappingStateService.getState("areamap").selectedPolygon, null, 1));
+	//								alertScope.consoleDebug("[rifd-dsub-maptable.js] CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name): " + 
+	//									JSON.stringify(CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name), null, 1));
 									
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
 										"; data.attributes: " + collectionLength + 
 										"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
-										"; selectedPolygon.length " + CommonMappingStateService.getState("areamap").selectedPolygon.length +
+										"; selectedPolygon.length " + CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length +
 										"; selectedPolygonCount: " + $scope.selectedPolygonCount /* + 
 										"; geojsonPolys(" + geojsonPolys.length + "): " + JSON.stringify(geojsonPolys, null, 1) +
 										"; notFoundPolys(" + notFoundPolys.length + "): " + JSON.stringify(notFoundPolys, null, 1) */);
 								}
 								else {	
-									$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").selectedPolygon; 														
-									$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon();
+									$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name); 														
+									$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon($scope.input.name);
 									$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 									resolve("processed selected polygons list");
 								}
@@ -1632,9 +1636,10 @@ angular.module("RIF")
 						}
 						
                         function renderFeature(feature) {
-							if (CommonMappingStateService.getState("areamap").selectedPolygonObj[feature]) {
+							if (CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, feature)) {
                                 //max possible is six bands according to specs
-                                return selectorBands.bandColours[CommonMappingStateService.getState("areamap").selectedPolygonObj[feature].band - 1];
+                                return selectorBands.bandColours[CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, 
+									feature).band - 1];
                             }
                             return '#F5F5F5'; //whitesmoke
                         }
@@ -1664,10 +1669,12 @@ angular.module("RIF")
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
                                 $scope.gridOptions.data[i].band = 0;
 								
-								if (CommonMappingStateService.getState("areamap").selectedPolygonObj[$scope.gridOptions.data[i].area_id]) {
+								if (CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, 
+									$scope.gridOptions.data[i].area_id)) {
 									foundCount++;
                                     $scope.gridOptions.data[i].band = 
-										CommonMappingStateService.getState("areamap").selectedPolygonObj[$scope.gridOptions.data[i].area_id].band;
+										CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name,
+											$scope.gridOptions.data[i].area_id).band;
 //									if (foundCount < 5) {
 //										alertScope.consoleLog("[rifd-dsub-maptable.js] found: " + foundCount + "; area_id: " + 
 //											$scope.gridOptions.data[i].area_id + "; data[" + i + "]: " + 
@@ -1675,23 +1682,24 @@ angular.module("RIF")
 //									}
                                 }
                             }
-							alertScope.consoleLog("[rifd-dsub-maptable.js] newNames: " + newNames.length +
-								"; oldNames: " + oldNames.length +
-								"; foundCount: " + foundCount +
-								"; $scope.gridOptions.data: " + $scope.gridOptions.data.length);
 		
                             //Update the area counter
-                            $scope.selectedPolygonCount = newNames.length;
-							$scope.input.selectedPolygon = newNames; 
-							CommonMappingStateService.getState("areamap").selectedPolygon = newNames;
-							$scope.selectedPolygon = newNames;
-							
-                            if (!$scope.geoJSON) {
-                                return;
-                            } else if ($scope.geoJSON && $scope.geoJSON._geojsons && $scope.geoJSON._geojsons.default) {
-                                //Update map selection    
-                                $scope.geoJSON._geojsons.default.eachLayer(handleLayer);
-                            }							
+							if (newNames.length > 0) {
+								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name);
+								$scope.selectedPolygonCount = $scope.selectedPolygon.length;
+								$scope.input.selectedPolygon = $scope.selectedPolygon; 
+								if (!$scope.geoJSON) {
+								} else if ($scope.geoJSON && $scope.geoJSON._geojsons && $scope.geoJSON._geojsons.default) {
+									//Update map selection    
+									$scope.geoJSON._geojsons.default.eachLayer(handleLayer);
+								}	
+							}
+							alertScope.consoleLog("[rifd-dsub-maptable.js] doWatchUpdate() newNames: " + newNames.length +
+								"; oldNames: " + oldNames.length +
+								"; foundCount: " + foundCount +
+								"; $scope.selectedPolygonCount: " + $scope.selectedPolygonCount +
+								"; $scope.gridOptions.data: " + $scope.gridOptions.data.length);
+													
 						}
 						
                         //********************************************************************************************************
@@ -1905,7 +1913,7 @@ angular.module("RIF")
 							if (this._div) {
 								if (savedShape) {
 									var bandCount = {};
-									var studySelection=CommonMappingStateService.getState("areamap").selectedPolygon;
+									var studySelection=CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name);
 									if (studySelection) {
 										for (var i=0; i<studySelection.length; i++) {
 											var band=studySelection[i].band;
@@ -2076,7 +2084,7 @@ angular.module("RIF")
 //													"; thisBand: " + thisBand);
                                                 if (CommonMappingStateService.getState("areamap").possibleBands.indexOf(thisBand) !== -1) {
                                                     bPushed = true;
-                                                    CommonMappingStateService.getState("areamap").selectedPolygon.push({
+                                                    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).push({
 														id: $scope.gridOptions.data[j].area_id, 
 														gid: $scope.gridOptions.data[j].area_id,
                                                         label: $scope.gridOptions.data[j].label, 
