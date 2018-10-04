@@ -63,9 +63,9 @@ Look in the startup log. This is the normal case:
 !!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
 08:03:18.747 [http-nio-8080-exec-8] INFO  rifGenericLibrary.util.TaxonomyLogger : [taxonomyServices.ICD10TaxonomyTermParser]:
 ICD10TaxonomyTermParser 2
-08:03:39.623 [http-nio-8080-exec-8] INFO  rifGenericLibrary.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+08:03:39.623 [http-nio-8080-exec-8] INFO  rifGenericLibrary.util.TaxonomyLogger : [org.sahsu.taxonomyservices.ClaMlTaxonomyService]:
 icd101/1TaxonomyParser: ICD Taxonomy Service read: "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\icdClaML2016ens.xml".
-08:03:39.623 [http-nio-8080-exec-8] INFO  rifGenericLibrary.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+08:03:39.623 [http-nio-8080-exec-8] INFO  rifGenericLibrary.util.TaxonomyLogger : [org.sahsu.taxonomyservices.ClaMlTaxonomyService]:
 icd101/1TaxonomyParser: ICD Taxonomy Service initialised: ICD 10 is a classification of diseases..
 ```
 
@@ -79,7 +79,7 @@ Check the taxonomy services configuration file *TaxonomyServicesConfiguration.xm
 		<name>ICD Taxonomy Service</name>
 		<description>International classification of diseases and related health problems 10th revision (2016 version).</description>
 		<version>1.0</version>
-		<ontology_service_class_name>org.sahsu.taxonomyservices.claMLTaxonomyService</ontology_service_class_name>
+		<ontology_service_class_name>org.sahsu.taxonomyservices.ClaMlTaxonomyService</ontology_service_class_name>
 		<parameters>
 			<parameter>
 				<name>icd10_ClaML_file</name>
@@ -93,8 +93,8 @@ Check the taxonomy services configuration file *TaxonomyServicesConfiguration.xm
 ## 1.2 How it works
 
 The configuration file is read and parsed and then for each taxonomy service the &lt;ontology_service_class_name&gt;
-e.g. *org.sahsu.taxonomyservices.claMLTaxonomyService* is loaded and the initialise() function called.
-The file *org.sahsu.taxonomyservices.claMLTaxonomyService.java* then loads and
+e.g. *org.sahsu.taxonomyservices.ClaMlTaxonomyService* is loaded and the initialise() function called.
+The file *org.sahsu.taxonomyservices.ClaMlTaxonomyService.java* then loads and
 parses the file and sets a taxonomy services manager. The code for this is in ICD10TaxonomyTermParser.java in
 the rifGenericLibrary.taxonomyServices package. The taxonomy services manager is used by the taxonomy service
 REST calls and then the front end.
@@ -149,7 +149,7 @@ The following do not appear to be in use:
 ## 2.1 ICD 9
 
 To create an ICD 9 service, you would make a class along the lines of
-*org.sahsu.taxonomyservices.claMLTaxonomyService* and ensure it implemented the interface
+*org.sahsu.taxonomyservices.ClaMlTaxonomyService* and ensure it implemented the interface
 rifGenericLibrary.taxonomyServices.TaxonomyServiceAPI.  Note that most of the code used to support taxonomy
 services is generic and does not rely on RIF concepts - this is why it is found in the
 rifGenericLibrary.taxonomyServices package.
@@ -170,7 +170,7 @@ The following configuration would support both ICD10 and ICD11.
 		<name>ICD Taxonomy Service</name>
 		<description>International classification of diseases and related health problems 10th revision (2016 version).</description>
 		<version>1.0</version>
-		<ontology_service_class_name>org.sahsu.taxonomyservices.claMLTaxonomyService</ontology_service_class_name>
+		<ontology_service_class_name>org.sahsu.taxonomyservices.ClaMlTaxonomyService</ontology_service_class_name>
 		<parameters>
 			<parameter>
 				<name>icd10_ClaML_file</name>
@@ -184,7 +184,7 @@ The following configuration would support both ICD10 and ICD11.
 		<name>ICD Taxonomy Service</name>
 		<description>International classification of diseases and related health problems 11th revision (2018 version).</description>
 		<version>1.0</version>
-		<ontology_service_class_name>org.sahsu.taxonomyservices.claMLTaxonomyService</ontology_service_class_name>
+		<ontology_service_class_name>org.sahsu.taxonomyservices.ClaMlTaxonomyService</ontology_service_class_name>
 		<parameters>
 			<parameter>
 				<name>icd11_ClaML_file</name>

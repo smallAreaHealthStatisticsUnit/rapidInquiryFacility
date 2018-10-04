@@ -5,7 +5,7 @@
     <name>ICD Taxonomy Service</name>
     <description>ICD 10 is a classification of diseases.</description>
     <version>1.0</version>
-    <ontology_service_class_name>org.sahsu.taxonomyservices.claMLTaxonomyService</ontology_service_class_name>
+    <ontology_service_class_name>org.sahsu.taxonomyservices.ClaMlTaxonomyService</ontology_service_class_name>
     <parameters>
       <parameter>
         <name>icd10_ClaML_file</name>

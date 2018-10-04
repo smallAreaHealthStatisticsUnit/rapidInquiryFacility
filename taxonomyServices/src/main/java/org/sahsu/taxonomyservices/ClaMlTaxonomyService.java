@@ -81,7 +81,7 @@ import java.io.File;
  *
  */
 
-public class claMLTaxonomyService 
+public class ClaMlTaxonomyService
 	extends AbstractTaxonomyService 
 	implements TaxonomyServiceAPI {
 
