@@ -90,15 +90,14 @@ angular.module("RIF")
 						});
 						
                         //Store what has been selected
-                        StudyAreaStateService.getState().geoLevels = input.geoLevels;
-                        StudyAreaStateService.getState().polygonIDs = input.selectedPolygon;
-                        StudyAreaStateService.getState().selectAt = input.selectAt;
-							
-                        StudyAreaStateService.getState().studyResolution = input.studyResolution;
-                        StudyAreaStateService.getState().center = input.center;
-                        StudyAreaStateService.getState().geography = input.geography;
-                        StudyAreaStateService.getState().transparency = input.transparency;
-                        StudyAreaStateService.getState().type = input.type;
+                        StudyAreaStateService.getState().setGeoLevels(input.geoLevels);
+                        StudyAreaStateService.getState().setPolygonIDs(input.selectedPolygon);
+                        StudyAreaStateService.getState().setSelectAt(input.selectAt);
+                        StudyAreaStateService.getState().setStudyResolution(input.studyResolution);
+                        StudyAreaStateService.getState().setCenter(input.center);
+                        StudyAreaStateService.getState().setGeography(input.geography);
+                        StudyAreaStateService.getState().setTransparency(input.transparency);
+                        StudyAreaStateService.getState().setType(input.type);
 						
 						if (SelectStateService.getState().studySelection == undefined) {
 							if (input.type == "Disease Mapping") {

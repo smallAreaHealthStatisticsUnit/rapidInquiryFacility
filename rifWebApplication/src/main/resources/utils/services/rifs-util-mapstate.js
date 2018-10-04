@@ -97,11 +97,11 @@ angular.module("RIF")
 							checkAreaType(areaType);	
 							var oldLength=((this.areaType && this.areaType.selectedPolygon) ? this.areaType.selectedPolygon.length : undefined);
 							if (arr && arr.length > 0) {
-								this.areaType.selectedPolygon.length = 0;		
+								this.areaType.selectedPolygon.length = 0;					
 								for (var i = 0; i < arr.length; i++) { // Maintain keyed list for faster checking
-									this.areaType.selectedPolygonObj[arr[i].id] = arr[i];
+									this.areaType.selectedPolygonObj[arr[i].id] = angular.copy(arr[i]);
 								}
-								this.areaType.selectedPolygon = arr;
+								this.areaType.selectedPolygon = angular.copy(arr);
 							}
 							else if (this.areaType == undefined) {
 								this.areaType = {
@@ -134,8 +134,8 @@ angular.module("RIF")
 								if (this.areaType.selectedPolygonObj[item.id]) {
 									throw new Error("Duplicate items: " + item.id + " in selectedPolygon " + areaType + " list");
 								}
-								this.areaType.selectedPolygonObj[item.id] = item;
-								this.areaType.selectedPolygon.push(item);
+								this.areaType.selectedPolygonObj[item.id] = angular.copy(item);
+								this.areaType.selectedPolygon.push(angular.copy(item));
 								AlertService.consoleDebug("[rifs-util-mapstate.js] addToSelectedPolygon(" + areaType + ", " + 
 									JSON.stringify(item) + "): " + 
 									this.areaType.selectedPolygon.length);

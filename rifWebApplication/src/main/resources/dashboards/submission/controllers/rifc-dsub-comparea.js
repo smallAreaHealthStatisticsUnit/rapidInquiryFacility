@@ -87,12 +87,12 @@ angular.module("RIF")
 							$scope.areamap.remove(); 
 						});
                         //Store what has been selected
-                        CompAreaStateService.getState().polygonIDs = input.selectedPolygon;
-                        CompAreaStateService.getState().selectAt = input.selectAt;
-                        CompAreaStateService.getState().studyResolution = input.studyResolution;
-                        CompAreaStateService.getState().center = input.center;
-                        CompAreaStateService.getState().geography = input.geography;
-                        CompAreaStateService.getState().transparency = input.transparency;
+                        CompAreaStateService.getState().setPolygonIDs(input.selectedPolygon);
+                        CompAreaStateService.getState().setSelectAt(input.selectAt);
+                        CompAreaStateService.getState().setStudyResolution(input.studyResolution);
+                        CompAreaStateService.getState().setCenter(input.center);
+                        CompAreaStateService.getState().setGeography(input.geography);
+                        CompAreaStateService.getState().setTransparency(input.transparency);
 						
 						if (input.selectAt) {
 							SelectStateService.getState().studySelection.comparisonSelectAt = input.selectAt;

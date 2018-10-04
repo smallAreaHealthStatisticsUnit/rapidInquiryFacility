@@ -35,10 +35,11 @@
  * SERVICE to store state of study area modal
  */
 angular.module("RIF")
-        .factory('StudyAreaStateService',
-                function () {
+        .factory('StudyAreaStateService', ['AlertService',
+                function (AlertService) {
                     var s = {
                         polygonIDs: [],
+						geoLevels: {},
                         selectAt: "",
                         studyResolution: "",
                         center: {'zoom': 1, 'lng': 0, 'lat': 0},
@@ -53,6 +54,39 @@ angular.module("RIF")
                         },
                         resetState: function () {
                             s = angular.copy(defaults);
+							// Set method do deep copy to avoid scope issues
+							s.setGeography = function(ngeography) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setGeography: " + ngeography);
+								this.geography = angular.copy(ngeography);
+							};
+							s.setStudyResolution = function(nstudyResolution) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setStudyResolution: " + nstudyResolution);
+								this.studyResolution = angular.copy(nstudyResolution);
+							};
+							s.setSelectAt = function(nselectAt) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setSelectAt: " + nselectAt);
+								this.selectAt = angular.copy(nselectAt);
+							};
+							s.setPolygonIDs = function(npolygonIDs) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setPolygonIDs: " + JSON.stringify(npolygonIDs));
+								this.polygonIDs = angular.copy(npolygonIDs);
+							};
+							s.setGeoLevels = function(ngeoLevels) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setGeoLevels: " + JSON.stringify(ngeoLevels));
+								this.geoLevels = angular.copy(ngeoLevels);
+							};	
+							s.setCenter = function(ncenter) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setCenter: " + JSON.stringify(ncenter));
+								this.center = angular.copy(ncenter);
+							};	
+							s.setTransparency = function(ntransparency) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setTransparency: " + ntransparency);
+								this.transparency = angular.copy(ntransparency);
+							};
+							s.setType = function(ntype) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setType: " + ntype);
+								this.type = angular.copy(ntype);
+							};							
                         }
                     };
-                });
+                }]);

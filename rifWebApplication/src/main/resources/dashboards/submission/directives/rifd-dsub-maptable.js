@@ -195,7 +195,7 @@ angular.module("RIF")
 								throw new Error("setStudyType: invalid $scope.input.type: " + $scope.input.type);
 							}
                             SubmissionStateService.getState().studyType = $scope.input.type;
-							StudyAreaStateService.getState().type = $scope.input.type;		
+							StudyAreaStateService.getState().setType($scope.input.type);		
 							CompAreaStateService.getState().type = $scope.input.type;		
 							alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(): " + SubmissionStateService.getState().studyType);					
 						}
