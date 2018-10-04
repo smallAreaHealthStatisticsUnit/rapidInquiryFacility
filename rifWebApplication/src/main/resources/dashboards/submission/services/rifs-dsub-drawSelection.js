@@ -659,37 +659,22 @@ angular.module("RIF")
 									}
 									else {
 										if (shape.band === -1) {
-											CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).push({
+											CommonMappingStateService.getState(mapName).addToSelectedPolygon(input.name, {
 												id: thisPolyID, 
 												gid: thisPolyID, 
 												label: thisPoly, 
 												band: CommonMappingStateService.getState(mapName).currentBand, 
 												centroid: thisLatLng
 											});
-											CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID) = {
-												id: thisPolyID, 
-												gid: thisPolyID, 
-												label: thisPoly, 
-												band: CommonMappingStateService.getState(mapName).currentBand, 
-												centroid: thisLatLng
-											};
 											latlngList[itemsProcessed].band=CommonMappingStateService.getState(mapName).currentBand;
 										} else {
-											CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).push({
-												id: thisPolyID, 
-												gid: thisPolyID, 
-												label: thisPoly, 
-												band: shape.band, 
-												centroid: thisLatLng
-											});
-											CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
-													thisPolyID) = {
-												id: thisPolyID, 
-												gid: thisPolyID, 
-												label: thisPoly, 
-												band: shape.band, 
-												centroid: thisLatLng
-											};
+											CommonMappingStateService.getState(mapName).addToSelectedPolygon(input.name, {
+													id: thisPolyID, 
+													gid: thisPolyID, 
+													label: thisPoly, 
+													band: shape.band, 
+													centroid: thisLatLng
+												});
 											latlngList[itemsProcessed].band=shape.band;
 										}
 									}

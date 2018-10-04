@@ -89,7 +89,7 @@ angular.module("RIF")
 							checkAreaType(areaType);
 							this.areaType.selectedPolygon.length = 0;
 							this.areaType.selectedPolygonObj = {};
-							AlertService.consoleDebug("[rifs-util-mapstate.js] clearSselectedPolygon(" + areaType+ "): " + 
+							AlertService.consoleDebug("[rifs-util-mapstate.js] clearSselectedPolygon(" + areaType + "): " + 
 								this.areaType.selectedPolygon.length);
 							return this.areaType.selectedPolygon;
 						},
