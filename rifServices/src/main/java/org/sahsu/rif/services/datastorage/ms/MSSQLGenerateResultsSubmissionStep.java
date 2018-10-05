@@ -91,13 +91,13 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 			SQLQueryUtility.commit(connection);
 
 			if (rval == 1) {
-				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study extract " + studyID
 				                                + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
 				result = "OK";	
 				res=true;
 			}
 			else {
-				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study extract " + studyID
 				                                + " failed with code: " + String.valueOf(rval) +
 				                                " XXXXXXXXXXXXXXXXXXXXXX");
 				result = "Study failed with code: " + String.valueOf(rval);

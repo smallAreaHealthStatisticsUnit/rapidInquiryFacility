@@ -54,7 +54,6 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 		PreparedStatement runStudyStatement = null;
 		ResultSet runStudyResultSet = null;
 		boolean res=false;
-		int rval=-1;
 
 		try {
 			
@@ -78,19 +77,19 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 			runStudyStatement.setBoolean(2, true); // Debug
 				
 			runStudyResultSet = runStudyStatement.executeQuery(); // Returns true/false
-			rval = runStudyResultSet.getInt(1);
 			runStudyResultSet.next();
+			res = runStudyResultSet.getBoolean(1);
 			
 			stack=SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			
 			SQLQueryUtility.commit(connection);
-			rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
-			if (rval == 1) {
+			if (res) {
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study extract " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
 				result="OK";
-				res=true;
 			}
 			else {
-				result="Study failed with code: " + rval;
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study extract " + studyID + " run failed  XXXXXXXXXXXXXXXXXXXXXX");
+				result="Study failed.";
 			}
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
