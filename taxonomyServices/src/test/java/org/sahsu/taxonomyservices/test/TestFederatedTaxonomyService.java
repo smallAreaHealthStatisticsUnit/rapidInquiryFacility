@@ -1,5 +1,6 @@
 package org.sahsu.taxonomyservices.test;
 
+import org.junit.Test;
 import org.sahsu.rif.generic.system.ClassFileLocator;
 import org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
@@ -59,7 +60,8 @@ import java.util.ArrayList;
 
 public class TestFederatedTaxonomyService {
 
-	public static void main(String[] args) {
+	@Test
+	public void testService() {
 		
 		FederatedTaxonomyService service
 			= FederatedTaxonomyService.getFederatedTaxonomyService();

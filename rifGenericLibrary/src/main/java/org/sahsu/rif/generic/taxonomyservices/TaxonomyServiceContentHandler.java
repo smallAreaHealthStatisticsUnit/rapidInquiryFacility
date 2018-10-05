@@ -214,13 +214,11 @@ final public class TaxonomyServiceContentHandler
 		final String qualifiedName) 
 		throws SAXException {
 
-		if (isPluralRecordName(qualifiedName) == true) {
+		if (isPluralRecordName(qualifiedName)) {
 			deactivate();
-		}
-		if (isSingularRecordName(qualifiedName) == true) {
+		} else if (isSingularRecordName(qualifiedName)) {
 			taxonomyServiceConfigurations.add(currentTaxonomyServiceConfiguration);
-		}
-		else if (isDelegatedHandlerAssigned() == true) {
+		} else if (isDelegatedHandlerAssigned()) {
 			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.endElement(
@@ -228,36 +226,29 @@ final public class TaxonomyServiceContentHandler
 				localName, 
 				qualifiedName);
 			
-			if (currentDelegatedHandler.isActive() == false) {
+			if (!currentDelegatedHandler.isActive()) {
 				//current handler has finished.  Therefore, cast delegator and obtain data
 				if (currentDelegatedHandler == parameterContentHandler) {
 					ArrayList<Parameter> parameters
 						= parameterContentHandler.getParameters();
 					currentTaxonomyServiceConfiguration.setParameters(parameters);
-				}
-				else {
+				} else {
 					assert false;
 				}
 				
 				unassignDelegatedHandler();
 			}
-		}
-		else if (equalsFieldName(qualifiedName, "identifier")) {	
+		} else if (equalsFieldName(qualifiedName, "identifier")) {
 			currentTaxonomyServiceConfiguration.setServiceIdentifier(getCurrentFieldValue());
-		}
-		else if (equalsFieldName(qualifiedName, "name")) {	
+		} else if (equalsFieldName(qualifiedName, "name")) {
 			currentTaxonomyServiceConfiguration.setName(getCurrentFieldValue());
-		}
-		else if (equalsFieldName(qualifiedName, "description")) {	
+		} else if (equalsFieldName(qualifiedName, "description")) {
 			currentTaxonomyServiceConfiguration.setDescription(getCurrentFieldValue());
-		}
-		else if (equalsFieldName(qualifiedName, "version")) {	
+		} else if (equalsFieldName(qualifiedName, "version")) {
 			currentTaxonomyServiceConfiguration.setVersion(getCurrentFieldValue());
-		}
-		else if (equalsFieldName(qualifiedName, "ontology_service_class_name")) {	
+		} else if (equalsFieldName(qualifiedName, "ontology_service_class_name")) {
 			currentTaxonomyServiceConfiguration.setOntologyServiceClassName(getCurrentFieldValue());
-		}
-		else {
+		} else {
 			assert false;
 		}
 	}

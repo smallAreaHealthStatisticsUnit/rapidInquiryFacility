@@ -158,7 +158,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 		else {
 			filePath2.append(defaultResourceDirectoryPath);
 			filePath2.append(File.separator);
-			filePath2.append("TaxonomyServicesConfiguration.xml");
+  			filePath2.append("TaxonomyServicesConfiguration.xml");
 			taxonomyServiceConfigurationFile
 				= new File(filePath2.toString());
 			if (taxonomyServiceConfigurationFile.exists()) {
