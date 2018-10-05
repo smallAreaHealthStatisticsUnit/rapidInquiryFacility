@@ -6,6 +6,7 @@ import org.sahsu.rif.generic.concepts.Parameter;
 
 import java.util.ArrayList;
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -212,7 +213,7 @@ public abstract class AbstractTaxonomyService
 	 * @return the immediate subterms
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<TaxonomyTerm> getImmediateChildTerms(
+	public List<TaxonomyTerm> getImmediateChildTerms(
 		final String parentTermIdentifier) 
 		throws RIFServiceException {
 		
@@ -233,33 +234,18 @@ public abstract class AbstractTaxonomyService
 		
 		return taxonomyTermManager.getParentTerm(childTermIdentifier);		
 	}
-	
-	public TaxonomyTerm getTerm(
-		final String termIdentifier) 
-		throws RIFServiceException {
-		
-		return taxonomyTermManager.getTerm(termIdentifier);
-	}
-	
-	public boolean termExists(
-		final String taxonomyTermIdentifier)
-		throws RIFServiceException {
-		
-		return taxonomyTermManager.termExists(taxonomyTermIdentifier);
-	}
 
-	
 	/**
 	 * Gets the root terms.
 	 *
 	 * @return the root terms
 	 */
-	public ArrayList<TaxonomyTerm> getRootTerms() {
+	public List<TaxonomyTerm> getRootTerms() {
 		
 		return taxonomyTermManager.getRootTerms();
 	}
       
-	public ArrayList<TaxonomyTerm> getMatchingTerms(
+	public List<TaxonomyTerm> getMatchingTerms(
 		final String searchPhrase,
 		final boolean isCaseSensitive) {
 	
