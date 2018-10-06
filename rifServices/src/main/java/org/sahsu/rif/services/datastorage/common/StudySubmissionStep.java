@@ -216,7 +216,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 		studySubmission.checkErrors(ValidationPolicy.RELAXED);
 		checkNonExistentItems(user, connection, studySubmission);
-
+		
 		//KLG: TODO: Later on we should not rely on casting - it might
 		//be a risk analysis study
 		String studyID=null;
@@ -315,10 +315,13 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			final Connection connection,
 			final User user,
 			final Project project,
-			final AbstractStudy diseaseMappingStudy,
+			final AbstractStudy rifStudy,
 			final RIFStudySubmission studySubmission)
-			throws SQLException, RIFServiceException {
+			throws Exception {
 
+		JSONObject studySelection = studySubmission.getStudySelection();
+		int riskAnalysisType=studySelection.optInt("riskAnalysisType", -1);
+		
 		PreparedStatement studyShareStatement = null;
 		PreparedStatement addStudyStatement = null;
 		try {
@@ -348,28 +351,49 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			addStudyStatement = createPreparedStatement(connection, studyQueryFormatter);
 			int ithQueryParameter = 1;
 
-			Geography geography = diseaseMappingStudy.getGeography();
+			Geography geography = rifStudy.getGeography();
 			addStudyStatement.setString(ithQueryParameter++, geography.getName());
 
 			addStudyStatement.setString(ithQueryParameter++, project.getName());
 
-			addStudyStatement.setString(ithQueryParameter++, diseaseMappingStudy.getName());
+			addStudyStatement.setString(ithQueryParameter++, rifStudy.getName());
 
 			//study type will be "1" for diseaseMappingStudy
-			addStudyStatement.setInt(ithQueryParameter++, 1);
-
-			ComparisonArea comparisonArea = diseaseMappingStudy.getComparisonArea();
+			if (rifStudy.isDiseaseMapping()) {
+				addStudyStatement.setInt(ithQueryParameter++, 1);
+				addStudyStatement.setInt(ithQueryParameter++, 1); // disease mapping study
+			}
+			else if (riskAnalysisType == -1) {
+				throw new Exception("No risk analysis type in studySelection JSON");
+			}
+			else if (riskAnalysisType == 11 || 
+			         riskAnalysisType == 12 || 
+					 riskAnalysisType == 13 || 
+					 riskAnalysisType == 14 || 
+					 riskAnalysisType == 15) {
+				addStudyStatement.setInt(ithQueryParameter++, riskAnalysisType); // From studySelection JSON
+				// 11 - Risk Analysis (many areas, one band), 
+				// 12 - Risk Analysis (point sources), 
+				// 13 - Risk Analysis (exposure covariates), 
+				// 14 - Risk Analysis (coverage shapefile), 
+				// 15 - Risk Analysis (exposure shapefile)
+			}
+			else {
+				throw new Exception("Invalid risk analysis type in studySelection JSON: " + riskAnalysisType);
+			}
+			
+			ComparisonArea comparisonArea = rifStudy.getComparisonArea();
 			addStudyStatement.setString(ithQueryParameter++,
 			                            comparisonArea.getGeoLevelToMap().getName());
 
 			AbstractStudyArea diseaseMappingStudyArea =
-					diseaseMappingStudy.getStudyArea();
+					rifStudy.getStudyArea();
 			addStudyStatement.setString(ithQueryParameter++,
 			                            diseaseMappingStudyArea.getGeoLevelToMap().getName());
 
 			//KLG: is this a good idea below - considering that each of the 
 			//investigations can have different denominator tables?
-			Investigation firstInvestigation = diseaseMappingStudy.getInvestigations().get(0);
+			Investigation firstInvestigation = rifStudy.getInvestigations().get(0);
 			NumeratorDenominatorPair ndPair = firstInvestigation.getNdPair();
 			addStudyStatement.setString(ithQueryParameter++, ndPair.getDenominatorTableName());
 
