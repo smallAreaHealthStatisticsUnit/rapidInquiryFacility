@@ -94,6 +94,9 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study extract " + studyID
+			                                + " failed XXXXXXXXXXXXXXXXXXXXXX");
+											
 			manager.logSQLException(sqlException);
 			String sqlWarnings=SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			result=sqlException.getMessage();
@@ -118,9 +121,6 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 			stack=builder.toString();
 		
 			SQLQueryUtility.commit(connection);
-
-			rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID
-			                                + " failed XXXXXXXXXXXXXXXXXXXXXX");
 
 			/* DO NOT RETHROW!
 			rifLogger.error(

@@ -36,7 +36,7 @@ public final class MapDataManager extends BaseSQLManager {
 			final Geography geography,
 			final AbstractGeographicalArea geographicalArea,
 			final boolean IsStudyArea)
-			throws RIFServiceException {
+			throws Exception {
 
 		ArrayList<MapArea> allRelevantMapAreas = new ArrayList<>();
 
@@ -81,15 +81,16 @@ public final class MapDataManager extends BaseSQLManager {
 			 * Example:
 			 *
 			 * SELECT
-			 *    gid,
-			 *    level4
+			 *    gid, 		// gid
+			 *    level4,	// geoLevelToMap.getName()
+			 *    level2 	// geoLevelSelect.getName()
 			 * FROM
 			 *    mapAreaResolutionMappingTableName,  //eg: sahsuland_geography
 			 *    geoLevelToMapTableName //eg: sahsuland_level4
 			 * WHERE
-			 *    level2='01.001' OR  //iteratively read in each map area provided by
-			 *    level2='01.002' OR  //by client
-			 *    level2='01.003' OR
+			 *    level2='01.001' OR  // iteratively read in each map area provided by
+			 *    level2='01.002' OR  // by client
+			 *    level2='01.003' OR  // geoLevelSelect.getName()
 			 *    ...
 			 */
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
@@ -99,6 +100,10 @@ public final class MapDataManager extends BaseSQLManager {
 			queryFormatter.addQueryPhrase(geoLevelToMapTableName);
 			queryFormatter.addQueryPhrase(".");
 			queryFormatter.addQueryPhrase(geoLevelToMap.getName());
+			queryFormatter.addQueryPhrase(",");
+			queryFormatter.addQueryPhrase(geoLevelToMapTableName);
+			queryFormatter.addQueryPhrase(".");
+			queryFormatter.addQueryPhrase(geoLevelSelect.getName());
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryLine(0, "FROM ");
 			queryFormatter.addQueryPhrase(
@@ -165,7 +170,9 @@ public final class MapDataManager extends BaseSQLManager {
 			while (resultSet.next()) {
 				String identifier
 						= resultSet.getString(1);
-				String name
+				String geoLevelToMapName
+						= resultSet.getString(2);
+				String geoLevelSelectName
 						= resultSet.getString(2);
 
 				// Add band back		
@@ -175,12 +182,9 @@ public final class MapDataManager extends BaseSQLManager {
 						band=bandHash.get(identifier);
 					}
 					if (band < 1) {
-						band=i; // Just hope it is diease mapping!
-//						RIFServiceException rifServiceException
-//							= new RIFServiceException(
-//								RIFServiceError.UNABLE_TO_RETRIEVE_ALL_RELEVANT_MAP_AREAS,
-//								"No valid band: " + band + "; found for study area selectedMapAreas: " + identifier + "(" + name + ")");
-//						throw rifServiceException;
+//						band=i; // Just hope it is diease mapping!
+						throw new Exception(
+								"No valid band: " + band + "; found for study area selectedMapAreas: " + identifier + "(" + geoLevelToMapName + ")");
 					}
 				}
 				else {
@@ -191,17 +195,14 @@ public final class MapDataManager extends BaseSQLManager {
 						= MapArea.newInstance(
 						identifier,
 						identifier,
-						name,
+						geoLevelToMapName,
 						band);
 				allRelevantMapAreas.add(mapArea);
 				i++;
 			}
 		}
-		catch(RIFServiceException rifServiceException) {
-			throw rifServiceException;
-		}
-		catch(SQLException sqlException) {
-			logException(sqlException);
+		catch(Exception exception) {
+			logException(exception);
 			String errorMessage
 					= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToRetrievaAllRelevantMapAreas");

@@ -55,6 +55,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private DiseaseMappingStudyManager diseaseMappingStudyManager;
 	private MapDataManager mapDataManager;
+	StringBuilder sqlWarnings = new StringBuilder();
 
 	public StudySubmissionStep(
 			final RIFServiceStartupOptions options,
@@ -211,14 +212,14 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		
 	String performStep(
 			final Connection connection, final User user, final RIFStudySubmission studySubmission)
-			throws RIFServiceException {
+			throws Exception, RIFServiceException {
 
 		studySubmission.checkErrors(ValidationPolicy.RELAXED);
 		checkNonExistentItems(user, connection, studySubmission);
 
 		//KLG: TODO: Later on we should not rely on casting - it might
 		//be a risk analysis study
-		String result;
+		String studyID=null;
 		AbstractStudy study = studySubmission.getStudy();
 		try {
 
@@ -229,6 +230,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					project,
 					study,
 					studySubmission);
+			studyID = getCurrentStudyID(connection);
 
 			addComparisonAreaToStudy(
 					connection,
@@ -242,26 +244,38 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					connection,
 					study);
 
-			result = getCurrentStudyID(connection);
 			connection.commit();
 
-			rifLogger.info(this.getClass(),
-			               "======SQLCREATESTUDYSUBMISSIONSTEP====studyID==" + result + "==");
-			return result;
-		} catch (SQLException sqlException) {
-			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
-			String errorMessage
-					= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
-					study.getDisplayName());
-			RIFServiceException rifServiceException
-					= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
-		}
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study create " + studyID + " OK XXXXXXXXXX");
+			return studyID;
+		} catch (Exception exception) {
 
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study create " + studyID + " failed: " + exception.getMessage() + " XXXXXXXXXX");
+			StringBuilder builder = new StringBuilder(exception.getMessage())
+					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator)
+					                        .append("Stack trace of cause follows")
+					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator);
+			for (StackTraceElement element : exception.getStackTrace()) {
+				builder.append(element.toString()).append(lineSeparator);
+			}
+			builder.append("=============================================")
+					                        .append(lineSeparator)
+					                        .append("Output from PL/PGSQL")
+					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator)
+											.append(sqlWarnings.toString());
+			String stack=builder.toString();
+		
+			SQLQueryUtility.commit(connection);
+			setStudyExtractToFail(connection, studyID, "Study create " + studyID + " failed", stack);
+			
+			throw exception;
+		}
 	}
 
 	/*
@@ -415,6 +429,15 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			studyShareStatement.setString(1, user.getUserID());
 			studyShareStatement.executeUpdate();
 			SQLQueryUtility.printWarnings(studyShareStatement); // Print output from T-SQL or PL/pgsql
+			
+		} catch(Exception exception) {
+			if (addStudyStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(addStudyStatement) + lineSeparator);
+			}
+			if (studyShareStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(studyShareStatement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;
 		} finally {
 			//Cleanup database resources	
 			SQLQueryUtility.close(studyShareStatement);
@@ -548,6 +571,11 @@ public final class StudySubmissionStep extends BaseSQLManager {
 						study,
 						investigation);
 			}
+		} catch(Exception exception) {	
+			if (statement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;			
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -612,8 +640,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 	private void addStudyAreaToStudy(
 			final Connection connection,
 			final AbstractStudy diseaseMappingStudy)
-			throws SQLException,
-			       RIFServiceException {
+			throws Exception {
 
 		PreparedStatement statement = null;
 		try {
@@ -684,10 +711,14 @@ public final class StudySubmissionStep extends BaseSQLManager {
 //			else {
 //				throw new IllegalStateException("Unknown database type in "
 //				                                + "GenerateResultsSubmissionStep");
-//			}	
-//		} catch (Exception e) {		
-//			logException(e);	
-//			throw e;			
+//			}			
+			rifLogger.info(this.getClass(), "addStudyAreaToStudy() OK");
+		} catch(Exception exception) {
+			rifLogger.info(this.getClass(), "addStudyAreaToStudy() FAILED: " + exception.getMessage());
+			if (statement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;	
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -697,8 +728,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 	private void addComparisonAreaToStudy(
 			final Connection connection,
 			final AbstractStudy diseaseMappingStudy)
-			throws SQLException,
-			       RIFServiceException {
+			throws Exception {
 
 		PreparedStatement statement = null;
 		try {
@@ -765,7 +795,13 @@ public final class StudySubmissionStep extends BaseSQLManager {
 //			}
 //		} catch (Exception e) {		
 //			logException(e);	
-//			throw e;		
+//			throw e;	
+		}
+		catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(Exception exception) {
+			sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
+			throw exception;		
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -873,6 +909,11 @@ public final class StudySubmissionStep extends BaseSQLManager {
 				SQLQueryUtility.printWarnings(addCovariateStatement); // Print output from T-SQL or PL/pgsql
 				ithQueryParameter = 1;
 			}
+		} catch(Exception exception) {
+			if (addCovariateStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(addCovariateStatement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;				
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(addCovariateStatement);
@@ -996,6 +1037,14 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					SQLQueryUtility.printWarnings(addHealthCodeStatement); // Print output from T-SQL or PL/pgsql
 				}
 			}
+		} catch(Exception exception) {
+			if (getOutcomeGroupNameStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(getOutcomeGroupNameStatement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			if (addHealthCodeStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(addHealthCodeStatement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;				
 		} finally {
 			//Cleanup database resources	
 			SQLQueryUtility.close(getOutcomeGroupNameStatement);

@@ -105,6 +105,9 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version, print warning dialogs
 
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study extract " + studyID
+			                                + " failed XXXXXXXXXXXXXXXXXXXXXX");
+
 			manager.logSQLException(sqlException);
 			String sqlWarnings=SQLQueryUtility.printWarnings(runStudyStatement); // Print output from T-SQL
 			result=sqlException.getMessage();
