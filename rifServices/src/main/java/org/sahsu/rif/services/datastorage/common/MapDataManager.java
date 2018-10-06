@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
@@ -24,6 +25,7 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 public final class MapDataManager extends BaseSQLManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 
 	public MapDataManager(
 			final RIFServiceStartupOptions rifServiceStartupOptions) {
@@ -173,18 +175,26 @@ public final class MapDataManager extends BaseSQLManager {
 				String geoLevelToMapName
 						= resultSet.getString(2);
 				String geoLevelSelectName
-						= resultSet.getString(2);
+						= resultSet.getString(3);
 
 				// Add band back		
 				int band=-1;
 				if (IsStudyArea) {
-					if (bandHash.containsKey(identifier)) {
-						band=bandHash.get(identifier);
+					if (bandHash.containsKey(geoLevelToMapName)) {
+						band=bandHash.get(geoLevelToMapName);
 					}
 					if (band < 1) {
 //						band=i; // Just hope it is diease mapping!
-						throw new Exception(
-								"No valid band: " + band + "; found for study area selectedMapAreas: " + identifier + "(" + geoLevelToMapName + ")");
+						StringBuilder builder = new StringBuilder();
+						for (Map.Entry<String, Integer> entry : bandHash.entrySet()) {
+							String key = entry.getKey();
+							Integer value = entry.getValue();
+							builder.append("Key (areaid): " + key + "; value(band): " + value + lineSeparator);
+						}
+						rifLogger.info(this.getClass(), "bandHash: " + builder.toString());
+						
+						throw new Exception("No valid band: " + band + "; found for study area selectedMapAreas: " + 
+							identifier + "(" + geoLevelToMapName + ";" + geoLevelSelectName + ")");
 					}
 				}
 				else {

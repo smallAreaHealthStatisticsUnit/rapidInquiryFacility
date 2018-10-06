@@ -257,6 +257,9 @@ public final class MapAreaContentHandler
 		else if (equalsFieldName(qualifiedName, "label")) {
 			currentMapArea.setLabel(getCurrentFieldValue());
 		}		
+		else if (equalsFieldName(qualifiedName, "band")) {
+			currentMapArea.setBand(Integer.parseInt(getCurrentFieldValue()));
+		}		
 		else {
 			assert false;
 		}

@@ -736,7 +736,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					rifDatabaseProperties.getDatabaseType());
 			queryFormatter.setIntoTable("rif40.rif40_comparison_areas");
 			queryFormatter.addInsertField("area_id");
-
+			logSQLQuery(
+					"addComparisonAreaToStudy",
+					queryFormatter);
+					
 			statement
 					= createPreparedStatement(
 					connection,
