@@ -480,7 +480,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	CLOSE c7_creex;
 	DEALLOCATE c7_creex;
 
-	IF @c1_rec_study_type != '1' SET @sql_frag=@sql_frag + ',band_id'; /* Risk analysis only */
+--	IF @c1_rec_study_type != '1' SET @sql_frag=@sql_frag + ',band_id'; /* Risk analysis only */
 	SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_extract_table) + 
 		' ADD CONSTRAINT ' + LOWER(@c1_rec_extract_table) + '_pk PRIMARY KEY (' + @sql_frag + ')';
 	

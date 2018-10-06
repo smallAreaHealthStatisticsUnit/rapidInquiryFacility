@@ -330,15 +330,15 @@ BEGIN
 --	14 - Risk Analysis (coverage shapefile), 
 --	15 - Risk Analysis (exposure shapefile)
 --
-	IF c2_rec.study_type != 1 THEN
-		not_implemented:=not_implemented+1;
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_verify_state_change', 
-			'[55017] Non disease mapping studies (%) not yet supported during attempted state transition (%=>%) for study %',
-			c2_rec.study_type::VARCHAR,
-			old_study_state::VARCHAR,
-			new_study_state::VARCHAR,
-			study_id::VARCHAR);	
-	END IF;
+--	IF c2_rec.study_type != 1 THEN
+--		not_implemented:=not_implemented+1;
+--		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_verify_state_change', 
+--			'[55017] Non disease mapping studies (%) not yet supported during attempted state transition (%=>%) for study %',
+--			c2_rec.study_type::VARCHAR,
+--			old_study_state::VARCHAR,
+--			new_study_state::VARCHAR,
+--			study_id::VARCHAR);	
+--	END IF;
 --
 --	Covariate study_geolevel_name must be the same as rif40_studies.study_geolevel_name
 --
