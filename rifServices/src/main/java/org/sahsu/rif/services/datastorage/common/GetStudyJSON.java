@@ -850,7 +850,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			else {	
 				client=Client.create();
 			}
-			String URI= url + "/taxonomyServices/taxonomyServices/getMatchingTerms";
+			String URI= url + "/taxonomyServices/getMatchingTerms";
 			webResource = client.resource(URI);
 			if (webResource == null) {
 				throw new Exception("Null WebResource returned by rest client, URI: " + URI);
