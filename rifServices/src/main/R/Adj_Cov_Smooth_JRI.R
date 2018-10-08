@@ -20,7 +20,6 @@ library(maptools)
 library(spdep)
 library(Matrix)
 
-
 ##====================================================================
 # SCRIPT VARIABLES
 ##====================================================================
@@ -52,284 +51,6 @@ catalina_home<-Sys.getenv("CATALINA_HOME")
 # Set the working directory based on the value from the Java class
 setwd(working_dir)
 
-##==========================================================================
-#FUNCTION: establishTableNames
-#DESCRIPTION: uses the study_id number to determine the names of
-#tables that are used in the script.  There are three tables that are
-#important for this activity and their meanings are as follows:
-#rif_studies.s[study_id]_extract - contains the extract data table created
-#by the middleware
-#
-#rif_studies.s[study_id]_map - the skeleton table that the RIF middleware
-#creates to hold smoothed results
-#
-##==========================================================================
-establishTableNames <-function(vstudyID) {
-
-	cat("In establishTableNames")
-#The name of the extract table that is created by the middleware for a given
-#study.  It is of the format rif_studies.s[study_id]_extract
-	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
-	
-#Numbered directory support (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem 
-#performance on Windows Tomcat servers 
-	centile <- as.integer(vstudyID) %/% 100 # 1273 = 12
-	# Number directory: d1201-1300\
-	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100)
-	
-#The name of the skeleton table created by the RIF middleware to hold smoothed results
-#for a given study.  Initially the values for smoothed columns will be empty.  It is 
-#of the format rif_studies.s[study_id]_map 
-	mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
-
-# Name of Rdata CSV file for debugging results save
-# This needs to be passed in via interface
-
-	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
-		scratchSpace <<- file.path("scratchSpace")
-	}
-	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
-	scratchSpace <<- file.path(scratchSpace, numberDir, paste0("s", vstudyID), "data")
-		
-	tryCatch({
-			#Put all scratch files in sub directory s<study_id>
-			if (!file.exists(scratchSpace)) {
-				dir.create(scratchSpace, recursive=TRUE)
-			}
-	  	},
-		warning=function(w) {
-			cat(paste("UNABLE to create scratchSpace: ", scratchSpace, w, "\n"), sep="")
-#			exitValue <<- 1
-		},
-		error=function(e) {
-			cat(paste("ERROR creating scratchSpace: ", scratchSpace, e, "\n"), sep="")
-			exitValue <<- 1
-		}) # End of tryCatch
-
-	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
-		dumpFramesToCsv <<- TRUE
-	}		
-	temporarySmoothedResultsFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_map.csv"))
-	temporaryExtractFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_extract.csv"))
-	adjacencyMatrixFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_adjacency_matrix.csv"))
-  
-#The name of the temporary table that this script uses to hold the data frame
-#containing smoothed results.  It should have a 1:1 correspondence between
-#its fields and fields that appear in the map table skeleton.
-  
-	temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")
-	
-#
-# Install scripts required to re-run study
-#
-	if (exists("catalina_home")) {
-		performSmoothingActivityScriptA<-file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "performSmoothingActivity.R") # Source
-		performSmoothingActivityScriptB<-file.path(scratchSpace, "performSmoothingActivity.R") # Target
-		if (!file.exists(performSmoothingActivityScriptB)) {
-			cat(paste("Copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, "\n"), sep="")	
-
-			tryCatch({			
-				file.copy(performSmoothingActivityScriptA, performSmoothingActivityScriptB)
-			},
-			warning=function(w) {
-				cat(paste("UNABLE to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, w, "\n"), sep="")
-				exitValue <<- 0
-			},
-			error=function(e) {
-				cat(paste("ERROR copying: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, e, "\n"), sep="")
-				exitValue <<- 1
-			}) # End of tryCatch
-		}
-		else {
-			cat(paste("WARNING! No need to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, "\n"), sep="")
-		}
-		
-		Adj_Cov_Smooth_csvA<-file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "Adj_Cov_Smooth_csv.R") # Source
-		Adj_Cov_Smooth_csvB<-file.path(scratchSpace, "Adj_Cov_Smooth_csv.R") # Target
-		if (!file.exists(Adj_Cov_Smooth_csvB)) {
-			cat(paste("Copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, "\n"), sep="")	
-
-			tryCatch({			
-				file.copy(Adj_Cov_Smooth_csvA, Adj_Cov_Smooth_csvB)
-			},
-			warning=function(w) {
-				cat(paste("UNABLE to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, w, "\n"), sep="")
-				exitValue <<- 0
-			},
-			error=function(e) {
-				cat(paste("ERROR copying: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, e, "\n"), sep="")
-				exitValue <<- 1
-			}) # End of tryCatch
-		}
-		else {
-			cat(paste("WARNING! No need to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, "\n"), sep="")
-		}
-				
-		rif40_run_RA<-file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "rif40_run_R.bat") # Source
-		rif40_run_RB<-file.path(scratchSpace, "rif40_run_R.bat") # Target
-		if (!file.exists(rif40_run_RB)) {
-			cat(paste("Copy: ", rif40_run_RA, " to: ", rif40_run_RB, "\n"), sep="")	
-
-			tryCatch({			
-				file.copy(rif40_run_RA, rif40_run_RB)
-			},
-			warning=function(w) {
-				cat(paste("UNABLE to copy: ", rif40_run_RA, " to: ", rif40_run_RB, w, "\n"), sep="")
-				exitValue <<- 0
-			},
-			error=function(e) {
-				cat(paste("ERROR copying: ", rif40_run_RA, " to: ", rif40_run_RB, e, "\n"), sep="")
-				exitValue <<- 1
-			}) # End of tryCatch
-		}
-		else {
-			cat(paste("WARNING! No need to copy: ", rif40_run_RA, " to: ", rif40_run_RB, "\n"), sep="")
-		}
-		
-#
-# Create rif40_run_R_env.bat
-#
-		rif40_run_R_env=paste(
-					paste0("SET USERID=", userID),
-					paste0("SET DB_NAME=", db_name),
-					paste0("SET DB_HOST=", db_host),
-					paste0("SET DB_PORT=", db_port),
-					paste0("SET DB_DRIVER_PREFIX=", db_driver_prefix),
-					paste0("SET DB_DRIVER_CLASS_NAME=", db_driver_class_name),
-					paste0("SET STUDYID=", studyID),
-					paste0("SET INVESTIGATIONNAME=", investigationName),
-					paste0("SET STUDYNAME=", studyName),
-					paste0("SET INVESTIGATIONID=", investigationId),
-					paste0("SET MODEL=", model),
-					paste0("SET COVARIATENAME=", paste0(names.adj)),
-				sep="\n");
-		
-		rif40_run_R_envB<-file.path(scratchSpace, "rif40_run_R_env.bat") # Target
-		
-		cat(paste("Create: ", rif40_run_R_envB, "\n"), sep="")	
-		tryCatch({			
-			cat(rif40_run_R_env, file=rif40_run_R_envB)
-		},
-		warning=function(w) {
-			cat(paste("UNABLE to create: ", rif40_run_RB, w, "\n"), sep="")
-			exitValue <<- 0
-		},
-		error=function(e) {
-			cat(paste("ERROR creating: ", rif40_run_RB, e, "\n"), sep="")
-			exitValue <<- 1
-		}) # End of tryCatch
-	}
-}
-
-##================================================================================
-##FUNCTION: check.integer
-##DESCRIPTION
-##Check if string is an integer 
-##
-## Inspiration:
-##
-## https://stackoverflow.com/questions/3476782/check-if-the-number-is-integer
-## https://rosettacode.org/wiki/Determine_if_a_string_is_numeric#R
-##
-## Test cases: 
-##
-## isNotRounded is the best test; isInteger is useless (see manual for why!); isIntRegexp needs a better regexp! [string "1e4" give the wrong answer]
-##> check.integer("1e4")
-#[1] "check.integer: 1e4; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE"
-#[1] FALSE <<<< WRONG!
-#
-##
-## Beware:
-##
-# isNotRounded will return false when used on a data frame: check.integer(result$area_id[1])
-#> check.integer(result$area_id[1]) where the data is "01.001.01000"
-#[1] "check.integer: 01.001.01000; as.numeric(str): 1; isNumeric: TRUE; isInteger: FALSE; isNotRounded: TRUE; isIntRegexp: FALSE"
-#[1] FALSE
-##
-#> check.integer(1)
-#[1] "check.integer: 1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
-#[1] TRUE
-#> check.integer(1.1)
-#[1] "check.integer: 1.1; as.numeric(str): 1.1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-#> check.integer("1")
-#[1] "check.integer: 1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
-#[1] TRUE
-#> check.integer("1e4")
-#[1] "check.integer: 1e4; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE"
-#[1] FALSE <<<< WRONG!
-#> check.integer(1e4)
-#[1] "check.integer: 10000; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
-#[1] TRUE
-#> check.integer("Hello")
-#[1] "check.integer: Hello; as.numeric(str): NA; isNumeric: FALSE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-#> check.integer("01.01.1000")
-#[1] "check.integer: 01.01.1000; as.numeric(str): NA; isNumeric: FALSE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-#> check.integer("1.001")
-#[1] "check.integer: 1.001; as.numeric(str): 1.001; isNumeric: TRUE; isInteger: TRUE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-#> check.integer("0011001")
-#[1] "check.integer: 0011001; as.numeric(str): 11001; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
-#[1] TRUE
-#> check.integer("00.11001")
-#[1] "check.integer: 00.11001; as.numeric(str): 0.11001; isNumeric: TRUE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
-#[1] FALSE
-##================================================================================
-check.integer <- function(N) {
-	str<-N # COPY
-	isNumeric<-suppressWarnings(!is.na(as.numeric(str)))
-	isInteger<-suppressWarnings(!is.na(as.integer(str)) && as.integer(str))
-	isNotRounded<-suppressWarnings(isNumeric && as.numeric(str) == round(as.numeric(str)))
-	isIntRegexp<-suppressWarnings(!grepl("[^[:digit:]]", format(N,  digits = 20, scientific = FALSE)))
-	
-	check.integer.Result<-(isNumeric && isInteger && isNotRounded && isIntRegexp)
-	
-#	cat(paste0("check.integer: ", str,
-#		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
-#		"; isNumeric: ", isNumeric,
-#		"; isInteger: ", isInteger,
-#		"; isNotRounded: ", isNotRounded,
-#		"; isIntRegexp: ", isIntRegexp,
-#		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
-	
-    return(check.integer.Result)
-}
-
-# Error tracing function
-# https://stackoverflow.com/questions/40629715/how-to-show-error-location-in-trycatch
-withErrorTracing = function(expr, silentSuccess=FALSE) {
-    hasFailed = FALSE
-    messages = list()
-    warnings = list()
-		
-    errorTracer = function(obj) {
-
-        # Storing the call stack 
-        calls = sys.calls()
-        calls = calls[1:length(calls)-1]
-        # Keeping the calls only
-        trace = limitedLabels(c(calls, attr(obj, "calls")))
-
-        # Printing the 2nd and 3rd traces that contain the line where the error occured
-        # This is the part you might want to edit to suit your needs
-        #print(paste0("Error occuring: ", trace[length(trace):1][2:3]))
-        cat("Stack tracer >>>\n\n", trace[length(trace):1], "\n<<< End of stack tracer.\n")
-        # Muffle any redundant output of the same message
-        optionalRestart = function(r) { res = findRestart(r); if (!is.null(res)) invokeRestart(res) }
-        optionalRestart("muffleMessage")
-        optionalRestart("muffleWarning")
-    }
-
-    vexpr = withCallingHandlers(withVisible(expr),  error=errorTracer)
-    if (silentSuccess && !hasFailed) {
-        cat(paste(warnings, collapse=""))
-    }
-    if (vexpr$visible) vexpr$value else invisible(vexpr$value)
-	return
-}
-
 ##================================================================================
 ##FUNCTION: runRSmoothingFunctions
 ##DESCRIPTION
@@ -341,8 +62,27 @@ runRSmoothingFunctions <- function() {
 
     cat(paste("In runRSmoothingFunctions in JRI script", "\n"))
 
+	#Numbered directory support (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem
+	#performance on Windows Tomcat servers
+	centile <- as.integer(studyID) %/% 100 # 1273 = 12
+	# Number directory: d1201-1300\
+	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100)
+
+	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
+		scratchSpace <<- file.path("scratchSpace")
+	}
+	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
+	scratchSpace <<- file.path(scratchSpace, numberDir, paste0("s", studyID), "data")
+
+
 	establishTableNames(studyID)
 	cat("Table names established\n")
+
+	#
+	# Install scripts required to re-run study
+	#
+	createWindowsScript("Adj_Cov_Smooth_csv.R")
+
 	errorTrace<-capture.output({
 		tryCatch({
 			connDB = connectToDb()
