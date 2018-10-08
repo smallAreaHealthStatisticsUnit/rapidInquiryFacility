@@ -1404,7 +1404,7 @@ Start *R* in an Administrator command window and run the following script:
 
 ```R
 # CHECK & AUTO INSTALL MISSING PACKAGES
-packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "RJDBC", "MatrixModels", "rJava")
+packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "RJDBC", "MatrixModels", "rJava", "here")
 if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
   install.packages(setdiff(packages, rownames(installed.packages())))
 }
