@@ -2966,5 +2966,11 @@ SELECT a.*, b.coa2011
 * Testing;
 * Fix for use of zoomlevel 0 tiles; wait until map centered and zoomed;
 * Added band support to middleware;
-* Added new study extract trace. Risk analysis run bug is caused by comparison area overwriting the study area. Build new wsrif;
+* Added new study extract trace. Risk analysis run bug is caused by comparison area overwriting the study area;
 * Added set methods to state services; used angular copy to remove study area overwrite bug which was caused by scope issues; 
+* Installed databases on new server (wsrif);
+ 
+#### 8th to 12th October
+
+* Merge: remove Code Duplication In Scripts #100; fix disease mapping issues with new band_id code; passes on both ports
+
