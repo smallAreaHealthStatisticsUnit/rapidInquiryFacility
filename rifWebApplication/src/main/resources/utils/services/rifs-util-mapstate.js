@@ -96,6 +96,14 @@ angular.module("RIF")
 						initialiseSelectedPolygon: function(areaType, arr) {	// Initialise selectedPolygon from an array arr of items
 							checkAreaType(areaType);	
 							var oldLength=((this.areaType && this.areaType.selectedPolygon) ? this.areaType.selectedPolygon.length : undefined);
+							
+							if (this.areaType == undefined) {
+								this.areaType = {
+									selectedPolygon: [],
+									selectedPolygonObj: {}
+								};		
+							}
+							
 							if (arr && arr.length > 0) {
 								this.areaType.selectedPolygon.length = 0;					
 								for (var i = 0; i < arr.length; i++) { // Maintain keyed list for faster checking
@@ -103,12 +111,7 @@ angular.module("RIF")
 								}
 								this.areaType.selectedPolygon = angular.copy(arr);
 							}
-							else if (this.areaType == undefined) {
-								this.areaType = {
-									selectedPolygon: [],
-									selectedPolygonObj: {}
-								};		
-							}
+							
 							AlertService.consoleDebug("[rifs-util-mapstate.js] initialiseSelectedPolygon(" + areaType+ ") from: " + 
 								oldLength + "; to: " + this.areaType.selectedPolygon.length);
 							return this.areaType.selectedPolygon;

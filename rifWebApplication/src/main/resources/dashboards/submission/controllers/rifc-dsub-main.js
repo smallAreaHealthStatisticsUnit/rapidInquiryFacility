@@ -264,5 +264,9 @@ angular.module("RIF")
                     $state.go('state1').then(function () {
                         $state.reload();
                     });
+					if ($scope.studyName == "" && SubmissionStateService.getState().studyNameO) {
+						$scope.studyName = SubmissionStateService.getState().studyName;
+					}
+					$scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
                 };
             }]);

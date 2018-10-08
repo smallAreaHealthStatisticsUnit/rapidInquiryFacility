@@ -37,7 +37,8 @@ public final class MapDataManager extends BaseSQLManager {
 			final Connection connection,
 			final Geography geography,
 			final AbstractGeographicalArea geographicalArea,
-			final boolean IsStudyArea)
+			final boolean isStudyArea,
+			final boolean isDiseaseMappingStudy)
 			throws Exception {
 
 		ArrayList<MapArea> allRelevantMapAreas = new ArrayList<>();
@@ -50,7 +51,7 @@ public final class MapDataManager extends BaseSQLManager {
 
 		ArrayList<MapArea> selectedMapAreas
 				= geographicalArea.getMapAreas();
-		if (IsStudyArea) {
+		if (isStudyArea) {
 			rifLogger.info(this.getClass(), "SQLMapDataManager getAllRelevantMapAreas() study areas: " + selectedMapAreas.size());
 		}
 		else {
@@ -103,7 +104,7 @@ public final class MapDataManager extends BaseSQLManager {
 			queryFormatter.addQueryPhrase(".");
 			queryFormatter.addQueryPhrase(geoLevelToMap.getName());
 			queryFormatter.addQueryPhrase(",");
-			queryFormatter.addQueryPhrase(geoLevelToMapTableName);
+			queryFormatter.addQueryPhrase(mapAreaResolutionMappingTableName);
 			queryFormatter.addQueryPhrase(".");
 			queryFormatter.addQueryPhrase(geoLevelSelect.getName());
 			queryFormatter.padAndFinishLine();
@@ -179,9 +180,15 @@ public final class MapDataManager extends BaseSQLManager {
 
 				// Add band back		
 				int band=-1;
-				if (IsStudyArea) {
-					if (bandHash.containsKey(geoLevelToMapName)) {
-						band=bandHash.get(geoLevelToMapName);
+				if (isDiseaseMappingStudy) {
+					band=i;
+				}
+				else if (!isStudyArea) {
+					band=0; /* Comparison area */
+				}
+				else if (isStudyArea) {
+					if (bandHash.containsKey(geoLevelSelectName)) {
+						band=bandHash.get(geoLevelSelectName);
 					}
 					if (band < 1) {
 //						band=i; // Just hope it is diease mapping!
@@ -194,11 +201,12 @@ public final class MapDataManager extends BaseSQLManager {
 						rifLogger.info(this.getClass(), "bandHash: " + builder.toString());
 						
 						throw new Exception("No valid band: " + band + "; found for study area selectedMapAreas: " + 
-							identifier + "(" + geoLevelToMapName + ";" + geoLevelSelectName + ")");
+							identifier + "; map: " + geoLevelToMapName + "; select: " + geoLevelSelectName + ")");
 					}
 				}
 				else {
-					band=0; /* Comparison area */
+					throw new Exception("Dr Spock moment: isStudyArea: " + isStudyArea + 
+						"; isDiseaseMappingStudy: " + isDiseaseMappingStudy);
 				}
 				
 				MapArea mapArea

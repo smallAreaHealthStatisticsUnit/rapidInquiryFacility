@@ -53,17 +53,17 @@ public final class StudySubmissionStep extends BaseSQLManager {
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 
-	private DiseaseMappingStudyManager diseaseMappingStudyManager;
+	private DiseaseMappingStudyManager rifMappingStudyManager;
 	private MapDataManager mapDataManager;
 	StringBuilder sqlWarnings = new StringBuilder();
 
 	public StudySubmissionStep(
 			final RIFServiceStartupOptions options,
-			final DiseaseMappingStudyManager diseaseMappingStudyManager,
+			final DiseaseMappingStudyManager rifMappingStudyManager,
 			final MapDataManager mapDataManager) {
 
 		super(options);
-		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
+		this.rifMappingStudyManager = rifMappingStudyManager;
 		this.mapDataManager = mapDataManager;
 		setEnableLogging(true);
 	}
@@ -219,7 +219,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		
 		//KLG: TODO: Later on we should not rely on casting - it might
 		//be a risk analysis study
-		String studyID=null;
+		String studyID="Not yet allocated";
 		AbstractStudy study = studySubmission.getStudy();
 		try {
 
@@ -360,7 +360,6 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 			//study type will be "1" for diseaseMappingStudy
 			if (rifStudy.isDiseaseMapping()) {
-				addStudyStatement.setInt(ithQueryParameter++, 1);
 				addStudyStatement.setInt(ithQueryParameter++, 1); // disease mapping study
 			}
 			else if (riskAnalysisType == -1) {
@@ -386,10 +385,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			addStudyStatement.setString(ithQueryParameter++,
 			                            comparisonArea.getGeoLevelToMap().getName());
 
-			AbstractStudyArea diseaseMappingStudyArea =
+			AbstractStudyArea rifMappingStudyArea =
 					rifStudy.getStudyArea();
 			addStudyStatement.setString(ithQueryParameter++,
-			                            diseaseMappingStudyArea.getGeoLevelToMap().getName());
+			                            rifMappingStudyArea.getGeoLevelToMap().getName());
 
 			//KLG: is this a good idea below - considering that each of the 
 			//investigations can have different denominator tables?
@@ -663,22 +662,23 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addStudyAreaToStudy(
 			final Connection connection,
-			final AbstractStudy diseaseMappingStudy)
+			final AbstractStudy rifMappingStudy)
 			throws Exception {
 
 		PreparedStatement statement = null;
 		try {
 
-			Geography geography = diseaseMappingStudy.getGeography();
-			AbstractStudyArea diseaseMappingStudyArea
-					= diseaseMappingStudy.getStudyArea();
+			Geography geography = rifMappingStudy.getGeography();
+			AbstractStudyArea rifMappingStudyArea
+					= rifMappingStudy.getStudyArea();
 
 			ArrayList<MapArea> allMapAreas
 					= mapDataManager.getAllRelevantMapAreas(
 					connection,
 					geography,
-					diseaseMappingStudyArea,
-					true /* StudyArea */);
+					rifMappingStudyArea,
+					true /* StudyArea */,
+					rifMappingStudy.isDiseaseMapping());
 
 			InsertQueryFormatter queryFormatter = InsertQueryFormatter.getInstance(
 					rifDatabaseProperties.getDatabaseType());
@@ -738,7 +738,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 //			}			
 			rifLogger.info(this.getClass(), "addStudyAreaToStudy() OK");
 		} catch(Exception exception) {
-			rifLogger.info(this.getClass(), "addStudyAreaToStudy() FAILED: " + exception.getMessage());
+			rifLogger.error(this.getClass(), "addStudyAreaToStudy() FAILED: " + exception.getMessage(), exception);
 			if (statement != null) {
 				sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
 			}
@@ -751,7 +751,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addComparisonAreaToStudy(
 			final Connection connection,
-			final AbstractStudy diseaseMappingStudy)
+			final AbstractStudy rifMappingStudy)
 			throws Exception {
 
 		PreparedStatement statement = null;
@@ -770,10 +770,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					queryFormatter);
 
 			Geography geography
-					= diseaseMappingStudy.getGeography();
+					= rifMappingStudy.getGeography();
 
 			ComparisonArea comparisonArea
-					= diseaseMappingStudy.getComparisonArea();
+					= rifMappingStudy.getComparisonArea();
 
 			/*
 			 * The user may have selected areas at a higher resolution
@@ -787,7 +787,9 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					connection,
 					geography,
 					comparisonArea,
-					false /* ComparisonArea */);
+					false /* ComparisonArea */,
+					rifMappingStudy.isDiseaseMapping()
+					);
 					
 //			DatabaseType databaseType = rifDatabaseProperties.getDatabaseType();
 			ArrayList<String> list = new ArrayList<String>();
@@ -880,10 +882,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			Geography geography = study.getGeography();
 			String geographyName = geography.getName();
 
-			AbstractStudyArea diseaseMappingStudyArea
+			AbstractStudyArea rifMappingStudyArea
 					= study.getStudyArea();
 			String studyGeoLevelName
-					= diseaseMappingStudyArea.getGeoLevelToMap().getName();
+					= rifMappingStudyArea.getGeoLevelToMap().getName();
 
 			ArrayList<AbstractCovariate> covariates
 					= investigation.getCovariates();
@@ -1092,7 +1094,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 				project);
 
 		AbstractStudy study = rifStudySubmission.getStudy();
-		diseaseMappingStudyManager.checkNonExistentItems(user, connection, study);
+		rifMappingStudyManager.checkNonExistentItems(user, connection, study);
 
 		ArrayList<CalculationMethod> calculationMethods
 				= rifStudySubmission.getCalculationMethods();

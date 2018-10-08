@@ -765,15 +765,27 @@ angular.module("RIF")
 									if (bPass) {
 										//All tests passed
 										if (confirmStateChanges()) {
-											$scope.showSuccess("RIF " + StudyAreaStateService.getState().type + " study opened from file: " + ($scope.fileName || 'N/A'));
+											$scope.showSuccess('RIF ' + StudyAreaStateService.getState().type + ' study ' +
+											(rifJob[studyType].name ? 
+												('"' + rifJob[studyType].name + '" '): "") +
+											'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A'));
+											$scope.$parent.studyName = rifJob[studyType].name;
 											$scope.$parent.resetState();
 										}
 										else {
-											$scope.showError("RIF study opened from file: " + ($scope.fileName || 'N/A') + " failed in state change setup");
+											$scope.showError("RIF study opened from file: "  +
+											(rifJob[studyType].name ? 
+												('"' + rifJob[studyType].name + '" '): "") +
+											'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A') + 
+											" failed in state change setup");
 										}
 									}
 									else {
-										$scope.showError("RIF study opened from file: " + ($scope.fileName || 'N/A') + " failed with " +
+										$scope.showError("RIF study opened from file: "  +
+											(rifJob[studyType].name ? 
+												('"' + rifJob[studyType].name + '" '): "") +
+											'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A') + 
+											" failed with " +
 											errorCount + " error(s)");
 									}
 								});
