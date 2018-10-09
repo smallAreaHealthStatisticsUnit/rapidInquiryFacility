@@ -520,4 +520,3 @@ performHomogAnal <- function(Bands) {
   return(HomogRes)
   
 }
-

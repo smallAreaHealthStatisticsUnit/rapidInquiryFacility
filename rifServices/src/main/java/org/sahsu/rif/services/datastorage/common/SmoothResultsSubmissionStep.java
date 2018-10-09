@@ -84,7 +84,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
 			final String studyID) throws RIFServiceException {
 		
-		String rErrorTrace = "No R error tracer (see Tomcat log)";
+		String rErrorTrace="No R error tracer (see Tomcat log)";
 
 		try {		
 
@@ -200,6 +200,8 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 				// We do either Risk Analysis or Smoothing
 				sourceRScript(rengine, scriptPath.resolve("CreateWindowsScript.R"));
+				sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_JRI.R"));
+				sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_Common.R"));
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
 					rifLogger.info(getClass(), "Calling Risk Analysis R function");
@@ -209,11 +211,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 					rifLogger.info(getClass(), "Calling Disease Mapping R function");
 					// Run the actual smoothing
-					Path adjCovSmoothJri = scriptPath.resolve("Adj_Cov_Smooth_JRI.R");
-					Path performSmoothingActivity = scriptPath.resolve("performSmoothingActivity.R");
-					sourceRScript(rengine, adjCovSmoothJri);
-					sourceRScript(rengine, performSmoothingActivity);
-					sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_Common.R"));
+					sourceRScript(rengine, scriptPath.resolve("performSmoothingActivity.R"));
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
 				}
 
@@ -347,7 +345,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 		String databaseFriendlyInvestigationName
 		= createDatabaseFriendlyInvestigationName(investigation.getTitle());
 
-		Integer investigationID = null;
+		Integer investigationID;
 		PreparedStatement statement = null;		
 		ResultSet resultSet = null;
 		try {
