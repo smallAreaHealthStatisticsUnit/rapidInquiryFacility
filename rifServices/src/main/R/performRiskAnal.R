@@ -136,20 +136,24 @@ performBandAnal <- function(data) {
     study_id=x$study_id[1]
     area_id=x$area_id[1]
     band_id=x$band_id[1]
-    exposure=x$exposure[1]
+    #exposure=x$exposure[1]
     gender=x$sex[1]
     observed=sum(x$inv_1)
-    return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))})
+    #return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))
+    return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))
+  })
   RES=RES[,-1]#We delete the sex column
   RES2=ddply(RES,.variables='area_id',.fun=function(x){
     study_or_comparison=x$study_or_comparison[1]
     study_id=x$study_id[1]
     area_id=x$area_id[1]
     band_id=x$band_id[1]
-    exposure=x$exposure[1]
+    #exposure=x$exposure[1]
     gender=3
     observed=sum(x$observed)
-    return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))})
+    #return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))
+    return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))
+  })
   RES=rbind(RES,RES2)
   RES=RES[order(RES$area_id, RES$gender),]
   
@@ -445,11 +449,12 @@ performBandAnal <- function(data) {
   
   #Now the rates have been calculated for each area, need to calulate the rates per band
   #Create dataframe with 1 row for each band/gender
+  # For now we are not going to let the exposure get set within the band, so the 'linearity test' will not be run
   
   Bands = ddply(data, .variables=c('band_id','gender'),.fun=function(x){
     study_id=x$study_id[1]
     band_id=x$band_id[1]
-    exposure = mean(x$exposure)
+    #exposure = mean(x$exposure)
     gender = x$gender[1]
     observed = sum(x$observed)
     if (adj) { 
@@ -457,7 +462,8 @@ performBandAnal <- function(data) {
     } else {
       expected = sum(x$EXP_UNADJ)
     }
-    return(data.frame(study_id, band_id,exposure,gender,observed, expected))
+    #return(data.frame(study_id, band_id,exposure,gender,observed, expected))
+    return(data.frame(study_id, band_id,gender,observed, expected))
   })
   
   Bands$adjusted = adj
@@ -509,10 +515,11 @@ performHomogAnal <- function(Bands) {
     gender = i
     chisqHomog = sum( (Bandi$observed - (Bandi$expected*Osum/Esum))^2 / (Bandi$expected*Osum/Esum))
     pValHomog = pchisq(chisqHomog, df = df, lower.tail = FALSE)
-    numer = (sum(Bandi$exposure*(Bandi$observed - (Bandi$expected*Osum/Esum))))^2
-    denom = sum((Bandi$exposure)^2 * (Bandi$expected*Osum/Esum)) - (((sum(Bandi$exposure * (Bandi$expected*Osum/Esum)))^2)/Osum)
-    chisqLT = numer / denom
-    pValLT = pchisq(chisqLT, df = df, lower.tail = FALSE)
+    # Not doing linearity test until exposure properly implemented
+    #numer = (sum(Bandi$exposure*(Bandi$observed - (Bandi$expected*Osum/Esum))))^2
+    #denom = sum((Bandi$exposure)^2 * (Bandi$expected*Osum/Esum)) - (((sum(Bandi$exposure * (Bandi$expected*Osum/Esum)))^2)/Osum)
+    #chisqLT = numer / denom
+    #pValLT = pchisq(chisqLT, df = df, lower.tail = FALSE)
     bandsLT5 = length(which(Bandi$expected < 5))
     
     HomogRes = rbind(HomogRes, cbind(study_id, inv_id, gender,df, chisqHomog, pValHomog, chisqLT, pValLT, bandsLT5))
