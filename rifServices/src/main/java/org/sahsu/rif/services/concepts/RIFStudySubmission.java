@@ -5,9 +5,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 
 import org.json.JSONObject;
-
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
@@ -21,6 +21,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 
 	/** The job submission time. */
 	private Date jobSubmissionTime;
@@ -32,7 +33,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 	private AbstractStudy study;
 	
 	/** The calculation methods. */
-	private ArrayList<CalculationMethod> calculationMethods;
+	private List<CalculationMethod> calculationMethods;
 	
 	/** The rif output options. */
 	private ArrayList<RIFOutputOption> rifOutputOptions;
@@ -120,10 +121,10 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 			    AbstractStudy.createCopy(originalDiseaseMappingStudy);
     	cloneRIFStudySubmission.setStudy(cloneDiseaseMappingStudy);
     	
-    	ArrayList<CalculationMethod> originalCalculationMethods
-    		= originalRIFStudySubmission.getCalculationMethods(); 	
-    	ArrayList<CalculationMethod> clonedCalculationMethods
-    		= CalculationMethod.createCopy(originalCalculationMethods);
+    	List<CalculationMethod> originalCalculationMethods =
+			    originalRIFStudySubmission.getCalculationMethods();
+    	List<CalculationMethod> clonedCalculationMethods =
+			    CalculationMethod.createCopy(originalCalculationMethods);
     	
     	cloneRIFStudySubmission.setCalculationMethods(clonedCalculationMethods);
    
@@ -157,7 +158,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 	 *
 	 * @return the calculation methods
 	 */
-	public ArrayList<CalculationMethod> getCalculationMethods() {
+	public List<CalculationMethod> getCalculationMethods() {
 		
 		return calculationMethods;
 	}
@@ -177,8 +178,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 	 *
 	 * @param calculationMethods the new calculation methods
 	 */
-	public void setCalculationMethods(
-		final ArrayList<CalculationMethod> calculationMethods) {
+	public void setCalculationMethods(final List<CalculationMethod> calculationMethods) {
 
 		this.calculationMethods = calculationMethods;
 	}
@@ -321,7 +321,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 		String recordType = getRecordType();
 
 		if (study == null) {
-			String studyFieldName = RIFServiceMessages.getMessage("diseaseMappingStudy.label");
+			String studyFieldName = SERVICE_MESSAGES.getMessage("diseaseMappingStudy.label");
 			String errorMessage = GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
@@ -341,7 +341,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 
 		if (calculationMethods == null) {
 			String ageBandsFieldName
-				= RIFServiceMessages.getMessage("calculationMethod.label.plural");
+				= SERVICE_MESSAGES.getMessage("calculationMethod.label.plural");
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
@@ -353,13 +353,10 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 		boolean calculationMethodsAllNonNull = true;
 		for (CalculationMethod calculationMethod : calculationMethods) {
 			if (calculationMethod == null) {
-				String calculationMethodRecordType
-					= RIFServiceMessages.getMessage("calculationMethod.label");
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"general.validation.nullListItem",
-						getRecordType(),
-						calculationMethodRecordType);
+				String calculationMethodRecordType = SERVICE_MESSAGES.getMessage(
+						"calculationMethod.label");
+				String errorMessage = SERVICE_MESSAGES.getMessage("general.validation.nullListItem",
+						getRecordType(), calculationMethodRecordType);
 				errorMessages.add(errorMessage);	
 				calculationMethodsAllNonNull = false;
 			}
@@ -375,14 +372,13 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 		}
 		
 		if (calculationMethodsAllNonNull) {
-			HashSet<String> uniqueCalculationMethodNames = new HashSet<String>();
+			HashSet<String> uniqueCalculationMethodNames = new HashSet<>();
 			for (CalculationMethod calculationMethod : calculationMethods) {
 				try {
 					String displayName = calculationMethod.getDisplayName();
 					if (uniqueCalculationMethodNames.contains(displayName)) {
-						String errorMessage
-							= RIFServiceMessages.getMessage(
-								"rifStudySubmission.error.duplicateCalculationMethod", 
+						String errorMessage = SERVICE_MESSAGES.getMessage(
+								"rifStudySubmission.error.duplicateCalculationMethod",
 								displayName);
 						errorMessages.add(errorMessage);
 					}
@@ -392,7 +388,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 					calculationMethod.checkErrors(validationPolicy);				
 				}
 				catch(RIFServiceException rifServiceException) {
-					rifLogger.debug(this.getClass(), "[Unique] CalculationMethod.checkErrors(): " + 
+					rifLogger.debug(getClass(), "[Unique] CalculationMethod.checkErrors(): " +
 						rifServiceException.getErrorMessages().size());
 					errorMessages.addAll(rifServiceException.getErrorMessages());				
 				}
@@ -400,18 +396,15 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 		}
 		
 		if (rifOutputOptions == null) {
-			String rifOutputOptionsFieldName
-				= RIFServiceMessages.getMessage("rifOutputOption.plural.label");
-			String errorMessage
-				= GENERIC_MESSAGES.getMessage(
+			String rifOutputOptionsFieldName = SERVICE_MESSAGES.getMessage("rifOutputOption.plural.label");
+			String errorMessage = GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					rifOutputOptionsFieldName);
 			errorMessages.add(errorMessage);			
 		}
 		else if (rifOutputOptions.isEmpty()) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
+			String errorMessage = SERVICE_MESSAGES.getMessage(
 					"rifStudySubmission.error.noRIFOutputOptionsSpecified");
 			errorMessages.add(errorMessage);			
 		} else {
@@ -420,7 +413,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 				
 				if (option == null) {
 					
-					String errorMessage = RIFServiceMessages.getMessage(
+					String errorMessage = SERVICE_MESSAGES.getMessage(
 						"rifStudySubmission.error.nullRIFOutputOptionSpecified");
 					errorMessages.add(errorMessage);
 				}
@@ -456,7 +449,7 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 	@Override
 	public String getRecordType() {
 
-		return RIFServiceMessages.getMessage("rifStudySubmission.label");
+		return SERVICE_MESSAGES.getMessage("rifStudySubmission.label");
 	}
 	
 }

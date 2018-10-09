@@ -338,19 +338,17 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 
 			//Convert results to support JSON
 			ArrayList<CalculationMethodProxy> calculationMethodProxies
-					= new ArrayList<CalculationMethodProxy>();
+					= new ArrayList<>();
 			for (CalculationMethod calculationMethod : calculationMethods) {
 				CalculationMethodProxy calculationMethodProxy
 						= new CalculationMethodProxy();
 				calculationMethodProxy.setCodeRoutineName(calculationMethod.getCodeRoutineName());
 				calculationMethodProxy.setDescription(calculationMethod.getDescription());
 				calculationMethodProxy.setPrior(calculationMethod.getPrior().getName());
-				ArrayList<Parameter> parameters = calculationMethod.getParameters();
-				ArrayList<ParameterProxy> parameterProxies
-						= new ArrayList<ParameterProxy>();
+				List<Parameter> parameters = calculationMethod.getParameters();
+				List<ParameterProxy> parameterProxies = new ArrayList<>();
 				for (Parameter parameter : parameters) {
-					ParameterProxy parameterProxy
-							= new ParameterProxy();
+					ParameterProxy parameterProxy = new ParameterProxy();
 					parameterProxy.setName(parameter.getName());
 					parameterProxy.setValue(parameter.getValue());
 					parameterProxies.add(parameterProxy);

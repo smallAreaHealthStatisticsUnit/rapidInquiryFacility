@@ -12,7 +12,7 @@ import org.xml.sax.SAXException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-
+import java.util.List;
 
 /**
  *
@@ -229,8 +229,7 @@ final public class TaxonomyServiceContentHandler
 			if (!currentDelegatedHandler.isActive()) {
 				//current handler has finished.  Therefore, cast delegator and obtain data
 				if (currentDelegatedHandler == parameterContentHandler) {
-					ArrayList<Parameter> parameters
-						= parameterContentHandler.getParameters();
+					List<Parameter> parameters = parameterContentHandler.getParameters();
 					currentTaxonomyServiceConfiguration.setParameters(parameters);
 				} else {
 					assert false;

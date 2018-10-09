@@ -5,6 +5,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.system.Messages;
@@ -12,87 +13,14 @@ import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.services.system.RIFServiceError;
-import org.sahsu.rif.services.system.RIFServiceMessages;
 
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
+public final class CalculationMethod extends AbstractRIFConcept {
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-
-public final class CalculationMethod 
-	extends AbstractRIFConcept {
-
-// ==========================================
-// Section Constants
-// ==========================================
-	
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	private Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	
-// ==========================================
-// Section Properties
-// ==========================================
 	/** The name. */
-private String name;
+	private String name;
 	
 	/** The code routine name. */
 	private String codeRoutineName;
@@ -104,11 +32,7 @@ private String name;
 	private String description;
 	
 	/** The parameters. */
-	private ArrayList<Parameter> parameters;
-	
-// ==========================================
-// Section Construction
-// ==========================================
+	private List<Parameter> parameters;
 	
 	private CalculationMethod(
 		final String name,
@@ -134,7 +58,7 @@ private String name;
 		codeRoutineName = "";
 		calculationMethodPrior = CalculationMethodPrior.STANDARD_DEVIATION;
 		description = "";
-		parameters = new ArrayList<Parameter>();
+		parameters = new ArrayList<>();
     }
 
 	/**
@@ -143,9 +67,8 @@ private String name;
 	 * @return the calculation method
 	 */
 	static public CalculationMethod newInstance() {
-		
-		CalculationMethod calculationMethod = new CalculationMethod();
-		return calculationMethod;
+
+		return new CalculationMethod();
 	}
 
 	/**
@@ -159,34 +82,29 @@ private String name;
 		final String description,
 		final CalculationMethodPrior prior,
 		final ArrayList<Parameter> parameters) {
-		
-		CalculationMethod calculationMethod
-			= new CalculationMethod(
-				name,
-				codeRoutineName,
-				description,
-				prior,
-				parameters);
-		
-		return calculationMethod;
+
+		return new CalculationMethod(
+			name,
+			codeRoutineName,
+			description,
+			prior,
+			parameters);
 	}
-	
-	
+
 	/**
 	 * Creates the copy.
 	 *
 	 * @param originalCalculationMethods the original calculation methods
 	 * @return the array list
 	 */
-	static public ArrayList<CalculationMethod> createCopy(
-		final ArrayList<CalculationMethod> originalCalculationMethods) {
+	static public List<CalculationMethod> createCopy(
+			final List<CalculationMethod> originalCalculationMethods) {
 
 		if (originalCalculationMethods == null) {
 			return null;		
 		}
 		
-		ArrayList<CalculationMethod> clonedCalculationMethods
-			= new ArrayList<CalculationMethod>();
+		List<CalculationMethod> clonedCalculationMethods = new ArrayList<>();
 		for (CalculationMethod originalCalculationMethod : originalCalculationMethods) {
 			clonedCalculationMethods.add(createCopy(originalCalculationMethod));
 		}
@@ -214,16 +132,12 @@ private String name;
 		cloneCalculationMethod.setName(originalCalculationMethod.getName());
 		cloneCalculationMethod.setPrior(originalCalculationMethod.getPrior());
 		
-		ArrayList<Parameter> clonedParameterList
-			= Parameter.createCopy(originalCalculationMethod.getParameters());
+		List<Parameter> clonedParameterList =
+				Parameter.createCopy(originalCalculationMethod.getParameters());
 		cloneCalculationMethod.setParameters(clonedParameterList);
 		return cloneCalculationMethod;
 	}
 
-// ==========================================
-// Section Accessors and Mutators
-// ==========================================
-    
 	/**
 	 * Gets the name.
 	 *
@@ -260,8 +174,7 @@ private String name;
 	 *
 	 * @param prior the new prior
 	 */
-	public void setPrior(
-		final CalculationMethodPrior prior) {
+	public void setPrior(final CalculationMethodPrior prior) {
 		
 		this.calculationMethodPrior = prior;
 	}
@@ -281,8 +194,7 @@ private String name;
 	 *
 	 * @param codeRoutineName the new code routine name
 	 */
-	public void setCodeRoutineName(
-		final String codeRoutineName) {
+	public void setCodeRoutineName(final String codeRoutineName) {
 		
 		this.codeRoutineName = codeRoutineName;
 	}
@@ -304,15 +216,17 @@ private String name;
 	 */
 	public String getStatsMethod() {
 		String statsMethod = "NONE";
-		
-		if (codeRoutineName.equals("het_r_procedure")) {
-			statsMethod = "HET";
-		}
-		else if (codeRoutineName.equals("bym_r_procedure")) {
-			statsMethod = "BYM";
-		}
-		else if (codeRoutineName.equals("car_r_procedure")) {
-			statsMethod = "CAR";
+
+		switch (codeRoutineName) {
+			case "het_r_procedure":
+				statsMethod = "HET";
+				break;
+			case "bym_r_procedure":
+				statsMethod = "BYM";
+				break;
+			case "car_r_procedure":
+				statsMethod = "CAR";
+				break;
 		}
 		return statsMethod;
 	}
@@ -333,7 +247,7 @@ private String name;
 	 *
 	 * @return the parameters
 	 */
-	public ArrayList<Parameter> getParameters() {
+	public List<Parameter> getParameters() {
 		
 		return parameters;
 	}
@@ -354,20 +268,15 @@ private String name;
 	 *
 	 * @param parameters the new parameters
 	 */
-	public void setParameters(
-		final ArrayList<Parameter> parameters) {
+	public void setParameters(final List<Parameter> parameters) {
 		
 		this.parameters = parameters;
 	}
-	
-	
-	public void identifyDifferences(
-		final CalculationMethod anotherCalculationMethod,
-		final ArrayList<String> differences) {
+
+	public void identifyDifferences(final CalculationMethod anotherCalculationMethod,
+			final ArrayList<String> differences) {
 		
-		super.identifyDifferences(
-			anotherCalculationMethod, 
-			differences);
+		super.identifyDifferences(anotherCalculationMethod, differences);
 	}
 	
 	/**
@@ -378,8 +287,8 @@ private String name;
 	 * @return true, if successful
 	 */
 	public static boolean hasIdenticalContents(
-		final ArrayList<CalculationMethod> calculationMethodsA, 
-		final ArrayList<CalculationMethod> calculationMethodsB) {
+			final List<CalculationMethod> calculationMethodsA,
+			final List<CalculationMethod> calculationMethodsB) {
 
 		if (FieldValidationUtility.hasDifferentNullity(
 			calculationMethodsA, 
@@ -395,10 +304,8 @@ private String name;
 		
 		//create temporary sorted lists to enable item by item comparisons
 		//in corresponding lists
-		ArrayList<CalculationMethod> methodsA
-			= sortMethodsByCodeRoutineName(calculationMethodsA);
-		ArrayList<CalculationMethod> methodsB
-			= sortMethodsByCodeRoutineName(calculationMethodsB);
+		List<CalculationMethod> methodsA = sortMethodsByCodeRoutineName(calculationMethodsA);
+		List<CalculationMethod> methodsB = sortMethodsByCodeRoutineName(calculationMethodsB);
 		
 		int numberOfCalculationMethods = methodsA.size();
 		for (int i = 0; i < numberOfCalculationMethods; i++) {
@@ -421,22 +328,20 @@ private String name;
 	 * @param calculationMethods the calculation methods
 	 * @return the array list
 	 */
-	private static ArrayList<CalculationMethod> sortMethodsByCodeRoutineName(
-		final ArrayList<CalculationMethod> calculationMethods) {
+	private static List<CalculationMethod> sortMethodsByCodeRoutineName(
+		final List<CalculationMethod> calculationMethods) {
 	
-		HashMap<String, CalculationMethod> methodFromCodeRoutineName
-			= new HashMap<String, CalculationMethod>();
+		HashMap<String, CalculationMethod> methodFromCodeRoutineName = new HashMap<>();
 		for (CalculationMethod calculationMethod : calculationMethods) {
 			methodFromCodeRoutineName.put(
 				calculationMethod.getCodeRoutineName(),
 				calculationMethod);
 		}
-		
-		ArrayList<String> keys = new ArrayList<String>();
-		keys.addAll(methodFromCodeRoutineName.keySet());
+
+		List<String> keys = new ArrayList<>(methodFromCodeRoutineName.keySet());
 		
 		//@TODO: how well doe this handle duplicates
-		ArrayList<CalculationMethod> results = new ArrayList<CalculationMethod>();
+		List<CalculationMethod> results = new ArrayList<>();
 		Collections.sort(keys);
 		for (String key : keys) {
 			results.add(methodFromCodeRoutineName.get(key));
@@ -506,48 +411,33 @@ private String name;
 			}		
 		}
 
-		ArrayList<Parameter> otherParameters
-			= otherCalculationMethod.getParameters();		
+		List<Parameter> otherParameters = otherCalculationMethod.getParameters();
 		if (!Parameter.hasIdenticalContents(parameters, otherParameters)) {
 			return false;
 		}
 
 		return super.hasIdenticalContents(otherCalculationMethod);
 	}
-// ==========================================
-// Section Errors and Validation
-// ==========================================
-	
-	public void checkSecurityViolations() 
-		throws RIFServiceSecurityException {
+	public void checkSecurityViolations() throws RIFServiceSecurityException {
 		
 		super.checkSecurityViolations();	
 		
 		String recordType = getRecordType();
 		
-		String nameFieldNameLabel
-			= RIFServiceMessages.getMessage("calculationMethod.name.label");
-		String codeRoutineFieldNameLabel
-			= RIFServiceMessages.getMessage("calculationMethod.codeRoutineName.label");
-		String descriptionFieldNameLabel
-			= RIFServiceMessages.getMessage("calculationMethod.description.label");
+		String nameFieldNameLabel = SERVICE_MESSAGES.getMessage("calculationMethod.name.label");
+		String codeRoutineFieldNameLabel= SERVICE_MESSAGES.getMessage(
+				"calculationMethod.codeRoutineName.label");
+		String descriptionFieldNameLabel = SERVICE_MESSAGES.getMessage(
+				"calculationMethod.description.label");
 		
 		//Check for security problems.  Ensure EVERY text field is checked
 		//These checks will throw a security exception and stop further validation
-		FieldValidationUtility fieldValidationUtility
-			= new FieldValidationUtility();
-		fieldValidationUtility.checkMaliciousCode(
-			recordType, 
-			nameFieldNameLabel, 
-			name);
-		fieldValidationUtility.checkMaliciousCode(
-			recordType, 
-			codeRoutineFieldNameLabel, 
-			codeRoutineName);
-		fieldValidationUtility.checkMaliciousCode(
-			recordType, 
-			descriptionFieldNameLabel, 
-			description);
+		FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();
+		fieldValidationUtility.checkMaliciousCode(recordType, nameFieldNameLabel, name);
+		fieldValidationUtility.checkMaliciousCode(recordType, codeRoutineFieldNameLabel,
+		                                          codeRoutineName);
+		fieldValidationUtility.checkMaliciousCode(recordType, descriptionFieldNameLabel,
+		                                          description);
 		
 		//now check all the parameters
 		for (Parameter parameter : parameters) {
@@ -559,28 +449,25 @@ private String name;
 		final ValidationPolicy validationPolicy) 
 		throws RIFServiceException {
 		
-		ArrayList<String> errorMessages = new ArrayList<String>();
+		ArrayList<String> errorMessages = new ArrayList<>();
 		String recordType = getRecordType();
 		
 		//Extract field names		
-		String nameFieldNameLabel
-			= RIFServiceMessages.getMessage("calculationMethod.name.label");
-		String priorFieldNameLabel
-			= RIFServiceMessages.getMessage("calculationMethod.prior.label");
-		String codeRoutineFieldNameLabel
-			= RIFServiceMessages.getMessage("calculationMethod.codeRoutineName.label");
-		String descriptionFieldNameLabel
-			= RIFServiceMessages.getMessage("calculationMethod.description.label");
+		String nameFieldNameLabel = SERVICE_MESSAGES.getMessage("calculationMethod.name.label");
+		String priorFieldNameLabel = SERVICE_MESSAGES.getMessage(
+				"calculationMethod.prior.label");
+		String codeRoutineFieldNameLabel = SERVICE_MESSAGES.getMessage(
+				"calculationMethod.codeRoutineName.label");
+		String descriptionFieldNameLabel = SERVICE_MESSAGES.getMessage(
+				"calculationMethod.description.label");
 	
 		//Check for security problems.  Ensure EVERY text field is checked
 		//These checks will throw a security exception and stop further validation
-		FieldValidationUtility fieldValidationUtility
-			= new FieldValidationUtility();
+		FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();
 		
 		if (validationPolicy == ValidationPolicy.STRICT) { 
 			if (fieldValidationUtility.isEmpty(name)) {
-				String errorMessage
-					= GENERIC_MESSAGES.getMessage(
+				String errorMessage = GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						nameFieldNameLabel);
@@ -588,8 +475,7 @@ private String name;
 			}
 
 			if (calculationMethodPrior == null) {
-				String errorMessage
-					= GENERIC_MESSAGES.getMessage(
+				String errorMessage = GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						priorFieldNameLabel);
@@ -598,8 +484,7 @@ private String name;
 		}
 		
 		if (fieldValidationUtility.isEmpty(codeRoutineName)) {
-			String errorMessage
-				= GENERIC_MESSAGES.getMessage(
+			String errorMessage = GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					codeRoutineFieldNameLabel);
@@ -607,8 +492,7 @@ private String name;
 		}
 
 		if (fieldValidationUtility.isEmpty(description)) {
-			String errorMessage
-				= GENERIC_MESSAGES.getMessage(
+			String errorMessage = GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					descriptionFieldNameLabel);
@@ -616,10 +500,8 @@ private String name;
 		}
 		
 		if (parameters == null) {
-			String parametersFieldLabel
-				= RIFServiceMessages.getMessage("parameter.plural.label");
-			String errorMessage
-				= GENERIC_MESSAGES.getMessage(
+			String parametersFieldLabel = SERVICE_MESSAGES.getMessage("parameter.plural.label");
+			String errorMessage = GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					parametersFieldLabel);
@@ -635,25 +517,15 @@ private String name;
 				}
 			}
 			
-			String duplicatesFoundMessage
-				= Parameter.identifyDuplicateParametersWithinList(parameters);
+			String duplicatesFoundMessage =
+					Parameter.identifyDuplicateParametersWithinList(parameters);
 			if (duplicatesFoundMessage != null) {
 				errorMessages.add(duplicatesFoundMessage);
 			}
 		}
 	
-		countErrors(
-				RIFServiceError.INVALID_CALCULATION_METHOD,
-				errorMessages);
+		countErrors(RIFServiceError.INVALID_CALCULATION_METHOD, errorMessages);
 	}
-
-// ==========================================
-// Section Interfaces
-// ==========================================
-
-// ==========================================
-// Section Override
-// ==========================================
 
 	@Override
 	public String getDisplayName() {
@@ -661,12 +533,9 @@ private String name;
 		return name;
 	}
 
-
 	@Override
 	public String getRecordType() {
-		
-		String recordNameLabel
-			= RIFServiceMessages.getMessage("calculationMethod.label");
-		return recordNameLabel;
+
+		return SERVICE_MESSAGES.getMessage("calculationMethod.label");
 	}
 }

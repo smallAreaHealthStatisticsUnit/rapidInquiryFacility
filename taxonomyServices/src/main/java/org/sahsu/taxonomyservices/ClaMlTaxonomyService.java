@@ -14,6 +14,7 @@ import org.sahsu.taxonomyservices.system.TaxonomyServiceError;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * A taxonomy service that provides terms from ICD collections.  The main activity
@@ -129,8 +130,7 @@ public class ClaMlTaxonomyService
 			
 			setTaxonomyServiceConfiguration(taxonomyServiceConfiguration);
 
-			ArrayList<Parameter> parameters
-				= taxonomyServiceConfiguration.getParameters();
+			List<Parameter> parameters = taxonomyServiceConfiguration.getParameters();
 		
 			Parameter icd1011FileParameter = Parameter.getParameter("icd10_ClaML_file", parameters);
 			if (icd1011FileParameter == null) {
