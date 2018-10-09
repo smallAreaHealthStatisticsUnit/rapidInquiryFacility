@@ -59,14 +59,14 @@ angular.module("RIF")
 							
 							// Save to SelectStateService
 							if (input.name == "ComparisionAreaMap") { 
-								SelectStateService.getState().studySelection.comparisonShapes.push(savedShape);
-								AlertService.consoleDebug("[rifd-dsub-maptable.js] Save to ComparisionAreaMap SelectStateService " +
+								SelectStateService.getState().studySelection.comparisonShapes.push(angular.copy(ssavedShape));
+								AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Save to ComparisionAreaMap SelectStateService " +
 									SelectStateService.getState().studySelection.comparisonShapes.length);
 							}
 							else {
-								SelectStateService.getState().studySelection.studyShapes.push(savedShape);							
+								SelectStateService.getState().studySelection.studyShapes.push(angular.copy(savedShape));							
 							
-								AlertService.consoleDebug("[rifd-dsub-maptable.js] Save to StudyAreaMap SelectStateService " +
+								AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Save to StudyAreaMap SelectStateService " +
 									SelectStateService.getState().studySelection.studyShapes.length);
 							}
 
@@ -79,11 +79,11 @@ angular.module("RIF")
 									async.eachOfSeries(latlngList, 
 										function latlngListIteratee(latLng, indexKey, latlngListCallback) {
 										if (indexKey == 0) {
-											AlertService.consoleDebug("[rifd-dsub-maptable.js] async processing latLng " + indexKey + "/" + latlngList.length + 
+											AlertService.consoleDebug("[rifs-dsub-drawSelection] async processing latLng " + indexKey + "/" + latlngList.length + 
 												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
 										}
 										else if (indexKey % 500 == 0) {
-											AlertService.consoleDebug("[rifd-dsub-maptable.js] async processing latLng " + indexKey + "/" + latlngList.length + 
+											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] async processing latLng " + indexKey + "/" + latlngList.length + 
 												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));									
 											$timeout(function() { // Be nice to the stack if you are going to be aggressive!
 												latlngListFunction(latLng, latlngListCallback);
@@ -99,7 +99,7 @@ angular.module("RIF")
 										}
 									}, function done(err) {
 										if (err) {
-											AlertService.showError("[rifd-dsub-maptable.js] latlngList error: " + err);
+											AlertService.showError("[rifs-dsub-drawSelection.js] latlngList error: " + err);
 										}
 										latlngListEnd();
 									});	
@@ -107,11 +107,11 @@ angular.module("RIF")
 								else { // Non async version
 									for (var i=0; i<latlngList.length; i++) {
 										if (i == 0) {
-											AlertService.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + i + "/" + latlngList.length + 
+											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
 												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
 										}
 										else if (i % 500 == 0) {
-											AlertService.consoleDebug("[rifd-dsub-maptable.js] processing latLng " + i + "/" + latlngList.length + 
+											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
 												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));
 										}												
 										latlngListFunction(latlngList[i], undefined /* no latlngListCallback - not using async */);
@@ -180,7 +180,7 @@ angular.module("RIF")
 										var polyId=shape.data._leaflet_id;
 										CommonMappingStateService.getState(mapName).drawnItems.eachLayer(
 											function(layer) {
-												AlertService.consoleDebug("[rifd-dsub-maptable.js] Remove freehand polygon; " + layer._leaflet_id);
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Remove freehand polygon; " + layer._leaflet_id);
 												CommonMappingStateService.getState(mapName).map.removeLayer(layer);
 											});
 											
@@ -208,7 +208,7 @@ angular.module("RIF")
 													lat: shape.data._latlngs[0].lat,
 													lng: shape.data._latlngs[0].lng
 												});
-												AlertService.consoleDebug("[rifd-dsub-maptable.js] Fix freehand polygon; " +
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Fix freehand polygon; " +
 												shape.data._latlngs.length + " points: " + 
 													JSON.stringify(shape.data._latlngs));
 											}
@@ -218,16 +218,16 @@ angular.module("RIF")
 								else {
 									var fileList = SelectStateService.getState().studySelection.fileList;
 										if (fileList && fileList.length > 0) {
-										AlertService.consoleDebug("[rifd-dsub-maptable.js] " + fileList.length +
+										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] " + fileList.length +
 											"; savedShape.isShapefile: " + savedShape.isShapefile);	
 									}
 									else {
-										AlertService.consoleDebug("[rifd-dsub-maptable.js] no shapefiles");
+										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] no shapefiles");
 									}								
 								}
 								
 								if (SelectStateService.getState().studySelection.bandAttr.length > 0) {
-									AlertService.consoleDebug("[rifd-dsub-maptable.js] " + 
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] " + 
 										SelectStateService.getState().studySelection.bandAttr.length +
 										"; bandAttr: " + JSON.stringify(SelectStateService.getState().studySelection.bandAttr, null, 1));	
 								}					
@@ -240,13 +240,13 @@ angular.module("RIF")
 										};
 			
 								function highLightFeature(e) {
-									AlertService.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection highLightFeature " +  
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection highLightFeature " +  
 											"(" + this._leaflet_id + "; " + JSON.stringify(this._latlng) + "): " +
 											(JSON.stringify(savedShape.properties) || "no properties"));
 									CommonMappingStateService.getState(mapName).info.update(savedShape, this._latlng); 
 								}									
 								function resetFeature(e) {
-									AlertService.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection resetFeature " +  
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection resetFeature " +  
 											"(" + this._leaflet_id + "; " + JSON.stringify(this._latlng) + "): " +
 											(JSON.stringify(savedShape.properties) || "no properties"));
 									CommonMappingStateService.getState(mapName).info.update(undefined, this._latlng);
@@ -261,7 +261,7 @@ angular.module("RIF")
 										savedShape.area = Math.round((Math.PI*Math.pow(shape.data.getRadius(), 2)*100)/1000000)/100 // Square km to 2dp
 										
 										if (savedShape.area == undefined || savedShape.area == 0) {
-											AlertService.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): Cannot determine area" +
+											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): Cannot determine area" +
 												"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
 											AlertService.showError("Could not create circle shape");
 										}
@@ -284,7 +284,7 @@ angular.module("RIF")
 										});
 										
 										CommonMappingStateService.getState(mapName).shapes.addLayer(circle);
-										AlertService.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection() added circle" +
+										AlertService.consoleLog("[rifs-dsub-drawSelection.js] makeDrawSelection() added circle" +
 											"; color: " + selectorBands.bandColours[savedShape.band-1] +
 											"; savedShape: " + JSON.stringify(savedShape, null, 1));
 										if (shape.band == 1) {
@@ -300,7 +300,7 @@ angular.module("RIF")
 										}
 									}
 									else {
-										AlertService.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection() suppressed circle" +
+										AlertService.consoleLog("[rifs-dsub-drawSelection.js] makeDrawSelection() suppressed circle" +
 											"; savedShape: " + JSON.stringify(savedShape, null, 1));
 									}
 								}
@@ -348,12 +348,12 @@ angular.module("RIF")
 												savedShape.area = Math.round((turf.area(savedShape.geojson)*100)/1000000)/100; // Square km to 2dp
 											}
 											else {
-												AlertService.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection(): savedShape.area could not be set: " + 
+												AlertService.consoleLog("[rifs-dsub-drawSelection.js] makeDrawSelection(): savedShape.area could not be set: " + 
 													JSON.stringify(savedShape));
 											}
 										
 											if (savedShape.area == undefined || savedShape.area == 0) {
-												AlertService.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): Cannot determine area" +
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): Cannot determine area" +
 													"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
 												if (savedShape.freehand) {	
 													AlertService.showError("Could not create freehand Polygon shape");
@@ -371,7 +371,7 @@ angular.module("RIF")
 										}); 
 										CommonMappingStateService.getState(mapName).shapes.addLayer(polygon);
 											
-										AlertService.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): added Polygon" + 
+										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): added Polygon" + 
 											"; band: " + savedShape.band +
 											"; area: " + savedShape.area +
 											"; freehand: " + savedShape.freehand +
@@ -381,7 +381,7 @@ angular.module("RIF")
 											"; properties: " + (JSON.stringify(savedShape.properties) || "None"));										
 									}
 									else {
-										AlertService.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): L.Polygon is undefined" +
+										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): L.Polygon is undefined" +
 											"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
 										if (savedShape.freehand) {	
 											AlertService.showError("Could not create freehand Polygon shape");
@@ -441,7 +441,7 @@ angular.module("RIF")
 												else { // It doesn't matter if the BBOX is invalid as the GISService will be called directly
 													bboxErrors++;
 													if (bboxErrors < 10) {							
-														AlertService.consoleError("[rifd-dsub-maptable.js] makeDrawSelection() invalid bbox: " +
+														AlertService.consoleError("[rifs-dsub-drawSelection.js] makeDrawSelection() invalid bbox: " +
 															JSON.stringify(bbox) +
 															"; savedShape.bbox: " + 
 																(savedShape.bbox ? savedShape.bbox.toBBoxString() : "undefined") +
@@ -458,14 +458,14 @@ angular.module("RIF")
 											else {
 												bboxErrors++;
 												if (bboxErrors < 10) {
-													AlertService.consoleError("[rifd-dsub-maptable.js] makeDrawSelection() no bbox" +
+													AlertService.consoleError("[rifs-dsub-drawSelection.js] makeDrawSelection() no bbox" +
 														"; bounds: " + (bounds ? bounds.toBBoxString() : "undefined"));
 												}
 											} 
 										}	
 									}	
 									catch (e) { // For a better message
-										AlertService.consoleError("[rifd-dsub-maptable.js] makeDrawSelection() error in bbox creation: " + 
+										AlertService.consoleError("[rifs-dsub-drawSelection.js] makeDrawSelection() error in bbox creation: " + 
 											e.message +
 											"; bounds: " + (bounds ? bounds.toBBoxString() : "undefined"), e);
 										bboxErrors++;
@@ -507,7 +507,7 @@ angular.module("RIF")
 								
 								if (duplicateAreaCheckIds.length > 0) { // Check for duplicate selectedPolygons 
 									var dupsRemoved=0;
-									AlertService.consoleDebug("[rifd-dsub-maptable.js] " + 
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] " + 
 										duplicateAreaCheckIds.length +
 										" duplicateAreaCheckIds: " + JSON.stringify(duplicateAreaCheckIds));
 									
@@ -545,12 +545,12 @@ angular.module("RIF")
 									}
 								}
 										
-								AlertService.consoleDebug("[rifd-dsub-maptable.js] CommonMappingStateService.getState(" + mapName + 
+								AlertService.consoleDebug("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(" + mapName + 
 									").selectedPolygon.length: " + 
 									CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).length);
 								
 								for (var band in CommonMappingStateService.getState(mapName).areaNameList) {
-									AlertService.consoleDebug("[rifd-dsub-maptable.js] areaNameList band: " + 
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] areaNameList band: " + 
 									band + "; " + CommonMappingStateService.getState(mapName).areaNameList[band].length + " areas");
 //										": " + JSON.stringify(CommonMappingStateService.getState(mapName).areaNameList[band]));	
 								}
@@ -605,7 +605,7 @@ angular.module("RIF")
 										test = GISService.getPointinpolygon(latLng.latLng, shape);
 										if (test) {	// It is in polygon, shape.bbox.contains(latLng.latLng) produce false when it should be true		
 											excludedByBbox++;								
-											AlertService.consoleError("[rifd-dsub-maptable.js] latlngListFunction bbox contains() failed to match point: " +
+											AlertService.consoleError("[rifs-dsub-drawSelection.js] latlngListFunction bbox contains() failed to match point: " +
 												"; latLng.latLng: " + JSON.stringify(latLng.latLng) +
 												"; shape.bbox: " + shape.bbox.toBBoxString() +
 												"; shape.bbox.isValid(): " + shape.bbox.isValid() +
@@ -627,7 +627,7 @@ angular.module("RIF")
 									var thisPolyID = latLng.id;
 									var bFound = false;
 									
-//									AlertService.consoleDebug("[rifd-dsub-maptable.js] latlngList.forEach(" +
+//									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] latlngList.forEach(" +
 //										itemsProcessed + ")");
 									// Selects the correct polygons
 									if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID)) { // Found

@@ -120,11 +120,11 @@ angular.module("RIF")
 						}
 						
 						if (input.selectAt) {
-							SelectStateService.getState().studySelection.studySelectAt = input.selectAt;
+							SelectStateService.getState().studySelection.studySelectAt = angular.copy(input.selectAt);
 						}
 						if (input.selectedPolygon) {
-							SelectStateService.getState().studySelection.studySelectedAreas = 
-								input.selectedPolygon;
+							SelectStateService.getState().studySelection.studySelectedAreas = angular.copy(
+								input.selectedPolygon);
 						}
 						
 						try {

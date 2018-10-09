@@ -234,6 +234,7 @@ angular.module("RIF")
 				  }
 				 ],
 				 "studyShapes": [],
+				 "comparisonShapes": [],
 				 "comparisonSelectedAreas": [
 				  {
 				   "id": "01",

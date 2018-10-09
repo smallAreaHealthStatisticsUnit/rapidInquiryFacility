@@ -139,9 +139,9 @@ angular.module("RIF")
 								}
 								this.areaType.selectedPolygonObj[item.id] = angular.copy(item);
 								this.areaType.selectedPolygon.push(angular.copy(item));
-								AlertService.consoleDebug("[rifs-util-mapstate.js] addToSelectedPolygon(" + areaType + ", " + 
-									JSON.stringify(item) + "): " + 
-									this.areaType.selectedPolygon.length);
+//								AlertService.consoleDebug("[rifs-util-mapstate.js] addToSelectedPolygon(" + areaType + ", " + 
+//									JSON.stringify(item) + "): " + 
+//									this.areaType.selectedPolygon.length);
 							}
 							else {
 								throw new Error("Null item/id: " + JSON.stringify(item) + "; areaType: " + areaType);

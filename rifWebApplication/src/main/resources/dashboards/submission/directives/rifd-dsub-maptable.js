@@ -302,7 +302,8 @@ angular.module("RIF")
 																"; polygons: unknwon");
 															shapeLayer.bringToFront();
 														}
-														else if (shapeLayer.options.band && CommonMappingStateService.getState("areamap").areaNameList &&
+														else if (shapeLayer.options.band && 
+															CommonMappingStateService.getState("areamap").areaNameList &&
 															CommonMappingStateService.getState("areamap").areaNameList[shapeLayer.options.band] &&
 														    CommonMappingStateService.getState("areamap").areaNameList[shapeLayer.options.band].length > 0) {
 															alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
@@ -315,6 +316,7 @@ angular.module("RIF")
 															alertScope.consoleDebug("[rifd-dsub-maptable.js] ignore layer: " + areaIdList[l] + " to front" +
 																"; band: " + shapeLayer.options.band +
 																"; area: " + shapeLayer.options.area +
+																"; areaNameList: " + JSON.stringify(CommonMappingStateService.getState("areamap").areaNameList) +
 																"; no polygons");
 														}
 													}
@@ -1244,7 +1246,7 @@ angular.module("RIF")
 								var selectedShapes=undefined;
 								
 								// Add back selected shapes
-								if (selectedShapes=SelectStateService.getState().studySelection) {
+								if (SelectStateService.getState().studySelection) {
 									if ($scope.input.name == "ComparisionAreaMap") {
 										selectedShapes=SelectStateService.getState().studySelection.comparisonShapes;
 									}
@@ -1252,6 +1254,7 @@ angular.module("RIF")
 										selectedShapes=SelectStateService.getState().studySelection.studyShapes;
 									}
 								}
+								
 								if (selectedShapes) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() selectedShapes " + 
 										$scope.input.name + ": " + 

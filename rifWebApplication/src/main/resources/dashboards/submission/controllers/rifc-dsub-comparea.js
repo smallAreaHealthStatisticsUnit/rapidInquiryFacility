@@ -95,25 +95,25 @@ angular.module("RIF")
                         CompAreaStateService.getState().setTransparency(input.transparency);
 						
 						if (input.selectAt) {
-							SelectStateService.getState().studySelection.comparisonSelectAt = input.selectAt;
+							SelectStateService.getState().studySelection.comparisonSelectAt = angular.copy(input.selectAt);
 						}
 						if (input.selectedPolygon) {
-							SelectStateService.getState().studySelection.comparisonSelectedAreas = 
-								input.selectedPolygon;
+							SelectStateService.getState().studySelection.comparisonSelectedAreas = angular.copy(
+								input.selectedPolygon);
 						}
 						
 						try {
 							if (SelectStateService.getState().studySelection.comparisonSelectedAreas.length > 0) {
 								// FIX: Warning: Unable to verify comparison area selection: study selection resolution not setup correctly
 								if (SelectStateService.getState().studySelection.studySelectAt == undefined) {
-									SelectStateService.getState().studySelection.studySelectAt=StudyAreaStateService.getState().selectAt;
+									SelectStateService.getState().studySelection.studySelectAt=angular.copy(StudyAreaStateService.getState().selectAt);
 								}
 								// FIX: Warning: Unable to verify comparison area selection: at least one study area required
 								if (SelectStateService.getState().studySelection.studySelectedAreas == undefined ||
 									SelectStateService.getState().studySelection.studySelectedAreas.length <1) {
-									$scope.consoleDebug("[rifc-dsub-comparea.js] Fix studySelectedAreas: StudyAreaStateService.getState(): " +
-										JSON.stringify(StudyAreaStateService.getState(), null, 1));
-									SelectStateService.getState().studySelection.studySelectedAreas=StudyAreaStateService.getState().polygonIDs;
+//									$scope.consoleDebug("[rifc-dsub-comparea.js] Fix studySelectedAreas: StudyAreaStateService.getState(): " +
+//										JSON.stringify(StudyAreaStateService.getState(), null, 1));
+									SelectStateService.getState().studySelection.studySelectedAreas=angular.copy(StudyAreaStateService.getState().polygonIDs);
 								}
 								
 								var r=SelectStateService.verifyStudySelection();

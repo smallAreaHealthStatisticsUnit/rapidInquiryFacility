@@ -68,7 +68,7 @@ angular.module("RIF")
 								this.selectAt = angular.copy(nselectAt);
 							};
 							s.setPolygonIDs = function(npolygonIDs) {
-								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setPolygonIDs: " + JSON.stringify(npolygonIDs));
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setPolygonIDs: " + npolygonIDs.length);
 								this.polygonIDs = angular.copy(npolygonIDs);
 							};
 							s.setGeoLevels = function(ngeoLevels) {
