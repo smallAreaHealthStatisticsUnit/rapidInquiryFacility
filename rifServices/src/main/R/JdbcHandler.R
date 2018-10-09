@@ -349,7 +349,12 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 	}
 	
 	if (studyType == "riskAnalysis") { # No area id
-		updateMapTableSQLQuery <- updateStmtPart2
+		if (db_driver_prefix == "jdbc:postgresql") {
+			updateMapTableSQLQuery <- updateStmtPart2;
+		}
+		else if (db_driver_prefix == "jdbc:sqlserver") {
+			updateMapTableSQLQuery <- paste0(updateStmtPart2, ')')
+		}
 	}
 	else {
 		if (area_id_is_integer) {

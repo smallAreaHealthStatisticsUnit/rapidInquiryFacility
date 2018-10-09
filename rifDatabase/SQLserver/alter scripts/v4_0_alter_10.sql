@@ -782,6 +782,7 @@ GO
 
 :r ..\sahsuland_dev\rif40\table_triggers\t_rif40_studies_trigger.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_compute_results.sql
 
 --
 -- Testing stop
