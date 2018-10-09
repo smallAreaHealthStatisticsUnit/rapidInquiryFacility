@@ -43,20 +43,46 @@ return(ans)}))}
 
 convertToDBFormat=function(dataIn){
   
+  #Copy the db format for disease mapping because the same table will be used (with quite a few columns blank)
+  area_id = as.numeric(NA)
+  gid = as.numeric(NA)
+  gid_rowindex = as.numeric(NA)
+  username = NA
+  study_id = dataIn$study_id
+  dataOut = cbind(area_id,gid,gid_rowindex,username, study_id)
+  inv_id = as.integer(as.character(investigationId)) #Input parameter
+  dataOut = cbind(dataOut, inv_id)
+  
   band_id = dataIn$band_id
   genders = dataIn$gender
-  direct_standardisation = 0 # For now RIF only does indirect standardisation
-  dataOut = cbind(band_id, genders, direct_standardisation)
+  direct_standardisation = 0 # For now RIf only does indirect standardisation
+  dataOut = cbind(dataOut, band_id, genders, direct_standardisation)
   
   observed = dataIn$observed
   adjusted = dataIn$adjusted
-  expected = dataIn$expected # assuming direct = TRUE. If direct = FALSE, use RR_UNADJ
-  relative_risk = dataIn$RR_ADJ # assuming indirect. If direct, use null
-  lower95 = dataIn$RRL95_ADJ # assuming direct = TRUE. If direct = FALSE, use RRL95_UNADJ
-  upper95 = dataIn$RRU95_ADJ # assuming direct = TRUE. If direct = FALSE, use RRU95_UNADJ
+  expected = dataIn$expected 
+  relative_risk = dataIn$RR
+  lower95 = dataIn$RRL95
+  upper95 = dataIn$RRU95
   
-  dataOut = cbind(dataOut, adjusted, observed,expected,relative_risk,lower95,upper95)
+  smoothed_relative_risk =  as.numeric(NA)
+  posterior_probability = as.numeric(NA)
+  posterior_probability_upper95 = as.numeric(NA) 
+  posterior_probability_lower95 = as.numeric(NA) 
+  residual_relative_risk = as.numeric(NA) 
+  residual_rr_lower95 = as.numeric(NA) 
+  residual_rr_upper95 = as.numeric(NA) 
+  smoothed_smr = as.numeric(NA)
+  smoothed_smr_lower95 = as.numeric(NA)
+  smoothed_smr_upper95 = as.numeric(NA)
+  
+  
+  dataOut = cbind(dataOut, adjusted, observed,expected,lower95,upper95,relative_risk,smoothed_relative_risk,
+                  posterior_probability ,posterior_probability_upper95,posterior_probability_lower95,
+                  residual_relative_risk,residual_rr_lower95,residual_rr_upper95,
+                  smoothed_smr,smoothed_smr_lower95,smoothed_smr_upper95)
   return(dataOut)
+  
 }
 
 #produce study array taking counts for adjustement
@@ -450,22 +476,27 @@ performBandAnal <- function(data) {
   #Create dataframe with 1 row for each band/gender
   
   Bands = ddply(data, .variables=c('band_id','gender'),.fun=function(x){
+    study_id=x$study_id[1]
     band_id=x$band_id[1]
     exposure = mean(x$exposure)
     gender = x$gender[1]
     observed = sum(x$observed)
-    expected = sum(x$EXP_ADJ)
-    return(data.frame(band_id,exposure,gender,observed, expected))
+    if (adj) { 
+      expected = sum(x$EXP_ADJ)
+    } else {
+      expected = sum(x$EXP_UNADJ)
+    }
+    return(data.frame(study_id, band_id,exposure,gender,observed, expected))
   })
   
   Bands$adjusted = adj
-  Bands$RR_ADJ=Bands$observed/Bands$expected
+  Bands$RR=Bands$observed/Bands$expected
   
   # calculate the 95% CIs for the RR
-  Bands$RRL95_ADJ=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
+  Bands$RRL95=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
                         FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(-1.96*sqrt(1/x[1])))
                         }else{return(0.5*qchisq(0.025,2*x[1])/x[2])}})
-  Bands$RRU95_ADJ=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
+  Bands$RRU95=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
                         FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(1.96*sqrt(1/x[1])))
                         }else{return(0.5*qchisq(0.975,2*x[1]+2)/x[2])}})
   
@@ -491,6 +522,7 @@ performHomogAnal <- function(Bands) {
   pValHomog = c()
   chisqLT = c()
   pValLT = c()
+  bandsLT5 = c()
   
   HomogRes = data.frame(gender,df, chisqHomog, pValHomog, chisqLT, pValLT)
   
@@ -498,6 +530,8 @@ performHomogAnal <- function(Bands) {
   for (i in 1:3)
   {
     Bandi = Bands[which(Bands$gender==i),]
+    study_id = Bandi[1]$study_id
+    inv_id = as.integer(as.character(investigationId)) #Input parameter
     Osum = sum(Bandi$observed)
     Esum = sum(Bandi$expected)
     
@@ -508,8 +542,9 @@ performHomogAnal <- function(Bands) {
     denom = sum((Bandi$exposure)^2 * (Bandi$expected*Osum/Esum)) - (((sum(Bandi$exposure * (Bandi$expected*Osum/Esum)))^2)/Osum)
     chisqLT = numer / denom
     pValLT = pchisq(chisqLT, df = df, lower.tail = FALSE)
+    bandsLT5 = length(which(Bandi$expected < 5))
     
-    HomogRes = rbind(HomogRes, cbind(gender,df, chisqHomog, pValHomog, chisqLT, pValLT))
+    HomogRes = rbind(HomogRes, cbind(study_id, inv_id, gender,df, chisqHomog, pValHomog, chisqLT, pValLT, bandsLT5))
   }  
   return(HomogRes)
   

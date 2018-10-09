@@ -87,6 +87,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 		StringBuilder rifScriptPath = new StringBuilder();
 		StringBuilder adjCovSmoothJri = new StringBuilder();
 		StringBuilder performSmoothingActivity = new StringBuilder();
+		StringBuilder performRiskAnal = new StringBuilder();
 		String rErrorTrace="No R error tracer (see Tomcat log)";
 
 		try {		
@@ -208,11 +209,13 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				REXP exitValueFromR;
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
-					sourceRScript(rengine, rifScriptPath + "performRiskAnal.R");
-					rengine.eval("returnValues <- performRiskAnal");
-					/* TODO: that's the script name, not the name of a function in it; but
-					 * there doesn't at present appear to be a suitable one.
-					 */
+					// Run the actual smoothing
+					adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
+					performRiskAnal.append(rifScriptPath);
+					performRiskAnal.append("performRiskAnal.R");
+					sourceRScript(rengine, adjCovSmoothJri.toString());
+					sourceRScript(rengine, performRiskAnal.toString());
+					rengine.eval("returnValues <- runRRiskAnalFunctions()");
 				} else {
 
 					// Run the actual smoothing

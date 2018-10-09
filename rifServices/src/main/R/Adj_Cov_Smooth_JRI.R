@@ -143,7 +143,29 @@ establishTableNames <-function(vstudyID) {
 		else {
 			cat(paste("WARNING! No need to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, "\n"), sep="")
 		}
+
+		performRiskAnalScriptA<-file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "performRiskAnal.R") # Source
+		performRiskAnalScriptB<-file.path(scratchSpace, "performRiskAnal.R") # Target
+		if (!file.exists(performRiskAnalScriptB)) {
+		  cat(paste("Copy: ", performRiskAnalScriptA, " to: ", performRiskAnalScriptB, "\n"), sep="")	
+		  
+		  tryCatch({			
+		    file.copy(performRiskAnalScriptA, performRiskAnalScriptB)
+		  },
+		  warning=function(w) {
+		    cat(paste("UNABLE to copy: ", performRiskAnalScriptA, " to: ", performRiskAnalScriptB, w, "\n"), sep="")
+		    exitValue <<- 0
+		  },
+		  error=function(e) {
+		    cat(paste("ERROR copying: ", performRiskAnalScriptA, " to: ", performRiskAnalScriptB, e, "\n"), sep="")
+		    exitValue <<- 1
+		  }) # End of tryCatch
+		}
+		else {
+		  cat(paste("WARNING! No need to copy: ", performRiskAnalScriptA, " to: ", performRiskAnalScriptB, "\n"), sep="")
+		}
 		
+				
 		Adj_Cov_Smooth_csvA<-file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "Adj_Cov_Smooth_csv.R") # Source
 		Adj_Cov_Smooth_csvB<-file.path(scratchSpace, "Adj_Cov_Smooth_csv.R") # Target
 		if (!file.exists(Adj_Cov_Smooth_csvB)) {
@@ -189,6 +211,8 @@ establishTableNames <-function(vstudyID) {
 #
 # Create rif40_run_R_env.bat
 #
+# BP: Need to get the flag indicating whethr or not this is a risk anal study added tot his list of parameters.
+# I think this should possibly be done in SmoothResultsSubmissionStep.java (a new call to addParameter()?)
 		rif40_run_R_env=paste(
 					paste0("SET USERID=", userID),
 					paste0("SET DB_NAME=", db_name),
@@ -502,3 +526,166 @@ runRSmoothingFunctions <- function() {
 #	return(list(exitValue=exitValue))
 
 }
+
+##================================================================================
+##FUNCTION: runRRiskAnalFunctions
+##DESCRIPTION
+##Run the functions defined this script as source
+##Called direectly from JRI in the middleware
+##Returns (exitvalue) 0 on success, 1 on failure 
+##================================================================================
+runRRiskAnalFunctions <- function() {
+  
+  cat(paste("In runRRiskAnalFunctions in JRI script", "\n"))
+  
+  establishTableNames(studyID)
+  cat("Table names established\n")
+  errorTrace<-capture.output({
+    tryCatch({
+      connDB = connectToDb()
+      cat(paste0("Connected to DB", "\n"))
+    },
+    warning=function(w) {
+      cat(paste("connectToDb() WARNING: ", w, "\n"), sep="")
+      exitValue <<- 0
+    },
+    error=function(e) {
+      e <<- e
+      cat(paste("connectToDb() ERROR: ", e$message,
+                "; call stack: ", e$call, "\n"), sep="")
+      exitValue <<- 1
+    },
+    finally={
+      cat(paste0("connectToDb exitValue: ", exitValue, "\n"), sep="")
+    })
+  })
+  
+  cat(paste("About to test exitValue", exitValue, "and connection", "\n"))
+  if (exitValue == 0) {
+    cat("Performing basic stats and risk analysis\n")
+    errorTrace<<-capture.output({
+      # tryCatch()is trouble because it replaces the stack! it also copies all global variables!
+      
+      #			cat(paste0("About to fetch extract table outside of the try", "\n"))
+      #			data=fetchExtractTable()
+      tryCatch({
+        withErrorTracing({  				
+          #
+          # extract the relevant Study data
+          #
+          #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
+          cat(paste0("About to fetch extract table", "\n"))
+          data=fetchExtractTable()
+          
+          #
+          # Call: performSmoothingActivity()
+          #
+          cat(paste0("About to calculate band data", "\n"))
+          resultBands <- performBandAnal(data)
+          
+          #
+          # Call: performHomogAnal()
+          # This runs the test for homogeneity and linearity using the band results from the performBandAnal function 
+          cat(paste0("About to run homogeneity tests", "\n"))
+          resultHomog <- performHomogAnal(resultBands)
+          
+          
+        })
+      },
+      warning=function(w) {		
+        cat(paste("callRiskAnal() WARNING: ", w, "\n"), sep="")
+        exitValue <<- 1
+      },
+      error=function(e) {
+        e <<- e
+        cat(paste("callRiskAnal() ERROR: ", e$message, 
+                  "; call stack: ", e$call, "\n"), sep="")
+        exitValue <<- 1
+      },
+      finally={
+        cat(paste0("callRiskAnal exitValue: ", exitValue, "\n"), sep="")
+        if (exitValue == 0) {
+          cat(paste("callRiskAnal() OK: ", exitValue, "\n"), sep="")
+ 
+          cat("About to save to table\n")
+          #lerrorTrace <<- saveDataFrameToDatabaseTable(result)	# may set exitValue
+          #Save the band data
+          lerrorTrace <<- saveDataFrameToDatabaseTable(resultBands)	# may set exitValue
+          if (exitValue == 0) {
+            lerrorTrace2 <<- updateMapTableFromSmoothedResultsTable(FALSE) # may set exitValue
+            if (!is.null(lerrorTrace2) && length(lerrorTrace2)-1 > 0) {
+              append(lerrorTrace, lerrorTrace2)
+            }
+            else {
+              lerrorTrace <<- lerrorTrace2
+            }
+          }
+          
+          #save the Homogenity test results to the data base (in rif40_homogenity table?)
+                   
+        }
+      }
+      ) # End of tryCatch
+    })
+  }
+  else {
+    cat("Could not connect to database\n")	
+    cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+    return(list(exitValue=exitValue, errorTrace=errorTrace))
+  }
+  
+  if (!is.null(lerrorTrace) && length(lerrorTrace)-1 > 0) {
+    if (!is.null(errorTrace)) {
+      append(errorTrace, lerrorTrace)
+    }
+    else {
+      errorTrace <<- lerrorTrace
+    }
+  }
+  
+  if (exitValue == 0 && !is.na(connDB)) {
+    dropTemporaryTable()
+  }
+  # Dummy change to check conflict is resolved
+  
+  if (!is.na(connDB)) {
+    disconnect()
+  }
+  
+  #
+  # Free up memory: required for JRI version as the server keeps running! 
+  #
+  cat(paste0("Total memory in use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
+  ototal<-0
+  for (oname in ls()) {
+    osize<-as.integer(object_size(get(oname)))
+    ototal<-ototal+osize
+    cat(oname, ": ", format(osize), "\n", sep="")	
+  }
+  rm(list=c("result", "AdjRowset", "area_id_is_integer", "data", "connDB")) 
+  gc(verbose=true)
+  cat(paste0("Free ", ototal , " memory; total memory is use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
+  rm(list=c("osize", "ototal")) 
+  for (oname in ls()) {
+    if (oname != "oname") {
+      cat(oname, ": ", format(object_size(get(oname))), "\n", sep="")
+    }
+  }
+  
+  # Print trace
+  if (length(errorTrace)-1 > 0) {
+    cat(paste0("\nAdj_Cov_Smooth_JRI.R errorTrace: >>>\n"), sep="")
+    cat(errorTrace, sep="\n")
+    cat(paste0("\n<<< End of Adj_Cov_Smooth_JRI.R errorTrace.\n\n"), sep="")
+  }	
+  cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+  
+  return(list(exitValue=exitValue, errorTrace=errorTrace))
+  
+  #	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "\n"), sep="")
+  
+  #	return(list(exitValue=exitValue))
+  
+}
+
+

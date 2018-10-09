@@ -124,3 +124,9 @@ docs/tileMaker.html
 
 # R projects
 **/*.Rproj*
+rifDatabase/Postgres/production/cmdbat.bat
+rifDatabase/Postgres/production/db_create.sql
+rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
+rifDatabase/Postgres/production/rif40_database_install - Copy.bat
+rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
+rifDatabase/Postgres/production/db_create.sql

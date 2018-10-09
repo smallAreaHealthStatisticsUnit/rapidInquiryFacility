@@ -237,8 +237,8 @@ DECLARE
 --
 	c1 CURSOR FOR
 	 	SELECT version() AS version, 
-		SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
-		SUBSTR(version(), 16, position(', ' IN version())-16)::NUMERIC as minor_version;
+		SUBSTR(version(), 12, 4)::NUMERIC as major_version, 
+		0::NUMERIC as minor_version;
 	c1a CURSOR FOR
 	 	SELECT version() AS version, 
 		SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
