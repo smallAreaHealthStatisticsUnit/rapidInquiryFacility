@@ -292,7 +292,7 @@ generateTableIndexSQLQuery <- function(tableName, columnName) {
 ##This method updates cell values in the skeleton map file with values from
 ##corresponding fields that exist in the temporary table.
 ##================================================================================
-updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
+updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType) {
 
 	##================================================================================
 	##
@@ -305,11 +305,11 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 
 	if (db_driver_prefix == "jdbc:postgresql") {
 		updateStmtPart0 <- paste(
-			"UPDATE ", mapTableName, " a SET ")
+			"UPDATE ", mapTableName, " a\n SET ")
 	}
 	else if (db_driver_prefix == "jdbc:sqlserver") { ## No alaised JOIN allowed
 		updateStmtPart0 <- paste(
-			"UPDATE ", mapTableName, " SET ")
+			"UPDATE ", mapTableName, "\n SET ")
 	}
 	
 	updateStmtPart1 <- paste0(updateStmtPart0,
@@ -329,7 +329,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 		", residual_rr_upper95=", nullProtect("b.residual_rr_upper95"),
 		", smoothed_smr=", nullProtect("b.smoothed_smr"),
 		", smoothed_smr_lower95=", nullProtect("b.smoothed_smr_lower95"),
-		", smoothed_smr_upper95=", nullProtect("b.smoothed_smr_upper95"))
+		", smoothed_smr_upper95=", nullProtect("b.smoothed_smr_upper95"), sep="\n")
 	
 	if (db_driver_prefix == "jdbc:postgresql") {
 		updateStmtPart2 <- paste0(updateStmtPart1,
@@ -337,7 +337,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 			"a.study_id=b.study_id AND ",
 			"a.band_id=b.band_id AND ",
 			"a.inv_id=b.inv_id AND ",
-			"a.genders=b.genders AND ")
+			"a.genders=b.genders ", sep="\n")
 	}
 	else if (db_driver_prefix == "jdbc:sqlserver") { ## No alaised JOIN allowed
 		updateStmtPart2 <- paste0(updateStmtPart1,
@@ -345,28 +345,33 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 			"a.study_id=b.study_id AND ",
 			"a.band_id=b.band_id AND ",
 			"a.inv_id=b.inv_id AND ",
-			"a.genders=b.genders AND ")
+			"a.genders=b.genders ", sep="\n")
 	}
 	
-	if (area_id_is_integer) {
-		if (db_driver_prefix == "jdbc:postgresql") {
-			updateMapTableSQLQuery <- paste0(updateStmtPart2,
-						"CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER)")
-		}
-		else if (db_driver_prefix == "jdbc:sqlserver") { ## No alaised JOIN allowed
-			updateMapTableSQLQuery <- paste0(updateStmtPart2,
-						"CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))")
-		}
-	} 
+	if (studyType == "riskAnalysis") { # No area id
+		updateMapTableSQLQuery <- updateStmtPart2
+	}
 	else {
-		if (db_driver_prefix == "jdbc:postgresql") {
-			updateMapTableSQLQuery <- paste0(updateStmtPart2, "a.area_id=b.area_id")		}
-		else if (db_driver_prefix == "jdbc:sqlserver") { ## No alaised JOIN allowed
-			updateMapTableSQLQuery <- paste0(updateStmtPart2, "a.area_id=b.area_id)")
+		if (area_id_is_integer) {
+			if (db_driver_prefix == "jdbc:postgresql") {
+				updateMapTableSQLQuery <- paste0(updateStmtPart2,
+							" AND CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER)")
+			}
+			else if (db_driver_prefix == "jdbc:sqlserver") { ## No alaised JOIN allowed
+				updateMapTableSQLQuery <- paste0(updateStmtPart2,
+							" AND CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))")
+			}
+		} 
+		else {
+			if (db_driver_prefix == "jdbc:postgresql") {
+				updateMapTableSQLQuery <- paste0(updateStmtPart2, " AND a.area_id=b.area_id")		}
+			else if (db_driver_prefix == "jdbc:sqlserver") { ## No alaised JOIN allowed
+				updateMapTableSQLQuery <- paste0(updateStmtPart2, " AND a.area_id=b.area_id)")
+			}
 		}
 	}
 
-	cat(paste0("SQL> ", updateMapTableSQLQuery))
+	cat(paste0("SQL> ", updateMapTableSQLQuery, "\n"))
 	flush.console()
 
 	lerrorTrace<-capture.output({

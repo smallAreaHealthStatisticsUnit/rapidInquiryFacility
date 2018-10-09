@@ -120,6 +120,13 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 			addParameter("investigationId", String.valueOf(investigationID));
 
+			if (studySubmission.getStudy().isRiskAnalysis()) {
+				addParameter("studyType", "riskAnalysis");
+			}
+			else {
+				addParameter("studyType", "diseaseMapping");
+			}
+				
 			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
 
 			int exitValue = 0;
@@ -208,7 +215,15 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
 					rifLogger.info(getClass(), "Calling Risk Analysis R function");
-					sourceRScript(rengine, scriptPath.resolve("performRiskAnal.R").toString());
+					// XXXXXXXXXXXXXXXXXXX BEWARE - TEMPORARY CODE CHANGES TO DISABLE RISK ANALYSIS CODE XXXXXXXXXXXXXXXXXXXX
+					// sourceRScript(rengine, scriptPath.resolve("performRiskAnal.R").toString()); // Disabled until it works properly
+					
+					/* Causes:
+						In runRSmoothingFunctions in JRI script 
+						R Error/Warning/Notice: Error in establishTableNames(studyID) : 
+						  could not find function "establishTableNames"
+					*/
+					
 					// rengine.eval("returnValues <- performRiskAnal");
 					/* TODO: that's the script name, not the name of a function in it; but
 					 * there doesn't at present appear to be a suitable one.
@@ -217,6 +232,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					// ========== Temp hack to let things run ===========
 					sourceRScript(rengine, adjCovSmoothJri.toString());
 					sourceRScript(rengine, performSmoothingActivity.toString());
+					// XXXXXXXXXXXXXXXXXXX BEWARE - TEMPORARY CODE CHANGES TO DISABLE RISK ANALYSIS CODE XXXXXXXXXXXXXXXXXXXX
+					sourceRScript(rengine, scriptPath.resolve(								// Had to be included to run; includes establishTableNames()
+							"Adj_Cov_Smooth_Common.R").toString());
+
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
 					// ==================================================
 				} else {
@@ -234,7 +253,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				if (exitValueFromR != null) {
 					exitValue = exitValueFromR.asInt();
 				} else {
-					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
+					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR (returnValues$exitValue) is NULL");
 					exitValue = 1;
 				}
 
@@ -252,7 +271,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				 	}
 				 	rErrorTrace = strBuilder.toString();
 				} else {
-				 	rifLogger.warning(getClass(), "JRI R ERROR: errorTraceFromR is NULL");
+				 	rifLogger.warning(getClass(), "JRI R ERROR: errorTraceFromR (returnValues$errorTrace) is NULL");
 				}
 			} catch(Exception error) {
 

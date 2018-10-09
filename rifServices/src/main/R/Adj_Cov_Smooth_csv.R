@@ -159,7 +159,7 @@ runRSmoothingFunctions <- function() {
 							}
 
 #							saveDataFrameToDatabaseTable(result)
-#							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
+#							updateMapTableFromSmoothedResultsTable(area_id_is_integer, studyType) # may set exitValue  
 						}
 						else {
 							cat("ERROR! No result$area_id column found\n")
@@ -309,7 +309,11 @@ parametersDataFrame=processCommandLineArguments()
 print(parametersDataFrame)
 returnValues <- runRSmoothingFunctions()
 
-if (returnValues$exitValue == 0) {
+if (!exists('returnValues') {
+	cat("R script ran but did not return returnValues\n")
+	quit("no", 1, FALSE)
+}
+else if (returnValues$exitValue == 0) {
 	cat("R script ran OK\n")
 	quit("no", 0, FALSE)
 } else {
