@@ -134,3 +134,5 @@ docs/RIF_Data_Loader_Manual.pdf
 docs/RIF_v40_Manual.pdf
 docs/source-documents/~$F v4 0 Manual.docx
 **/Thumbs.db
+rifDatabase/Postgres/production/cmdbat.bat
+rifDatabase/Postgres/production/rif40_database_install - Copy.bat
