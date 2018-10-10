@@ -39,9 +39,9 @@
 
 angular.module("RIF")
         .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 
-			'SubmissionStateService', 'StudyAreaStateService', 'SelectStateService', 'ModelService',
+			'SubmissionStateService', 'StudyAreaStateService', 'SelectStateService', 'ModelService', 'CommonMappingStateService',
             function ($scope, $uibModal, CompAreaStateService, SubmissionStateService, 
-				StudyAreaStateService, SelectStateService, ModelService) {
+				StudyAreaStateService, SelectStateService, ModelService, CommonMappingStateService) {
                 $scope.tree = SubmissionStateService.getState().comparisonTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -100,6 +100,7 @@ angular.module("RIF")
 						if (input.selectedPolygon) {
 							SelectStateService.getState().studySelection.comparisonSelectedAreas = angular.copy(
 								input.selectedPolygon);
+							var areaNameList=CommonMappingStateService.getState("areamap").setAreaNameList(input.name);
 						}
 						
 						try {

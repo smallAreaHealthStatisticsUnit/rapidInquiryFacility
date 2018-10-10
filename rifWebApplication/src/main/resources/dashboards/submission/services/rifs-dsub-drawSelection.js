@@ -523,6 +523,11 @@ angular.module("RIF")
 								}
 								
 								var selectedPolygonObj = CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj(input.name);
+								var areaNameList = CommonMappingStateService.getState("areamap").getAreaNameList(input.name);
+								
+								AlertService.consoleLog("[rifs-dsub-drawSelection.js] getAreaNameList() for: " + input.name + 
+									"; areaNameList: " + (areaNameList ? Object.keys(areaNameList).length : "0"));
+
 								for (var i = 0; i < latlngList.length; i++) {
 									var thisPolyID = latlngList[i].id;
 									
@@ -535,12 +540,12 @@ angular.module("RIF")
                             									
 									// Update areaNameList for debug
 									if (latlngList[i].band && latlngList[i].band != -1) {
-										if (CommonMappingStateService.getState(mapName).areaNameList[latlngList[i].band]) {
-											CommonMappingStateService.getState(mapName).areaNameList[latlngList[i].band].push(latlngList[i].name);
+										if (areaNameList[latlngList[i].band]) {
+											areaNameList[latlngList[i].band].push(latlngList[i].name);
 										}
 										else {
-											CommonMappingStateService.getState(mapName).areaNameList[latlngList[i].band] = [];
-											CommonMappingStateService.getState(mapName).areaNameList[latlngList[i].band].push(latlngList[i].name);
+											areaNameList[latlngList[i].band] = [];
+											areaNameList[latlngList[i].band].push(latlngList[i].name);
 										}
 									}
 								}

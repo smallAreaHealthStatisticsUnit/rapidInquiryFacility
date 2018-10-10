@@ -163,21 +163,41 @@ angular.module("RIF")
 								throw new Error("setStudyType() recursion protector: " + callCount);
 							}
 							
-							if ($scope.input.type === "Risk Analysis") {
+							if ($scope.input.type === "Risk Analysis" && 
+							    SelectStateService.getState().studyType != "Risk Analysis") {
 								SelectStateService.initialiseRiskAnalysis();
 								SelectStateService.getState().studyType="risk_analysis_study";
 								
                                 CommonMappingStateService.getState("areamap").possibleBands = [1, 2, 3, 4, 5, 6];
                                 CommonMappingStateService.getState("areamap").map.band = 6;
+															
+								SubmissionStateService.getState().studyType = $scope.input.type;
+								StudyAreaStateService.getState().setType($scope.input.type);		
+								CompAreaStateService.getState().type = $scope.input.type;		
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(RA): " + 
+									SubmissionStateService.getState().studyType);	
+
 							}
-							else if ($scope.input.type === "Disease Mapping") {			
+							else if ($scope.input.type === "Disease Mapping" && 
+							    SelectStateService.getState().studyType != "Disease Mapping") {			
 								SelectStateService.resetState();
 								SelectStateService.getState().studyType="disease_mapping_study";
 								
                                 CommonMappingStateService.getState("areamap").possibleBands = [1];
                                 CommonMappingStateService.getState("areamap").currentBand = 1;
                                 CommonMappingStateService.getState("areamap").map.band = 1;
-							}							
+
+								SubmissionStateService.getState().studyType = $scope.input.type;
+								StudyAreaStateService.getState().setType($scope.input.type);		
+								CompAreaStateService.getState().type = $scope.input.type;		
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(DM): " + 
+									SubmissionStateService.getState().studyType);	
+
+							}					
+							else if ($scope.input.type === SelectStateService.getState().studyType) { // No change	
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType() No change: " +
+									SelectStateService.getState().studyType);
+							}								
 							else if ($scope.input.type == undefined) {
 								if (SubmissionStateService.getState().studyType != undefined &&
 								    StudyAreaStateService.getState().type       != undefined &&
@@ -185,19 +205,18 @@ angular.module("RIF")
 											StudyAreaStateService.getState().type &&
 									$scope.input.name == "ComparisionAreaMap"	/* In Comparison area modal */) {
 									$scope.input.type=StudyAreaStateService.getState().type;
-									setStudyType((callCount + 1));
+//									setStudyType((callCount + 1));
 								}
 								else {
 									throw new Error("setStudyType: undefined $scope.input.type");
-								}
+								}		
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType() No change, set ComparisionAreaMap $scope.input.type: " +
+									SelectStateService.getState().studyType);
 							}
 							else {
 								throw new Error("setStudyType: invalid $scope.input.type: " + $scope.input.type);
 							}
-                            SubmissionStateService.getState().studyType = $scope.input.type;
-							StudyAreaStateService.getState().setType($scope.input.type);		
-							CompAreaStateService.getState().type = $scope.input.type;		
-							alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(): " + SubmissionStateService.getState().studyType);					
+										
 						}
 							
                         //Clear all selection from map and table
@@ -283,19 +302,23 @@ angular.module("RIF")
 									// Sort into descended list so the smallest areas are in front
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] sorted shape areas: " + shapesLayerAreaList.length + 
 										"; " + JSON.stringify(shapesLayerAreaList));
-									if (CommonMappingStateService.getState("areamap").areaNameList == undefined) {
-										$scope.createAreaNameList();
-									}
 									
+									var areaNameList=CommonMappingStateService.getState("areamap").getAreaNameList(
+										$scope.input.name);
+									alertScope.consoleLog("[rifd-dsub-maptable.js] getAreaNameList() for: " + 
+										$scope.input.name + 
+										"; areaNameList: " + (areaNameList ? Object.keys(areaNameList).length : "0"));
+										
 									for (var k=0; k<shapesLayerAreaList.length; k++) {
-											
+																									
 										for (var area in shapesLayerAreas) {
 											if (area == shapesLayerAreaList[k]) {
 												var areaIdList=shapesLayerAreas[area];
 												for (var l=0; l<areaIdList.length; l++) {
 													var shapeLayer=CommonMappingStateService.getState("areamap").shapes.getLayer(areaIdList[l]);
 													if (shapeLayer && typeof shapeLayer.bringToFront === "function") { 
-														if (CommonMappingStateService.getState("areamap").areaNameList == undefined) {
+
+														if (areaNameList == undefined) {
 															alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
 																"; band: " + shapeLayer.options.band +
 																"; area: " + shapeLayer.options.area +
@@ -303,20 +326,19 @@ angular.module("RIF")
 															shapeLayer.bringToFront();
 														}
 														else if (shapeLayer.options.band && 
-															CommonMappingStateService.getState("areamap").areaNameList &&
-															CommonMappingStateService.getState("areamap").areaNameList[shapeLayer.options.band] &&
-														    CommonMappingStateService.getState("areamap").areaNameList[shapeLayer.options.band].length > 0) {
+															areaNameList && areaNameList[shapeLayer.options.band] &&
+														    areaNameList[shapeLayer.options.band].length > 0) {
 															alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
 																"; band: " + shapeLayer.options.band +
 																"; area: " + shapeLayer.options.area +
-																"; polygons: " + CommonMappingStateService.getState("areamap").areaNameList[shapeLayer.options.band].length);
+																"; polygons: " + areaNameList[shapeLayer.options.band].length);
 															shapeLayer.bringToFront();
 														}
 														else {
 															alertScope.consoleDebug("[rifd-dsub-maptable.js] ignore layer: " + areaIdList[l] + " to front" +
 																"; band: " + shapeLayer.options.band +
 																"; area: " + shapeLayer.options.area +
-																"; areaNameList: " + JSON.stringify(CommonMappingStateService.getState("areamap").areaNameList) +
+																"; areaNameList: " + JSON.stringify(areaNameList) +
 																"; no polygons");
 														}
 													}
@@ -1829,7 +1851,8 @@ angular.module("RIF")
 								$scope.selectionData = [];
 								alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection in " + elapsed + " S");
 								if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
-									CommonMappingStateService.getState("areamap").info.addTo(CommonMappingStateService.getState("areamap").map);
+									CommonMappingStateService.getState("areamap").info.addTo(
+										CommonMappingStateService.getState("areamap").map);
 								}
 								
 								if ($scope.selectedPolygonCount > 0) {
@@ -1844,38 +1867,6 @@ angular.module("RIF")
 								});	
 							});
                         });
-									
-						$scope.createAreaNameList = function () { // Not from latlngList - not in scope when restored
-							var newAreaNameList = {};
-							
-							if (SelectStateService.getState().studySelection && SelectStateService.getState().studySelection.studySelectedAreas) {
-								var studySelectedAreas=SelectStateService.getState().studySelection.studySelectedAreas;
-								
-								for (var i = 0; i < studySelectedAreas.length; i++) {              									
-									// Update areaNameList for debug
-									if (studySelectedAreas[i].band && studySelectedAreas[i].band != -1) {
-										if (newAreaNameList[studySelectedAreas[i].band]) {
-											newAreaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
-										}
-										else {
-											newAreaNameList[studySelectedAreas[i].band] = [];
-											newAreaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
-										}
-									}
-								}
-							}
-							if (CommonMappingStateService.getState("areamap").areaNameList == undefined) {
-								CommonMappingStateService.getState("areamap").areaNameList = {};
-							}
-//							alertScope.consoleLog("[rifd-dsub-maptable.js] createAreaNameList(); studySelectedAreas: " + studySelectedAreas.length +
-//								"; old areaNameList: " + Object.keys(CommonMappingStateService.getState("areamap").areaNameList).length +
-//								"; new areaNameList: " + Object.keys(newAreaNameList).length +
-//								"; " + JSON.stringify(newAreaNameList));
-								
-							if (newAreaNameList) {
-								CommonMappingStateService.getState("areamap").areaNameList = newAreaNameList;
-							}
-						}
 							
                         // selection event fired from service: rifd-dsub-risk.js etc
                         $scope.$on('makeDrawSelection', function (event, data) {

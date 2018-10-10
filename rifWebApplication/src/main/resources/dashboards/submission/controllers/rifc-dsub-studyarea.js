@@ -38,9 +38,9 @@
 
 angular.module("RIF")
         .controller('ModalStudyAreaCtrl', ['$state', '$scope', '$uibModal', 'StudyAreaStateService', 
-			'SubmissionStateService', 'CompAreaStateService', 'SelectStateService', 'ModelService',
+			'SubmissionStateService', 'CompAreaStateService', 'SelectStateService', 'ModelService', 'CommonMappingStateService',
             function ($state, $scope, $uibModal, StudyAreaStateService, 
-			SubmissionStateService, CompAreaStateService, SelectStateService, ModelService) {
+			SubmissionStateService, CompAreaStateService, SelectStateService, ModelService, CommonMappingStateService) {
                 $scope.tree = SubmissionStateService.getState().studyTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -129,7 +129,8 @@ angular.module("RIF")
 						
 						try {
 							if (SelectStateService.getState().studySelection.studySelectedAreas.length > 0) {
-								var r=SelectStateService.verifyStudySelection
+								var r=SelectStateService.verifyStudySelection;
+								var areaNameList=CommonMappingStateService.getState("areamap").setAreaNameList(input.name);
 							}
 							else {
 								$scope.showWarning("No study areas selected");

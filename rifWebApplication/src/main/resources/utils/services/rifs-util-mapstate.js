@@ -36,8 +36,8 @@
  */
 
 angular.module("RIF")
-        .factory('CommonMappingStateService', ['AlertService',
-                function (AlertService) {
+        .factory('CommonMappingStateService', ['AlertService', 'SelectStateService',
+                function (AlertService, SelectStateService) {
                     
 					var mapNames = {
 						"areamap": "Study and comparison area map",
@@ -60,14 +60,15 @@ angular.module("RIF")
 						shapes: undefined,
 						drawnItems: undefined,
 						info: undefined,
-						areaNameList: undefined,
 						studyArea: {
 							selectedPolygon: [],				
-							selectedPolygonObj: {}
+							selectedPolygonObj: {},
+							areaNameList: {}
 						},
 						comparisonArea: {
 							selectedPolygon: [],				
-							selectedPolygonObj: {}
+							selectedPolygonObj: {},
+							areaNameList: {}
 						},
 						maxbounds: undefined,						
 						currentBand: undefined,
@@ -80,6 +81,81 @@ angular.module("RIF")
 						getSelectedPolygonObj: function(areaType, thisPolyId) { // Get selectedPolygon list
 							checkAreaType(areaType);
 							return this.areaType.selectedPolygonObj[thisPolyId];
+						},
+						getAreaNameList: function(areaType) { // Get areaNameList list 
+							checkAreaType(areaType);
+							
+							var areaNameList=this.areaType.areaNameList;
+//							AlertService.consoleLog("[rifs-util-mapstate.js] getAreaNameList() for: " + areaType + 
+//								"; areaNameList: " + (areaNameList ? Object.keys(areaNameList).length : "0"));
+							return this.areaType.areaNameList;
+						},
+						setAreaNameList: function(areaType) { // Set areaNameList list
+							checkAreaType(areaType);
+							var oldAreaNameList = this.areaType.areaNameList;
+							if (areaType == "StudyAreaMap" &&
+								SelectStateService.getState().studySelection && 
+								SelectStateService.getState().studySelection.studySelectedAreas) {
+								var newStudyAreaNameList = {};
+								var studySelectedAreas=angular.copy(
+									SelectStateService.getState().studySelection.studySelectedAreas);
+								
+								for (var i = 0; i < studySelectedAreas.length; i++) {              									
+									// Update areaNameList for debug
+									if (studySelectedAreas[i].band && studySelectedAreas[i].band != -1) {
+										if (newStudyAreaNameList[studySelectedAreas[i].band]) {
+											newStudyAreaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
+										}
+										else {
+											newStudyAreaNameList[studySelectedAreas[i].band] = [];
+											newStudyAreaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
+										}
+									}
+								}
+								if (Object.keys(newStudyAreaNameList).length > 0) {
+									AlertService.consoleError("[rifs-util-mapstate.js] setAreaNameList() for: " + areaType + 
+										"; studySelectedAreas: " + (studySelectedAreas ? studySelectedAreas.length : "0") +
+										"; old areaNameList: " + (oldAreaNameList ? Object.keys(oldAreaNameList).length : "0") +
+										"; newStudyAreaNameList: " + (newStudyAreaNameList ? Object.keys(newStudyAreaNameList).length : "0"),
+										new Error("Dummy"));
+									this.areaType.areaNameList = {};
+									this.areaType.areaNameList = angular.copy(newStudyAreaNameList);
+								}
+							}
+							else if (areaType == "ComparisionAreaMap" &&
+								SelectStateService.getState().studySelection && 
+								SelectStateService.getState().studySelection.comparisonSelectedAreas) {
+								var newComparisonAreaNameList = {};
+								var comparisonSelectedAreas=angular.copy(
+									SelectStateService.getState().studySelection.comparisonSelectedAreas);
+								
+								for (var i = 0; i < comparisonSelectedAreas.length; i++) {              									
+									// Update areaNameList for debug
+									if (comparisonSelectedAreas[i].band && comparisonSelectedAreas[i].band != -1) {
+										if (newComparisonAreaNameList[comparisonSelectedAreas[i].band]) {
+											newComparisonAreaNameList[comparisonSelectedAreas[i].band].push(
+												comparisonSelectedAreas[i].label);
+										}
+										else {
+											newComparisonAreaNameList[comparisonSelectedAreas[i].band] = [];
+											newComparisonAreaNameList[comparisonSelectedAreas[i].band].push(
+												comparisonSelectedAreas[i].label);
+										}
+									}
+								}
+								
+								if (Object.keys(newComparisonAreaNameList).length > 0) {
+									AlertService.consoleError("[rifs-util-mapstate.js] setAreaNameList() for: " + areaType + 
+										"; comparisonSelectedAreas: " + (comparisonSelectedAreas ? comparisonSelectedAreas.length : "0") +
+										"; old areaNameList: " + (oldAreaNameList ? Object.keys(oldAreaNameList).length : "0") +
+										"; newComparisonAreaNameList: " + 
+											(newComparisonAreaNameList ? Object.keys(newComparisonAreaNameList).length : "0"));
+									this.areaType.areaNameList = {};
+									this.areaType.areaNameList = angular.copy(newComparisonAreaNameList);
+								}
+							}
+							
+							return this.areaType.areaNameList;
 						},
 						getAllSelectedPolygonObj: function(areaType) { // Get selectedPolygon list
 							checkAreaType(areaType);
@@ -100,18 +176,43 @@ angular.module("RIF")
 							if (this.areaType == undefined) {
 								this.areaType = {
 									selectedPolygon: [],
-									selectedPolygonObj: {}
+									selectedPolygonObj: {},
+									areaNameList: {}
 								};		
 							}
 							
+							var areaNameList = {};
+							var oldAreaNameList = this.areaType.areaNameList;
 							if (arr && arr.length > 0) {
 								this.areaType.selectedPolygon.length = 0;					
 								for (var i = 0; i < arr.length; i++) { // Maintain keyed list for faster checking
-									this.areaType.selectedPolygonObj[arr[i].id] = angular.copy(arr[i]);
+									this.areaType.selectedPolygonObj[arr[i].id] = angular.copy(arr[i]);								
+									// Update areaNameList for debug
+									if (arr[i].band && arr[i].band != -1) {
+										if (areaNameList[arr[i].band]) {
+											areaNameList[arr[i].band].push(
+												arr[i].label);
+										}
+										else {
+											areaNameList[arr[i].band] = [];
+											areaNameList[arr[i].band].push(
+												arr[i].label);
+										}
+									}
 								}
 								this.areaType.selectedPolygon = angular.copy(arr);
 							}
-							
+										
+							if (Object.keys(areaNameList).length > 0) {
+								AlertService.consoleError("[rifs-util-mapstate.js] setAreaNameList() for: " + areaType + 
+									"; arr: " + (arr ? arr.length : "0") +
+									"; old areaNameList: " + (oldAreaNameList ? Object.keys(oldAreaNameList).length : "0") +
+									"; areaNameList: " + 
+										(areaNameList ? Object.keys(areaNameList).length : "0"));
+								this.areaType.areaNameList = {};
+								this.areaType.areaNameList = angular.copy(areaNameList);
+							}
+								
 							AlertService.consoleDebug("[rifs-util-mapstate.js] initialiseSelectedPolygon(" + areaType+ ") from: " + 
 								oldLength + "; to: " + this.areaType.selectedPolygon.length);
 							return this.areaType.selectedPolygon;
