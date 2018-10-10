@@ -522,13 +522,13 @@ angular.module("RIF")
 									AlertService.showWarning("Removed " + dupsRemoved + " duplicate area IDs from selected polygon list");
 								}
 								
+								var selectedPolygonObj = CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj(input.name);
 								for (var i = 0; i < latlngList.length; i++) {
 									var thisPolyID = latlngList[i].id;
 									
 									// Update band
-									if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID)) {
-										latlngList[i].band=CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name,
-											thisPolyID).band;
+									if (selectedPolygonObj[thisPolyID]) {
+										latlngList[i].band=selectedPolygonObj[thisPolyID].band;
 										break;
 									} 	
 									// Sync table - done by submissionMapTable $scope.$watchCollection() above
@@ -630,29 +630,26 @@ angular.module("RIF")
 //									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] latlngList.forEach(" +
 //										itemsProcessed + ")");
 									// Selects the correct polygons
-									if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID)) { // Found
-										if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
-												thisPolyID).band == undefined ||
-											CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
-												thisPolyID).band === -1) { 
+									var selectedPolygonObj=CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID);
+									if (selectedPolygonObj) { // Found
+										
+										if (selectedPolygonObj.band == undefined || selectedPolygonObj.band === -1) { 
 													// If not set in concentric shapes
 											if (latlngList[itemsProcessed].band == undefined ||
 												latlngList[itemsProcessed].band === -1) { 
 													// If not set on map
 												if (shape.band === -1) {  // Set band
-													CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name,
-														thisPolyID).band=CommonMappingStateService.getState(mapName).currentBand;
+													// Was: 
+													// CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID).band=
+													// CommonMappingStateService.getState(mapName).currentBand;
+													selectedPolygonObj.band=CommonMappingStateService.getState(mapName).currentBand;
 												}
-												else if (CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
-														thisPolyID).band > 0 &&
-													CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
-														thisPolyID).band < shape.band) {  // Do not set band
-													CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
-														thisPolyID).band=CommonMappingStateService.getState(mapName).currentBand;
+												else if (selectedPolygonObj.band > 0 &&
+													selectedPolygonObj.band < shape.band) {  // Do not set band, use current
+													selectedPolygonObj.band=CommonMappingStateService.getState(mapName).currentBand;
 												}
 												else {
-													CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, 
-														thisPolyID).band=shape.band;
+													selectedPolygonObj.band=shape.band;
 												}		
 											}
 										}
