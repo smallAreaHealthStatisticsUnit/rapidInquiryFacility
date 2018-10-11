@@ -28,7 +28,7 @@ import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
-public class SmoothResultsSubmissionStep extends CommonRService {
+public class StatisticsProcessing extends CommonRService {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final RIFMemoryManager rifMemoryManager = RIFMemoryManager.getMemoryManager();
@@ -38,7 +38,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
 
-	public SmoothResultsSubmissionStep() {
+	public StatisticsProcessing() {
 		String logManagerName=System.getProperty("java.util.logging.manager");
 		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
 			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
@@ -198,8 +198,8 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					sourceRScript(rengine, scriptPath.resolve("JdbcHandler.R"));
 				}
 
-				sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_Common.R"));
-				sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_JRI.R"));
+				sourceRScript(rengine, scriptPath.resolve("Statistics_Common.R"));
+				sourceRScript(rengine, scriptPath.resolve("Statistics_JRI.R"));
 				sourceRScript(rengine, scriptPath.resolve("CreateWindowsScript.R"));
 
 				// We do either Risk Analysis or Smoothing

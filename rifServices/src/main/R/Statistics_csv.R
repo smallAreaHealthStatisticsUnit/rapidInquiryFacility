@@ -24,7 +24,7 @@ library(spdep)
 library(Matrix)
 library(here)
 
-source(here::here("Adj_Cov_Smooth_Common.R"))
+source(here::here("Statistics_Common.R"))
 source(here::here("performSmoothingActivity.R"))
 
 ##====================================================================

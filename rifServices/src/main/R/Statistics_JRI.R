@@ -169,7 +169,7 @@ runRSmoothingFunctions <- function() {
 	}
 	else {
 		cat("Could not connect to database\n")	
-		cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+		cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 		return(list(exitValue=exitValue, errorTrace=errorTrace))
 	}
 
@@ -213,11 +213,11 @@ runRSmoothingFunctions <- function() {
 	
 	# Print trace
 	if (length(errorTrace)-1 > 0) {
-		cat(paste0("\nAdj_Cov_Smooth_JRI.R errorTrace: >>>\n"), sep="")
+		cat(paste0("\nStatistics_JRI.R errorTrace: >>>\n"), sep="")
 	 	cat(errorTrace, sep="\n")
-		cat(paste0("\n<<< End of Adj_Cov_Smooth_JRI.R errorTrace.\n\n"), sep="")
+		cat(paste0("\n<<< End of Statistics_JRI.R errorTrace.\n\n"), sep="")
 	}	
-	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+	cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 
 	return(list(exitValue=exitValue, errorTrace=errorTrace))
 }
@@ -331,7 +331,7 @@ runRRiskAnalFunctions <- function() {
 	}
 	else {
 		cat("Could not connect to database\n")	
-		cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+		cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 		return(list(exitValue=exitValue, errorTrace=errorTrace))
 	}
 
@@ -375,15 +375,15 @@ runRRiskAnalFunctions <- function() {
 	
 	# Print trace
 	if (length(errorTrace)-1 > 0) {
-		cat(paste0("\nAdj_Cov_Smooth_JRI.R errorTrace: >>>\n"), sep="")
+		cat(paste0("\nStatistics_JRI.R errorTrace: >>>\n"), sep="")
 		cat(errorTrace, sep="\n")
-		cat(paste0("\n<<< End of Adj_Cov_Smooth_JRI.R errorTrace.\n\n"), sep="")
+		cat(paste0("\n<<< End of Statistics_JRI.R errorTrace.\n\n"), sep="")
 	}	
-	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
+	cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 	
 	return(list(exitValue=exitValue, errorTrace=errorTrace))
 	
-	#	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "\n"), sep="")
+	#	cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "\n"), sep="")
 	
 	#	return(list(exitValue=exitValue))
 	

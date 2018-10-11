@@ -64,7 +64,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		setEnableLogging(true);
 	}
 	
-	public	void updateSelectState(final Connection connection, final User user, final String studyID, final JSONObject studySelection) 
+	void updateSelectState(final Connection connection, final User user, final String studyID,
+			final JSONObject studySelection)
 		throws RIFServiceException {
 	
 		if (studySelection == null) {
@@ -105,8 +106,6 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					"updateSelectState query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " update");
 			}
 
-		} catch(RIFServiceException rifServiceException) {
-			throw rifServiceException;
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
@@ -123,7 +122,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		}
 	}
 	
-	public	void updatePrintState(final Connection connection, final User user, final String studyID) 
+	void updatePrintState(final Connection connection, final User user, final String studyID)
 		throws RIFServiceException {
 			
 		UpdateQueryFormatter updateSelectStateFormatter1 =
@@ -177,8 +176,6 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					"updatePrintState query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " update");
 			}
 
-		} catch(RIFServiceException rifServiceException) {
-			throw rifServiceException;
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
@@ -213,8 +210,6 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		studySubmission.checkErrors(ValidationPolicy.RELAXED);
 		checkNonExistentItems(user, connection, studySubmission);
 
-		//KLG: TODO: Later on we should not rely on casting - it might
-		//be a risk analysis study
 		String result;
 		AbstractStudy study = studySubmission.getStudy();
 		try {

@@ -8,8 +8,8 @@ createWindowsScript <- function(script_name) {
 	if (exists("catalina_home")) {
 
 		copy_file(script_name)#
-		copy_file("Adj_Cov_Smooth_csv.R")
-		copy_file("Adj_Cov_Smooth_Common.R")
+		copy_file("Statistics_csv.R")
+		copy_file("Statistics_Common.R")
 		copy_file("rif40_run_R.bat")
 
 		#
