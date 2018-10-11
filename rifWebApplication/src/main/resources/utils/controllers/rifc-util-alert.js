@@ -121,12 +121,12 @@ angular.module("RIF")
 
 				try {
 					user.rifFrontEndLogger(
-						user.currentUser, 
-						messageType,
-						browser.name + "; v" + browser.version,
-						message.substring(0, 300), // Limit to 300 characters
-						errorMessage.substring(0, 300), // Limit to 300 characters
-						errorStack,
+						(user.currentUser || "NOUSER"), 
+						(messageType || "NOMESSAGETYPE"),
+						(browser ? browser.name + "; v" + browser.version : "UNKNOWN"), // Browser type
+						(message ? message.substring(0, 300) : "NOMESSAGE"), // Limit to 300 characters
+						(errorMessage ? errorMessage.substring(0, 300) : undefined), // Limit to 300 characters
+						(errorStack ? errorStack.substring(0, 400) : undefined), // Limit to 400 characters,
 						actualTime,
 	//					actualTime.toDateString() + "; " + actualTime.toTimeString(),
 						relativeTime).then(function (res) {
@@ -243,7 +243,7 @@ angular.module("RIF")
 					err=rifError;
 				}
 				else {
-					err=new Error("Dummy");
+					err=new Error("Auto created by controller");
 				}
 				
 				if (angular.isUndefined($scope.lastMessage)) {
@@ -362,7 +362,7 @@ angular.module("RIF")
 					err=rifError;
 				}
 				else {
-					err=new Error("Dummy");
+					err=new Error("Auto created by controller");
 				}
 				
 				if (angular.isUndefined($scope.lastMessage)) {
@@ -396,7 +396,7 @@ angular.module("RIF")
 							hideDelay: $scope.delay, 
 							hide: rifHide
 							});
-						AlertService.addMessage("+" + elapsed, messageLevel.toUpperCase(), msg, rifError);
+						AlertService.addMessage("+" + elapsed, messageLevel.toUpperCase(), msg, err);
 					}
 					else if (messageLevel.toUpperCase() == "SUCCESS") {
 						notifications.showSuccess({
@@ -404,7 +404,7 @@ angular.module("RIF")
 							hideDelay: 
 							$scope.delay, 
 							hide: rifHide});
-						AlertService.addMessage("+" + elapsed, messageLevel.toUpperCase(), msg, rifError);
+						AlertService.addMessage("+" + elapsed, messageLevel.toUpperCase(), msg, err);
 					}	
 				}
 				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages too often
@@ -434,8 +434,8 @@ angular.module("RIF")
 					elapsed);				
 			}
 			
-            $scope.showError = function (msg) {
-				rifMessage("ERROR", msg, true);
+            $scope.showError = function (msg, rifError) {
+				rifMessage("ERROR", msg, true, rifError);
             };
             $scope.showWarning = function (msg) {
 				rifMessage("WARNING", msg, true);
@@ -443,8 +443,8 @@ angular.module("RIF")
             $scope.showSuccess = function (msg) {
 				rifMessage("SUCCESS", msg, true);
             };
-            $scope.showErrorNoHide = function (msg) {
-				rifMessage("ERROR", msg, false);
+            $scope.showErrorNoHide = function (msg, rifError) {
+				rifMessage("ERROR", msg, false, rifError);
             };						
             $scope.showWarningNoHide = function (msg) {
 				rifMessage("WARNING", msg, false);

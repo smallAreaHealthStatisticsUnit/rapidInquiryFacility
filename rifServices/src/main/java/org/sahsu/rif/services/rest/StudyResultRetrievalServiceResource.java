@@ -448,6 +448,23 @@ public class StudyResultRetrievalServiceResource extends WebService {
 
 	@GET
 	@Produces({"application/json"})
+	@Path("/getTileMakerAttributes")
+	public Response getTileMakerTiles(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName, //SAHSU
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName //LEVEL2
+			) { 
+
+		return super.getTileMakerAttributes(
+				servletRequest,
+				userID,
+				geographyName,
+				geoLevelSelectName);
+	}
+	
+	@GET
+	@Produces({"application/json"})
 	@Path("/getMapBackground")
 	public Response getMapBackground(
 			@Context HttpServletRequest servletRequest,

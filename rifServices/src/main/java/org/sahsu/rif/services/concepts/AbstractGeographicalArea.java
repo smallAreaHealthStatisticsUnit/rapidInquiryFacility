@@ -157,13 +157,15 @@ public abstract class AbstractGeographicalArea extends AbstractRIFConcept {
 	public void addMapArea(
 		final String geographicalIdentifier,
 		final String identifier, 
-		final String label) {
+		final String label,
+		final Integer band) {
 		
 		MapArea mapArea 
 			= MapArea.newInstance(
 				geographicalIdentifier,
 				identifier, 
-				label);
+				label,
+				band);
 		mapAreas.add(mapArea);
 	}
 

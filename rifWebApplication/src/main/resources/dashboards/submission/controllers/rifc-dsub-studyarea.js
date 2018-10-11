@@ -38,9 +38,9 @@
 
 angular.module("RIF")
         .controller('ModalStudyAreaCtrl', ['$state', '$scope', '$uibModal', 'StudyAreaStateService', 
-			'SubmissionStateService', 'CompAreaStateService', 'SelectStateService',
+			'SubmissionStateService', 'CompAreaStateService', 'SelectStateService', 'ModelService', 'CommonMappingStateService',
             function ($state, $scope, $uibModal, StudyAreaStateService, 
-			SubmissionStateService, CompAreaStateService, SelectStateService) {
+			SubmissionStateService, CompAreaStateService, SelectStateService, ModelService, CommonMappingStateService) {
                 $scope.tree = SubmissionStateService.getState().studyTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -57,7 +57,12 @@ angular.module("RIF")
                         if (input.selectedPolygon.length === 0) {
                             SubmissionStateService.getState().studyTree = false;
                             $scope.tree = false;
-                        } else {
+						}
+						else if (!ModelService.verifyStudyState()) { // Check study types - FAILS
+                            SubmissionStateService.getState().studyTree = false;
+                            $scope.tree = false;
+                        } 
+						else {
                             //if CompAreaStateService studyResolution is now greater than the new Study studyResolution
                             //then clear the comparison area tree and show a warning
                             //Study tree will not change
@@ -85,15 +90,14 @@ angular.module("RIF")
 						});
 						
                         //Store what has been selected
-                        StudyAreaStateService.getState().geoLevels = input.geoLevels;
-                        StudyAreaStateService.getState().polygonIDs = input.selectedPolygon;
-                        StudyAreaStateService.getState().selectAt = input.selectAt;
-							
-                        StudyAreaStateService.getState().studyResolution = input.studyResolution;
-                        StudyAreaStateService.getState().center = input.center;
-                        StudyAreaStateService.getState().geography = input.geography;
-                        StudyAreaStateService.getState().transparency = input.transparency;
-                        StudyAreaStateService.getState().type = input.type;
+                        StudyAreaStateService.getState().setGeoLevels(input.geoLevels);
+                        StudyAreaStateService.getState().setPolygonIDs(input.selectedPolygon);
+                        StudyAreaStateService.getState().setSelectAt(input.selectAt);
+                        StudyAreaStateService.getState().setStudyResolution(input.studyResolution);
+                        StudyAreaStateService.getState().setCenter(input.center);
+                        StudyAreaStateService.getState().setGeography(input.geography);
+                        StudyAreaStateService.getState().setTransparency(input.transparency);
+                        StudyAreaStateService.getState().setType(input.type);
 						
 						if (SelectStateService.getState().studySelection == undefined) {
 							if (input.type == "Disease Mapping") {
@@ -116,16 +120,22 @@ angular.module("RIF")
 						}
 						
 						if (input.selectAt) {
-							SelectStateService.getState().studySelection.studySelectAt = input.selectAt;
+							SelectStateService.getState().studySelection.studySelectAt = angular.copy(input.selectAt);
 						}
 						if (input.selectedPolygon) {
-							SelectStateService.getState().studySelection.studySelectedAreas = 
-								input.selectedPolygon;
+							SelectStateService.getState().studySelection.studySelectedAreas = angular.copy(
+								input.selectedPolygon);
 						}
 						
 						try {
 							if (SelectStateService.getState().studySelection.studySelectedAreas.length > 0) {
-								var r=SelectStateService.verifyStudySelection
+								var r=SelectStateService.verifyStudySelection;
+								var areaNameList=CommonMappingStateService.getState("areamap").setAreaNameList(input.name);
+							}
+							else {
+								$scope.showWarning("No study areas selected");
+                                SubmissionStateService.getState().studyTree = false;
+                                $scope.tree = false;
 							}
 						}
 						catch (e) {

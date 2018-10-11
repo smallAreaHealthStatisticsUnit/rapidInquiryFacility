@@ -1,27 +1,23 @@
 package org.sahsu.rif.services.datastorage.common;
 
-import org.json.JSONObject;
-
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
-import org.sahsu.rif.services.util.Json5Parse;
-
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.util.stream.Collectors;
 
+import org.json.JSONObject;
 import org.sahsu.rif.generic.concepts.User;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.InsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
-import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -44,29 +40,32 @@ import org.sahsu.rif.services.concepts.YearRange;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.system.files.TomcatBase;
+import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.services.util.Json5Parse;
 
 public final class StudySubmissionStep extends BaseSQLManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 
-	private DiseaseMappingStudyManager diseaseMappingStudyManager;
+	private DiseaseMappingStudyManager rifMappingStudyManager;
 	private MapDataManager mapDataManager;
+	StringBuilder sqlWarnings = new StringBuilder();
 
 	public StudySubmissionStep(
 			final RIFServiceStartupOptions options,
-			final DiseaseMappingStudyManager diseaseMappingStudyManager,
+			final DiseaseMappingStudyManager rifMappingStudyManager,
 			final MapDataManager mapDataManager) {
 
 		super(options);
-		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
+		this.rifMappingStudyManager = rifMappingStudyManager;
 		this.mapDataManager = mapDataManager;
 		setEnableLogging(true);
 	}
 	
 	void updateSelectState(final Connection connection, final User user, final String studyID,
-			final JSONObject studySelection)
-		throws RIFServiceException {
+			final JSONObject studySelection) throws RIFServiceException {
 	
 		if (studySelection == null) {
 			throw new RIFServiceException(
@@ -205,12 +204,11 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		
 	String performStep(
 			final Connection connection, final User user, final RIFStudySubmission studySubmission)
-			throws RIFServiceException {
+			throws Exception {
 
 		studySubmission.checkErrors(ValidationPolicy.RELAXED);
 		checkNonExistentItems(user, connection, studySubmission);
-
-		String result;
+		String studyID="Not yet allocated";
 		AbstractStudy study = studySubmission.getStudy();
 		try {
 
@@ -221,6 +219,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					project,
 					study,
 					studySubmission);
+			studyID = getCurrentStudyID(connection);
 
 			addComparisonAreaToStudy(
 					connection,
@@ -234,26 +233,38 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					connection,
 					study);
 
-			result = getCurrentStudyID(connection);
 			connection.commit();
 
-			rifLogger.info(this.getClass(),
-			               "======SQLCREATESTUDYSUBMISSIONSTEP====studyID==" + result + "==");
-			return result;
-		} catch (SQLException sqlException) {
-			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
-			String errorMessage
-					= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
-					study.getDisplayName());
-			RIFServiceException rifServiceException
-					= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
-		}
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study create " + studyID + " OK XXXXXXXXXX");
+			return studyID;
+		} catch (Exception exception) {
 
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study create " + studyID + " failed: " + exception.getMessage() + " XXXXXXXXXX");
+			StringBuilder builder = new StringBuilder(exception.getMessage())
+					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator)
+					                        .append("Stack trace of cause follows")
+					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator);
+			for (StackTraceElement element : exception.getStackTrace()) {
+				builder.append(element.toString()).append(lineSeparator);
+			}
+			builder.append("=============================================")
+					                        .append(lineSeparator)
+					                        .append("Output from PL/PGSQL")
+					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator)
+											.append(sqlWarnings.toString());
+			String stack=builder.toString();
+		
+			SQLQueryUtility.commit(connection);
+			setStudyExtractToFail(connection, studyID, "Study create " + studyID + " failed", stack);
+			
+			throw exception;
+		}
 	}
 
 	/*
@@ -293,10 +304,13 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			final Connection connection,
 			final User user,
 			final Project project,
-			final AbstractStudy diseaseMappingStudy,
+			final AbstractStudy rifStudy,
 			final RIFStudySubmission studySubmission)
-			throws SQLException, RIFServiceException {
+			throws Exception {
 
+		JSONObject studySelection = studySubmission.getStudySelection();
+		int riskAnalysisType=studySelection.optInt("riskAnalysisType", -1);
+		
 		PreparedStatement studyShareStatement = null;
 		PreparedStatement addStudyStatement = null;
 		try {
@@ -326,28 +340,48 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			addStudyStatement = createPreparedStatement(connection, studyQueryFormatter);
 			int ithQueryParameter = 1;
 
-			Geography geography = diseaseMappingStudy.getGeography();
+			Geography geography = rifStudy.getGeography();
 			addStudyStatement.setString(ithQueryParameter++, geography.getName());
 
 			addStudyStatement.setString(ithQueryParameter++, project.getName());
 
-			addStudyStatement.setString(ithQueryParameter++, diseaseMappingStudy.getName());
+			addStudyStatement.setString(ithQueryParameter++, rifStudy.getName());
 
 			//study type will be "1" for diseaseMappingStudy
-			addStudyStatement.setInt(ithQueryParameter++, 1);
-
-			ComparisonArea comparisonArea = diseaseMappingStudy.getComparisonArea();
+			if (rifStudy.isDiseaseMapping()) {
+				addStudyStatement.setInt(ithQueryParameter++, 1); // disease mapping study
+			}
+			else if (riskAnalysisType == -1) {
+				throw new Exception("No risk analysis type in studySelection JSON");
+			}
+			else if (riskAnalysisType == 11 || 
+			         riskAnalysisType == 12 || 
+					 riskAnalysisType == 13 || 
+					 riskAnalysisType == 14 || 
+					 riskAnalysisType == 15) {
+				addStudyStatement.setInt(ithQueryParameter++, riskAnalysisType); // From studySelection JSON
+				// 11 - Risk Analysis (many areas, one band), 
+				// 12 - Risk Analysis (point sources), 
+				// 13 - Risk Analysis (exposure covariates), 
+				// 14 - Risk Analysis (coverage shapefile), 
+				// 15 - Risk Analysis (exposure shapefile)
+			}
+			else {
+				throw new Exception("Invalid risk analysis type in studySelection JSON: " + riskAnalysisType);
+			}
+			
+			ComparisonArea comparisonArea = rifStudy.getComparisonArea();
 			addStudyStatement.setString(ithQueryParameter++,
 			                            comparisonArea.getGeoLevelToMap().getName());
 
-			AbstractStudyArea diseaseMappingStudyArea =
-					diseaseMappingStudy.getStudyArea();
+			AbstractStudyArea rifMappingStudyArea =
+					rifStudy.getStudyArea();
 			addStudyStatement.setString(ithQueryParameter++,
-			                            diseaseMappingStudyArea.getGeoLevelToMap().getName());
+			                            rifMappingStudyArea.getGeoLevelToMap().getName());
 
 			//KLG: is this a good idea below - considering that each of the 
 			//investigations can have different denominator tables?
-			Investigation firstInvestigation = diseaseMappingStudy.getInvestigations().get(0);
+			Investigation firstInvestigation = rifStudy.getInvestigations().get(0);
 			NumeratorDenominatorPair ndPair = firstInvestigation.getNdPair();
 			addStudyStatement.setString(ithQueryParameter++, ndPair.getDenominatorTableName());
 
@@ -392,6 +426,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			addStudyStatement.setString(ithQueryParameter++, calculationMethod.getStatsMethod());
 
 			addStudyStatement.executeUpdate();
+			SQLQueryUtility.printWarnings(addStudyStatement); // Print output from T-SQL or PL/pgsql
 
 			//add information about who can share the study
 			InsertQueryFormatter studyShareQueryFormatter = InsertQueryFormatter.getInstance(
@@ -405,6 +440,16 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					studyShareQueryFormatter);
 			studyShareStatement.setString(1, user.getUserID());
 			studyShareStatement.executeUpdate();
+			SQLQueryUtility.printWarnings(studyShareStatement); // Print output from T-SQL or PL/pgsql
+			
+		} catch(Exception exception) {
+			if (addStudyStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(addStudyStatement) + lineSeparator);
+			}
+			if (studyShareStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(studyShareStatement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;
 		} finally {
 			//Cleanup database resources	
 			SQLQueryUtility.close(studyShareStatement);
@@ -525,6 +570,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 						minAgeGroupParameter);
 
 				statement.executeUpdate();
+				SQLQueryUtility.printWarnings(statement); // Print output from T-SQL or PL/pgsql
 
 				addCovariatesToStudy(
 						connection,
@@ -537,6 +583,11 @@ public final class StudySubmissionStep extends BaseSQLManager {
 						study,
 						investigation);
 			}
+		} catch(Exception exception) {	
+			if (statement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;			
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -600,22 +651,23 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addStudyAreaToStudy(
 			final Connection connection,
-			final AbstractStudy diseaseMappingStudy)
-			throws SQLException,
-			       RIFServiceException {
+			final AbstractStudy rifMappingStudy)
+			throws Exception {
 
 		PreparedStatement statement = null;
 		try {
 
-			Geography geography = diseaseMappingStudy.getGeography();
-			AbstractStudyArea diseaseMappingStudyArea
-					= diseaseMappingStudy.getStudyArea();
+			Geography geography = rifMappingStudy.getGeography();
+			AbstractStudyArea rifMappingStudyArea
+					= rifMappingStudy.getStudyArea();
 
 			ArrayList<MapArea> allMapAreas
 					= mapDataManager.getAllRelevantMapAreas(
 					connection,
 					geography,
-					diseaseMappingStudyArea);
+					rifMappingStudyArea,
+					true /* StudyArea */,
+					rifMappingStudy.isDiseaseMapping());
 
 			InsertQueryFormatter queryFormatter = InsertQueryFormatter.getInstance(
 					rifDatabaseProperties.getDatabaseType());
@@ -631,16 +683,55 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					= createPreparedStatement(
 					connection,
 					queryFormatter);
-			int i = 1;
+			
+//			DatabaseType databaseType = rifDatabaseProperties.getDatabaseType();
+			ArrayList<String> list1 = new ArrayList<String>();
+			ArrayList<Integer> list2 = new ArrayList<Integer>();
 			for (MapArea currentMapArea : allMapAreas) {
-				statement.setString(1, currentMapArea.getLabel());
-
-				statement.setInt(2, i);
-
-				statement.executeUpdate();
-
-				i++;
+				list1.add(currentMapArea.getLabel());
+				list2.add(currentMapArea.getBand());
 			}
+			String list1String = String.join(", ", list1);
+			String list2String = list2.stream().map(Object::toString)
+					.collect(Collectors.joining(", "));
+//			if (databaseType == DatabaseType.POSTGRESQL) { 	// Do array insert: not possible, see: https://github.com/swaldman/c3p0/issues/88
+//				Array array1 = connection.createArrayOf("VARCHAR", list1.toArray());
+//				Array array2 = connection.createArrayOf("INTEGER", list2.toArray());
+//				statement.setArray(1, array1);
+//				statement.setArray(2, array2);
+//
+//				rifLogger.info(this.getClass(), "Do Postgres study area array insert; 1: " + list1.size() + "; " + 
+//					(list1String.length() > 100 ? list1String.substring(0, 100) : list1String) +				
+//					"; 2: " + list2.size() + "; " + 
+//					(list2String.length() > 100 ? list2String.substring(0, 100) : list2String));
+//				statement.executeUpdate();
+//			}
+//			else if (databaseType == DatabaseType.SQL_SERVER) { 	// Don't or you will get:
+													// java.sql.SQLFeatureNotSupportedException: This operation is not supported.
+													//		at com.microsoft.sqlserver.jdbc.SQLServerConnection.createArrayOf(SQLServerConnection.java:5073)
+
+//				rifLogger.info(this.getClass(), "Done SQL Server study area non array insert; 1: " + 
+				rifLogger.info(this.getClass(), "Done study area non array insert; 1: " + 
+					(list1String.length() > 100 ? list1String.substring(0, 100) : list1String) +				
+					"; 2: " + list2.size() + "; " + 
+					(list2String.length() > 100 ? list2String.substring(0, 100) : list2String));
+				for (MapArea currentMapArea : allMapAreas) {
+					statement.setString(1, currentMapArea.getLabel());
+					statement.setInt(2, currentMapArea.getBand());
+					statement.executeUpdate();
+				}
+//			}
+//			else {
+//				throw new IllegalStateException("Unknown database type in "
+//				                                + "GenerateResultsSubmissionStep");
+//			}			
+			rifLogger.info(this.getClass(), "addStudyAreaToStudy() OK");
+		} catch(Exception exception) {
+			rifLogger.error(this.getClass(), "addStudyAreaToStudy() FAILED: " + exception.getMessage(), exception);
+			if (statement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;	
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -649,9 +740,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 	private void addComparisonAreaToStudy(
 			final Connection connection,
-			final AbstractStudy diseaseMappingStudy)
-			throws SQLException,
-			       RIFServiceException {
+			final AbstractStudy rifMappingStudy)
+			throws Exception {
 
 		PreparedStatement statement = null;
 		try {
@@ -659,17 +749,20 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					rifDatabaseProperties.getDatabaseType());
 			queryFormatter.setIntoTable("rif40.rif40_comparison_areas");
 			queryFormatter.addInsertField("area_id");
-
+			logSQLQuery(
+					"addComparisonAreaToStudy",
+					queryFormatter);
+					
 			statement
 					= createPreparedStatement(
 					connection,
 					queryFormatter);
 
 			Geography geography
-					= diseaseMappingStudy.getGeography();
+					= rifMappingStudy.getGeography();
 
 			ComparisonArea comparisonArea
-					= diseaseMappingStudy.getComparisonArea();
+					= rifMappingStudy.getComparisonArea();
 
 			/*
 			 * The user may have selected areas at a higher resolution
@@ -682,12 +775,51 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					= mapDataManager.getAllRelevantMapAreas(
 					connection,
 					geography,
-					comparisonArea);
-
+					comparisonArea,
+					false /* ComparisonArea */,
+					rifMappingStudy.isDiseaseMapping()
+					);
+					
+//			DatabaseType databaseType = rifDatabaseProperties.getDatabaseType();
+			ArrayList<String> list = new ArrayList<String>();
 			for (MapArea currentMapArea : allMapAreas) {
-				statement.setString(1, currentMapArea.getLabel());
-				statement.executeUpdate();
-			}
+				list.add(currentMapArea.getLabel());
+			}	
+			String listString = String.join(", ", list);
+//			if (databaseType == DatabaseType.POSTGRESQL) { 	// Do array insert: not possible, see: https://github.com/swaldman/c3p0/issues/88
+//	
+//
+//				Array array = connection.createArrayOf("VARCHAR", list.toArray());
+//				statement.setArray(1, array);
+//				rifLogger.info(this.getClass(), "Do Postgres comparison area array insert; 1: " + list.size() + 
+//					"; " + (listString.length() > 100 ? listString.substring(0, 100) : listString));
+//				statement.executeUpdate();
+//			}
+//			else if (databaseType == DatabaseType.SQL_SERVER) { 	// Don't or you will get:
+													// java.sql.SQLFeatureNotSupportedException: This operation is not supported.
+													//		at com.microsoft.sqlserver.jdbc.SQLServerConnection.createArrayOf(SQLServerConnection.java:5073)
+				for (MapArea currentMapArea : allMapAreas) {
+					statement.setString(1, currentMapArea.getLabel());
+					statement.executeUpdate();
+				}
+//				rifLogger.info(this.getClass(), "Done SQL Server comparison area non array insert; 1: " + list.size() + 
+//					"; " + (listString.length() > 100 ? listString.substring(0, 100) : listString));
+				rifLogger.info(this.getClass(), "Done comparison area non array insert; 1: " + list.size() + 
+					"; " + (listString.length() > 100 ? listString.substring(0, 100) : listString));
+//			}
+//			else {
+//				throw new IllegalStateException("Unknown database type in "
+//				                                + "GenerateResultsSubmissionStep");
+//			}
+//		} catch (Exception e) {		
+//			logException(e);	
+//			throw e;	
+		}
+		catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(Exception exception) {
+			sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
+			throw exception;		
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -739,10 +871,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			Geography geography = study.getGeography();
 			String geographyName = geography.getName();
 
-			AbstractStudyArea diseaseMappingStudyArea
+			AbstractStudyArea rifMappingStudyArea
 					= study.getStudyArea();
 			String studyGeoLevelName
-					= diseaseMappingStudyArea.getGeoLevelToMap().getName();
+					= rifMappingStudyArea.getGeoLevelToMap().getName();
 
 			ArrayList<AbstractCovariate> covariates
 					= investigation.getCovariates();
@@ -792,8 +924,14 @@ public final class StudySubmissionStep extends BaseSQLManager {
 						ithQueryParameter++,
 						maximumCovariateValue);
 				addCovariateStatement.executeUpdate();
+				SQLQueryUtility.printWarnings(addCovariateStatement); // Print output from T-SQL or PL/pgsql
 				ithQueryParameter = 1;
 			}
+		} catch(Exception exception) {
+			if (addCovariateStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(addCovariateStatement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;				
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(addCovariateStatement);
@@ -914,8 +1052,17 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					}
 
 					addHealthCodeStatement.executeUpdate();
+					SQLQueryUtility.printWarnings(addHealthCodeStatement); // Print output from T-SQL or PL/pgsql
 				}
 			}
+		} catch(Exception exception) {
+			if (getOutcomeGroupNameStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(getOutcomeGroupNameStatement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			if (addHealthCodeStatement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(addHealthCodeStatement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw exception;				
 		} finally {
 			//Cleanup database resources	
 			SQLQueryUtility.close(getOutcomeGroupNameStatement);
@@ -936,7 +1083,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 				project);
 
 		AbstractStudy study = rifStudySubmission.getStudy();
-		diseaseMappingStudyManager.checkNonExistentItems(user, connection, study);
+		rifMappingStudyManager.checkNonExistentItems(user, connection, study);
 
 		ArrayList<CalculationMethod> calculationMethods
 				= rifStudySubmission.getCalculationMethods();
@@ -1036,4 +1183,62 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 		//@TODO: Implement when RIF is able to register R routines
 	}
+	
+	public void setStudyExtractToFail(final Connection connection, final String studyID, final String message, final String stack)
+		throws RIFServiceException {
+
+		InsertQueryFormatter studyQueryFormatter = InsertQueryFormatter.getInstance(
+				rifDatabaseProperties.getDatabaseType());
+		studyQueryFormatter.setIntoTable("rif40.rif40_study_status");
+		studyQueryFormatter.addInsertField("study_id");
+		studyQueryFormatter.addInsertField("study_state");
+		studyQueryFormatter.addInsertField("message");
+		if (stack != null) {
+			studyQueryFormatter.addInsertField("trace");
+		}
+
+		logSQLQuery("setStudyExtractToFail", studyQueryFormatter);
+
+		PreparedStatement statement1 = null;
+	
+		try {
+			statement1 = connection.prepareStatement(studyQueryFormatter.generateQuery());
+			statement1.setInt(1, Integer.parseInt(studyID));
+			statement1.setString(2, "G"); //  Extract failure, extract, results or maps not created
+			if (message != null) {
+				statement1.setString(3, message);
+			}
+			else {
+				statement1.setString(3, "Extract failure, extract, results or maps not created");
+			}
+			if (stack != null) {
+				statement1.setString(4, stack);
+			}
+			int rc = statement1.executeUpdate();
+		
+			if (rc != 1) { 
+				throw new RIFServiceException(
+					RIFServiceError.SETSTUDYEXTRACTTOFAIL_FAILED,
+					"setStudyExtractToFail query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " insert");
+			}
+			connection.commit();
+
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"studySubmissionStep.unableToSetStudyExtractToFail",
+					studyID, message);
+			throw new RIFServiceException(
+					RIFServiceError.SETSTUDYEXTRACTTOFAIL_FAILED,
+					errorMessage);
+		} finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement1);
+		}
+	}
+	
 }

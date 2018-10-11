@@ -35,8 +35,8 @@
  * SERVICE to store state of comparison area modal
  */
 angular.module("RIF")
-        .factory('CompAreaStateService',
-                function () {
+        .factory('CompAreaStateService', ['AlertService',
+                function (AlertService) {
                     var s = {
                         polygonIDs: [],
                         selectAt: "",
@@ -55,6 +55,31 @@ angular.module("RIF")
                         },
                         resetState: function () {
                             s = angular.copy(defaults);
+							// Set method do deep copy to avoid scope issues
+							s.setGeography = function(ngeography) {
+								AlertService.consoleLog("[rifs-dsub-studyareastate.js] setGeography: " + ngeography);
+								this.geography = angular.copy(ngeography);
+							};
+							s.setStudyResolution = function(nstudyResolution) {
+								AlertService.consoleLog("[rifs-dsub-compareastate.js] setStudyResolution: " + nstudyResolution);
+								this.studyResolution = angular.copy(nstudyResolution);
+							};
+							s.setSelectAt = function(nselectAt) {
+								AlertService.consoleLog("[rifs-dsub-compareastate.js] setSelectAt: " + nselectAt);
+								this.selectAt = angular.copy(nselectAt);
+							};
+							s.setPolygonIDs = function(npolygonIDs) {
+								AlertService.consoleLog("[rifs-dsub-compareastate.js] setPolygonIDs: " + npolygonIDs.length);
+								this.polygonIDs = angular.copy(npolygonIDs);
+							};
+							s.setCenter = function(ncenter) {
+								AlertService.consoleLog("[rifs-dsub-compareastate.js] setCenter: " + JSON.stringify(ncenter));
+								this.center = angular.copy(ncenter);
+							};	
+							s.setTransparency = function(ntransparency) {
+								AlertService.consoleLog("[rifs-dsub-compareastate.js] setTransparency: " + ntransparency);
+								this.transparency = angular.copy(ntransparency);
+							};							
                         }
                     };
-                });
+                }]);

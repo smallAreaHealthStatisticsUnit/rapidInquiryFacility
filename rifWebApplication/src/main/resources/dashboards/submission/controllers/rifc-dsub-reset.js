@@ -36,9 +36,9 @@
  */
 angular.module("RIF")
         .controller('ModalResetCtrl', ['$scope', '$uibModal', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 
-			'ParameterStateService', 'StatsStateService', 'SelectStateService',
+			'ParameterStateService', 'StatsStateService', 'SelectStateService', 'CommonMappingStateService',
             function ($scope, $uibModal, $state, SubmissionStateService, StudyAreaStateService, CompAreaStateService, 
-				ParameterStateService, StatsStateService, SelectStateService) {
+				ParameterStateService, StatsStateService, SelectStateService, CommonMappingStateService) {
                 
                 $scope.resetToDefaults = function () {
                     //reset all submission states to default
@@ -48,6 +48,7 @@ angular.module("RIF")
                     CompAreaStateService.resetState();
                     ParameterStateService.resetState();
                     StatsStateService.resetState();
+                    CommonMappingStateService.resetState("areamap");
                     $scope.resetState();
                 };
 

@@ -244,8 +244,8 @@ public final class TestDiseaseMappingStudy
 		GeoLevelView geoLevelView = GeoLevelView.newInstance("LEVEL3");
 		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL3");
 		
-		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent");
-		MapArea mapArea2 = MapArea.newInstance("222", "111", "Barnet");
+		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent", 1);
+		MapArea mapArea2 = MapArea.newInstance("222", "111", "Barnet", 1);
 				
 		ComparisonArea invalidComparisonArea
 			= ComparisonArea.newInstance();
@@ -551,7 +551,7 @@ public final class TestDiseaseMappingStudy
 			= AbstractStudy.createCopy(masterDiseaseMappingStudy);
 		AbstractStudyArea diseaseMappingStudyArea
 			= maliciousDiseaseMappingStudy.getStudyArea();
-		MapArea maliciousMapArea = MapArea.newInstance("454", "454", getTestMaliciousValue());
+		MapArea maliciousMapArea = MapArea.newInstance("454", "454", getTestMaliciousValue(), 1);
 		diseaseMappingStudyArea.addMapArea(maliciousMapArea);
 		try {
 			maliciousDiseaseMappingStudy.checkSecurityViolations();

@@ -93,7 +93,7 @@ runRSmoothingFunctions <- function() {
 	cat(paste("About to test exitValue", exitValue, "and connection", "\n"))
 	if (exitValue == 0) {
 		cat("Performing basic stats and smoothing\n")
-		errorTrace<<-capture.output({
+		statsOutput<<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
 
 #			cat(paste0("About to fetch extract table outside of the try", "\n"))
@@ -150,11 +150,14 @@ runRSmoothingFunctions <- function() {
 							}
 
 							cat("About to save to table\n")
-							lerrorTrace <<- saveDataFrameToDatabaseTable(result)	# may set exitValue
+							saveOutput <<- saveDataFrameToDatabaseTable(result)	# may set exitValue	
+							if (!is.null(saveOutput) && length(saveOutput)-1 > 0) {
+								cat(saveOutput, sep="\n")
+							}
 							if (exitValue == 0) {
-								lerrorTrace2 <<- updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue
-								if (!is.null(lerrorTrace2) && length(lerrorTrace2)-1 > 0) {
-									append(lerrorTrace, lerrorTrace2)
+								updateOutput <<- updateMapTableFromSmoothedResultsTable(area_id_is_integer, studyType) # may set exitValue
+								if (!is.null(updateOutput) && length(updateOutput)-1 > 0) {
+									cat(updateOutput, sep="\n")
 								}
 							}
 						}
@@ -166,6 +169,22 @@ runRSmoothingFunctions <- function() {
 				}
 			) # End of tryCatch
 		})
+		
+		if (!is.null(statsOutput) && length(statsOutput)-1 > 0) {
+#			cat(statsOutput, sep="\n")
+			if (!is.null(errorTrace)) {
+				cat(paste0("Statistics_JRI.R exitValue: ", exitValue, 
+					"; append statsOutput tracer: ", length(statsOutput)-1, 
+					"; to errorTrace tracer: ", length(errorTrace)-1, 
+					"\n"), sep="")
+				errorTrace=c(errorTrace, statsOutput)
+			}
+			else {
+				cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "; statsOutput tracer: ", length(statsOutput)-1, "\n"), sep="")
+				errorTrace <<- statsOutput
+			}
+			cat(paste0("Statistics_JRI.R errorTrace tracer: ", length(errorTrace)-1, "\n"), sep="")
+		}
 	}
 	else {
 		cat("Could not connect to database\n")	
@@ -173,14 +192,6 @@ runRSmoothingFunctions <- function() {
 		return(list(exitValue=exitValue, errorTrace=errorTrace))
 	}
 
-	if (!is.null(lerrorTrace) && length(lerrorTrace)-1 > 0) {
-		if (!is.null(errorTrace)) {
-			append(errorTrace, lerrorTrace)
-		}
-		else {
-			errorTrace <<- lerrorTrace
-		}
-	}
 	
 	if (exitValue == 0 && !is.na(connDB)) {
 		dropTemporaryTable()

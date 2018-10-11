@@ -373,9 +373,9 @@ BEGIN
 			sql_frag:=sql_frag||','||LOWER(index_column);
 		END IF;
 	END LOOP;
-	IF c1_rec.study_type != '1' THEN /* study type: 1 - disease mapping */
-		sql_frag:=sql_frag||',band_id'; /* Risk analysis only */
-	END IF;
+--	IF c1_rec.study_type != '1' THEN /* study type: 1 - disease mapping */
+--		sql_frag:=sql_frag||',band_id'; /* Risk analysis only */
+--	END IF;
 	sql_stmt:='ALTER TABLE rif_studies.'||LOWER(c1_rec.extract_table)||
 		' ADD CONSTRAINT '||LOWER(c1_rec.extract_table)||'_pk PRIMARY KEY ('||sql_frag||')';
 --  Peter H: 19/1/2018 - disable PK as covariate values may be NULL and NULL is not an allowed PK value!	

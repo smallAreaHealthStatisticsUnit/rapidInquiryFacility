@@ -57,6 +57,12 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Integer y)
 					throws RIFServiceException;
 
+	String getTileMakerAttributes(
+			final User user,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect)
+					throws RIFServiceException;
+					
 	ArrayList<Integer> getYearsForStudy(
 			final User user,
 			final String studyID)

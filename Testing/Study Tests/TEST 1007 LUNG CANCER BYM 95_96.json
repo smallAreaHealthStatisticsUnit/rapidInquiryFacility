@@ -71,16 +71,16 @@ Comments:
 {
   "rif_job_submission": {
     "submitted_by": "peter",
-    "job_submission_date": "08/10/2018 10:23:15",
+    "job_submission_date": "08/10/2018 11:42:10",
     "project": {
       "name": "TEST",
       "description": "Test Project. Will be disabled when in production."
     },
     "calculation_methods": {
       "calculation_method": {
-        "name": "het_r_procedure",
-        "code_routine_name": "het_r_procedure",
-        "description": "Heterogenous (HET) model type",
+        "name": "bym_r_procedure",
+        "code_routine_name": "bym_r_procedure",
+        "description": "Besag, York and Mollie (BYM) model type",
         "parameters": {
           "parameter": []
         }
@@ -96,31 +96,70 @@ Comments:
     "study_selection": {
       "studySelectedAreas": [
         {
-          "id": "01",
+          "id": "01.002",
+          "gid": 2,
+          "label": "Cobley",
+          "band": 1
+        },
+        {
+          "id": "01.001",
           "gid": 1,
-          "label": "01",
+          "label": "Abellan",
+          "band": 1
+        },
+        {
+          "id": "01.008",
+          "gid": 8,
+          "label": "Jarup",
+          "band": 1
+        },
+        {
+          "id": "01.005",
+          "gid": 5,
+          "label": "Briggs",
+          "band": 1
+        },
+        {
+          "id": "01.009",
+          "gid": 9,
+          "label": "Elliot",
+          "band": 1
+        },
+        {
+          "id": "01.003",
+          "gid": 3,
+          "label": "Beale",
+          "band": 1
+        },
+        {
+          "id": "01.012",
+          "gid": 11,
+          "label": "Tirado",
+          "band": 1
+        },
+        {
+          "id": "01.004",
+          "gid": "01.004",
+          "label": "Hambly",
+          "band": 1
+        },
+        {
+          "id": "01.006",
+          "gid": 6,
+          "label": "Andersson",
           "band": 1
         }
       ],
       "studyShapes": [],
-      "comparisonSelectedAreas": [
-        {
-          "id": "01",
-          "gid": 1,
-          "label": "01",
-          "band": 1
-        }
-      ],
+      "comparisonSelectedAreas": [],
       "fileList": [],
       "bandAttr": [],
-      "comparisonSelectAt": "SAHSU_GRD_LEVEL1",
-      "studySelectAt": "SAHSU_GRD_LEVEL1",
-      "comparisonShapes": [],
+      "studySelectAt": "SAHSU_GRD_LEVEL2",
       "studyType": "disease_mapping_study"
     },
     "disease_mapping_study": {
-      "name": "TEST 1002",
-      "description": "TEST 1002 LUNG CANCER HET 95_96",
+      "name": "TEST 1007",
+      "description": "TEST 1007 LUNG CANCER HET 95_96",
       "geography": {
         "name": "SAHSULAND",
         "description": "SAHSULAND"
@@ -128,7 +167,7 @@ Comments:
       "investigations": {
         "investigation": [
           {
-            "title": "TEST 1002",
+            "title": "TEST 1007",
             "health_theme": {
               "name": "cancers",
               "description": "covering various types of cancers"
@@ -147,7 +186,7 @@ Comments:
                 "upper_limit": "0"
               },
               "upper_age_group": {
-                "id": 0,
+                "id": 21,
                 "name": "85PLUS",
                 "lower_limit": "85",
                 "upper_limit": "255"
@@ -194,7 +233,7 @@ Comments:
       "disease_mapping_study_area": {
         "geo_levels": {
           "geolevel_select": {
-            "name": "SAHSU_GRD_LEVEL1"
+            "name": "SAHSU_GRD_LEVEL2"
           },
           "geolevel_area": {
             "name": ""
@@ -209,9 +248,57 @@ Comments:
         "map_areas": {
           "map_area": [
             {
-              "id": "01",
+              "id": "01.002",
+              "gid": 2,
+              "label": "Cobley",
+              "band": 1
+            },
+            {
+              "id": "01.001",
               "gid": 1,
-              "label": "01",
+              "label": "Abellan",
+              "band": 1
+            },
+            {
+              "id": "01.008",
+              "gid": 8,
+              "label": "Jarup",
+              "band": 1
+            },
+            {
+              "id": "01.005",
+              "gid": 5,
+              "label": "Briggs",
+              "band": 1
+            },
+            {
+              "id": "01.009",
+              "gid": 9,
+              "label": "Elliot",
+              "band": 1
+            },
+            {
+              "id": "01.003",
+              "gid": 3,
+              "label": "Beale",
+              "band": 1
+            },
+            {
+              "id": "01.012",
+              "gid": 11,
+              "label": "Tirado",
+              "band": 1
+            },
+            {
+              "id": "01.004",
+              "gid": "01.004",
+              "label": "Hambly",
+              "band": 1
+            },
+            {
+              "id": "01.006",
+              "gid": 6,
+              "label": "Andersson",
               "band": 1
             }
           ]

@@ -38,7 +38,7 @@ public class StatisticsProcessing extends CommonRService {
 	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
 
-	public StatisticsProcessing() {
+	StatisticsProcessing() {
 		String logManagerName=System.getProperty("java.util.logging.manager");
 		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
 			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
@@ -120,6 +120,12 @@ public class StatisticsProcessing extends CommonRService {
 
 			addParameter("investigationId", String.valueOf(investigationID));
 
+			if (studySubmission.getStudy().isRiskAnalysis()) {
+				addParameter("studyType", "riskAnalysis");
+			} else {
+				addParameter("studyType", "diseaseMapping");
+			}
+				
 			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
 
 			int exitValue = 0;
@@ -220,7 +226,7 @@ public class StatisticsProcessing extends CommonRService {
 				if (exitValueFromR != null) {
 					exitValue = exitValueFromR.asInt();
 				} else {
-					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
+					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR (returnValues$exitValue) is NULL");
 					exitValue = 1;
 				}
 
@@ -238,7 +244,7 @@ public class StatisticsProcessing extends CommonRService {
 				 	}
 				 	rErrorTrace = strBuilder.toString();
 				} else {
-				 	rifLogger.warning(getClass(), "JRI R ERROR: errorTraceFromR is NULL");
+				 	rifLogger.warning(getClass(), "JRI R ERROR: errorTraceFromR (returnValues$errorTrace) is NULL");
 				}
 			} catch(Exception error) {
 
