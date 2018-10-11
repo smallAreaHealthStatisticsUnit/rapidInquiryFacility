@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -437,19 +438,42 @@ public class SmoothedResultManager extends BaseSQLManager {
 
 		//count total rows in table
 		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
+		boolean isDiseaseMappingStudy = isDiseaseMapping(connection, studyID);
 		
-		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
-		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(area_id) AS total");
-		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
-		countTableRowsQueryFormatter.addQueryLine(1, tableName);
+		if (isDiseaseMappingStudy) {		
+			countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
+			countTableRowsQueryFormatter.addQueryLine(1, "COUNT(area_id) AS total");
+			countTableRowsQueryFormatter.addQueryLine(0, "FROM");
+			countTableRowsQueryFormatter.addQueryLine(1, tableName);
+		}
+		else {
+			countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
+			countTableRowsQueryFormatter.addQueryLine(1, "COUNT(band_id) AS total");
+			countTableRowsQueryFormatter.addQueryLine(0, "FROM");
+			countTableRowsQueryFormatter.addQueryLine(1, tableName);
+		}			
 
 		//get requested subset
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "SELECT * FROM");
-		queryFormatter.addQueryLine(1, "(select row_number() over(ORDER BY area_id ASC) as row_number, * ");
-		queryFormatter.addQueryLine(1, "from " + tableName + ") a ");
-		queryFormatter.addQueryLine(1, "where row_number >= ? and row_number <= ?");
 
+		if (isDiseaseMappingStudy) {		
+			queryFormatter.addQueryLine(0, "SELECT * FROM");
+			queryFormatter.addQueryLine(1, "(select row_number() over(ORDER BY area_id ASC) as row_number, * ");
+			queryFormatter.addQueryLine(1, "from " + tableName + ") a ");
+			queryFormatter.addQueryLine(1, "where row_number >= ? and row_number <= ?");
+		}
+		else {
+			queryFormatter.addQueryLine(0, "SELECT * FROM");
+			queryFormatter.addQueryLine(1, "(select row_number() over(ORDER BY band_id ASC) as row_number, * ");
+			queryFormatter.addQueryLine(1, "from " + tableName + ") a ");
+			queryFormatter.addQueryLine(1, "where row_number >= ? and row_number <= ?");
+		}
+		
+		logSQLQuery(
+				"getNumberOfResultsForMapDataSet",
+				queryFormatter,
+				studyID);
+				
 		PreparedStatement mainResultsStatement = null;
 		PreparedStatement resultCounterStatement = null;
 		ResultSet mainResultSet = null;
@@ -473,110 +497,51 @@ public class SmoothedResultManager extends BaseSQLManager {
 
 			//get expected row count
 			Integer totalNumberRowsInResults = stopRow - startRow + 1;
-			Integer totalNumberColumnsInResults = 10;
 
 			//Now get the results
 			mainResultsStatement = connection.prepareStatement(queryFormatter.generateQuery());
 			mainResultsStatement.setInt(1, startRow);
 			mainResultsStatement.setInt(2, stopRow);
 
-			String[] columnNames = null;
-			RIFResultTable.ColumnDataType[] columnDataTypes = null;
-			if (type.equals("extract")) {
-				totalNumberColumnsInResults = 10;
-				columnNames = new String[totalNumberColumnsInResults];
-				columnNames[0] = "row";
-				columnNames[1] = "year";
-				columnNames[2] = "study_or_comparison";
-				columnNames[3] = "study_id";
-				columnNames[4] = "area_id";
-				columnNames[5] = "band_id";
-				columnNames[6] = "sex";
-				columnNames[7] = "age_group";
-				columnNames[8] = "name";
-				columnNames[9] = "total_pop";
-
-				columnDataTypes = new RIFResultTable.ColumnDataType[totalNumberColumnsInResults];
-				columnDataTypes[0] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[1] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
-				columnDataTypes[3] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
-				columnDataTypes[5] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[6] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[7] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[8] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[9] = RIFResultTable.ColumnDataType.NUMERIC;
-
-			} else {
-				totalNumberColumnsInResults = 26;
-				columnNames = new String[totalNumberColumnsInResults];
-				columnNames[0] = "row";
-				columnNames[1] = "gid";
-				columnNames[2] = "gid_rowindex";
-				columnNames[3] = "area_id";
-				columnNames[4] = "username";
-				columnNames[5] = "study_id";
-				columnNames[6] = "inv_id";
-				columnNames[7] = "band_id";
-				columnNames[8] = "genders";
-				columnNames[9] = "direct_standardisation";
-				columnNames[10] = "adjusted";
-				columnNames[11] = "observed";
-				columnNames[12] = "expected";
-				columnNames[13] = "lower95";
-				columnNames[14] = "upper95";
-				columnNames[15] = "relative_risk";
-				columnNames[16] = "smoothed_relative_risk";
-				columnNames[17] = "posterior_probability";
-				columnNames[18] = "posterior_probability_upper95";
-				columnNames[19] = "posterior_probability_lower95";
-				columnNames[20] = "residual_relative_risk";
-				columnNames[21] = "residual_rr_lower95";
-				columnNames[22] = "residual_rr_upper95";
-				columnNames[23] = "smoothed_smr";
-				columnNames[24] = "smoothed_smr_lower95";
-				columnNames[25] = "smoothed_smr_upper95";
-
-				columnDataTypes = new RIFResultTable.ColumnDataType[totalNumberColumnsInResults];
-				columnDataTypes[0] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[1] = RIFResultTable.ColumnDataType.TEXT;
-				columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
-				columnDataTypes[3] = RIFResultTable.ColumnDataType.TEXT;
-				columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
-				columnDataTypes[5] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[6] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[7] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[8] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[9] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[10] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[11] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[12] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[13] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[14] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[15] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[16] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[17] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[18] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[19] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[20] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[21] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[22] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[23] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[24] = RIFResultTable.ColumnDataType.NUMERIC;
-				columnDataTypes[25] = RIFResultTable.ColumnDataType.NUMERIC;
-			}
-
+			mainResultSet = mainResultsStatement.executeQuery();
+			mainResultSet.next();
+			ResultSetMetaData rsmd = mainResultSet.getMetaData();
+			Integer totalNumberColumnsInResults = rsmd.getColumnCount();
+			
+			String[] columnNames = new String[totalNumberColumnsInResults];
+			RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[totalNumberColumnsInResults];
 			String[][] data = new String[totalNumberRowsInResults][totalNumberColumnsInResults];
 			int ithRow = 0;
-
-			mainResultSet = mainResultsStatement.executeQuery();
-			while (mainResultSet.next()) {
+				
+			// The column count starts from 1
+			for (int i = 1; i <= totalNumberColumnsInResults; i++ ) {
+				columnNames[i-1] = rsmd.getColumnName(i);
+				String columnType = rsmd.getColumnTypeName(i);
+				
+				if (columnType.equals("integer") || 
+					columnType.equals("bigint") || 
+					columnType.equals("int4") ||
+					columnType.equals("int") ||
+					columnType.equals("smallint")) {	
+					columnDataTypes[i-1] = RIFResultTable.ColumnDataType.NUMERIC;
+				}				
+				else if (columnType.equals("float") || 
+						 columnType.equals("float8") || 
+						 columnType.equals("double precision") ||
+						 columnType.equals("numeric")) {
+					columnDataTypes[i-1] = RIFResultTable.ColumnDataType.NUMERIC;
+				}
+				else {
+					columnDataTypes[i-1] = RIFResultTable.ColumnDataType.TEXT;
+				}		 
+			}
+					
+			do {
 				for (int j = 0; j < totalNumberColumnsInResults; j++) {
 					data[ithRow][j] = mainResultSet.getString(j + 1);
 				}
 				ithRow++;
-			}
+			} while (mainResultSet.next());
 
 			results.setColumnProperties(columnNames, columnDataTypes);
 			results.setData(data);
