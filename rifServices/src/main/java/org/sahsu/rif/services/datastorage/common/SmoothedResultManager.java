@@ -412,6 +412,14 @@ public class SmoothedResultManager extends BaseSQLManager {
 		return results;
 	}
 
+	/* 
+	 * Changes needed:
+	 *
+	 * Risk analysis version needs to return 1/row band not area as at present but the front end needs a re-write first
+	 * Add area name 
+	 * Convert SQL fetch to dynamic method 4 (i.e. works out the field names and datatypes automatically)
+	 * Use a different list of fields for risk analysis and disease mapping and make easy to configure
+	 */
 	public RIFResultTable getStudyTableForProcessedStudy(
 			final Connection connection,
 			final String studyID,
@@ -429,6 +437,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 
 		//count total rows in table
 		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
+		
 		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
 		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(area_id) AS total");
 		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
@@ -623,11 +632,20 @@ public class SmoothedResultManager extends BaseSQLManager {
 
 		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
 		//otherwise, if it's both, don't filter by any sex value
-		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
-		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(DISTINCT area_id) AS total");
-		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
-		countTableRowsQueryFormatter.addQueryLine(1, mapTableName);
-		countTableRowsQueryFormatter.padAndFinishLine();
+		boolean isDiseaseMappingStudy = isDiseaseMapping(connection, studyID);
+		if (isDiseaseMappingStudy) {
+			countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
+			countTableRowsQueryFormatter.addQueryLine(1, "COUNT(DISTINCT area_id) /* Disease Mapping */ AS total");
+			countTableRowsQueryFormatter.addQueryLine(0, "FROM");
+			countTableRowsQueryFormatter.addQueryLine(1, mapTableName);
+			countTableRowsQueryFormatter.padAndFinishLine();
+		}
+		else {
+			countTableRowsQueryFormatter.addQueryLine(1, "(SELECT COUNT(DISTINCT area_id) AS total");
+			countTableRowsQueryFormatter.addQueryLine(1, "   FROM rif40.rif40_study_areas");
+			countTableRowsQueryFormatter.addQueryLine(1, "  WHERE study_id = ?)");
+			countTableRowsQueryFormatter.padAndFinishLine();
+		}
 
 		/*
 		 * Create the SQL query to return all of the fields of interest
@@ -636,10 +654,14 @@ public class SmoothedResultManager extends BaseSQLManager {
 		//Aggregate population totals for each area based on sex.  If sex is 'BOTH', aggregate male and female
 		//totals together.
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "WITH population_per_area AS ");
-		queryFormatter.addQueryLine(1, "(SELECT");
-		queryFormatter.addQueryLine(2, "area_id,");
-		queryFormatter.addQueryLine(2, "SUM(total_pop) AS population");
+		if (isDiseaseMappingStudy) { 
+			queryFormatter.addQueryLine(0, "WITH population_per_area AS ");
+			queryFormatter.addQueryLine(1, "(SELECT area_id, SUM(total_pop) AS population");
+		}
+		else {
+			queryFormatter.addQueryLine(0, "WITH population_per_band AS ");
+			queryFormatter.addQueryLine(1, "(SELECT band_id, SUM(total_pop) AS population");
+		}
 		queryFormatter.addQueryLine(1, "FROM");
 		queryFormatter.addQueryLine(2, extractTableName);
 		queryFormatter.addQueryLine(2, " WHERE study_or_comparison = 'S'");
@@ -650,19 +672,40 @@ public class SmoothedResultManager extends BaseSQLManager {
 			queryFormatter.addQueryLine(2, "  AND sex = 2 ");
 		}
 		//otherwise, if it's both, don't filter by any sex value
-		queryFormatter.addQueryLine(1, "GROUP BY");
-		queryFormatter.addQueryLine(2, "area_id)");
-
+		if (isDiseaseMappingStudy) { 
+			queryFormatter.addQueryLine(1, "GROUP BY area_id)");
+		}
+		else {
+			queryFormatter.addQueryLine(1, "GROUP BY band_id)");
+		}
+		
+		if (!isDiseaseMappingStudy) { // Risk analysis - add study_areas CTE
+			queryFormatter.addQueryLine(0, ", study_areas AS ");
+			queryFormatter.addQueryLine(1, "(SELECT area_id, band_id, row_number() OVER(ORDER BY area_id ASC) AS gid");
+			queryFormatter.addQueryLine(1, "   FROM rif40.rif40_study_areas");
+			queryFormatter.addQueryLine(1, "  WHERE study_id = ?)");
+		}
+		
 		//now generate the main SELECT statement
 		String mapTableNameAlias = "a";
 		queryFormatter.addQueryLine(0, "SELECT");
 
-		addSelectSmoothedFieldEntry(
-				queryFormatter,
-				1,
-				"population_per_area",
-				"area_id",
-				false);
+		if (isDiseaseMappingStudy) { 
+			addSelectSmoothedFieldEntry(
+					queryFormatter,
+					1,
+					"population_per_area",
+					"area_id",
+					false);
+		}
+		else { 
+			addSelectSmoothedFieldEntry(
+					queryFormatter,
+					1,
+					"study_areas",
+					"area_id",
+					false);
+		}
 
 		addSelectSmoothedFieldEntry(
 				queryFormatter,
@@ -692,12 +735,22 @@ public class SmoothedResultManager extends BaseSQLManager {
 				"expected",
 				true);
 
-		addSelectSmoothedFieldEntry(
-				queryFormatter,
-				1,
-				"population_per_area",
-				"population",
-				true);
+		if (isDiseaseMappingStudy) { 
+			addSelectSmoothedFieldEntry(
+					queryFormatter,
+					1,
+					"population_per_area",
+					"population",
+					true);
+		}
+		else {
+			addSelectSmoothedFieldEntry(
+					queryFormatter,
+					1,
+					"population_per_band",
+					"population",
+					true);
+		}
 
 
 		addSelectSmoothedFieldEntry(
@@ -708,24 +761,46 @@ public class SmoothedResultManager extends BaseSQLManager {
 				true);
 
 		for (String attribute : smoothedAttributesToInclude) {
-
-			addSelectSmoothedFieldEntry(
-					queryFormatter,
-					1,
-					mapTableNameAlias,
-					attribute,
-					true);
+			
+			if (!isDiseaseMappingStudy && attribute.equals("gid")) { 
+				addSelectSmoothedFieldEntry(
+						queryFormatter,
+						1,
+						"study_areas",
+						attribute,
+						true);
+			}
+			else {
+				addSelectSmoothedFieldEntry(
+						queryFormatter,
+						1,
+						mapTableNameAlias,
+						attribute,
+						true);
+			}
 		}
 		queryFormatter.finishLine();
-		queryFormatter.addQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, mapTableName + " as "
-		                                 + mapTableNameAlias);
-		queryFormatter.addQueryPhrase(",");
-		queryFormatter.finishLine();
-		queryFormatter.addQueryLine(1, "population_per_area");
+		
+		if (isDiseaseMappingStudy) { 
+			queryFormatter.addQueryLine(0, "FROM " + mapTableName + " AS " + mapTableNameAlias + 
+				", population_per_area");
+		}
+		else {
+			queryFormatter.addQueryLine(0, "FROM " + mapTableName + " AS " + mapTableNameAlias + 
+				", population_per_band, study_areas");
+		}
+		
 		queryFormatter.addQueryLine(0, "WHERE");
 		queryFormatter.addQueryPhrase(1, mapTableNameAlias);
-		queryFormatter.addQueryPhrase(".area_id = population_per_area.area_id AND ");
+		if (isDiseaseMappingStudy) { 
+			queryFormatter.addQueryPhrase(".area_id = population_per_area.area_id AND ");
+		}
+		else {
+			queryFormatter.addQueryPhrase(".band_id = population_per_band.band_id AND "); 
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(1, mapTableNameAlias);
+			queryFormatter.addQueryPhrase(".band_id = study_areas.band_id AND ");
+		}
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, mapTableNameAlias);
 		queryFormatter.addQueryPhrase(".genders=?");
@@ -736,6 +811,91 @@ public class SmoothedResultManager extends BaseSQLManager {
 				"getNumberOfResultsForMapDataSet",
 				countTableRowsQueryFormatter,
 				studyID);
+
+/* Disease mapping version:
+
+WITH population_per_area AS 
+   (SELECT
+      area_id,
+      SUM(total_pop) AS population
+   FROM
+      rif_studies.s136_extract
+       WHERE study_or_comparison = 'S'
+   GROUP BY
+      area_id)
+SELECT
+   population_per_area.area_id,
+   a.band_id,
+   a.genders,
+   a.observed,
+   a.expected,
+   population_per_area.population,
+   a.adjusted,
+   a.gid,
+   a.inv_id,
+   a.band_id,
+   ROUND(a.lower95, 3) AS lower95,
+   ROUND(a.upper95, 3) AS upper95,
+   ROUND(a.relative_risk, 3) AS relative_risk,
+   ROUND(a.smoothed_relative_risk, 3) AS smoothed_relative_risk,
+   ROUND(a.posterior_probability, 3) AS posterior_probability,
+   ROUND(a.posterior_probability_upper95, 3) AS posterior_probability_upper95,
+   ROUND(a.posterior_probability_lower95, 3) AS posterior_probability_lower95,
+   ROUND(a.residual_relative_risk, 3) AS residual_relative_risk,
+   ROUND(a.residual_rr_lower95, 3) AS residual_rr_lower95,
+   ROUND(a.residual_rr_upper95, 3) AS residual_rr_upper95,
+   ROUND(a.smoothed_smr, 3) AS smoothed_smr,
+   ROUND(a.smoothed_smr_lower95, 3) AS smoothed_smr_lower95,
+   ROUND(a.smoothed_smr_upper95, 3) AS smoothed_smr_upper95
+FROM
+   rif_studies.s136_map as a,
+   population_per_area
+WHERE
+   a.area_id = population_per_area.area_id AND  
+   a.genders=? 
+   
+Risk Analysis version:
+
+WITH population_per_band AS 
+   (SELECT band_id, SUM(total_pop) AS population
+   FROM
+      rif_studies.s136_extract
+       WHERE study_or_comparison = 'S'
+   GROUP BY band_id)
+, study_areas AS 
+   (SELECT area_id, band_id, row_number() OVER(ORDER BY area_id ASC) AS gid
+      FROM rif40.rif40_study_areas
+     WHERE study_id = ?)
+SELECT
+   study_areas.area_id,
+   a.band_id,
+   a.genders,
+   a.observed,
+   a.expected,
+   population_per_band.population,
+   a.adjusted,
+   study_areas.gid,
+   a.inv_id,
+   a.band_id,
+   ROUND(a.lower95, 3) AS lower95,
+   ROUND(a.upper95, 3) AS upper95,
+   ROUND(a.relative_risk, 3) AS relative_risk,
+   ROUND(a.smoothed_relative_risk, 3) AS smoothed_relative_risk,
+   ROUND(a.posterior_probability, 3) AS posterior_probability,
+   ROUND(a.posterior_probability_upper95, 3) AS posterior_probability_upper95,
+   ROUND(a.posterior_probability_lower95, 3) AS posterior_probability_lower95,
+   ROUND(a.residual_relative_risk, 3) AS residual_relative_risk,
+   ROUND(a.residual_rr_lower95, 3) AS residual_rr_lower95,
+   ROUND(a.residual_rr_upper95, 3) AS residual_rr_upper95,
+   ROUND(a.smoothed_smr, 3) AS smoothed_smr,
+   ROUND(a.smoothed_smr_lower95, 3) AS smoothed_smr_lower95,
+   ROUND(a.smoothed_smr_upper95, 3) AS smoothed_smr_upper95
+FROM rif_studies.s136_map AS a, population_per_band, study_areas
+WHERE
+   a.band_id = population_per_band.band_id AND  
+   a.band_id = study_areas.band_id AND  
+   a.genders=?;
+ */   
 		logSQLQuery(
 				"retrieveResultsForMapDataSet",
 				queryFormatter,
@@ -749,6 +909,9 @@ public class SmoothedResultManager extends BaseSQLManager {
 		try {
 			countTableRowsStatement
 					= connection.prepareStatement(countTableRowsQueryFormatter.generateQuery());
+			if (!isDiseaseMappingStudy) { 
+				countTableRowsStatement.setInt(1, Integer.valueOf(studyID));
+			}
 			totalRowCountResultSet
 					= countTableRowsStatement.executeQuery();
 			totalRowCountResultSet.next();
@@ -757,14 +920,28 @@ public class SmoothedResultManager extends BaseSQLManager {
 			retrieveDataStatement
 					= connection.prepareStatement(queryFormatter.generateQuery());
 
-			if (sex == Sex.MALES) {
-				retrieveDataStatement.setInt(1, 1);
+			if (isDiseaseMappingStudy) { 
+				if (sex == Sex.MALES) {
+					retrieveDataStatement.setInt(1, 1);
+				}
+				else if (sex == Sex.FEMALES) {
+					retrieveDataStatement.setInt(1, 2);
+				}
+				else {
+					retrieveDataStatement.setInt(1, 3);
+				}
 			}
-			else if (sex == Sex.FEMALES) {
-				retrieveDataStatement.setInt(1, 2);
-			}
-			else {
-				retrieveDataStatement.setInt(1, 3);
+			else { 
+				retrieveDataStatement.setInt(1, Integer.valueOf(studyID));
+				if (sex == Sex.MALES) {
+					retrieveDataStatement.setInt(2, 1);
+				}
+				else if (sex == Sex.FEMALES) {
+					retrieveDataStatement.setInt(2, 2);
+				}
+				else {
+					retrieveDataStatement.setInt(2, 3);
+				}
 			}
 
 			smoothedResultSet = retrieveDataStatement.executeQuery();
@@ -852,6 +1029,64 @@ public class SmoothedResultManager extends BaseSQLManager {
 
 	}
 
+	private boolean isDiseaseMapping(final Connection connection, final String studyID)
+			throws RIFServiceException {
+				
+		boolean rval=true;
+		ResultSet isDiseaseMappingResultSet = null;
+		PreparedStatement isDiseaseMappingStatement = null;
+		try {
+			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
+				rifDatabaseProperties.getDatabaseType());
+			
+			queryFormatter.setDatabaseSchemaName("rif40");
+			queryFormatter.addSelectField("study_type");
+			queryFormatter.addFromTable("rif40_studies");
+			queryFormatter.addWhereParameter("study_id");
+
+			logSQLQuery(
+					"isDiseaseMapping",
+					queryFormatter,
+					studyID);
+				
+			isDiseaseMappingStatement
+					= connection.prepareStatement(queryFormatter.generateQuery());
+			isDiseaseMappingStatement.setInt(1, Integer.valueOf(studyID));
+			isDiseaseMappingResultSet = isDiseaseMappingStatement.executeQuery();
+			isDiseaseMappingResultSet.next();
+			Integer studyType = isDiseaseMappingResultSet.getInt(1);
+			// 1 - disease mapping, 11 - Risk Analysis (many areas, one band), 12 - Risk Analysis (point sources), 
+			// 13 - Risk Analysis (exposure covariates), 14 - Risk Analysis (coverage shapefile), 
+			// 15 - Risk Analysis (exposure shapefile)
+			if (studyType == 1) {
+				rval=true;
+			}
+			else if (studyType >= 11 || studyType <= 15) {
+				rval=false;
+			}
+			else {
+				throw new Exception("Invalid stypeType: " + studyType);
+			}				
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(),
+			                "SmoothedResultManager.isDiseaseMapping error", exception);
+			logException(exception);				
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"SmoothedResultsManager.error.unableToGetSmoothedResults",
+					studyID);
+			RIFServiceException rifServiceException
+					= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(isDiseaseMappingResultSet);	
+			SQLQueryUtility.close(isDiseaseMappingStatement);	
+			return rval;
+		}
+	}
+	
 	private void addSelectSmoothedFieldEntry(
 			final SQLGeneralQueryFormatter queryFormatter,
 			final int indentationLevel,
