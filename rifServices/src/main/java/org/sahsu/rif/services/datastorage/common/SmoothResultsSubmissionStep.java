@@ -200,19 +200,19 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 				sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_Common.R"));
 				sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_JRI.R"));
-				sourceRScript(rengine, scriptPath.resolve("performSmoothingActivity.R"));
-				sourceRScript(rengine, scriptPath.resolve("performRiskAnal.R"));
 				sourceRScript(rengine, scriptPath.resolve("CreateWindowsScript.R"));
 
 				// We do either Risk Analysis or Smoothing
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
 					rifLogger.info(getClass(), "Calling Risk Analysis R function");
+					sourceRScript(rengine, scriptPath.resolve("performRiskAnal.R"));
 					rengine.eval("returnValues <- runRRiskAnalFunctions()");
 				} else {
 
 					rifLogger.info(getClass(), "Calling Disease Mapping R function");
 					// Run the actual smoothing
+					sourceRScript(rengine, scriptPath.resolve("performSmoothingActivity.R"));
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
 				}
 

@@ -36,7 +36,6 @@ exitValue <- 0 	# 0 success, 1 failure
 errorCount <- 0	# Smoothing error count
 				
 #CATALINA_HOME
-<<<<<<< HEAD
 catalina_home <- Sys.getenv("CATALINA_HOME")
 
 # Variables that hold database connectivity information.  For now, we

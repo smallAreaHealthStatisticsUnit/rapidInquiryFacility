@@ -137,7 +137,7 @@ runRSmoothingFunctions <- function() {
 						# Cast area_id to char. This is ignored by sqlSave!
 						area_id_is_integer <- FALSE
 						if ("area_id" %in% colnames(result)) {
-							cat(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
+							cat(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
 								"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
 								"; result$area_id[1]: ", result$area_id[1], "\n"), sep="")
 							 

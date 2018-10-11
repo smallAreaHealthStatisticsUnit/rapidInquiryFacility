@@ -12,7 +12,7 @@ if (is.na(yd)){ans=0} else {
   if (yd=='NULL'){ans=0} }
 return(ans)}))}
 
-convertToDBFormat=function(dataIn){
+convertToDBFormatRA=function(dataIn){
   
   #Copy the db format for disease mapping because the same table will be used (with quite a few columns blank)
   area_id = as.numeric(NA)
@@ -481,7 +481,7 @@ performBandAnal <- function(data) {
 
   
   # call the function to convert data to the format the db is expecting
-  originalExtractTable = convertToDBFormat(Bands)
+  originalExtractTable = convertToDBFormatRA(Bands)
   return(originalExtractTable)
   
 }
