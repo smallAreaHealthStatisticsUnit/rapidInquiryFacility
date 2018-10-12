@@ -840,7 +840,7 @@ or you will cause [jri.dll: Can't find dependent libraries](https://github.com/s
 Normally users will be supplied with pre built files in the *tomcat webapps* folder:
 
 * RIF middleware: rifServices.war
-* Taxonomy service (ICD10): taxonomyservices.war
+* Taxonomy service (ICD9, ICD10, possibly others): taxonomy.war
 * Front end: RIF40.war
 
 ## 2.1 Building Using Make
@@ -854,18 +854,18 @@ The following make targets are provided:
 * *all*: build targets
 * *install*: clean then all
 * *rifservice*: build rifServices.war target
-* *taxonomyService*: build taxonomyservices.war target
+* *taxonomyService*: build taxonomy.war target
 * *RIF40*: build RIF40.war target
 
 To run a make target type *make <target>;e.g. *make install*.
 
 The following files are then built and copied into the rapidInquiryFacility directory:
-*taxonomyservices.war*, *rifServices.war*, *RIF40.war*
+*taxonomy.war*, *rifServices.war*, *RIF40.war*
 
 ## 2.2 Building Using a Windows Batch File
 
 Run *java_build.bat* from the root of the github repository,
-e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*. The files *taxonomyservices.war*,
+e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*. The files *taxonomy.war*,
 *rifServices.war*, *RIF40.war* are the end product.
 
 ```
@@ -943,7 +943,7 @@ mvn clean
 mvn install
 ```
 
-This method also build the *taxonomyServices.war* or the web application *RIF40.war* file.
+This method also builds the *taxonomy.war* or the web application *RIF40.war* file.
 
 Or, using subdirectries for *rifServices* only:
 
@@ -996,7 +996,7 @@ development team.
 
 The order is important when building using the sub-directories; the directories must be built in the order:
 *rifGenericLibrary*, *rapidInquiryFacility*, *rifServices*. It is always assumed you build *RIF40.war and
-*taxonomyServices.war* later. If you get a build failure try a *mvn clean* in each directory first;
+*taxonomy.war* later. If you get a build failure try a *mvn clean* in each directory first;
 then retry with a *mvn install*.
 
 # 3. Installing Web Services in Tomcat
@@ -1050,7 +1050,7 @@ For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy se
   * TaxonomyServicesConfiguration.xml
   * ClaML.dtd
 
-See the: [Taxonomy Services]({{ site.baseurl }}/introduction/Taxonomy-Services)
+See the: [Taxonmomy Services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/Taxonmomy-Services)
 manual.
 
 ## 3.2 RIF Web Application
@@ -2197,7 +2197,7 @@ See the database Management manual: [6 Patching](https://smallareahealthstatisti
   and taxonomyServices trees to .old;
 * Follow the instructions in
   [section 3.1 for installing the web services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#311-rif-services).
-  i.e. copy replacement *taxonomyServices.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
+  i.e. copy replacement *taxonomy.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart tomcat;
 * When you are satisfied with the patch remove the .old files and directories in *%CATALINA_HOME%\webapps*.

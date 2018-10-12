@@ -27,7 +27,7 @@ Rather than trying to emulate the Windows `java_build.bat` script, I just did th
 mvn clean install
 ```
 
-in the root gives us `rifServices.war`, `taxonomyservices.war`, and `RIF40.war` in the `target` directories of the corresponding projects: `rifServices`, `taxonomyServices`, and `rifWebApplication`.
+in the root gives us `rifServices.war`, `taxonomy.war`, and `RIF40.war` in the `target` directories of the corresponding projects: `rifServices`, `taxonomyServices`, and `rifWebApplication`.
 
 I installed the three WAR files using the Tomcat Manager application. I had to increase the maximum allowed size of WAR file in Tomcat, as `rifServices.war` is bigger than the default maximum, and so wouldn't deploy. This means editing `web.xml` in the manager app. I doubled the maximum from 50 to 100MB.
 
