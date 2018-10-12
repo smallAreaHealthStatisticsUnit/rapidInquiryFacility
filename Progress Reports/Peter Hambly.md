@@ -2973,4 +2973,40 @@ SELECT a.*, b.coa2011
 #### 8th to 12th October
 
 * Merge: remove Code Duplication In Scripts #100; fix disease mapping issues with new band_id code; passes on both ports
+* Fix Postgres risk analysis extract code;
+* Fix R script trace
+* Fix SQL Server risk analysis extract code. 
+* Band ID issue removed; restore study shape issue removed
+* Fix Risk Analysis map display, GANTT chart, export preview table data
+* Pull #101 (Risk analysis selection at high resolution):
+  This also include a first restructure of the areamap code. 
+  This is a partial implementation of issue #78 (Risk Analysis selection at high resolution (e.g. MSOA) does not perform 
+  acceptably); the conversion of geoJSON tiles to PNG tiles by the middleware has not yet been implemented, At high resolutions 
+  (>5000 areas) selection by clicking on the area is not permitted and restore of saved study selections only show the selected 
+  area (the PNG tile map will go below).
+  The RIF will now work at COA level with fully 64 bit browsers (Firefox and Edge). Browsers limited to 32 bit address space 
+  (all other Windows browser) will crash when memory exceeds 2GB.
 
+  Testing showed up issues with Risk Analysis bands so these were fixed and full support for risk analysis added at the time.
+
+  **You must re-run alter_10.sql**
+  ```
+  cd rifDatabase/Postgres/psql_scripts
+  psql -d sahsuland -U rif40 -f alter_scripts/v4_0_alter_10.sql 
+  ```
+  Also included:
+
+  * R script and SQL traces now work correctly
+  * Risk analysis extract code, map display and export preview table data now work
+
+Further changes are needed to support risk analysis:
+
+* Risk analysis version needs to return 1/row band not area as at present but the front end needs a re -write first. Suggest:
+
+    - Data viewer table displays banded results (not by area_id as at present);
+    - Dual maps bottom chart displays homogeneity data;
+    - Export needs to support risk analysis (it will crash at present);
+
+* Add area name to all exports
+* Convert map display SQL fetch to dynamic method 4 (i.e. works out the field names and datatypes automatically)
+* Use a different list of fields for risk analysis and disease mapping and make easy to configure
