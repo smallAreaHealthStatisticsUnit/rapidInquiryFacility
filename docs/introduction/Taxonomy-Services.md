@@ -90,10 +90,10 @@ The class then loads and parses the file specified in the `<ontology_service_cla
 
 ### Taxonomy service REST calls
 
-* http://localhost:8080/taxonomyServices/initialiseService
+* http://localhost:8080/taxonomies/initialiseService
   - Is the service initialized?
   - Returns: true/false
-* http://localhost:8080/taxonomyServices/getTaxonomyServiceProviders
+* http://localhost:8080/taxonomies/getTaxonomyServiceProviders
   - Get taxonomy services listing
   - Returns:
     ```json
@@ -104,7 +104,7 @@ The class then loads and parses the file specified in the `<ontology_service_cla
 		}
 	]
 	```
-* http://localhost:8080/taxonomyServices/getMatchingTerms?taxonomy_id=icd10&search_text=J22&is_case_sensitive=false
+* http://localhost:8080/taxonomies/getMatchingTerms?taxonomy_id=icd10&search_text=J22&is_case_sensitive=false
   - Get matching terms to use query (J22)
   - Returns:
     ```json
@@ -124,9 +124,9 @@ The class then loads and parses the file specified in the `<ontology_service_cla
 
 The following do not appear to be in use:
 
-* http://localhost:8080/taxonomyServices/getImmediateChildTerms
-* http://localhost:8080/taxonomyServices/getParentTerm
-* http://localhost:8080/taxonomyServices/getRootTerms
+* http://localhost:8080/taxonomies/getImmediateChildTerms
+* http://localhost:8080/taxonomies/getParentTerm
+* http://localhost:8080/taxonomies/getRootTerms
 
 # Adding ICD 9 and ICD 11 support
 

@@ -151,7 +151,7 @@ Start a new command window as an Administrator (type *cmd* into windows search, 
 
 Use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
+![alt text]({{ site.baseurl }}/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
 
 This makes tomcat Java upgrade proof; but this may have unintended effects if:
 
@@ -179,7 +179,7 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web
   services will not work [The web services will fail to start on the first user logon if it is not set]; see:
-  [4.4.5 RIF Services crash on logon](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#445-rif-services-crash-on-logon).
+  [4.4.5 RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/#445-rif-services-crash-on-logon).
 - If *CATALINA_HOME* is *C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.5* you have installed the 32 bit version of Java.
   Remove tomcat and Java and re-install a 64 bit Java (unless you are on a really old 32 bit only Machine...)
 
@@ -234,7 +234,7 @@ At least one of these environment variable is needed to run this program
 
 You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disable Tomcat or the RIF will not work!
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/windows_defender_message.png?raw=true "Prevent Tomcat from being disabled by your security software")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/windows_defender_message.png?raw=true "Prevent Tomcat from being disabled by your security software")
 
 You may need to consult a system or r network administrator at this point.
 
@@ -348,13 +348,13 @@ Two scripts (in the scripts directory) are provided to start and stop the RIF fr
 These should be copied to a local directory (e.g. *%CATALINA_HOME%\bin*) and then sent to the desktop as a shortcut; find each file, right click, "select send to" then "Desktop (create shortcut)".
 The shortcuts created then need to be modified to run as an Administrator (right click on shortcut, select properties, in shortcut properties window select advanced then check run as administrator).
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/setting_runas_administrator.png?raw=true "Make a shortcut run as an administrator")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/setting_runas_administrator.png?raw=true "Make a shortcut run as an administrator")
 
 When running Tomcat at the command line on Windows 10 the new Unix like copy paste functionality will prevent the buffer from scrolling and thence cause tomcat to hang. This can be alleviated by typing `<enter>` or
 `<return>` in the log window and fixed by changing the properties of the log window (right click on tomcat in the top left corner of the Java logging window,
 select properties; In options unset "quick edit mode", "insert mode", "filter clipboard contents on paste" and "enable line wrapping selection"):
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat_console_properties.png?raw=true "Windows 10 Tomcat console window properties")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/tomcat_console_properties.png?raw=true "Windows 10 Tomcat console window properties")
 
 Tomcat can be stopped using "control-C" if R has not been run or using `stop_rif.bat`.
 
@@ -827,13 +827,13 @@ Debugging logging faults:
 
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
-R is setup later in: [R setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#43-setup-r)
+R is setup later in: [R setup]({{ site.baseurl }}/rifWebApplication/#43-setup-r)
 
 As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64
 bit version
 
 Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*. Not: **C:\Program Files\R\R-3.4.4\bin**
-or you will cause [jri.dll: Can't find dependent libraries](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifwebapplication/#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 # 2. Building Web Services using Maven
 
@@ -1050,7 +1050,7 @@ For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy se
   * TaxonomyServicesConfiguration.xml
   * ClaML.dtd
 
-See the: [Taxonmomy Services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/Taxonmomy-Services)
+See the: [Taxonomy Services]({{ site.baseurl }}/introduction/Taxonomy-Services)
 manual.
 
 ## 3.2 RIF Web Application
@@ -1209,7 +1209,7 @@ angular.module("RIF")
 				return {
 					studySubmissionURL: serviceHost + "/rifServices/studySubmission/",
 					studyResultRetrievalURL: serviceHost + "/rifServices/studyResultRetrieval/",
-					taxonomyServicesURL: serviceHost + "/taxonomyServices/taxonomyServices/"
+					taxonomyServicesURL: serviceHost + "/taxonomies/service/"
 				}
 /*
 
@@ -1330,7 +1330,7 @@ Set the password correctly; as used above. Do **NOT** use a password of *changei
 
 This will generate a self signed certificate; this will cause browsers to complain:
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/insecure_connection_warning.png?raw=true "Insecure TLS warning")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/insecure_connection_warning.png?raw=true "Insecure TLS warning")
 
 To sign the certificates, follow the instructions in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html#SSL_and_Tomcat
 
@@ -1375,7 +1375,7 @@ Create and test a system ODBC datasource
 
 * Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as Adminstrator" for the database in use
 * Use SQL Server Native Client version 11, 2011 version or later;
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup").
+  ![alt text]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup").
 
   The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=SQLServer13```; so
   the name is *SQLServer13*.
@@ -1383,18 +1383,18 @@ Create and test a system ODBC datasource
   1. Choose server. Normally you have to type in the host name as discovery will be turned off by default. You may need append "tcp:" to the hostname to force the use of
      TCP/IP:
 
-     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup.png?raw=true "SQL Server ODBC Setup 1").
+     ![alt text]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup.png?raw=true "SQL Server ODBC Setup 1").
 
   2. Set the connection type to SQL Server authentication using a login and password. Make sure you supply the login and password.
 
-	 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup2.png?raw=true "SQL Server ODBC Setup 2").
+	 ![alt text]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup2.png?raw=true "SQL Server ODBC Setup 2").
 
   3. Change the database to your database name (e.g. *sahsuland*)
 
-     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup3.png?raw=true "SQL Server ODBC Setup 3").
+     ![alt text]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup3.png?raw=true "SQL Server ODBC Setup 3").
 
 * If you cannot see a SQL Server database list (you will get an error when SQL server tries to build a list) or get SQL Server connection errors on test see:
-  [SQL Server ODBC Connection Errors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#4410-sql-server-odbc-connection-errors)
+  [SQL Server ODBC Connection Errors]({{ site.baseurl }}/rifWebApplication/#4410-sql-server-odbc-connection-errors)
 
 * Make sure you test the ODBC connection using the RIF user username and password.!
 
@@ -1558,11 +1558,11 @@ The downloaded binary packages are in
 	```
 
 	* **RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES**
-	* [You can now start the rif](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#133-running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory
+	* [You can now start the rif]({{ site.baseurl }}/rifWebApplication/#133-running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory
 	  *%CATALINA_HOME%\bin* as an Administrator.). The web services will fail to start on the first user logon if the R environment not setup correctly]; see:
-  [4.4.5 RIF Services crash on logon](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#445-rif-services-crash-on-logon).
+  [4.4.5 RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/#445-rif-services-crash-on-logon).
 	* Then you can logon. See section 5
-	  [Running the RIF](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#5-running-the-rif)
+	  [Running the RIF]({{ site.baseurl }}/rifWebApplication/#5-running-the-rif)
 	  for logon instructions
 
 
@@ -1584,7 +1584,7 @@ commons-daemon.<date e.g., 2018-04-16>.log, tomcat8-stderr.<date e.g., 2018-04-1
 
 Use developer mode in the browser to bring up the console log:
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/caching_error.png?raw=true "Logon RIF Service Call Incorrect")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/caching_error.png?raw=true "Logon RIF Service Call Incorrect")
 
 In this example the RIF web application file RIF40\backend\services\rifs-back-urls.js (e.g.
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40\backend\services\rifs-back-urls.js)
@@ -1600,7 +1600,7 @@ is set to use http://localhost:8080; but the browser, usually Chrome, used https
 angular.module("RIF")
         .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
         .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/")
+        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomies/service/")
 ```
 
 This is caused by *rifs-back-urls.js* being changed, Tomcat restarted and Chrome or Firefox caching the previous service call. Flush the browser cache.
@@ -1650,7 +1650,7 @@ This is indicative of a build problem.
 
 See *3.1.2 Taxonomy Service*, and *4.4.3 Unable to unpack war files*
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/taxonomy_sevice_error.png?raw=true "Taxonomy Services error")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/taxonomy_sevice_error.png?raw=true "Taxonomy Services error")
 
 ### 4.4.5 RIF Services crash on logon
 
@@ -1827,7 +1827,7 @@ as you do not use an IP address or fully qualified domain name.
 The method for configuring a specific port is detailed in: https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/configure-a-server-to-listen-on-a-specific-tcp-port
 
 * For all entries, clear TCP dynamic ports, set the TCP port to 1433
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sqlserver-change-port.png?raw=true "Configuring a specifc SQL Server port")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/sqlserver-change-port.png?raw=true "Configuring a specifc SQL Server port")
 
 * Check you can logon as before using shared memory/named pipes, and then check the port
 	```
@@ -1923,7 +1923,7 @@ Restarting the server using ```catalina.bat run``` and re-running the study resu
 
 See:
 
-* [jri.dll: Can't find dependent libraries](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/master/rifwebapplication/#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 ### 4.4.10 SQL Server ODBC Connection Errors
 
@@ -1931,15 +1931,15 @@ Symptoms: when creating a SQL Server ODBC connection:
 
 * No items in database list.
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_databases.png?raw=true "SQL Server ODBC No database List")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_connection_no_databases.png?raw=true "SQL Server ODBC No database List")
 
 * ODBC error in connection test.
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
 
 * No items in database list is a symptom of no discovery services and is not an error. Type in your *hostname* manually.
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No connection List")
+  ![alt text]({{ site.baseurl }}/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No connection List")
 
 **Tip:** type *hostname* for your TCP/IP hostname. This is not normally a fully qualified domain name (i.e. will only work locally)
 ```
@@ -2006,11 +2006,11 @@ b) Check your firewall/other security software is permitting access to your serv
   software owner (rif40).
 * Connect to the RIF. You should see to logon page:
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/rif_logon.png?raw=true "RIF logon")
+  ![alt text]({{ site.baseurl }}/rif_logon.png?raw=true "RIF logon")
 
 * After logon you should see the study submission page:
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/rif_after_logon.png?raw=true "RIF after logon")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/rif_after_logon.png?raw=true "RIF after logon")
 
 * If you do not see this then use the section on logon troubleshooting below
 
@@ -2175,7 +2175,7 @@ instructions if it is updated say to *RIF41*.
 * Stop Tomcat;
 * Change directory to *%CATALINA_HOME%\webapps*; rename RIF40 to RIF40.old;
 * Follow the instructions in
-  [section 3.2 for installing the RIF Web Application](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#32-rif-web-application)
+  [section 3.2 for installing the RIF Web Application]({{ site.baseurl }}/rifWebApplication/#32-rif-web-application)
   i.e. copy the replacement *RIF40.war* file into the *%CATALINA_HOME%\webapps\* directory;
 * Restore *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* if you have modified it;
 * When you are satisfied with the patch remove the RIF40.old directory in *%CATALINA_HOME%\webapps*.
@@ -2183,7 +2183,7 @@ instructions if it is updated say to *RIF41*.
 The RIF web application may require you to patch the database. You will get messages on logon such as
 **alter_10.sql (post 3rd August 2018 changes for risk analysis) not run** to tell you to run the alter scripts.
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/alter_10.PNG?raw=true "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run")
+![alt text]({{ site.baseurl }}/rifWebApplication/alter_10.PNG?raw=true "alter_10.sql (post 3rd August 2018 changes for risk analysis) not run")
 
 
 See the database Management manual: [6 Patching](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual.html#6-patching)
@@ -2196,7 +2196,7 @@ See the database Management manual: [6 Patching](https://smallareahealthstatisti
 * Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices
   and taxonomyServices trees to .old;
 * Follow the instructions in
-  [section 3.1 for installing the web services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#311-rif-services).
+  [section 3.1 for installing the web services]({{ site.baseurl }}/rifWebApplication/#311-rif-services).
   i.e. copy replacement *taxonomy.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart tomcat;
@@ -2224,7 +2224,7 @@ This has not been tested ans it has not been required. Files to be saved/restore
 
 ## 6.4 R
 
-If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in [Setup R](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/#43-setup-r).
+If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in [Setup R]({{ site.baseurl }}/rifWebApplication/#43-setup-r).
 Make abolutely sure the PATH and R_HOME are set correctly.
 
 Updating the packages can also be done (consult your statisticians first); on a private network you have two choices:
@@ -2287,7 +2287,7 @@ You can do this last!
 
   Then use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
 
   Note: on some desktop systems this may prevent tomcat running as a service if a 32bit Java was installed first, with the Windows event log having the cryptic message
   ```
@@ -2298,11 +2298,11 @@ You can do this last!
 
 * Use the configure Tomcat application (tomcat8w) to make the startup type automatic.
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
 
 * Use the configure Tomcat application (tomcat8w) to set the logging level to debug.
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.PNG?raw=true "Set the logging level to debug")
+  ![alt text]({{ site.baseurl }}/rifWebApplication/tomcat8_configuration_2.PNG?raw=true "Set the logging level to debug")
 
 * Check the memory available to your Java version:
   ```
@@ -2347,7 +2347,7 @@ Set the following *CATALINA_OPTS* in *%CATALINA_HOME%\bin\setenv.bat*:
 
 Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 
- ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Jconsole.png?raw=true "Jconsole")
+ ![alt text]({{ site.baseurl }}/rifWebApplication/Jconsole.png?raw=true "Jconsole")
 
 ## 8.3 Securing Tomcat
 
@@ -2818,11 +2818,11 @@ java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.1\library\rJava\jri\x64
 
    If there are R script errors JRI the middleware will crash with an error. This will be saved in the *Study status* pane:
 
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/study-status.png?raw=true "Study status")
+   ![alt text]({{ site.baseurl }}/rifWebApplication/study-status.png?raw=true "Study status")
 
    Clicking on the *trace* button will bring up the trace pane.
 
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/R-trace.png?raw=true "R Trace")
+   ![alt text]({{ site.baseurl }}/rifWebApplication/R-trace.png?raw=true "R Trace")
 
    If there are R script errors JRI will log them to the middleware log: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```:
 
@@ -3313,9 +3313,9 @@ R process ID tracer from the middleware log:
 Rengine Started; Rpid: 10644; JRI version: 266; thread ID: 30
 ```
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-1.png?raw=true "Process explorer")
+![alt text]({{ site.baseurl }}/rifWebApplication/process-explorer-1.png?raw=true "Process explorer")
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-2.png?raw=true "Java Process details")
+![alt text]({{ site.baseurl }}/rifWebApplication/process-explorer-2.png?raw=true "Java Process details")
 
 R will be limited to the maximum private memory (resident set size) of Java, typically around 3.3GB on Windows 8.1. To go beyond this
 you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HOME%\bin\setenv.bat*; e.g. add ```-Xmx6g``` to
