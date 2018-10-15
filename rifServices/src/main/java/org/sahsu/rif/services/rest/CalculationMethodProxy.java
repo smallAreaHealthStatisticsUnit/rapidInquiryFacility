@@ -35,12 +35,16 @@ final public class CalculationMethodProxy {
 
 	}
 
+	/*
+	 * IntelliJ flags this as not used, but it is needed for Jackson, which
+	 * calls it implicitly.
+	 */
 	public String getCodeRoutineName() {
 		return codeRoutineName;
 	}
 
 
-	public void setCodeRoutineName(final String codeRoutineName) {
+	void setCodeRoutineName(final String codeRoutineName) {
 		this.codeRoutineName = codeRoutineName;
 	}
 
@@ -64,13 +68,16 @@ final public class CalculationMethodProxy {
 		this.description = description;
 	}
 
-
+	/*
+	 * IntelliJ flags this as not used, but it is needed for Jackson, which
+	 * calls it implicitly.
+	 */
 	public List<ParameterProxy> getParameterProxies() {
 		return parameterProxies;
 	}
 
 
-	public void setParameterProxies(final List<ParameterProxy> parameterProxies) {
+	void setParameterProxies(final List<ParameterProxy> parameterProxies) {
 		this.parameterProxies = parameterProxies;
 	}
 }
