@@ -9,7 +9,7 @@ import javax.ws.rs.core.Application;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 
 /**
- * The root of the Taxonomy Service web service. The root path, taxonomy,
+ * The root of the Taxonomy Service web service. The root path, taxonomies,
  * is provided by the name of the application's war file.
  */
 @ApplicationPath("/service")

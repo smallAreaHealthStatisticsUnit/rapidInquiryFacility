@@ -44,7 +44,7 @@ angular.module("RIF")
 				return {		 
 					studySubmissionURL: serviceHost + "/rifServices/studySubmission/",
 					studyResultRetrievalURL: serviceHost + "/rifServices/studyResultRetrieval/",
-					taxonomyServicesURL: serviceHost + "/taxonomy/service/"
+					taxonomyServicesURL: serviceHost + "/taxonomies/service/"
 				}
 /* 
 

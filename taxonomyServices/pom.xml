@@ -2,7 +2,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>taxonomy</artifactId>
+	<artifactId>taxonomies</artifactId>
 	<packaging>war</packaging>
 	
 	<parent>
