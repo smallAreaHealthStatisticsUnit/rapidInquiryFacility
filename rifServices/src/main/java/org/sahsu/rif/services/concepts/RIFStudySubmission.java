@@ -14,7 +14,6 @@ import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLReader;
 import org.sahsu.rif.services.system.RIFServiceError;
-import org.sahsu.rif.services.system.RIFServiceMessages;
 
 public final class RIFStudySubmission extends AbstractRIFConcept {
 

@@ -18,6 +18,9 @@ public final class Parameter
 		implements DisplayableListItemInterface {
 
 	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+
+	// Use the "null object" pattern instead of returning null.
+	public static final Parameter NULL_PARAM = new Parameter("", "");
 	
 	/** The name. */
 	private String name;
@@ -138,7 +141,7 @@ public final class Parameter
 			}
 		}
 		
-		return null;
+		return NULL_PARAM;
 		
 	}
 	

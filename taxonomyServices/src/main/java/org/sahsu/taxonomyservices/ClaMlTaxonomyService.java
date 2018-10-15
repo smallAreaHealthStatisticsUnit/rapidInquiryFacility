@@ -29,92 +29,13 @@ import java.util.List;
  * Most of the potential concurrency problems that may arise in simultaneous access to the
  * service are controlled by {@link FederatedTaxonomyService}.
  * </p>
- *  
- * 
- * 
- * </p>
- * 
- *
- * <hr>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. 
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
-
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF.  If not, see <http://www.gnu.org/licenses/>.
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
  */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
 public class ClaMlTaxonomyService
 	extends AbstractTaxonomyService 
 	implements TaxonomyServiceAPI {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	//Interface TaxonomyServiceAPI
 
 	public void initialiseService(
 		final String defaultResourceDirectoryPath,
@@ -133,21 +54,21 @@ public class ClaMlTaxonomyService
 			List<Parameter> parameters = taxonomyServiceConfiguration.getParameters();
 		
 			Parameter icd1011FileParameter = Parameter.getParameter("icd10_ClaML_file", parameters);
-			if (icd1011FileParameter == null) {
+			if (icd1011FileParameter == Parameter.NULL_PARAM) {
 				icd1011FileParameter = Parameter.getParameter("icd11_ClaML_file", parameters);
 			}
 			name = taxonomyServiceConfiguration.getName();
 			description = taxonomyServiceConfiguration.getDescription();
 			
-			if (icd1011FileParameter == null) {
+			if (icd1011FileParameter == Parameter.NULL_PARAM) {
 				//ERROR: initialisation parameters are missing a required parameter value				
-				String errorMessage
-					= "ICD10/11 taxonomy service: " + name + " is missing a parameter for \"icd10_ClaML_file\" or \"icd11_ClaML_file\"";
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						TaxonomyServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
-						errorMessage);
-				throw rifServiceException;
+				String errorMessage = "ICD10/11 taxonomy service: " + name + " is missing "
+				                      + "a parameter for \"icd10_ClaML_file\" "
+				                      + "or \"icd11_ClaML_file\"";
+
+				throw new RIFServiceException(
+					TaxonomyServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
+					errorMessage);
 			}		
 		
 			StringBuilder icd1011FileName = new StringBuilder();
@@ -167,11 +88,10 @@ public class ClaMlTaxonomyService
 				//ERROR: initialisation parameters are missing a required parameter value				
 				String errorMessage
 					= "ICD10/11 taxonomy service: " + name + " file: \"" + icd1011FileParameter + "\" not found.";
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						TaxonomyServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
-						errorMessage);
-				throw rifServiceException;
+
+				throw new RIFServiceException(
+					TaxonomyServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
+					errorMessage);
 			}
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -182,11 +102,5 @@ public class ClaMlTaxonomyService
 			setServiceWorking(false);
 		}
 	}
-
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
 }
 
