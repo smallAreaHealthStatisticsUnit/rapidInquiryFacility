@@ -35,7 +35,12 @@ final public class CalculationMethodProxy {
 
 	}
 
-	void setCodeRoutineName(final String codeRoutineName) {
+	public String getCodeRoutineName() {
+		return codeRoutineName;
+	}
+
+
+	public void setCodeRoutineName(final String codeRoutineName) {
 		this.codeRoutineName = codeRoutineName;
 	}
 
@@ -59,7 +64,13 @@ final public class CalculationMethodProxy {
 		this.description = description;
 	}
 
-	void setParameterProxies(final List<ParameterProxy> parameterProxies) {
+
+	public List<ParameterProxy> getParameterProxies() {
+		return parameterProxies;
+	}
+
+
+	public void setParameterProxies(final List<ParameterProxy> parameterProxies) {
 		this.parameterProxies = parameterProxies;
 	}
 }
