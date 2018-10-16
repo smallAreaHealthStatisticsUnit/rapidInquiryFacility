@@ -5,7 +5,7 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 public class ServiceResources {
 
-	private HealthOutcomeManager healthOutcomeManager;
+	// private HealthOutcomeManager healthOutcomeManager;
 	private CovariateManager sqlCovariateManager;
 	private BaseSQLManager sqlConnectionManager;
 	private RIFContextManager sqlRIFContextManager;
@@ -24,7 +24,7 @@ public class ServiceResources {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 
 		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
-		healthOutcomeManager = new CommonHealthOutcomeManager(rifServiceStartupOptions);
+		// healthOutcomeManager = new CommonHealthOutcomeManager(rifServiceStartupOptions);
 
 		sqlRIFContextManager = new RIFContextManager(rifServiceStartupOptions);
 
@@ -124,9 +124,9 @@ public class ServiceResources {
 		return sqlResultsQueryManager;
 	}
 
-	public HealthOutcomeManager getHealthOutcomeManager() {
-		return healthOutcomeManager;
-	}
+	// public HealthOutcomeManager getHealthOutcomeManager() {
+	// 	return healthOutcomeManager;
+	// }
 
 	StudyStateManager getStudyStateManager() {
 		return sqlStudyStateManager;

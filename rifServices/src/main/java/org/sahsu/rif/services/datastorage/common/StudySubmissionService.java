@@ -20,8 +20,6 @@ import org.sahsu.rif.services.concepts.AgeGroup;
 import org.sahsu.rif.services.concepts.AgeGroupSortingOption;
 import org.sahsu.rif.services.concepts.CalculationMethod;
 import org.sahsu.rif.services.concepts.Geography;
-import org.sahsu.rif.services.concepts.HealthCode;
-import org.sahsu.rif.services.concepts.HealthCodeTaxonomy;
 import org.sahsu.rif.services.concepts.HealthTheme;
 import org.sahsu.rif.services.concepts.NumeratorDenominatorPair;
 import org.sahsu.rif.services.concepts.Project;
@@ -72,10 +70,10 @@ import org.sahsu.rif.services.system.files.TomcatFile;
  *business objects it may possess.
  *</li>
  *<li>
- *Obtain a connection object from the {@link rifServices.dataStorageLayer.ms.SQLManager}.
+ *Obtain a connection object from the {@link SQLManager}.
  *</li>
  *<li>
- *Delegate to a manager class, using a method with the same name.  Pass the connection object as part of the call. 
+ *Delegate to a manager class, using a method with the same name.  Pass the connection object as part of the call.
  *</li>
  *<li>
  *Return the connection object to the connection pool.
@@ -97,57 +95,54 @@ import org.sahsu.rif.services.system.files.TomcatFile;
 public class StudySubmissionService extends CommonUserService implements RIFStudySubmissionAPI {
 
 	private static String lineSeparator = System.getProperty("line.separator");
-		
+
 	/**
 	 * Instantiates a new production rif job submission service.
 	 */
 	public StudySubmissionService() {
 
-		String serviceName
-			= RIFServiceMessages.getMessage("rifStudySubmissionService.name");
+		String serviceName = RIFServiceMessages.getMessage("rifStudySubmissionService.name");
 		setServiceName(serviceName);
-		String serviceVersion
-			= RIFServiceMessages.getMessage("rifStudySubmissionService.version");
-		String serviceDescription
-			= RIFServiceMessages.getMessage("rifStudySubmissionService.description");
+		String serviceDescription = RIFServiceMessages.getMessage(
+				"rifStudySubmissionService.description");
 		setServiceDescription(serviceDescription);
-		String serviceContactEmail
-			= RIFServiceMessages.getMessage("rifStudySubmissionService.contactEmail");
+		String serviceContactEmail = RIFServiceMessages.getMessage(
+				"rifStudySubmissionService.contactEmail");
 		setServiceContactEmail(serviceContactEmail);
 	}
-	
-	public void test(final User user)		
+
+	public void test(final User user)
 		throws RIFServiceException {
-			
+
 		//Defensively copy parameters and guard against blocked users
 		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();	
+			= rifServiceResources.getSqlConnectionManager();
 
 		Connection connection = null;
 		try {
-			
+
 			//Assign pooled connection
-			connection 
+			connection
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 			String password=sqlConnectionManager.getUserPassword(user);
-			
+
 			SampleTestObjectGenerator testDataGenerator
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
 				= testDataGenerator.createSampleRIFJobSubmission();
-			
-			//Delegate operation to a specialised manager class			
+
+			//Delegate operation to a specialised manager class
 			RIFServiceStartupOptions rifServiceStartupOptions
-				= getRIFServiceStartupOptions();			
+				= getRIFServiceStartupOptions();
 			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
-				connection, 
-				user, 
+				connection,
+				user,
 				password,
-				studySubmission, 
-				rifServiceStartupOptions, 
+				studySubmission,
+				rifServiceStartupOptions,
 				rifServiceResources);
-			
+
 			Thread thread = new Thread(runStudyThread);
 			thread.start();
 		}
@@ -157,32 +152,32 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			logException(
 				user,
 				"test",
-				rifServiceException);	
+				rifServiceException);
 		}
 		finally {
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
+				user,
+				connection);
 		}
-	
+
 	}
 
 	public ArrayList<CalculationMethod> getAvailableCalculationMethods(
-		final User _user) 
+		final User _user)
 		throws RIFServiceException {
-		
+
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();				
+			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
-		ArrayList<CalculationMethod> results 
+		ArrayList<CalculationMethod> results
 			= new ArrayList<CalculationMethod>();
-		try {			
+		try {
 
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
@@ -191,12 +186,12 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				"getAvailableCalculationMethods",
 				"user",
 				user);
-		
+
 			//Check for security violations
 			validateUser(user);
-		
+
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getAvailableCalculationMethods",
 					user.getUserID(),
@@ -205,7 +200,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				getClass(),
 				auditTrailMessage);
 
-			//Delegate operation to a specialised manager class		
+			//Delegate operation to a specialised manager class
 			SampleTestObjectGenerator generator
 				= new SampleTestObjectGenerator();
 			results = generator.getSampleCalculationMethods();
@@ -217,11 +212,9 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				"getAvailableCalculationMethods",
 				rifServiceException);
 		}
-		
-		return results;	
-	}
 
-	
+		return results;
+	}
 
 	public List<AgeGroup> getAgeGroups(
 		final User _user,
@@ -229,7 +222,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		final NumeratorDenominatorPair _ndPair,
 		final AgeGroupSortingOption sortingOrder)
 		throws RIFServiceException {
-				
+
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
@@ -242,10 +235,10 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			= NumeratorDenominatorPair.createCopy(_ndPair);
 		//no need to defensively copy sortingOrder because
 		//it is an enumerated type
-		
+
 		List<AgeGroup> results = new ArrayList<>();
 		Connection connection = null;
-		try {			
+		try {
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
@@ -264,15 +257,15 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 
 			//sortingOrder can be null, it just means that the
 			//order will be ascending lower limit
-		
+
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
 			ndPair.checkSecurityViolations();
 
-			
+
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getAgeGroups",
 					user.getUserID(),
@@ -283,8 +276,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
-						
-			
+
+
 			//Assign pooled connection
 			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
@@ -305,26 +298,26 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		finally {
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
+				user,
+				connection);
 		}
-		
+
 		return results;
-		
+
 	}
-	
+
 	public ArrayList<Sex> getSexes(
 		final User _user)
 		throws RIFServiceException {
-		
+
 		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
+		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();				
+			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
-		
+
 		ArrayList<Sex> results = new ArrayList<Sex>();
 		try {
 			//Check for empty parameters
@@ -334,12 +327,12 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				"getSexes",
 				"user",
 				user);
-		
+
 			//Check for security violations
-			validateUser(user);		
+			validateUser(user);
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getSexes",
 					user.getUserID(),
@@ -347,8 +340,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
-			
-			
+
+
 			//Delegate operation to a specialised manager class
 			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
@@ -362,332 +355,32 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				"getSexes",
 				rifServiceException);
 		}
-		
-		return results;	
+
+		return results;
 	}
 
-	/**
-	 * a helper method used to support web services that pass single string values rather than
-	 * a java object to represent a record.  This method uses two values, healthCodeName and
-	 * healthCodeNameSpace, to retrieve a fully populated HealthCode object.  The object can
-	 * then be available to make successive calls to other parts of the RIFJobSubmissionAPI.
-	 * @param _user
-	 * @param healthCodeName
-	 * @param healthCodeNameSpace
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public HealthCode getHealthCode(
-		final User _user,
-		final String healthCodeName,
-		final String healthCodeNameSpace) throws RIFServiceException {
-	
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-	
-		HealthCode result = HealthCode.newInstance();
-		try {
-
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCode",
-				"user",
-				user);		
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCode",
-				"healthCodeName",
-				healthCodeName);		
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCode",
-				"healthCodeNameSpace",
-				healthCodeNameSpace);		
-
-			//Check for security violations
-			validateUser(user);		
-			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getHealthCode",
-				"healthCodeName",
-				healthCodeName);
-			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getHealthCode", 
-				"healthCodeNameSpace",
-				healthCodeNameSpace);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getHealthCode",
-					user.getUserID(),
-					user.getIPAddress(),
-					healthCodeName,
-					healthCodeNameSpace);
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-			
-			//Delegate operation to a specialised manager class
-			HealthOutcomeManager healthOutcomeManager
-				= rifServiceResources.getHealthOutcomeManager();
-			result
-				= healthOutcomeManager.getHealthCode(
-					healthCodeName, 
-					healthCodeNameSpace);
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getHealthCode",
-				rifServiceException);
-		}
-		
-		return result;
-		
-	}
-		
-	public ArrayList<HealthCode> getImmediateChildHealthCodes(
-		final User _user,		
-		final HealthCode _parentHealthCode) 
-		throws RIFServiceException {
-		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-		HealthCode parentHealthCode = HealthCode.createCopy(_parentHealthCode);
-		
-		//Part II: Check for empty parameter values
-		ArrayList<HealthCode> results = new ArrayList<HealthCode>();
-		try {
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getImmediateSubterms",
-				"user",
-				user);	
-			fieldValidationUtility.checkNullMethodParameter(
-				"getImmediateSubterms",
-				"parentHealthCode",
-				parentHealthCode);		
-		
-			//Check for security violations
-			validateUser(user);		
-			parentHealthCode.checkSecurityViolations();			
-							
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getImmediateSubterms",
-					user.getUserID(),
-					user.getIPAddress(),
-					parentHealthCode.getCode(),
-					parentHealthCode.getNameSpace());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-			
-
-			//Delegate operation to a specialised manager class
-			HealthOutcomeManager healthOutcomeManager
-				= rifServiceResources.getHealthOutcomeManager();
-			results
-				= healthOutcomeManager.getImmediateSubterms(
-					parentHealthCode);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getTopLevelCodes",
-				rifServiceException);
-		}
-		
-		return results;		
-	}
-	
-	public HealthCode getParentHealthCode(
-		final User _user,
-		final HealthCode _childHealthCode) 
-		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-		HealthCode childHealthCode = HealthCode.createCopy(_childHealthCode);
-		
-		//Part II: Check for empty parameter values
-		HealthCode result = HealthCode.newInstance();
-		try {
-			
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getParentHealthCode",
-				"user",
-				user);		
-			fieldValidationUtility.checkNullMethodParameter(
-				"getParentHealthCode",
-				"childHealthCode",
-				childHealthCode);		
-						
-			//Check for security violations
-			validateUser(user);		
-			childHealthCode.checkSecurityViolations();			
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getParentHealthCode",
-					user.getUserID(),
-					user.getIPAddress(),
-					childHealthCode.getCode(),
-					childHealthCode.getNameSpace());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-						
-			//Delegate operation to a specialised manager class
-			HealthOutcomeManager healthOutcomeManager
-				= rifServiceResources.getHealthOutcomeManager();
-			result
-				= healthOutcomeManager.getParentHealthCode(
-					childHealthCode);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getTopLevelCodes",
-				rifServiceException);
-		}
-				
-		return result;
-	}
-	
-	
-	public ArrayList<HealthCode> getHealthCodesMatchingSearchText(
-		final User _user,
-		final HealthCodeTaxonomy _healthCodeTaxonomy,
-		final String searchText,
-		final boolean isCaseSensitive)
-		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-		HealthCodeTaxonomy healthCodeTaxonomy
-			= HealthCodeTaxonomy.createCopy(_healthCodeTaxonomy);
-
-		ArrayList<HealthCode> results = new ArrayList<HealthCode>(); 
-		Connection connection = null;
-		try {
-			//Part II: Check for empty parameter values
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCodes",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCodes",
-				"healthCodeTaxonomy",
-				healthCodeTaxonomy);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCodes",
-				"searchText", 
-				searchText);
-			
-			//Check for security violations
-			validateUser(user);
-			healthCodeTaxonomy.checkSecurityViolations();
-			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getHealthCodes", 
-				"searchText", 
-				searchText);
-		
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getHealthCodes",
-					user.getUserID(),
-					user.getIPAddress(),
-					healthCodeTaxonomy.getDisplayName(),
-					searchText);
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-			
-			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledReadConnection(user);
-
-			//Delegate operation to a specialised manager class		
-			HealthOutcomeManager healthOutcomeManager
-				= rifServiceResources.getHealthOutcomeManager();			
-			results 
-				= healthOutcomeManager.getHealthCodes(
-					healthCodeTaxonomy, 
-					searchText,
-					isCaseSensitive);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getTopLevelCodes",
-				rifServiceException);
-		}
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
-		}
-		
-		return results;		
-
-	}
 	//Features for RIF Context
 	public ArrayList<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
 		final User _user,
 		final Geography _geography,
 		final HealthTheme _healthTheme)
 		throws RIFServiceException {
-		
+
 		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
+		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();				
+			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
 		HealthTheme healthTheme = HealthTheme.createCopy(_healthTheme);
-		
-		ArrayList<NumeratorDenominatorPair> results = 
-			new ArrayList<NumeratorDenominatorPair>();		
+
+		ArrayList<NumeratorDenominatorPair> results =
+			new ArrayList<NumeratorDenominatorPair>();
 		Connection connection = null;
 		try {
-			
+
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
@@ -702,15 +395,15 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			fieldValidationUtility.checkNullMethodParameter(
 				"getNumeratorDenominatorPair",
 				"geography",
-				geography);		
-			
+				geography);
+
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
 			healthTheme.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getNumeratorDenominatorPairs",
 					user.getUserID(),
@@ -720,12 +413,12 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
-			
+
 			//Assign pooled connection
-			connection 
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
-			//Delegate operation to a specialised manager class			
+			//Delegate operation to a specialised manager class
 			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
 			results
@@ -740,13 +433,13 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			logException(
 				user,
 				"getNumeratorDenominatorPair",
-				rifServiceException);	
+				rifServiceException);
 		}
 		finally {
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
+				user,
+				connection);
 		}
 
 		return results;
@@ -754,7 +447,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 
 
 	/**
-	 * Convenience method to obtain everything that is needed to get 
+	 * Convenience method to obtain everything that is needed to get
 	 * @param u
 	 * @param geog
 	 * @param numeratorTableName
@@ -764,14 +457,14 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	public NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
 		final User u,
 		final Geography geog,
-		final String numeratorTableName) 
+		final String numeratorTableName)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(u);
 		SQLManager sqlConnectionManager =
 						rifServiceResources.getSqlConnectionManager();
-		
+
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
@@ -780,7 +473,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		NumeratorDenominatorPair result = NumeratorDenominatorPair.newInstance();
 		Connection connection = null;
 		try {
-			
+
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
@@ -791,23 +484,23 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			fieldValidationUtility.checkNullMethodParameter(
 				"getNumeratorDenominatorPairFromNumeratorTable",
 				"geography",
-				geography);		
+				geography);
 
 			fieldValidationUtility.checkNullMethodParameter(
 				"getNumeratorDenominatorPairFromNumeratorTable",
 				"numeratorTableName",
-				numeratorTableName);		
-			
+				numeratorTableName);
+
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
 			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getNumeratorDenominatorPairFromNumeratorTable", 
-				"numeratorTableName", 
+				"getNumeratorDenominatorPairFromNumeratorTable",
+				"numeratorTableName",
 				numeratorTableName);
-			
+
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getNumeratorDenominatorPairFromNumeratorTable",
@@ -818,11 +511,11 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
-						
+
 			//Assign pooled connection
-			connection 
+			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
-			
+
 			//Delegate operation to a specialised manager class
 			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
@@ -838,34 +531,34 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			logException(
 				user,
 				"getNumeratorDenominatorPair",
-				rifServiceException);	
+				rifServiceException);
 		}
 		finally {
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
+				user,
+				connection);
 		}
 
 		return result;
-	
+
 	}
-	
+
 	public ArrayList<Project> getProjects(
 		final User _user) throws RIFServiceException {
-		
+
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();	
+			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
-		
+
 		ArrayList<Project> results = new ArrayList<Project>();
 		Connection connection = null;
 		try {
-			
+
 			//Part II: Check for empty parameter values
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
@@ -873,12 +566,12 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				"getProjects",
 				"user",
 				user);
-		
+
 			//Check for security violations
 			validateUser(user);
-		
+
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage(
 					"logging.getProjects",
@@ -887,39 +580,39 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
-						
+
 			//Assign pooled connection
-			connection 
-				= sqlConnectionManager.assignPooledReadConnection(user);	
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
 			DiseaseMappingStudyManager sqlDiseaseMappingStudyManager
 				= rifServiceResources.getSqlDiseaseMappingStudyManager();
-			
+
 			results
 				= sqlDiseaseMappingStudyManager.getProjects(
 					connection,
-					user);	
-				
+					user);
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
 				user,
 				"getProjects",
-				rifServiceException);	
+				rifServiceException);
 		}
 		finally {
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
+				user,
+				connection);
 		}
 
-		return results;			
+		return results;
 	}
 
-	
+
 	public String submitStudy(
 		final User _user,
 		final RIFStudySubmission rifStudySubmission,
@@ -928,23 +621,23 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();	
-		
+			= rifServiceResources.getSqlConnectionManager();
+
 		String result = null;
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		// RIFStudySubmission rifStudySubmission
 		// 	= RIFStudySubmission.createCopy(_rifStudySubmission);
-		
+
 		File outputFile = null;
 		if (_outputFile != null) {
-			outputFile = new File(_outputFile.getAbsolutePath());			
+			outputFile = new File(_outputFile.getAbsolutePath());
 		}
 
 		Connection connection = null;
 		try {
-			
+
 			//Part II: Check for empty parameter values
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
@@ -955,12 +648,12 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			fieldValidationUtility.checkNullMethodParameter(
 				"submitStudy",
 				"rifStudySubmission",
-				rifStudySubmission);	
-						
+				rifStudySubmission);
+
 			//Check for security violations
 			validateUser(user);
-			rifStudySubmission.checkSecurityViolations();		
-			
+			rifStudySubmission.checkSecurityViolations();
+
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			String outputFileName = "";
@@ -976,39 +669,39 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
-		
+
 			//Assign pooled connection
 			connection
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 			String password=sqlConnectionManager.getUserPassword(user);
 
-			//Delegate operation to a specialised manager class			
+			//Delegate operation to a specialised manager class
 			RIFServiceStartupOptions rifServiceStartupOptions
-				= getRIFServiceStartupOptions();			
+				= getRIFServiceStartupOptions();
 			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
-				connection, 
-				user, 
+				connection,
+				user,
 				password,
-				rifStudySubmission, 
-				rifServiceStartupOptions, 
+				rifStudySubmission,
+				rifServiceStartupOptions,
 				rifServiceResources);
-			
+
 			Thread thread = new Thread(runStudyThread);
-			thread.run();	
+			thread.run();
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
 				user,
 				"submitStudy",
-				rifServiceException);	
+				rifServiceException);
 		}
 		finally {
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
-				connection);			
+				user,
+				connection);
 		}
 
 		return result;
@@ -1024,12 +717,12 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	 */
 	public String getFrontEndParameters(
 		final User user) {
-					
+
 		String defaultJson = "{" + lineSeparator +
 					"	parameters: {" + lineSeparator +
 					"		usePouchDBCache: 	false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;" + lineSeparator +
 					"		debugEnabled:		false,	// Disable front end debugging" + lineSeparator +
-					"		mappingDefaults: 	{" + lineSeparator +					
+					"		mappingDefaults: 	{" + lineSeparator +
 					"			'diseasemap1': {}," + lineSeparator +
 					"			'diseasemap2': {}," + lineSeparator +
 					"			'viewermap': {}" + lineSeparator +
@@ -1082,11 +775,11 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 
 		return escapedJson.toString();
 	}
-		
+
 	/**
-	 * Get textual extract status of a study.                          
-	 * <p>   
-	 * This fucntion determines whether a study can be extracted from the database and the results returned to the user in a ZIP file 
+	 * Get textual extract status of a study.
+	 * <p>
+	 * This fucntion determines whether a study can be extracted from the database and the results returned to the user in a ZIP file
 	 * </p>
 	 * <p>
 	 * Returns the following textual strings:
@@ -1095,27 +788,27 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	 *     <ul>
 	 *	     <li>C: created, not verified;</li>
 	 *	     <li>V: verified, but no other work done; [NOT USED BY MIDDLEWARE]</li>
-	 *	     <li>E: extracted imported or created, but no results or maps created;</li> 
+	 *	     <li>E: extracted imported or created, but no results or maps created;</li>
 	 *	     <li>R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design]</li>
 	 *	     <li>W: R warning. [NOT USED BY MIDDLEWARE]</li>
 	 *     <ul>
 	 *   </li>
 	 *   <li>STUDY_FAILED_NOT_ZIPPABLE: returned for the following rif40_studies.study_state codes/meanings:
-	 *	     <li>G: Extract failure, extract, results or maps not created;</li> 
-	 *	     <li>F: R failure, R has caught one or more exceptions [depends on the exception handler</li> 
+	 *	     <li>G: Extract failure, extract, results or maps not created;</li>
+	 *	     <li>F: R failure, R has caught one or more exceptions [depends on the exception handler</li>
 	 *   </li>
-	 *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success; 
+	 *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success;
 	 *       when the ZIP extrsct file has not yet been created
 	 *   </il>
-	 *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+	 *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu  code/meaning of: S: R success;
 	 *       when the ZIP extrsct file has been created
 	 *   </il>
 	 *   <il>STUDY_NOT_FOUND: returned where the studyID was not found in rif40_studies
 	 *   </il>
-	 *   <il>STUDY_ZIP_FAILED: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+	 *   <il>STUDY_ZIP_FAILED: returned for the following rif40_studies.study_statu  code/meaning of: S: R success;
 	 *       when the ZIP extract error file has been created
 	 *   </il>
-	 *   <il>STUDY_ZIP_IN_PROGRESS: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+	 *   <il>STUDY_ZIP_IN_PROGRESS: returned for the following rif40_studies.study_statu  code/meaning of: S: R success;
 	 *       when the ZIP extract file has been created
 	 *   </il>
 	 * </il>
@@ -1127,22 +820,22 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	 * @param  _user 		Database username of logged on user.
 	 * @param  studyID 		Integer study identifier (database study_id field).
 	 *
-	 * @return 				Textual extract status 
+	 * @return 				Textual extract status
 	 *						NULL on exception or permission denied by sqlConnectionManager
 	 */
 	public String getExtractStatus(
 			final User _user,
-			final String studyID) 
+			final String studyID)
 					throws RIFServiceException {
-										
+
 		String result = null;
 		RIFLogger rifLogger = RIFLogger.getLogger();
-		
+
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();			
-		
+		= rifServiceResources.getSqlConnectionManager();
+
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
@@ -1160,13 +853,13 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			fieldValidationUtility.checkNullMethodParameter(
 					"getExtractStatus",
 					"studyID",
-					studyID);	
+					studyID);
 
 			//Check for security violations
 			validateUser(user);
 			fieldValidationUtility.checkMaliciousMethodParameter(
-					"getExtractStatus", 
-					"studyID", 
+					"getExtractStatus",
+					"studyID",
 					studyID);
 
 			//Audit attempt to do operation
@@ -1187,7 +880,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 					rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission = sqlRIFSubmissionManager.getRIFStudySubmission(
 					connection,
-					user, 
+					user,
 					studyID);
 
 			StudyExtractManager studyExtractManager =
@@ -1206,40 +899,40 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			                           + ": " + result);
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(user, connection);
-		}	
-		
+		}
+
 		return result;
-	}	
-	
+	}
+
 	/**
-	 * Get the JSON setup file for a run study.                          
-	 * <p>   
-	 * This function returns the JSON setup file for a run study, including the print setup 
+	 * Get the JSON setup file for a run study.
+	 * <p>
+	 * This function returns the JSON setup file for a run study, including the print setup
 	 * </p>
 	 * <p>
-	 * Returns the following textual strings:	
+	 * Returns the following textual strings:
 	 * @param  _user 		Database username of logged on user.
 	 * @param  studyID 		Integer study identifier (database study_id field).
 	 * @param  locale 		locale
 	 * @param  url e.g. http://localhost:8080.
 	 *
-	 * @return 				Textual JSON 
+	 * @return 				Textual JSON
 	 *						NULL on exception or permission denied by sqlConnectionManager
-	 */	
+	 */
 	public String getJsonFile(
 			final User _user,
 			final String studyID,
 			final Locale locale,
 			final String url)
 					throws RIFServiceException {
-										
+
 		String result = null;
 		RIFLogger rifLogger = RIFLogger.getLogger();
-		
+
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
-		
+
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
@@ -1257,13 +950,13 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			fieldValidationUtility.checkNullMethodParameter(
 					"getJsonFile",
 					"studyID",
-					studyID);	
+					studyID);
 
 			//Check for security violations
 			validateUser(user);
 			fieldValidationUtility.checkMaliciousMethodParameter(
-					"getJsonFile", 
-					"studyID", 
+					"getJsonFile",
+					"studyID",
 					studyID);
 
 			//Audit attempt to do operation
@@ -1284,18 +977,18 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
-					connection, 
-					user, 
+					connection,
+					user,
 					studyID);
 
 			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
-			
-			rifLogger.info(this.getClass(), "Call getJsonFile() using URL: " + 
+
+			rifLogger.info(this.getClass(), "Call getJsonFile() using URL: " +
 				url);
 			result=studyExtractManager.getJsonFile(
-					connection, 
-					user, 
+					connection,
+					user,
 					rifStudySubmission,
 					studyID,
 					locale,
@@ -1307,7 +1000,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			logException(
 					user,
 					"getJsonFile",
-					rifServiceException);	
+					rifServiceException);
 			// Effectively return NULL
 		}
 		finally {
@@ -1317,36 +1010,36 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			rifLogger.info(getClass(), "get JSON file for study: " + studyID + "; locale: " + locale.toLanguageTag());
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
-					user, 
-					connection);			
-		}	
-		
+					user,
+					connection);
+		}
+
 		return result;
-	}						
-		
+	}
+
 	public void createStudyExtract(final User user, final String studyID, final String zoomLevel,
 			final Locale locale, final String url) throws RIFServiceException {
-		
+
 		new StudyExtract(user, studyID, zoomLevel, locale, url,
 		                 rifServiceResources).create();
 	}
-	
+
 	public String getStudyExtractFIleName(
 			final User user,
 			final String studyID)
 		throws RIFServiceException {
-		
+
 			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			return studyExtractManager.getStudyExtractFIleName(
-					user, 
-					studyID);			
+					user,
+					studyID);
 		}
-		
+
 	public FileInputStream getStudyExtract(
 			final User _user,
 			final String studyID,
-			final String zoomLevel) 
+			final String zoomLevel)
 					throws RIFServiceException {
 
 
@@ -1354,8 +1047,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		User user = User.createCopy(_user);
 		FileInputStream fileInputStream = null;
 		SQLManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();			
-		
+		= rifServiceResources.getSqlConnectionManager();
+
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
 		}
@@ -1374,18 +1067,18 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			fieldValidationUtility.checkNullMethodParameter(
 					"getStudyExtract",
 					"studyID",
-					studyID);	
+					studyID);
 			fieldValidationUtility.checkNullMethodParameter(
 					"getStudyExtract",
 					"zoomLevel",
-					zoomLevel);	
+					zoomLevel);
 
 
 			//Check for security violations
 			validateUser(user);
 			fieldValidationUtility.checkMaliciousMethodParameter(
-					"getStudyExtract", 
-					"studyID", 
+					"getStudyExtract",
+					"studyID",
 					studyID);
 
 			//Audit attempt to do operation
@@ -1407,15 +1100,15 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
-					connection, 
-					user, 
+					connection,
+					user,
 					studyID);
 
 			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			fileInputStream = studyExtractManager.getStudyExtract(
-					connection, 
-					user, 
+					connection,
+					user,
 					rifStudySubmission,
 					zoomLevel,
 					studyID);
@@ -1426,205 +1119,17 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			logException(
 					user,
 					"getStudyExtract",
-					rifServiceException);	
+					rifServiceException);
 		}
 		finally {
-			
+
 			rifLogger.info(getClass(), "Extract ZIP GET completed OK");
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
-					user, 
-					connection);			
+					user,
+					connection);
 		}
 
 		return fileInputStream;
-	}
-			
-	/**
-	 * Gets the health code taxonomy given the name space
-	 *
-	 * @param _user the user
-	 * @return the health code taxonomy corresponding to the name space
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
-		final User _user, 
-		final String nameSpace) throws RIFServiceException {
-		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return null;
-		}
-		
-		HealthCodeTaxonomy result = HealthCodeTaxonomy.newInstance();
-		try {
-			//Part II: Check for security violations
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCodeTaxonomyFromNameSpace",
-				"user",
-				user);		
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCodeTaxonomyFromNameSpace",
-				"nameSpace",
-				nameSpace);
-			
-			//Check for security violations
-			validateUser(user);
-			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getHealthCodeTaxonomyFromNameSpace", 
-				"healthCodeTaxonomyNameSpace", 
-				nameSpace);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();	
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage(
-					"logging.getHealthCodeTaxonomyFromNameSpace",
-					user.getUserID(),
-					user.getIPAddress(),
-					nameSpace);
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-			
-			//Delegate operation to a specialised manager class
-			HealthOutcomeManager healthOutcomeManager
-				= rifServiceResources.getHealthOutcomeManager();
-			result 
-				= healthOutcomeManager.getHealthCodeTaxonomyFromNameSpace(
-					nameSpace);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getHealthCodeTaxonomies",
-				rifServiceException);
-		}
-		
-		return result;
-		
-	}
-	
-	public ArrayList<HealthCodeTaxonomy> getHealthCodeTaxonomies(
-		final User _user) 
-		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return null;
-		}
-
-		ArrayList<HealthCodeTaxonomy> results = new ArrayList<HealthCodeTaxonomy>();
-		try {
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getHealthCodeTaxonomies",
-				"user",
-				user);
-
-			//Check for security violations
-			validateUser(user);
-			
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();	
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage(
-					"logging.getHealthCodeTaxonomies",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-			
-			
-			//Delegate operation to a specialised manager class			
-			HealthOutcomeManager healthOutcomeManager
-				= rifServiceResources.getHealthOutcomeManager();			
-			results 
-				= healthOutcomeManager.getHealthCodeTaxonomies();
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getHealthCodeTaxonomies",
-				rifServiceException);
-		}
-		
-		return results;
-	}
-	
-	public ArrayList<HealthCode> getTopLevelHealthCodes(
-		final User _user,
-		final HealthCodeTaxonomy healthCodeTaxonomy) 
-		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-		
-		//Part II: Check for empty parameter values
-		ArrayList<HealthCode> results = new ArrayList<HealthCode>();
-		try {
-			
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getTopLevelCodes",
-				"user",
-				user);		
-			fieldValidationUtility.checkNullMethodParameter(
-				"getTopLevelCodes",
-				"healthCodeTaxonomy",
-				healthCodeTaxonomy);
-		
-			//Check for security violations
-			validateUser(user);
-			healthCodeTaxonomy.checkSecurityViolations();
-		
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();	
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage(
-					"logging.getTopLevelCodes",
-					user.getUserID(),
-					user.getIPAddress(),
-					healthCodeTaxonomy.getName(),
-					healthCodeTaxonomy.getNameSpace());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-			
-			//Delegate operation to a specialised manager class
-			HealthOutcomeManager healthOutcomeManager
-				= rifServiceResources.getHealthOutcomeManager();			
-			results 
-				= healthOutcomeManager.getTopLevelCodes(
-						healthCodeTaxonomy);	
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getTopLevelCodes",
-				rifServiceException);
-		}
-	
-		return results;
 	}
 }
