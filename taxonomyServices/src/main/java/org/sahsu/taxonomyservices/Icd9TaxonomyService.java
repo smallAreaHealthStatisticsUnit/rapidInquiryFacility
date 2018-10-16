@@ -1,11 +1,11 @@
 package org.sahsu.taxonomyservices;
 
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.generic.fileformats.FilePath;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.taxonomyservices.AbstractTaxonomyService;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfiguration;
@@ -18,17 +18,15 @@ public class Icd9TaxonomyService extends AbstractTaxonomyService {
 			throws RIFServiceException {
 
 		// Locate the ICD 9 file
-		Path icd9File = locateTheICD9File(defaultResourceDirectoryPath,
-		                                 taxonomyServiceConfiguration);
+		Path icd9File = locateTheICD9File(
+				taxonomyServiceConfiguration);
 
 		// OK, we've got a real file
 		// CsvFile file = new CsvFile(icd9File);
 
-
 	}
 
-	private Path locateTheICD9File(final String defaultResourceDirectoryPath,
-			final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
+	private Path locateTheICD9File(final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
 			throws RIFServiceException {
 
 		List<Parameter> params = taxonomyServiceConfiguration.getParameters();
@@ -39,14 +37,8 @@ public class Icd9TaxonomyService extends AbstractTaxonomyService {
 			throw new RIFServiceException("ICD9 file name not found in configuration file");
 		}
 
-		Path icd9File = FileSystems.getDefault().getPath(defaultResourceDirectoryPath,
-		                                                 icd9FileName);
-		if (!icd9File.toFile().exists()) {
-
-			String msg = String.format("ICD9 file %s not found", icd9File.toString());
-			throw new RIFServiceException(msg);
-		}
-
-		return icd9File;
+		return new FilePath(icd9FileName).getPath();
 	}
+
+
 }

@@ -28,7 +28,7 @@ public class RIFServiceException extends Exception {
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
 	/** The error. */
-	private Object error;
+	private RifError error;
 	
 	/** The error messages. */
 	private List<String> errorMessages;
@@ -43,7 +43,7 @@ public class RIFServiceException extends Exception {
 	 * @param errorMessage the error message
 	 * @param cause the Throwable that caused this Exception
 	 */
-	public RIFServiceException(final Object error, final String errorMessage,
+	public RIFServiceException(final RifError error, final String errorMessage,
 			final Throwable cause) {
 		
 		super(errorMessage, cause);
@@ -69,7 +69,7 @@ public class RIFServiceException extends Exception {
 	 * @param error the error
 	 * @param errorMessages the error messages
 	 */
-	public RIFServiceException(final Object error, final List<String> errorMessages,
+	public RIFServiceException(final RifError error, final List<String> errorMessages,
 			Throwable cause) {
 
 		super(cause);
@@ -94,7 +94,7 @@ public class RIFServiceException extends Exception {
 	 * @param errorMessage the error message
 	 */
 	public RIFServiceException(
-			final Object error,
+			final RifError error,
 			final String errorMessage) {
 
 		super(errorMessage);
@@ -119,7 +119,7 @@ public class RIFServiceException extends Exception {
 	 * @param error the error
 	 * @param errorMessages the error messages
 	 */
-	public RIFServiceException(final Object error, final List<String> errorMessages) {
+	public RIFServiceException(final RifError error, final List<String> errorMessages) {
 
 		this.error = error;
 		this.errorMessages = new ArrayList<>();
@@ -150,8 +150,6 @@ public class RIFServiceException extends Exception {
 			}
 			errorMessages = Collections.singletonList(msg);
 		}
-
-
 	}
 
 	/**
@@ -159,7 +157,7 @@ public class RIFServiceException extends Exception {
 	 *
 	 * @return the error
 	 */
-	public Object getError() {
+	public RifError getError() {
 
 		return error;
 	}

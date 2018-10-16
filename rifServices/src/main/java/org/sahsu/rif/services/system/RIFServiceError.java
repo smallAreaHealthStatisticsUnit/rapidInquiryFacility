@@ -1,5 +1,6 @@
 package org.sahsu.rif.services.system;
 
+import org.sahsu.rif.generic.system.RifError;
 
 /**
  * An enumerated type which attempts to give a kind of error code to most types of 
@@ -68,7 +69,7 @@ package org.sahsu.rif.services.system;
  *
  */
 
-public enum RIFServiceError {
+public enum RIFServiceError implements RifError {
 		
 	DB_UNABLE_TO_MAINTAIN_DEBUG,
 			

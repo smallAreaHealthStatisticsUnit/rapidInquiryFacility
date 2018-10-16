@@ -11,15 +11,12 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import java.lang.NoClassDefFoundError;
-
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
-import org.xml.sax.InputSource;
-
 import org.sahsu.rif.generic.util.TaxonomyLogger;
+import org.xml.sax.InputSource;
 
 /**
  *
@@ -121,7 +118,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 	/**
  * Read file.
  *
- * @param rifSubmissionFile the rif submission file
+ * @param defaultResourceDirectoryPath the directory
  * @throws RIFServiceException the RIF service exception
  */
 	public void readFile(
@@ -139,8 +136,8 @@ public final class TaxonomyServiceConfigurationXMLReader {
 		if (catalinaHome == null) {
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					"taxonomyServices.error.initialisationFailure",  
-					"CATALINA_HOME not set in the environment");
+					"taxonomyServices.error.initialisationFailure: CATALINA_HOME not set in the "
+					+ "environment");
 			taxonomyLogger.error(this.getClass(), "TaxonomyServiceConfigurationXMLReader error", rifServiceException);
 			throw rifServiceException;
 		}
@@ -167,8 +164,8 @@ public final class TaxonomyServiceConfigurationXMLReader {
 			else {
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
-						"taxonomyServices.error.initialisationFailure", 
-						"Cannot find TaxonomyService configuration file: TaxonomyServicesConfiguration.xml");
+						"taxonomyServices.error.initialisationFailure: Cannot find TaxonomyService"
+						+ " configuration file: TaxonomyServicesConfiguration.xml");
 				taxonomyLogger.error(this.getClass(), "TaxonomyServiceConfigurationXMLReader error", rifServiceException);
 				throw rifServiceException;
 			}
