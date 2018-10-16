@@ -4,8 +4,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.List;
 
-import javax.jws.soap.SOAPBinding;
-
 import org.apache.commons.lang3.StringUtils;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -20,6 +18,19 @@ public class Icd9TaxonomyService extends AbstractTaxonomyService {
 			throws RIFServiceException {
 
 		// Locate the ICD 9 file
+		Path icd9File = locateTheICD9File(defaultResourceDirectoryPath,
+		                                 taxonomyServiceConfiguration);
+
+		// OK, we've got a real file
+		// CsvFile file = new CsvFile(icd9File);
+
+
+	}
+
+	private Path locateTheICD9File(final String defaultResourceDirectoryPath,
+			final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
+			throws RIFServiceException {
+
 		List<Parameter> params = taxonomyServiceConfiguration.getParameters();
 		String icd9FileName = Parameter.getParameter("icd9_file", params).getValue();
 
@@ -36,8 +47,6 @@ public class Icd9TaxonomyService extends AbstractTaxonomyService {
 			throw new RIFServiceException(msg);
 		}
 
-		// OK, we've got a real file
-
-
+		return icd9File;
 	}
 }

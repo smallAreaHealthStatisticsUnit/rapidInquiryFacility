@@ -129,7 +129,15 @@ public final class Parameter
 		
 		return parameterNames;
 	}
-	
+
+	/**
+	 * Returns a {@code Parameter} object if the provided {@code List} contains one whose name
+	 * matches the provided {@code targetParameterName}. If no such {@code Parameter} exists the
+	 * {@code NULL_PARAM} singleton is returned.
+	 * @param targetParameterName the name of the required parameter
+	 * @param parameters the list of parameters to search
+	 * @return the matching parameter, or {@code NULL_PARAM}
+	 */
 	public static Parameter getParameter(final String targetParameterName,
 			final List<Parameter> parameters) {
 		
@@ -142,7 +150,6 @@ public final class Parameter
 		}
 		
 		return NULL_PARAM;
-		
 	}
 	
 	
