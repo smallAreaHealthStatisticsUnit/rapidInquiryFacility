@@ -139,7 +139,16 @@ public class RIFServiceException extends Exception {
 	 */
 	public RIFServiceException(Throwable cause, String baseMsg, Object... formatStrings) {
 
+		this(baseMsg, formatStrings);
 		this.cause = cause;
+	}
+
+	/**
+	 * Creates the exception using {@link String#format}-style
+	 * replacement values.
+	 */
+	public RIFServiceException(String baseMsg, Object... formatStrings) {
+
 		String msg;
 		if (!StringUtils.isEmpty(baseMsg)) {
 

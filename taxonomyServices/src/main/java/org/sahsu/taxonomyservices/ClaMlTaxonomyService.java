@@ -35,7 +35,6 @@ public class ClaMlTaxonomyService
 	implements TaxonomyServiceAPI {
 
 	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");
 
 	public void initialiseService(
 		final String defaultResourceDirectoryPath,

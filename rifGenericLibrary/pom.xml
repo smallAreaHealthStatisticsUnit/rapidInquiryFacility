@@ -33,6 +33,11 @@
 			<artifactId>log4j-jul</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+		</dependency>
+
 	</dependencies>
 	
 	<parent>

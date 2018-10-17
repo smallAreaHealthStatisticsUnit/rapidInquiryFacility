@@ -12,6 +12,14 @@ public class FilePath {
 
 	private final Path filePath;
 
+	/**
+	 * A utility class that gets hold of a file given a file name. It makes use of the
+	 * {@code java.nio.file} features to provide a {@code Path} object, and it uses the classpath
+	 * to load the file, so it is not tied to a specific filesystem.
+	 *
+	 * @param fileName the name of the file we're interested in
+	 * @throws RIFServiceException if the name is not provided or the file is not found.
+	 */
 	public FilePath(final String fileName) throws RIFServiceException {
 
 		if (StringUtils.isEmpty(fileName)) {
@@ -35,7 +43,7 @@ public class FilePath {
 
 			if (!filePath.toFile().exists()) {
 
-				String msg = String.format("ICD9 file %s not found", filePath.toString());
+				String msg = String.format("File %s not found", filePath.toString());
 				throw new RIFServiceException(msg);
 			}
 		}
