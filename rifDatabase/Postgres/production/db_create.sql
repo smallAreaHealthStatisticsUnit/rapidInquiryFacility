@@ -241,8 +241,8 @@ DECLARE
 		SUBSTR(version(), 16, position(', ' IN version())-16)::NUMERIC as minor_version;
 	c1a CURSOR FOR
 	 	SELECT version() AS version, 
-		SUBSTR(version(), 12, 3)::NUMERIC as major_version, 
-		SUBSTR(version(), 16, position('on' IN version())-16)::NUMERIC as minor_version;
+		SUBSTR(version(), 12, 2)::NUMERIC as major_version, 
+		REPLACE(SUBSTR(version(), 16, position('on' IN version())-16), ' ', '0')::NUMERIC as minor_version;
 	c1_rec RECORD;
 --
 BEGIN

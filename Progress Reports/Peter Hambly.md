@@ -3010,3 +3010,7 @@ Further changes are needed to support risk analysis:
 * Add area name to all exports
 * Convert map display SQL fetch to dynamic method 4 (i.e. works out the field names and datatypes automatically)
 * Use a different list of fields for risk analysis and disease mapping and make easy to configure
+
+#### 15th to 19th October
+
+* Install SQL Server and Postgres databases on WSRIF; install and configure RIF tomcat application; install UK and US data; test;
