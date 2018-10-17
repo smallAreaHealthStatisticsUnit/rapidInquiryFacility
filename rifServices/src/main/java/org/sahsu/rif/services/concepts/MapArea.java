@@ -90,8 +90,8 @@ public final class MapArea
 	// ==========================================
 	/** The label. */
 	private String label;
-	
 	private String geographicalIdentifier;
+	private Integer band;
 	
 	// ==========================================
 	// Section Construction
@@ -106,11 +106,13 @@ public final class MapArea
 	private MapArea(
 		final String geographicalIdentifier,
 		final String identifier,
-		final String label) {
+		final String label,
+		final Integer band) {
 		
 		setGeographicalIdentifier(geographicalIdentifier);
 		setIdentifier(identifier);
 		setLabel(label);
+		setBand(band);
 	}
 	
 	/**
@@ -120,6 +122,7 @@ public final class MapArea
 		setGeographicalIdentifier("");
 		setIdentifier("");
 		setLabel("");
+		setBand(0);
 	}
 
 	/**
@@ -143,13 +146,15 @@ public final class MapArea
 	public static MapArea newInstance(
 		final String geographicalIdentifier,
 		final String identifier,
-		final String label) {
+		final String label,
+		final Integer band) {
 		
 		MapArea mapArea 	
 			= new MapArea(
 				geographicalIdentifier,
 				identifier, 
-				label);
+				label,
+				band);
 		return mapArea;		
 	}
 		
@@ -170,7 +175,8 @@ public final class MapArea
 			= new MapArea(
 				originalMapArea.getGeographicalIdentifier(),
 				originalMapArea.getIdentifier(),
-				originalMapArea.getLabel());
+				originalMapArea.getLabel(),
+				originalMapArea.getBand());
 		return cloneMapArea;
 	}
 	
@@ -380,7 +386,26 @@ public final class MapArea
 
 		this.label = label;
 	}
-	
+		
+	/**
+	 * Gets the band.
+	 *
+	 * @return the band
+	 */
+	public Integer getBand() {
+		return band;
+	}
+
+	/**
+	 * Sets the label.
+	 *
+	 * @param label the new label
+	 */
+	public void setBand(
+		final Integer band) {
+
+		this.band = band;
+	}
 	
 	public String getGeographicalIdentifier() {
 		return geographicalIdentifier;

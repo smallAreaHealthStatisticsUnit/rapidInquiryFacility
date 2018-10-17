@@ -201,6 +201,7 @@ public enum RIFServiceError implements RifError {
 	UPDATE_SELECTSTATE_FAILED,
 	UPDATE_PRINTSTATE_FAILED,
 	JSON_PARSE_ERROR,
+	SETSTUDYEXTRACTTOFAIL_FAILED,
 	
 	/** The year range interval too high. */
 	YEAR_RANGE_INTERVAL_TOO_HIGH,

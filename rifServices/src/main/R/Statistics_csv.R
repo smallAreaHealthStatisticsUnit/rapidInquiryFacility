@@ -24,7 +24,7 @@ library(spdep)
 library(Matrix)
 library(here)
 
-source(here::here("Adj_Cov_Smooth_Common.R"))
+source(here::here("Statistics_Common.R"))
 source(here::here("performSmoothingActivity.R"))
 
 ##====================================================================
@@ -51,6 +51,7 @@ db_driver_class_name <- ""
 dbConnectionString <- ""
 odbcDataSource <- "networkRif"
 numberOfInvestigations <- ""
+riskAnal <- "0"
 
 #The identifier of the study whose extract table fields need to be smoothed.
 studyID <- "1"
@@ -159,7 +160,7 @@ runRSmoothingFunctions <- function() {
 							}
 
 #							saveDataFrameToDatabaseTable(result)
-#							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
+#							updateMapTableFromSmoothedResultsTable(area_id_is_integer, studyType) # may set exitValue  
 						}
 						else {
 							cat("ERROR! No result$area_id column found\n")
@@ -206,6 +207,102 @@ runRSmoothingFunctions <- function() {
 	}
 	
 	return(list(exitValue=exitValue, errorTrace=errorTrace))
+}
+
+
+##================================================================================
+##FUNCTION: runRRiskAnalFunctions
+##DESCRIPTION
+##Run the functions defined this script as source
+##Called direectly from JRI in the middleware
+##Returns (exitvalue) 0 on success, 1 on failure 
+##================================================================================
+runRRiskAnalFunctions <- function() {
+  establishTableNames(studyID)
+  #	connDB=dbConnect()
+  
+  if (exitValue == 0) {  
+    cat("Performing basic stats and risk anal\n")	
+    errorTrace<-capture.output({
+      # tryCatch()is trouble because it replaces the stack! it also copies all global variables!
+      
+      tryCatch({
+        withErrorTracing({  				
+          #
+          # extract the relevant Study data
+          #
+          data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
+          #						data=fetchExtractTable()
+          
+          #
+          # Call: performRiskAnal()
+          #
+          cat(paste0("About to calculate band data", "\n"))
+          resultBands <- performBandAnal(data)
+          
+          #
+          # Call: performHomogAnal()
+          # This runs the test for homogeneity and linearity using the band results from the performBandAnal function 
+          cat(paste0("About to run homogeneity tests", "\n"))
+          resultHomog <- performHomogAnal(resultBands)
+        })
+      },
+      warning=function(w) {		
+        cat(paste("callRiskAnal() WARNING: ", w, "\n"), sep="")
+        exitValue <<- 1
+      },
+      error=function(e) {
+        e <<- e
+        cat(paste("callRiskAnal() ERROR: ", e$message, 
+                  "; call stack: ", e$call, "\n"), sep="")
+        exitValue <<- 1
+      },
+      finally={
+        cat(paste0("callRiskAnal exitValue: ", exitValue, "\n"), sep="")
+        if (exitValue == 0) {
+          cat(paste("callRiskAnal() OK: ", exitValue, "\n"), sep="")
+          
+        }
+      }
+      ) # End of tryCatch
+    })
+  }
+  
+  # Print trace
+  if (length(errorTrace)-1 > 0) {
+    cat(errorTrace, sep="\n")
+  }
+  
+  #	if (exitValue == 0 && !is.na(connDB)) {
+  #		dropTemporaryTable()
+  #	}
+  # Dummy change to check conflict is resolved
+  
+  #	if (!is.na(connDB)) {
+  #		dbDisConnect()
+  #	}
+  
+  #
+  # Free up memory: required for JRI version as the server keeps running! 
+  #
+  cat(paste0("Total memory is use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
+  ototal<-0
+  for (oname in ls()) {
+    osize<-as.integer(object_size(get(oname)))
+    ototal<-ototal+osize
+    cat(oname, ": ", format(osize), "\n", sep="")	
+  }
+  rm(list=c("resultBands", "resultHomog", "data")) 
+  gc(verbose=true)
+  cat(paste0("Free ", ototal , " memory; total memory is use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
+  rm(list=c("osize", "ototal")) 
+  for (oname in ls()) {
+    if (oname != "oname") {
+      cat(oname, ": ", format(object_size(get(oname))), "\n", sep="")
+    }
+  }
+  
+  return(list(exitValue=exitValue, errorTrace=errorTrace))
 }
 
 ##====================================================================
@@ -276,6 +373,8 @@ processCommandLineArguments <- function() {
         odbcDataSource <<- parametersDataFrame[i, 2]
       } else if (grepl('model', parametersDataFrame[i, 1]) == TRUE){
         model <<- parametersDataFrame[i, 2]
+      } else if (grepl('riskAnal', parametersDataFrame[i, 1]) == TRUE){
+        riskAnal <<- parametersDataFrame[i, 2]
       } else if (grepl('covariateName', parametersDataFrame[i, 1]) == TRUE){
 	    names.adj <<- c(toupper(parametersDataFrame[i, 2]))
         if (names.adj[1] != "NONE") {
@@ -305,14 +404,47 @@ processCommandLineArguments <- function() {
   }
 }
 
-parametersDataFrame=processCommandLineArguments()
-print(parametersDataFrame)
-returnValues <- runRSmoothingFunctions()
+# Smoothing
+hasperformSmoothingActivityScript <- FALSE
+performSmoothingActivityScript<-"performSmoothingActivity.R"
+if (file.exists(performSmoothingActivityScript)) {
+	hasperformSmoothingActivityScript<-TRUE
+	cat("Source: ", performSmoothingActivityScript, "\n", sep="")
+	source(performSmoothingActivityScript)
+}
 
-if (returnValues$exitValue == 0) {
+# Risk analysis
+hasperformRiskAnalScript<-FALSE
+performRiskAnalScript<-"performRiskAnal.R"
+    
+if (file.exists(performRiskAnalScript)) {
+	hasperformRiskAnalScript<-TRUE
+	cat("Source: ", performRiskAnalScript, "\n", sep="")
+	source(performRiskAnalScript)
+}
+
+if (hasperformRiskAnalScript & hasperformSmoothingActivityScript) {
+
+	parametersDataFrame <- processCommandLineArguments()
+	print(parametersDataFrame)
+	if (riskAnal == "0") {
+		returnValues <- runRSmoothingFunctions()
+	} else {
+		returnValues <- runRRiskAnalFunctions()
+  }
+} else {
+	returnValues <- list(exitValue=1, errorTrace="Cannot find R scripts")
+}
+
+if (!exists('returnValues') {
+	cat("R script ran but did not return returnValues\n")
+	quit("no", 1, FALSE)
+}
+else if (returnValues$exitValue == 0) {
 	cat("R script ran OK\n")
 	quit("no", 0, FALSE)
 } else {
 	cat("R script had error >>>\n", paste(returnValues$errorTrace, "\n"), "\n<<< End of error trace.\n", sep="")
 	quit("no", 1, FALSE)
 }
+  

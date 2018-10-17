@@ -168,10 +168,17 @@ angular.module("RIF")
 					if ($scope.denominator == undefined && SubmissionStateService.getState().numerator) {
 						$scope.denominator = SubmissionStateService.getState().numerator.denominatorTableName;
 					}
+					
+					
+					if ($scope.studyName == "" && SubmissionStateService.getState().studyName) {
+						$scope.studyName = SubmissionStateService.getState().studyName;
+					}
+					
 					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 1) +
 						"; SubmissionStateService.getState(): " + JSON.stringify(SubmissionStateService.getState(), null, 1) +
 						"; $scope.numerator: " + JSON.stringify($scope.numerator, null, 1) +
-						"; $scope.denominator: " + $scope.denominator);
+						"; $scope.denominator: " + $scope.denominator +
+						"; $scope.studyName: " + $scope.studyName);
                 }
 				
 				function checkNumeratorKeys(numerator) {
@@ -264,5 +271,9 @@ angular.module("RIF")
                     $state.go('state1').then(function () {
                         $state.reload();
                     });
+					if ($scope.studyName == "" && SubmissionStateService.getState().studyName) {
+						$scope.studyName = SubmissionStateService.getState().studyName;
+					}
+					$scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
                 };
             }]);

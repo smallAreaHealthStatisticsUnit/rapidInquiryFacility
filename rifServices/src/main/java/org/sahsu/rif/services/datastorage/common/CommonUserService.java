@@ -1496,7 +1496,7 @@ public class CommonUserService implements UserService {
 				y);	
 			
 			//check that zoomFactor
-			if ((zoomlevel <1) || (zoomlevel > 20)) {
+			if ((zoomlevel <0) || (zoomlevel > 11)) {
 				//zoom factor is out of range.
 				String errorMessage
 					= SERVICE_MESSAGES.getMessage(
@@ -1549,6 +1549,92 @@ public class CommonUserService implements UserService {
 			logException(
 				user,
 				"getTileMakerTiles",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+
+		return result;	
+	}
+
+	@Override
+	public String getTileMakerAttributes(
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect)
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+		Geography geography
+			= Geography.createCopy(_geography);
+		GeoLevelSelect geoLevelSelect 
+			= GeoLevelSelect.createCopy(_geoLevelSelect);
+		
+		String result = "";
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTileMakerAttributes",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTileMakerAttributes",
+				"geography",
+				geography);	
+			fieldValidationUtility.checkNullMethodParameter(
+				"getTileMakerAttributes",
+				"getLevelSelect",
+				geoLevelSelect);	
+			
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			geoLevelSelect.checkSecurityViolations();	
+			
+			//rifLogger.info(this.getClass(), geography.getDisplayName());
+								
+			//Audit attempt to do operation				
+			String auditTrailMessage
+				= SERVICE_MESSAGES.getMessage("logging.getTileMakerAttributes",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					geoLevelSelect.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+			
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+			
+			//Delegate operation to a specialised manager class
+			ResultsQueryManager sqlResultsQueryManager
+				= rifServiceResources.getSqlResultsQueryManager();
+			result
+				= sqlResultsQueryManager.getTileMakerAttributes(
+					connection,
+					geography,
+					geoLevelSelect);
+		} 
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getTileMakerAttributes",
 				rifServiceException);			
 		}
 		finally {

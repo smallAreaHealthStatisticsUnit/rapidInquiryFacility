@@ -116,7 +116,7 @@ This may be added to extract creation later.
 	DECLARE @c1_rec_study_id 		INTEGER;
 	DECLARE @c1_rec_extract_table	VARCHAR(30);
 	DECLARE @c1_rec_geography		VARCHAR(30);
-	DECLARE @c1_rec_study_type		VARCHAR(1);
+	DECLARE @c1_rec_study_type		INTEGER;
 	DECLARE @c1_rec_map_table		VARCHAR(30);
 	DECLARE @c1_rec_extract_permitted INTEGER;
 	DECLARE @c1_rec_description	 	VARCHAR(250);
@@ -296,7 +296,7 @@ This may be added to extract creation later.
 			'  INTO rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
 			'  FROM rif40.rif40_results a' + @crlf +
 			' WHERE a.study_id      = ' + CAST(@study_id AS VARCHAR) + ' /* Current study ID */';
-	ELSE SET @sql_stmt=@sql_stmt + 'SELECT TOP 1 a.*' + @crlf + 
+	ELSE SET @sql_stmt='SELECT TOP 1 a.*' + @crlf + 
 			'  INTO rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
 			'  FROM rif40.rif40_results a' + @crlf + 
 			' WHERE a.study_id      = ' + CAST(@study_id AS VARCHAR) + ' /* Current study ID */';
@@ -498,11 +498,13 @@ This may be added to extract creation later.
 --
 -- Make gid_rowindex bigger
 --
-	SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_map_table) + 
-		' ALTER COLUMN gid_rowindex VARCHAR(70)';
-	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
-	SET @msg='55613: SQL> ' + @sql_stmt + ';';
-	PRINT @msg;
+	IF @c1_rec_study_type = 1 /* Disease mapping */ BEGIN
+		SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_map_table) + 
+			' ALTER COLUMN gid_rowindex VARCHAR(70)';
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55613: SQL> ' + @sql_stmt + ';';
+		PRINT @msg;
+	END;
 	
 --
 -- Execute DDL code as rif40

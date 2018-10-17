@@ -30,7 +30,7 @@ public class RunStudyThread implements Runnable {
 	private StudyStateManager studyStateManager;
 	private StudySubmissionStep createStudySubmissionStep;
 	private GenerateResultsSubmissionStep generateResultsSubmissionStep;
-	private SmoothResultsSubmissionStep smoothResultsSubmissionStep;
+	private StatisticsProcessing statisticsProcessing;
 	
 	public RunStudyThread() {
 		studyStateMachine = new StudyStateMachine();
@@ -64,9 +64,8 @@ public class RunStudyThread implements Runnable {
 		generateResultsSubmissionStep = GenerateResultsSubmissionStep.getInstance(
 				studyStateManager, rifDatabaseProperties.getDatabaseType());
 		
-		//KLG: @TODO - we need a facility to feed password to this.
-		smoothResultsSubmissionStep = new SmoothResultsSubmissionStep();
-		smoothResultsSubmissionStep.initialise(
+		statisticsProcessing = new StatisticsProcessing();
+		statisticsProcessing.initialise(
 			user.getUserID(), 
 			password, 
 			rifServiceStartupOptions);			
@@ -131,15 +130,17 @@ public class RunStudyThread implements Runnable {
 				Thread.sleep(SLEEP_TIME);
 			} // End of while loop
 			
-			rifLogger.info(this.getClass(), "Finished!!");
+			rifLogger.info(this.getClass(), "run() Finished OK!!");
 			
 		}
 		catch(InterruptedException interruptedException) {
+			rifLogger.info(this.getClass(), "run() FAILED: " + interruptedException.getMessage());
 			rifLogger.error(this.getClass(), getClass().getSimpleName() + " ERROR",
 			                interruptedException);
 
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifLogger.info(this.getClass(), "run() FAILED: " + rifServiceException.getMessage());
 			rifServiceException.printErrors();
 		}
 	}
@@ -189,11 +190,27 @@ public class RunStudyThread implements Runnable {
 				= RIFServiceMessages.getMessage(
 					"studyState.studyCreated.description");
 			updateStudyStatusState(statusMessage);	
+			rifLogger.info(this.getClass(), "createStudy() OK");
 		}	
 		catch (RIFServiceException rifServiceException) {
+			rifLogger.info(this.getClass(), "createStudy() FAILED: " + rifServiceException.getMessage());
+			rollbackStudy();
+			throw rifServiceException;
+		}
+		catch (Exception exception) {
 			// Do not update status; 
 			// because this is a database procedure that failed the transaction must be rolled back
+			rifLogger.info(this.getClass(), "createStudy() FAILED: " + exception.getMessage());
 			rollbackStudy();
+			
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
+					studyID);
+			RIFServiceException rifServiceException
+					= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
 			throw rifServiceException;
 		}			
 	}
@@ -202,11 +219,16 @@ public class RunStudyThread implements Runnable {
 		throws RIFServiceException {
 
 		try {			
-			generateResultsSubmissionStep.performStep(
+			if (generateResultsSubmissionStep.performStep(
 				connection, 
-				studyID);
-			StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
-
+				studyID)) {
+				StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
+			}
+			else {
+				createStudySubmissionStep.setStudyExtractToFail(connection, studyID, 
+					generateResultsSubmissionStep.getResult(),
+					generateResultsSubmissionStep.getStack());
+			}
 		}
 		catch (RIFServiceException rifServiceException) {
 			// because this is a database procedure that failed the transaction must be rolled back
@@ -225,7 +247,7 @@ public class RunStudyThread implements Runnable {
 		throws RIFServiceException {
 
 		try {
-			smoothResultsSubmissionStep.performStep(
+			statisticsProcessing.performStep(
 				connection,
 				studySubmission, 
 				studyID);
@@ -288,4 +310,5 @@ public class RunStudyThread implements Runnable {
 		studyStateManager.rollbackStudy(
 			connection, studyID);
 	}
+	
 }

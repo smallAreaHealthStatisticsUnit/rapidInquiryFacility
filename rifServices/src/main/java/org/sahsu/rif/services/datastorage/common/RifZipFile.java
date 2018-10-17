@@ -136,7 +136,7 @@ public class RifZipFile {
 			}
 			else {
 				throw new Exception("R temporary directory: "  + 
-					temporaryDirectory.toString() + " was not created by Adj_Cov_Smooth_JRI.R");
+					temporaryDirectory.toString() + " was not created by Statistics_JRI.R");
 			}
 			
 			submissionZipFile = createSubmissionZipFile(
@@ -343,7 +343,7 @@ public class RifZipFile {
 			}
 			else {
 				throw new Exception("R temporary directory: "  + 
-					temporaryDirectoryPath.toString() + " was not created by Adj_Cov_Smooth_JRI.R");
+					temporaryDirectoryPath.toString() + " was not created by Statistics_JRI.R");
 			}
 				
 			submissionZipSavFile = createSubmissionZipFile(
@@ -1990,7 +1990,7 @@ public class RifZipFile {
 		}
 		else {
 			throw new Exception("R temporary directory: " +
-			                    temporaryDirectoryPath.toFile().getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
+			                    temporaryDirectoryPath.toFile().getAbsolutePath() + " was not created by Statistics_JRI.R");
 		}
 		
 		return newDirectory.getAbsolutePath();

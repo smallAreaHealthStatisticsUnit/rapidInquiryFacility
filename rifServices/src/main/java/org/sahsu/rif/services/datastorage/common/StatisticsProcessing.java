@@ -28,7 +28,7 @@ import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
-public class SmoothResultsSubmissionStep extends CommonRService {
+public class StatisticsProcessing extends CommonRService {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final RIFMemoryManager rifMemoryManager = RIFMemoryManager.getMemoryManager();
@@ -38,7 +38,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
 
-	public SmoothResultsSubmissionStep() {
+	StatisticsProcessing() {
 		String logManagerName=System.getProperty("java.util.logging.manager");
 		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
 			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
@@ -84,7 +84,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
 			final String studyID) throws RIFServiceException {
 		
-		String rErrorTrace = "No R error tracer (see Tomcat log)";
+		String rErrorTrace="No R error tracer (see Tomcat log)";
 
 		try {		
 
@@ -120,6 +120,12 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 			addParameter("investigationId", String.valueOf(investigationID));
 
+			if (studySubmission.getStudy().isRiskAnalysis()) {
+				addParameter("studyType", "riskAnalysis");
+			} else {
+				addParameter("studyType", "diseaseMapping");
+			}
+				
 			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
 
 			int exitValue = 0;
@@ -198,8 +204,11 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					sourceRScript(rengine, scriptPath.resolve("JdbcHandler.R"));
 				}
 
-				// We do either Risk Analysis or Smoothing
+				sourceRScript(rengine, scriptPath.resolve("Statistics_Common.R"));
+				sourceRScript(rengine, scriptPath.resolve("Statistics_JRI.R"));
 				sourceRScript(rengine, scriptPath.resolve("CreateWindowsScript.R"));
+
+				// We do either Risk Analysis or Smoothing
 				if (studySubmission.getStudy().isRiskAnalysis()) {
 
 					rifLogger.info(getClass(), "Calling Risk Analysis R function");
@@ -209,11 +218,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 					rifLogger.info(getClass(), "Calling Disease Mapping R function");
 					// Run the actual smoothing
-					Path adjCovSmoothJri = scriptPath.resolve("Adj_Cov_Smooth_JRI.R");
-					Path performSmoothingActivity = scriptPath.resolve("performSmoothingActivity.R");
-					sourceRScript(rengine, adjCovSmoothJri);
-					sourceRScript(rengine, performSmoothingActivity);
-					sourceRScript(rengine, scriptPath.resolve("Adj_Cov_Smooth_Common.R"));
+					sourceRScript(rengine, scriptPath.resolve("performSmoothingActivity.R"));
 					rengine.eval("returnValues <- runRSmoothingFunctions()");
 				}
 
@@ -221,7 +226,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				if (exitValueFromR != null) {
 					exitValue = exitValueFromR.asInt();
 				} else {
-					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
+					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR (returnValues$exitValue) is NULL");
 					exitValue = 1;
 				}
 
@@ -232,14 +237,14 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				 	for (final String aStrArr : strArr) {
 				 		strBuilder.append(aStrArr).append(lineSeparator);
 				 	}
-				 	int index = -1;
+				 	int index;
 				 	String toReplace="'";
 				 	while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
 				 		strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
 				 	}
 				 	rErrorTrace = strBuilder.toString();
 				} else {
-				 	rifLogger.warning(getClass(), "JRI R ERROR: errorTraceFromR is NULL");
+				 	rifLogger.warning(getClass(), "JRI R ERROR: errorTraceFromR (returnValues$errorTrace) is NULL");
 				}
 			} catch(Exception error) {
 
@@ -347,7 +352,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 		String databaseFriendlyInvestigationName
 		= createDatabaseFriendlyInvestigationName(investigation.getTitle());
 
-		Integer investigationID = null;
+		Integer investigationID;
 		PreparedStatement statement = null;		
 		ResultSet resultSet = null;
 		try {

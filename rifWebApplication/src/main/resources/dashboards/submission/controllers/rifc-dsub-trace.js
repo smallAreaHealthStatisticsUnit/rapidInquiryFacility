@@ -45,14 +45,16 @@ angular.module("RIF")
             };
 		}])
 		
-	.controller('ModalTraceInstanceCtrl', ['$scope', '$uibModalInstance', 'getTrace',
-		function ($scope, $uibModalInstance, getTrace) {
+	.controller('ModalTraceInstanceCtrl', ['$scope', '$uibModalInstance', 'getTrace', 'AlertService',
+		function ($scope, $uibModalInstance, getTrace, AlertService) {
 
-//			$scope.consoleLog("getTrace");
-			$scope.studyTrace=getTrace;
+//			AlertService.consoleLog("getTrace: " + getTrace);
+			var trace=angular.copy(getTrace);
+			$scope.studyTrace=trace.replace(/(\r\n|\r)/gm, "\n").replace(/(\\r\\n|\\n|\\r)/gm, "\n"); // Sort CRs etc and escaping
+//			AlertService.consoleLog("$scope.studyTrace: " + $scope.studyTrace);
 			
 			$scope.closeTrace = function () {
-//				$scope.consoleLog("closeTrace B");
+//				AlertService.consoleLog("closeTrace B");
 				$uibModalInstance.close();
 			}
         }]);

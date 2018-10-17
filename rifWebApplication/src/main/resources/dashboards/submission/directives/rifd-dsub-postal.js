@@ -189,7 +189,8 @@ angular.module("RIF")
 									try {
 										nCoordinates[0] = parseFloat(splitCords[0]);
 										nCoordinates[1] = parseFloat(splitCords[1]);
-										
+										AlertService.consoleDebug("[rifd-dsub-postal.js] parseCoordinate(" + coordinate + 
+											") nCoordinates: " + JSON.stringify(nCoordinates));
 										return nCoordinates;
 									}
 									catch (e) {

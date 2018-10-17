@@ -118,7 +118,13 @@ public interface UserService {
 			Integer zoomlevel,
 			Integer x,
 			Integer y)
-									throws RIFServiceException;
+								throws RIFServiceException;
+									
+	String getTileMakerAttributes(
+			User _user,
+			Geography _geography,
+			GeoLevelSelect _geoLevelSelect)
+								throws RIFServiceException;
 
 	void initialise(ServiceResources startupParameter);
 

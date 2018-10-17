@@ -3,6 +3,22 @@
 # Created by: Martin McCallion
 # Created on: 01/10/2018
 
+getScratchSpace <- function(studyID) {
+
+	# Numbered directory support (1-100 etc) to reduce the number of files/directories per directory
+	# to 100. This is to improve filesystem performance on Windows Tomcat servers
+	centile <- as.integer(studyID) %/% 100 # 1273 = 12
+	# Number directory: d1201-1300\
+	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100)
+
+	if (exists("scratchSpace") == FALSE	|| scratchSpace == "") {
+		scratchSpace <<- file.path("scratchSpace")
+	}
+
+	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
+	return(file.path(scratchSpace, numberDir, paste0("s", studyID), "data"))
+}
+
 ##==========================================================================
 #FUNCTION: establishTableNames
 #DESCRIPTION: uses the study_id number to determine the names of
@@ -15,8 +31,9 @@
 #creates to hold smoothed results
 #
 ##==========================================================================
-establishTableNames <-function(vstudyID) {
+establishTableNames <- function(vstudyID) {
 
+	scratchSpace <<- getScratchSpace(studyID)
 	scratchStr = as.character(scratchSpace)
 	cat("In establishTableNames; scratchSpace is ", scratchStr, "\n")
 	#The name of the extract table that is created by the middleware for a given

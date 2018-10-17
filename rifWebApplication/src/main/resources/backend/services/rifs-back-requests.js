@@ -217,11 +217,29 @@ angular.module("RIF")
                     return (servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&zoomlevel={z}&x={x}&y={y}');
                 };
-                //get 'global' geography for attribute table
+                //get 'global' geography for attribute table (DO NOT USE THE TILE DATA AT HIGH RESOLUTIONS; SMALL AREAS WILL HAVE BEEN OPTIMISED OUT
+				// self.getTileMakerAttributes is a replacement
+
                 self.getTileMakerTilesAttributes = function (username, geography, geoLevel) {
-                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + 
+							'&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&zoomlevel=1&x=0&y=0', config);
                 };
+                //get 'global' geography attribute table
+				/* Instead of the topoJSON tile returned by getTileMakerTiles... it returns:
+					data {
+						attributes: [{
+							area_id,
+							name,
+							band
+						}, ...
+						]
+					}
+				 */				
+                self.getTileMakerAttributes = function (username, geography, geoLevel) {
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerAttributes?userID=' + username + 
+							'&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel, config);
+                };				
                 //get all the centroids for the current geolevel
                 self.getTileMakerCentroids = function (username, geography, geoLevel) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getTileMakerCentroids?userID=dwmorley&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL4
@@ -325,18 +343,36 @@ angular.module("RIF")
 					actualTime,
 					relativeTime) {
                     //http://localhost:8080/rifServices/studySubmission/pg/rifFrontEndLogger?userID=dwmorley&messageType=INFO&browserType=XXX&message=Hello
-					var uri=servicesConfig.studySubmissionURL + 'rifFrontEndLogger?userID=' + username +
-						'&messageType=' + messageType + 
-						'&browserType=' + browserType + 
-						'&message=' + encodeURIComponent((message || "NO MESSAGE!"));
-					if (errorMessage) {
-						uri+='&errorMessage=' + encodeURIComponent(errorMessage);
+					var uri=undefined;
+					try {
+						uri=servicesConfig.studySubmissionURL + 'rifFrontEndLogger?userID=' + username +
+							'&messageType=' + messageType + 
+							'&browserType=' + encodeURIComponent(browserType) + 
+							'&message=' + encodeURIComponent((message || "NO MESSAGE!"));
+						if (errorMessage) {
+							uri+='&errorMessage=' + encodeURIComponent(errorMessage);
+						}
+						if (errorStack) {
+							uri+='&errorStack=' + encodeURIComponent(errorStack);
+						}
+						uri+='&actualTime=' + encodeURIComponent(actualTime) + 
+							'&relativeTime=' + encodeURIComponent(relativeTime);
+						return $http.get(uri);
 					}
-					if (errorStack) {
-						uri+='&errorStack=' + encodeURIComponent(errorStack);
+					catch(e) {
+						if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+							if (isIE()) {
+								if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+									console.log("[rifs-back-requests.js] rifFrontEndLogger error: " + JSON.stringify(e) + // IE safe
+										"\n" + message); 
+								}
+							}
+							else {
+								console.log("[rifs-back-requests.js] rifFrontEndLogger error: " + JSON.stringify(e) + // IE safe
+									"\n" + message); 
+							}
+						}  						
+						return undefined;
 					}
-					uri+='&actualTime=' + encodeURIComponent(actualTime) + 
-						'&relativeTime=' + encodeURIComponent(relativeTime);
-                    return $http.get(uri);
                 };
             }]);

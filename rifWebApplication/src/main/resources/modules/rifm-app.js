@@ -98,17 +98,23 @@ angular.module("RIF",
 				else if (fromState.name == 'state1' && toState.name == 'state1') {
 					savedSelectState = SelectStateService.getState();
 					AlertService.consoleLog("[rifm-app.js] state no change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
-						"; save savedSelectState: " + JSON.stringify(savedSelectState, null, 1));
+						"; save savedSelectState");
 				}
 				else if (fromState.name == 'state1' && toState.name != 'state1') {
 					savedSelectState = SelectStateService.getState();
 					AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
-						"; save savedSelectState: " + JSON.stringify(savedSelectState, null, 1));
+						"; save savedSelectState");
 				}
 				else if (fromState.name != 'state1' && toState.name == 'state1' && savedSelectState) {
-					SelectStateService.setStudySelection(savedSelectState.studySelection, savedSelectState.studyType);
-					AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
-						"; restore savedSelectState: " + JSON.stringify(savedSelectState, null, 1));
+					if (savedSelectState.studySelection && savedSelectState.studyType) {
+						SelectStateService.setStudySelection(savedSelectState.studySelection, savedSelectState.studyType);
+						AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
+							"; restore savedSelectState");
+					}
+					else {
+						AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name +
+							"; no savedSelectState to restore");
+					}
 				}
 				else {
 					AlertService.consoleLog("[rifm-app.js] state change from: " + (fromState.name || "NO STATE") + " to: " + toState.name);

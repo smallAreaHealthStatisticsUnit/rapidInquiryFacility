@@ -26,6 +26,7 @@ public class RIFServiceException extends Exception {
 
 	private static final long serialVersionUID = 609449213280772202L;
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 
 	/** The error. */
 	private RifError error;
@@ -207,17 +208,17 @@ public class RIFServiceException extends Exception {
 		} else {
 
 			StringBuilder builder = new StringBuilder(detail)
-					                        .append("\n\n")
+					                        .append(lineSeparator)
 					                        .append("=============================================")
-					                        .append("\n")
+					                        .append(lineSeparator)
 					                        .append("Stack trace of cause follows")
-					                        .append("\n")
+					                        .append(lineSeparator)
 					                        .append("=============================================")
-					                        .append("\n");
+					                        .append(lineSeparator);
 
 			for (StackTraceElement element : cause.getStackTrace()) {
 
-				builder.append(element.toString()).append("\n");
+				builder.append(element.toString()).append(lineSeparator);
 			}
 
 			return builder.toString();
