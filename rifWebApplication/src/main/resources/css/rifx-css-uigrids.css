@@ -51,7 +51,16 @@
     position: relative;
     float: right;
     width: 45%;
-    height: 30%;
+    height: -moz-calc(100% - 150px);
+    /* WebKit */
+
+    height: -webkit-calc(100% - 150px);
+    /* Opera */
+
+    height: -o-calc(100% - 150px);
+    /* Standard */
+
+    height: calc(100% - 150px);
 }
 
 .grid-postalcode { 

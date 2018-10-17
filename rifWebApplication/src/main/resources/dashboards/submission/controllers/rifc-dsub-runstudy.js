@@ -89,7 +89,7 @@ angular.module("RIF")
                     errMsg.push(" Study Area");
                 }
                 if (!SubmissionStateService.getState().comparisonTree) {
-                    errMsg.push(" Comparision Area");
+                    errMsg.push(" Comparison Area");
                 }
                 if (!SubmissionStateService.getState().investigationTree) {
                     errMsg.push(" Investigation Parameters");
@@ -112,29 +112,13 @@ angular.module("RIF")
                 }
 				
 				// Check study types
-				if (SubmissionStateService.getState().studyType != StudyAreaStateService.getState().type) {
-					$scope.consoleDebug("[rifc-dsub-runstudy.js]Study type mismatch: " +
-						"; SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType + " != " +
-						"; StudyAreaStateService.getState().type: " + StudyAreaStateService.getState().type);
-					$scope.showError("Study type mismatch");
+				if (ModelService.verifyStudyState()) { // OK
+					//If tests passed, then submitStudy
+					var thisStudy = ModelService.get_rif_job_submission_JSON();
+					user.submitStudy(user.currentUser, thisStudy);
+					$uibModalInstance.close($scope.input);
 				}
-				else {
-					if ((SelectStateService.getState().studyType == "disease_mapping_study" &&
-						 SubmissionStateService.getState().studyType == "Disease Mapping") ||
-					    (SelectStateService.getState().studyType == "risk_analysis_study" &&
-					  	 SubmissionStateService.getState().studyType == "Risk Analysis")) {
-					 }
-					 else {
-						$scope.showError("Study selection type mismatch");
-					 }
-				}
-
-                //TODO: error if year params not set (if loaded from file)
-
-                //If tests passed, then submitStudy
-                var thisStudy = ModelService.get_rif_job_submission_JSON();
-                user.submitStudy(user.currentUser, thisStudy);
-                $uibModalInstance.close($scope.input);
+			
             };
 
             $scope.updateModel = function () {

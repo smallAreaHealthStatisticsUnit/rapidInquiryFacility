@@ -100,15 +100,15 @@ public final class TestMapAreaJSONGenerator {
 		ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 
 		MapArea mapArea1
-			= MapArea.newInstance("1", "Birganj", "Ruth");
+			= MapArea.newInstance("1", "Birganj", "Ruth", 1);
 		MapArea mapArea2
-			= MapArea.newInstance("2", "Campo Largo", "Barbara");
+			= MapArea.newInstance("2", "Campo Largo", "Barbara", 1);
 		MapArea mapArea3
-			= MapArea.newInstance("3", "Ashbourne", "Johnny");
+			= MapArea.newInstance("3", "Ashbourne", "Johnny", 1);
 		MapArea mapArea4
-			= MapArea.newInstance("4", "Zarichchya", "Mildred");
+			= MapArea.newInstance("4", "Zarichchya", "Mildred", 1);
 		MapArea mapArea5
-			= MapArea.newInstance("5", "Eixo", "Ruby");
+			= MapArea.newInstance("5", "Eixo", "Ruby", 1);
 		mapAreas.add(mapArea1);
 		mapAreas.add(mapArea2);
 		mapAreas.add(mapArea3);

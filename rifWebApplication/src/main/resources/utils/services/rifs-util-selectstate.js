@@ -242,9 +242,11 @@ angular.module("RIF")
                             return s;
                         },
                         resetState: function () {
+							AlertService.consoleDebug("[rifs-dsub-selectstate.js] resetState()");
                             s = angular.copy(diseaseMappingDefaults);
                         },
 						initialiseRiskAnalysis: function() {
+							AlertService.consoleDebug("[rifs-dsub-selectstate.js] initialiseRiskAnalysis()");
                             s = angular.copy(riskAnalysisDefaults);
 						},
 						setStudySelection: function(newStudySelection, newStudyType) { // Needs to verify

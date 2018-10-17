@@ -136,15 +136,13 @@ angular.module("RIF")
                                     if (this._shape) {
                                         this._fireCreatedEvent();
                                         //fire event in directive     
-                                        $rootScope.$broadcast('makeDrawSelection', {
+                                        $rootScope.$broadcast('makeDrawSelection2', {
                                             data: this._shape,
                                             circle: true,
                                             freehand: false,
                                             band: thisBand,
 											finalCircleBand: true
                                         });
-										
-										$rootScope.$broadcast('completedDrawSelection', {});
                                     }
                                     this.disable();
                                     if (this.options.repeatMode) {
@@ -164,15 +162,13 @@ angular.module("RIF")
                                     if (this._shape) {
                                         this._fireCreatedEvent();
                                         //fire event in directive     
-                                        $rootScope.$broadcast('makeDrawSelection', {
+                                        $rootScope.$broadcast('makeDrawSelection2', {
                                             data: this._shape,
                                             circle: true,
                                             freehand: false,
                                             band: thisBand,
 											finalCircleBand: true
                                         });
-										
-										$rootScope.$broadcast('completedDrawSelection', {});
                                     }
                                     this.disable();
                                     if (this.options.repeatMode) {
@@ -191,7 +187,7 @@ angular.module("RIF")
                                     this._fireCreatedEvent();
 
                                     //fire event in directive
-                                    $rootScope.$broadcast('makeDrawSelection', {
+                                    $rootScope.$broadcast('makeDrawSelection2', {
                                         data: this._shape,
                                         circle: true,
                                         freehand: false,
@@ -373,7 +369,7 @@ angular.module("RIF")
                                         this._markers[markerCount - 1].off('dblclick', this._finishShape, this);
 
                                         //Make selection from polygon
-                                        $rootScope.$broadcast('makeDrawSelection', {
+                                        $rootScope.$broadcast('makeDrawSelection2', {
                                             data: this._poly,
                                             circle: false,
                                             freehand: true,

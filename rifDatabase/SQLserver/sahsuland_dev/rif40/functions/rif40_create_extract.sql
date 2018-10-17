@@ -289,12 +289,13 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 		 	@tab + 'year                           SMALLINT    	NOT NULL,' + @crlf +
 			@tab + 'study_or_comparison            VARCHAR(1)  	NOT NULL,' + @crlf +
 			@tab + 'study_id                       INTEGER     	NOT NULL,' + @crlf +
- 			@tab + 'area_id                        VARCHAR(30) 	NOT NULL,' + @crlf;
+ 			@tab + 'area_id                        VARCHAR(30) 	NOT NULL,' + @crlf+
+ 			@tab + 'band_id                        INTEGER 		NULL,' + @crlf;
 			
-	IF @c1_rec_study_type != '1' SET @sql_stmt=@sql_stmt + @tab + 
-		'band_id                        INTEGER 		NOT NULL,' + @crlf /* Risk analysis only */
-	ELSE SET @sql_stmt=@sql_stmt + @tab + 
-		'band_id                        INTEGER 		NULL,' + @crlf;
+--	IF @c1_rec_study_type != '1' SET @sql_stmt=@sql_stmt + @tab + 
+--		'band_id                        INTEGER 		NOT NULL,' + @crlf /* Risk analysis only */
+--	ELSE SET @sql_stmt=@sql_stmt + @tab + 
+--		'band_id                        INTEGER 		NULL,' + @crlf;
 	
  	SET @sql_stmt=@sql_stmt + 
 			@tab + 'sex                            SMALLINT 	NOT NULL,' + @crlf +
@@ -480,7 +481,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	CLOSE c7_creex;
 	DEALLOCATE c7_creex;
 
-	IF @c1_rec_study_type != '1' SET @sql_frag=@sql_frag + ',band_id'; /* Risk analysis only */
+--	IF @c1_rec_study_type != '1' SET @sql_frag=@sql_frag + ',band_id'; /* Risk analysis only */
 	SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_extract_table) + 
 		' ADD CONSTRAINT ' + LOWER(@c1_rec_extract_table) + '_pk PRIMARY KEY (' + @sql_frag + ')';
 	

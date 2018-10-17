@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Calendar;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.json.JSONException;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
@@ -936,7 +937,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 			resultSet2.next();
 			String result = resultSet2.getString(1);
 
-			rifLogger.info(getClass(), "get tile for geogrpahy: " + geography.getName().toUpperCase() +
+			rifLogger.info(getClass(), "get tile for geography: " + geography.getName().toUpperCase() +
 			                           "; tileTable: " + myTileTable +
 			                           "; zoomlevel: " + zoomlevel.toString() +
 			                           "; geolevel: " + geoLevelSelect.getName().toUpperCase() + " x/y: " + x + "/" + y +
@@ -964,4 +965,151 @@ public class ResultsQueryManager extends BaseSQLManager {
 			SQLQueryUtility.close(resultSet2);
 		}
 	}
+	
+	//get 'global' geography attribute table
+				/* Instead of the topoJSON tile returned by getTileMakerTiles... it returns:
+					data {
+						attributes: [{
+							area_id,
+							name,
+							band
+						}, ...
+						]
+					}
+				 */			
+	public String getTileMakerAttributes(
+			final Connection connection, final Geography geography,
+			final GeoLevelSelect geoLevelSelect) throws RIFServiceException {
+
+		//STEP 1: get the lookup table name
+		/*
+		SELECT lookup_table, lookup_desc_column
+		  FROM [sahsuland_dev].[rif40].[rif40_geolevels]
+		 WHERE geography     = 'EWS2011'
+		   AND geolevel_name = 'MSOA2011';
+		*/
+
+		SelectQueryFormatter getLookupTableQueryFormatter =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+
+		getLookupTableQueryFormatter.setDatabaseSchemaName(SCHEMA_NAME);
+		getLookupTableQueryFormatter.addSelectField("a", "lookup_table");
+		getLookupTableQueryFormatter.addSelectField("a", "lookup_desc_column");
+		getLookupTableQueryFormatter.addFromTable("rif40_geolevels a");
+		getLookupTableQueryFormatter.addWhereParameter("geography");
+		getLookupTableQueryFormatter.addWhereParameter("geolevel_name");
+
+		logSQLQuery(
+				"getTileMakerAttributes",
+				getLookupTableQueryFormatter,
+				geography.getName().toUpperCase(),
+				geoLevelSelect.getName().toUpperCase());
+
+		//For tile table name
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+
+		//For map tiles
+		PreparedStatement statement2 = null;
+		ResultSet resultSet2 = null;
+
+		try {
+
+			statement = connection.prepareStatement(getLookupTableQueryFormatter.generateQuery());
+			statement.setString(1, geography.getName().toUpperCase());
+			statement.setString(2, geoLevelSelect.getName().toUpperCase());
+
+			resultSet = statement.executeQuery();
+			resultSet.next();
+
+			//This is the tile table name for this geography
+			String myLookupTable = "rif_data." + resultSet.getString(1);
+			String myLookupDescName = resultSet.getString(2);
+
+			SelectQueryFormatter getTileMakerAttributesQueryFormatter
+					= new MSSQLSelectQueryFormatter();
+
+			//STEP 2: get the tiles
+			/*
+				SELECT msoa2011, areaname
+				FROM [rif_data].lookup_msoa2011
+				ORDER BY 1;
+			*/
+
+			getTileMakerAttributesQueryFormatter.addSelectField("a", geoLevelSelect.getName().toLowerCase());
+			getTileMakerAttributesQueryFormatter.addSelectField("a", myLookupDescName.toLowerCase());
+			getTileMakerAttributesQueryFormatter.addFromTable(myLookupTable + " a");
+			getTileMakerAttributesQueryFormatter.addQueryLine(0, "   ORDER BY 1");
+
+			logSQLQuery(
+					"getTileMakerAttributes",
+					getTileMakerAttributesQueryFormatter);
+
+			statement2 = connection.prepareStatement(getTileMakerAttributesQueryFormatter.generateQuery());
+
+			resultSet2 = statement2.executeQuery();
+			int rowCount=0;
+			
+			JSONObject attributes = new JSONObject();
+			JSONArray attributesArray = new JSONArray();
+			String result="";
+			if (resultSet2.next()) {
+
+				do {	
+					JSONObject attributesData = new JSONObject();
+					rowCount++;				
+					String areaId = resultSet2.getString(1);
+					String areaName = resultSet2.getString(2);
+					
+					attributesData.put("area_id", areaId);
+					attributesData.put("name", areaName);
+					attributesArray.put(attributesData);
+				} while (resultSet2.next());
+				
+				attributes.put("attributes", attributesArray);
+				result=attributes.toString();
+				
+				rifLogger.info(getClass(), "get tile attributes for geography: " + geography.getName().toUpperCase() +
+										   "; geolevel: " + geoLevelSelect.getName().toUpperCase() +
+										   "; rows: " + rowCount + 
+										   "; length: " + result.length());
+			}
+			else {
+				throw new Exception("get tile attributes for geography: " + geography.getName().toUpperCase() +
+				   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + " failed; no rows returned");
+			}
+ 
+			connection.commit();
+			return result;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetTileAttributes",
+					geoLevelSelect.getDisplayName(),
+					geography.getDisplayName());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);	
+		} catch(Exception exception) {
+			//Record original exception, throw sanitised, human-readable version
+			logException(exception);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetTileAttributes",
+					geoLevelSelect.getDisplayName(),
+					geography.getDisplayName());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		} finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+
+			SQLQueryUtility.close(statement2);
+			SQLQueryUtility.close(resultSet2);
+		}
+	}	
 }

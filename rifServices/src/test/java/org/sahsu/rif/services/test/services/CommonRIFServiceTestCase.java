@@ -254,23 +254,27 @@ public class CommonRIFServiceTestCase extends AbstractRIFTestCase {
 			= MapArea.newInstance(
 				"01.008.003500.1", 
 				"01.008.003500.1", 
-				"01.008.003500.1");		
+				"01.008.003500.1",
+			1);		
 
 		emptyMapArea
 			= MapArea.newInstance(
 				"", 
 				"01.008.003500.1",				
-				"01.008.003500.1");		
+				"01.008.003500.1",
+			1);		
 		nonExistentMapArea
 			= MapArea.newInstance(
 				"99.998.999599", 
 				"99.998.999599", 
-				"99.999.999999");		
+				"99.999.999999",
+			1);		
 		maliciousMapArea
 			= MapArea.newInstance(
 				maliciousFieldValue, 
 				maliciousFieldValue, 
-				maliciousFieldValue);
+				maliciousFieldValue,
+			1);
 
 		validGeoLevelAttributeSource
 			= GeoLevelAttributeSource.newInstance("s1_map");

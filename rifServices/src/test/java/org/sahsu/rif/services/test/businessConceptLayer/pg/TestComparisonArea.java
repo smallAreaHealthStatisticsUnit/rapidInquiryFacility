@@ -106,8 +106,8 @@ public final class TestComparisonArea
 		GeoLevelView geoLevelView = GeoLevelView.newInstance("LEVEL3");
 		GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL3");
 		
-		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent");
-		MapArea mapArea2 = MapArea.newInstance("222", "222", "Barnet");
+		MapArea mapArea1 = MapArea.newInstance("111", "111", "Brent", 0);
+		MapArea mapArea2 = MapArea.newInstance("222", "222", "Barnet", 0);
 
 		masterComparisonArea = ComparisonArea.newInstance();
 		masterComparisonArea.setGeoLevelSelect(geoLevelSelect);
@@ -267,8 +267,8 @@ public final class TestComparisonArea
 			ComparisonArea comparisonArea
 				= ComparisonArea.createCopy(masterComparisonArea);
 			
-			MapArea duplicateMapArea1 = MapArea.newInstance("111", "111", "Brent");
-			MapArea duplicateMapArea2 = MapArea.newInstance("222", "222", "Barnet");
+			MapArea duplicateMapArea1 = MapArea.newInstance("111", "111", "Brent", 0);
+			MapArea duplicateMapArea2 = MapArea.newInstance("222", "222", "Barnet", 0);
 			comparisonArea.addMapArea(duplicateMapArea1);
 			comparisonArea.addMapArea(duplicateMapArea2);			
 			comparisonArea.checkErrors(getValidationPolicy());
@@ -444,7 +444,7 @@ public final class TestComparisonArea
 		maliciousComparisonArea
 			= ComparisonArea.createCopy(masterComparisonArea);
 		MapArea maliciousMapArea
-			= MapArea.newInstance("234", "234", getTestMaliciousValue());
+			= MapArea.newInstance("234", "234", getTestMaliciousValue(), 0);
 		maliciousComparisonArea.addMapArea(maliciousMapArea);
 		try {
 			maliciousComparisonArea.checkSecurityViolations();

@@ -176,7 +176,7 @@ fetchExtractTable <- function() {
 	cat(paste0(extractTableName," numberOfRows=",numberOfRows, "==", "\n"), sep="")
   
 	if (exitValue != 0) {
-		throw("Error reading in the extract table from the database");
+		stop("Error reading in the extract table from the database");
 	}
 	
 	return(data)
@@ -232,7 +232,7 @@ getAdjacencyMatrix <- function() {
  
   
 	if (exitValue != 0) {
-		throw("Error getting adjacency matrix");
+		stop("Error getting adjacency matrix");
 	}
 	
   cat(paste0("rif40_GetAdjacencyMatrix numberOfRows=",numberOfRows, "==", "\n"), sep="")
@@ -356,7 +356,7 @@ generateTableIndexSQLQuery <- function(tableName, columnName) {
 ##This method updates cell values in the skeleton map file with values from 
 ##corresponding fields that exist in the temporary table.
 ##================================================================================
-updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
+updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType) {
   
 ##================================================================================
 ##
@@ -371,7 +371,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 ## SQL Server: 	CAST(a.area_id AS INTEGER)
 ##
 ##================================================================================
-  updateStmt <- paste0("SET ",
+  updateStmtPart1 <- paste0("SET ",
 		  "genders=b.genders,",
 		  "direct_standardisation=b.direct_standardisation,",
 		  "adjusted=b.adjusted,",
@@ -389,63 +389,63 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 		  "residual_rr_upper95=b.residual_rr_upper95,",
 		  "smoothed_smr=b.smoothed_smr,",
 		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
-		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ")
-  if (db_driver_prefix == "jdbc:postgresql") {	
-	if (area_id_is_integer) {
-		updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " a ",	  
-		  updateStmt,
-		  "FROM ",
-		  temporarySmoothedResultsTableName,
-		  " b ",
-		  "WHERE ",
-		  "a.study_id=b.study_id AND ",
-		  "a.band_id=b.band_id AND ",
-		  "a.inv_id=b.inv_id AND ",
-		  "a.genders=b.genders AND ",
-		  "a.area_id::INTEGER=b.area_id::INTEGER");
+		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ", sep="\n")
+		  
+	if (db_driver_prefix == "jdbc:postgresql") {
+		updateStmtPart2 <- paste0(updateStmtPart1,
+			" FROM ", temporarySmoothedResultsTableName, " b WHERE ",
+			"a.study_id=b.study_id AND ",
+			"a.band_id=b.band_id AND ",
+			"a.inv_id=b.inv_id AND ",
+			"a.genders=b.genders ", sep="\n")
+	}
+	else if (db_driver_prefix == "jdbc:sqlserver") { ## No alaised JOIN allowed
+		updateStmtPart2 <- paste0(updateStmtPart1,
+			" FROM ", mapTableName, " AS a INNER JOIN ", temporarySmoothedResultsTableName, " AS b ON (",
+			"a.study_id=b.study_id AND ",
+			"a.band_id=b.band_id AND ",
+			"a.inv_id=b.inv_id AND ",
+			"a.genders=b.genders ", sep="\n")
+	}
+
+	if (studyType == "riskAnalysis") { # No area id
+		if (db_driver_prefix == "jdbc:postgresql") {
+			updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " a\n ",	
+				  updateStmtPart2)
+		}
+		else if (db_driver_prefix == "jdbc:sqlserver") {
+			updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " \n ",	
+				  updateStmtPart2, ')')
+		}
 	}
 	else {	
-		updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " a ",
-		  updateStmt,
-		  "FROM ",
-		  temporarySmoothedResultsTableName,
-		  " b ",
-		  "WHERE ",
-		  "a.study_id=b.study_id AND ",
-		  "a.band_id=b.band_id AND ",
-		  "a.inv_id=b.inv_id AND ",
-		  "a.genders=b.genders AND ",
-		  "a.area_id=b.area_id");
+		if (db_driver_prefix == "jdbc:postgresql") {	
+			if (area_id_is_integer) {
+				updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " a\n ",	
+				  updateStmtPart2,
+				  " AND a.area_id::INTEGER=b.area_id::INTEGER");
+			}
+			else {	
+				updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " a\n ",
+				  updateStmtPart2,
+				  " AND a.area_id=b.area_id");
+			}
+		}
+		else if (db_driver_prefix == "jdbc:sqlserver") { 	
+			if (area_id_is_integer) {
+				updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, "\n ",
+				  updateStmtPart2,
+				  " AND CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))");
+			}
+			else {
+				updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, "\n ",
+				  updateStmtPart2,
+				  " AND a.area_id=b.area_id)");
+			}
+		}
 	}
-  }
-  else if (db_driver_prefix == "jdbc:sqlserver") { 	
-	if (area_id_is_integer) {
-		updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " ",
-		 
-		  updateStmt,
-		  "FROM ", mapTableName, " AS a INNER JOIN ",
-		  temporarySmoothedResultsTableName, " AS b ",
-		  "ON (",
-		  "a.study_id=b.study_id AND ",
-		  "a.band_id=b.band_id AND ",
-		  "a.inv_id=b.inv_id AND ",
-		  "a.genders=b.genders AND ",
-		  "CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))");
-	}
-	else {
-		updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " ",
-		  updateStmt,
-		  "FROM ", mapTableName, " AS a INNER JOIN ",
-		  temporarySmoothedResultsTableName, " AS b ",
-		  "ON (",
-		  "a.study_id=b.study_id AND ",
-		  "a.band_id=b.band_id AND ",
-		  "a.inv_id=b.inv_id AND ",
-		  "a.genders=b.genders AND ",
-		  "a.area_id=b.area_id)");
-	}
-  }
-  
+
+  cat(paste0("SQL> ", updateMapTableSQLQuery, "\n"))  
   res <- tryCatch(odbcQuery(connection, updateMapTableSQLQuery, FALSE),
                   warning=function(w) {
                     cat(paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w, "\n"), sep="")
@@ -477,9 +477,9 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
     exitValue <<- 1
   }	  
   
-	if (exitValue != 0) {
-		throw("Error updating Map Table from Smoothed Results Table");
-	}
+#	if (exitValue != 0) {
+#		stop("Error updating Map Table from Smoothed Results Table");
+#	}
 } # End of updateMapTableFromSmoothedResultsTable()
 
 

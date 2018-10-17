@@ -39,9 +39,9 @@
 
 angular.module("RIF")
         .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 
-			'SubmissionStateService', 'StudyAreaStateService', 'SelectStateService',
+			'SubmissionStateService', 'StudyAreaStateService', 'SelectStateService', 'ModelService', 'CommonMappingStateService',
             function ($scope, $uibModal, CompAreaStateService, SubmissionStateService, 
-				StudyAreaStateService, SelectStateService) {
+				StudyAreaStateService, SelectStateService, ModelService, CommonMappingStateService) {
                 $scope.tree = SubmissionStateService.getState().comparisonTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -58,7 +58,13 @@ angular.module("RIF")
                         if (input.selectedPolygon.length === 0) {
                             SubmissionStateService.getState().comparisonTree = false;
                             $scope.tree = false;
-                        } else {
+                        } 
+
+						else if (!ModelService.verifyStudyState()) { // Check study types - FAILS
+                            SubmissionStateService.getState().comparisonTree = false;
+                            $scope.tree = false;
+                        }						
+						else {
                             //check resolutions are compatible
                             if (StudyAreaStateService.getState().studyResolution !== "") {
                                 if (input.geoLevels.indexOf(input.studyResolution) >
@@ -81,36 +87,42 @@ angular.module("RIF")
 							$scope.areamap.remove(); 
 						});
                         //Store what has been selected
-                        CompAreaStateService.getState().polygonIDs = input.selectedPolygon;
-                        CompAreaStateService.getState().selectAt = input.selectAt;
-                        CompAreaStateService.getState().studyResolution = input.studyResolution;
-                        CompAreaStateService.getState().center = input.center;
-                        CompAreaStateService.getState().geography = input.geography;
-                        CompAreaStateService.getState().transparency = input.transparency;
+                        CompAreaStateService.getState().setPolygonIDs(input.selectedPolygon);
+                        CompAreaStateService.getState().setSelectAt(input.selectAt);
+                        CompAreaStateService.getState().setStudyResolution(input.studyResolution);
+                        CompAreaStateService.getState().setCenter(input.center);
+                        CompAreaStateService.getState().setGeography(input.geography);
+                        CompAreaStateService.getState().setTransparency(input.transparency);
 						
 						if (input.selectAt) {
-							SelectStateService.getState().studySelection.comparisonSelectAt = input.selectAt;
+							SelectStateService.getState().studySelection.comparisonSelectAt = angular.copy(input.selectAt);
 						}
 						if (input.selectedPolygon) {
-							SelectStateService.getState().studySelection.comparisonSelectedAreas = 
-								input.selectedPolygon;
+							SelectStateService.getState().studySelection.comparisonSelectedAreas = angular.copy(
+								input.selectedPolygon);
+							var areaNameList=CommonMappingStateService.getState("areamap").setAreaNameList(input.name);
 						}
 						
 						try {
 							if (SelectStateService.getState().studySelection.comparisonSelectedAreas.length > 0) {
 								// FIX: Warning: Unable to verify comparison area selection: study selection resolution not setup correctly
 								if (SelectStateService.getState().studySelection.studySelectAt == undefined) {
-									SelectStateService.getState().studySelection.studySelectAt=StudyAreaStateService.getState().selectAt;
+									SelectStateService.getState().studySelection.studySelectAt=angular.copy(StudyAreaStateService.getState().selectAt);
 								}
 								// FIX: Warning: Unable to verify comparison area selection: at least one study area required
 								if (SelectStateService.getState().studySelection.studySelectedAreas == undefined ||
 									SelectStateService.getState().studySelection.studySelectedAreas.length <1) {
-									$scope.consoleDebug("[rifc-dsub-comparea.js] Fix studySelectedAreas: StudyAreaStateService.getState(): " +
-										JSON.stringify(StudyAreaStateService.getState(), null, 1));
-									SelectStateService.getState().studySelection.studySelectedAreas=StudyAreaStateService.getState().polygonIDs;
+//									$scope.consoleDebug("[rifc-dsub-comparea.js] Fix studySelectedAreas: StudyAreaStateService.getState(): " +
+//										JSON.stringify(StudyAreaStateService.getState(), null, 1));
+									SelectStateService.getState().studySelection.studySelectedAreas=angular.copy(StudyAreaStateService.getState().polygonIDs);
 								}
 								
 								var r=SelectStateService.verifyStudySelection();
+							}
+							else {
+								$scope.showWarning("No comparison areas selected");
+                                SubmissionStateService.getState().comparisonTree = false;
+                                $scope.tree = false;
 							}
 						}
 						catch (e) {
