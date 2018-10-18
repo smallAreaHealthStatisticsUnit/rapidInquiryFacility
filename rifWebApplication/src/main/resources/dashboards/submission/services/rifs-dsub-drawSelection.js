@@ -253,20 +253,27 @@ angular.module("RIF")
 								}		
 								
 								if (shape.circle) { // Represent circles as a point and a radius
-									if (savedShape.radius == undefined) {
+									if (savedShape.radius == undefined && shape.data) {
 										savedShape.radius=shape.data.getRadius();
 									}
 									savedShape.latLng=shape.data.getLatLng();
-									if (savedShape.area == undefined || savedShape.area == 0) {
-										savedShape.area = Math.round((Math.PI*Math.pow(shape.data.getRadius(), 2)*100)/1000000)/100 // Square km to 2dp
-										
-										if (savedShape.area == undefined || savedShape.area == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): Cannot determine area" +
-												"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
-											AlertService.showError("Could not create circle shape");
-										}
+									if (savedShape.area == undefined || savedShape.area == 0) { // Calculate area from radius
+																								// using Euclidean postulate 3)
+										savedShape.area = Math.round((
+											Math.PI*Math.pow(shape.data.getRadius(), 2)*100)/1000000)/100 // Square km to 2dp
 									}
-									if ((shape.band == 1) || (shape.band > 1 && !savedShape.finalCircleBand)) {
+									
+									if (shape.data == undefined || savedShape.latLng == undefined) {
+										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): Cannot determine area" +
+											"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
+										AlertService.showError("Could not create circle shape, cannot determine LatLng");
+									}									
+									else if (savedShape.area == undefined || savedShape.area == 0) {
+										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): Cannot determine area" +
+											"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
+										AlertService.showError("Could not create circle shape, cannot determine area");
+									}
+									else if ((shape.band == 1) || (shape.band > 1 && !savedShape.finalCircleBand)) {
 										// basic shape to map shapes layer group
 										circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
 												pane: 'shapes', 

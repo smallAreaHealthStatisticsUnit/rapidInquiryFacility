@@ -959,7 +959,7 @@ angular.module("RIF")
 								if (latlngListDups > 0) {
 									alertScope.showWarning(latlngListDups + " duplicate IDs in centroid list");
 								}
-								var pctPopWeighted=Math.round(10000*popWeightedCount/dbCentroidCount)/100;
+								var pctPopWeighted=Math.round(10000*popWeightedCount/res.data.smoothed_results.length)/100;
 									
 								if (res.data.smoothed_results.length == popWeightedCount) {
 									$scope.centroid_type="population weighted";
