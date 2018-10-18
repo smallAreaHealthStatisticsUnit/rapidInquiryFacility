@@ -31,7 +31,15 @@ public class CsvFile {
 		}
 	}
 
-	public <E> List<E> parse(Class<? extends E> bean) throws RIFServiceException {
+	/**
+	 * Generic parser for any CSV file with headers, in theory.
+	 * @param bean a class to which the CSV file's rows can be mapped
+	 * @param <E> the type of the class which does the mapping
+	 * @return the rows from the file, as a {@code List} of objects of E's type
+	 * @throws RIFServiceException not really: this is just because {@code FileReader} declares
+	 * an Exception
+	 */
+	public <E> List<E> parseTaxonomyTerms(Class<? extends E> bean) throws RIFServiceException {
 
 		Reader reader;
 		try {
@@ -45,7 +53,7 @@ public class CsvFile {
 		}
 
 		MappingStrategy<E> strategy = new HeaderColumnNameMappingStrategy<>();
-		// strategy.setType(bean.getClass());
+		// strategy.setType(bean.cast(o).getClass());
 		return new CsvToBeanBuilder<E>(reader)
 				       .withMappingStrategy(strategy)
 				       .withType(bean)
@@ -53,7 +61,7 @@ public class CsvFile {
 				       .parse();
 	}
 
-	public List<TaxonomyTerm> parse() throws RIFServiceException {
+	public List<TaxonomyTerm> parseTaxonomyTerms() throws RIFServiceException {
 
 		Reader reader;
 		try {

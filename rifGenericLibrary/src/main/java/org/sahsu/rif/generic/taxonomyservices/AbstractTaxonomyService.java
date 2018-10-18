@@ -1,10 +1,13 @@
 package org.sahsu.rif.generic.taxonomyservices;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.lang3.StringUtils;
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.generic.fileformats.FilePath;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
 public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
@@ -141,5 +144,36 @@ public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 		final boolean isCaseSensitive) {
 	
 		return taxonomyTermManager.getMatchingTerms(searchPhrase, isCaseSensitive);
-	}	
+	}
+
+	/**
+	 * Returns the {@code Path} value of a parameter in the configuration file which has a key
+	 * of the specified name.
+	 * @param taxonomyServiceConfiguration the configuration object
+	 * @param taxonomyFileParameter the name of the parameter whose value represents a file
+	 * @return the {@code Path} to the file, if found
+	 * @throws RIFServiceException if the file name is not in the configuration, or the file is
+	 * not found.
+	 */
+	protected Path getTaxonomyFilePath(
+			final TaxonomyServiceConfiguration taxonomyServiceConfiguration,
+			String taxonomyFileParameter) throws RIFServiceException {
+
+		String taxonomyFileName = extractParameterValue(taxonomyServiceConfiguration,
+		                                                taxonomyFileParameter);
+
+		if (StringUtils.isEmpty(taxonomyFileName)) {
+
+			throw new RIFServiceException("Taxonomy file name for %s not found in configuration "
+			                              + "file", taxonomyServiceConfiguration.getName());
+		}
+
+		return new FilePath(taxonomyFileName).getPath();
+	}
+
+	protected String extractParameterValue(TaxonomyServiceConfiguration config, String name) {
+
+		List<Parameter> params = config.getParameters();
+		return Parameter.getParameter(name, params).getValue();
+	}
 }
