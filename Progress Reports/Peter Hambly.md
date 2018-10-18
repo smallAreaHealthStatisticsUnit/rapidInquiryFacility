@@ -3013,4 +3013,8 @@ Further changes are needed to support risk analysis:
 
 #### 15th to 19th October
 
-* Install SQL Server and Postgres databases on WSRIF; install and configure RIF tomcat application; install UK and US data; test;
+* Install SQL Server and Postgres databases on WSRIF; install and configure RIF tomcat application; 
+* Install UK and US data; tune, test;
+* Found issue with postcode points - not being added to the map;
+* Fixed postcode lookup issues in *rif_pg/mssql_process_centroids.sql*;
+* SQL Server reports the percentage of population weighted centroids incorrectly;
