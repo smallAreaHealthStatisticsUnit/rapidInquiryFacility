@@ -32,14 +32,16 @@ public class CsvFile {
 	}
 
 	/**
-	 * Generic parser for any CSV file with headers, in theory.
+	 * This was an attempt to write a generic parser for any CSV file with headers. It failed
+	 * because of Java's type erasure. It might be possible to make it work using Guava's
+	 * TypeToken class, but I couldn't get that to work either.
 	 * @param bean a class to which the CSV file's rows can be mapped
 	 * @param <E> the type of the class which does the mapping
 	 * @return the rows from the file, as a {@code List} of objects of E's type
 	 * @throws RIFServiceException not really: this is just because {@code FileReader} declares
 	 * an Exception
 	 */
-	public <E> List<E> parseTaxonomyTerms(Class<? extends E> bean) throws RIFServiceException {
+	public <E> List<E> parse(Class<? extends E> bean) throws RIFServiceException {
 
 		Reader reader;
 		try {
@@ -53,7 +55,7 @@ public class CsvFile {
 		}
 
 		MappingStrategy<E> strategy = new HeaderColumnNameMappingStrategy<>();
-		// strategy.setType(bean.cast(o).getClass());
+		// strategy.setType(bean.getClass());
 		return new CsvToBeanBuilder<E>(reader)
 				       .withMappingStrategy(strategy)
 				       .withType(bean)

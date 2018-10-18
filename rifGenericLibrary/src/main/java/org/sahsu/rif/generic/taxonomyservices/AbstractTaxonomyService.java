@@ -171,6 +171,12 @@ public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 		return new FilePath(taxonomyFileName).getPath();
 	}
 
+	/**
+	 * Gets the value of parameter from the {@code TaxonomyServiceConfiguration}, given its name.
+	 * @param config the {@code TaxonomyServiceConfiguration}
+	 * @param name the parameter name
+	 * @return the parameter value, or the empty string if it doesn't exist
+	 */
 	protected String extractParameterValue(TaxonomyServiceConfiguration config, String name) {
 
 		List<Parameter> params = config.getParameters();
