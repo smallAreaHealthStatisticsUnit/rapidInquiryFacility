@@ -1,20 +1,16 @@
 package org.sahsu.taxonomyservices;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.util.List;
 
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceAPI;
 import org.sahsu.rif.generic.taxonomyservices.AbstractTaxonomyService;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
+import org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfiguration;
-import org.sahsu.taxonomyservices.system.TaxonomyServiceError;
-
+import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
-
-import java.io.File;
-import java.util.List;
+import org.sahsu.taxonomyservices.system.TaxonomyServiceError;
 
 /**
  * A taxonomy service that provides terms from ICD collections.  The main activity
@@ -30,16 +26,13 @@ import java.util.List;
  * service are controlled by {@link FederatedTaxonomyService}.
  * </p>
  */
-public class ClaMlTaxonomyService
-	extends AbstractTaxonomyService 
-	implements TaxonomyServiceAPI {
+public class ClaMlTaxonomyService extends AbstractTaxonomyService {
 
 	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
 
 	public void initialiseService(
 		final String defaultResourceDirectoryPath,
-		final TaxonomyServiceConfiguration taxonomyServiceConfiguration) 
-		throws RIFServiceException {
+		final TaxonomyServiceConfiguration taxonomyServiceConfiguration) {
 			
 		String name = "UNKNOWN";
 		String description = "UNKNOWN";

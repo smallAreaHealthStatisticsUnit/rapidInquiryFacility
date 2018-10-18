@@ -32,7 +32,7 @@ public class TaxonomyServiceConfiguration {
 		return new TaxonomyServiceConfiguration();
 	}
 
-	String getServiceIdentifier() {
+	public String getServiceIdentifier() {
 		return serviceIdentifier;
 	}
 	void setServiceIdentifier(final String serviceIdentifier) {

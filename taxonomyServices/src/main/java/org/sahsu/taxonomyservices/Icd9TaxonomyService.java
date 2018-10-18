@@ -23,7 +23,10 @@ public class Icd9TaxonomyService extends AbstractTaxonomyService {
 			final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
 			throws RIFServiceException {
 
-		rifLogger.info(getClass(), "Initialising ICS 9 taxonomy service");
+		rifLogger.info(getClass(), "Initialising ICD9 taxonomy service");
+
+		// Basic setup
+		setTaxonomyServiceConfiguration(taxonomyServiceConfiguration);
 
 		// Locate the ICD 9 file
 		Path icd9File = locateTheICD9File(
@@ -36,10 +39,12 @@ public class Icd9TaxonomyService extends AbstractTaxonomyService {
 		TaxonomyTermManager manager = TaxonomyTermManager.newInstance("icd9");
 		for (TaxonomyTerm term : terms) {
 
+			term.setNameSpace("icd9");
 			manager.addTerm(term);
 		}
 
-		rifLogger.info(getClass(), "ICD 9 data loaded. Service started");
+		rifLogger.info(getClass(), "ICD9 data loaded. Service started");
+		setIdentifier(taxonomyServiceConfiguration.getServiceIdentifier());
 		setTaxonomyTermManager(manager);
 		setServiceWorking(true);
 	}

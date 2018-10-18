@@ -190,7 +190,7 @@ angular.module("RIF")
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.taxonomyServices.push(res.data[i].identifier);
                     }
-                    $scope.taxonomyScheme = ($scope.taxonomyServices[0] || "ICD10");
+                    $scope.taxonomyScheme = $scope.taxonomyServices[0];
                 }
 
                 //handle fill covariates box
