@@ -3018,3 +3018,8 @@ Further changes are needed to support risk analysis:
 * Found issue with postcode points - not being added to the map;
 * Fixed postcode lookup issues in *rif_pg/mssql_process_centroids.sql*;
 * SQL Server reports the percentage of population weighted centroids incorrectly;
+* Added support for multiple intersection tracing in shapes and selected polygons;
+* Issues requiring fixing:
+  * Add selector arrow to ICD selector;
+  * Fix shape layer order (not ordered as createAreaNameList() not working);
+  * Fix clear selection (not clearing selected shapes);
