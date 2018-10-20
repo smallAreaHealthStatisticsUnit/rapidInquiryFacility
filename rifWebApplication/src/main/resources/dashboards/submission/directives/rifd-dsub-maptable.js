@@ -1922,7 +1922,7 @@ angular.module("RIF")
 									if (savedShape.circle) {
 										this._div.innerHTML = '<h4>Circle;</h4><b>Radius: ' + Math.round(savedShape.radius * 10) / 10 + 'm</b></br>' +
 											"<b>Lat: " + Math.round(savedShape.latLng.lat * 1000) / 1000 + // 100m precision
-											"; long: " +  Math.round(savedShape.latLng.lng * 1000) / 1000 +'</b></br>';
+											"&deg;; long: " +  Math.round(savedShape.latLng.lng * 1000) / 1000 +'&deg;</b></br>';
 									}
 									else {
 										var coordinates=savedShape.geojson.geometry.coordinates[0];												
@@ -1942,13 +1942,13 @@ angular.module("RIF")
 									}
 									
 									if (savedShape.area) {
-										this._div.innerHTML+= '<b>area: ' + savedShape.area + ' square km</b><br />'
+										this._div.innerHTML+= '<b>Area: ' + savedShape.area + ' square km</b><br />'
 									}
 										
 									for (var property in savedShape.properties) {
 										if (property == 'area') {
 											if (savedShape.area === undefined) {
-												this._div.innerHTML+= '<b>' + property + ': ' + savedShape.properties[property] + ' square km</b><br />'
+												this._div.innerHTML+= '<b>Area: ' + savedShape.properties[property] + ' square km</b><br />'
 											}
 										}
 										else if (property != '$$hashKey') {
@@ -1956,8 +1956,6 @@ angular.module("RIF")
 										}
 									}
 									this._div.innerHTML += '<b>Band: ' + (savedShape.band || "unknown") + '</b><br />';
-									this._div.innerHTML += '<b>Areas selected: ' + (bandCount[savedShape.band] || 0) + '/' +
-										latlngList.length +  '</b><br />';
 								}
 								else if (CommonMappingStateService.getState("areamap").shapes.getLayers().length > 0&& $scope.noMouseClocks) {
 									this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br></h4>';

@@ -37,8 +37,8 @@
 /* global L */
 
 angular.module("RIF")
-        .factory('GISService',
-                function () {
+        .factory('GISService', ['AlertService',
+                function (AlertService) {
                     function isPointInPolygon(point, poly) {
                         //http://stackoverflow.com/questions/31790344/determine-if-a-point-reside-inside-a-leaflet-polygon
 
@@ -83,14 +83,74 @@ angular.module("RIF")
                     function isPointInCircle(point, circle) {
                         if (circle.data.getLatLng().distanceTo(point) <= circle.data.getRadius()) {
                             return true;
-                        }
+						}
+						else {
+							return false;
+						}
                     }
+					function convertToGeoJSONPoints(LatLngList) {
+						var geoJSONPoints = [];
+						for (var i=0; i<LatLngList.length; i++) {
+							geoJSONPoints.push([LatLngList[i].lng, LatLngList[i].lat]);
+						}
+						if (LatLngList[0].lng == LatLngList[(LatLngList.length-1)].lng &&
+						    LatLngList[0].lng == LatLngList[(LatLngList.length-1)].lng) { // Is a ring
+						}
+						else {
+							geoJSONPoints.push([LatLngList[0].lng, LatLngList[0].lat]); // Make it a ring
+						}
+						return [geoJSONPoints];
+					}
+					function getdistanceFromNearestSource2(point, centroid) {
+						// Point is Leaflet latLng
+                        if (centroid && point) {
+							return Math.round(centroid.distanceTo(point) * 10)/10;
+						}
+						else {
+							throw new Error("centroid/point is undefined");
+						}
+					}
+					function getCentroid2(shape) {
+						// Point is Leaflet latLng
+                        if (shape.circle) {
+							return shape.data.getLatLng();
+                        }
+						else if (shape.data) {	
+							var polyPoints;
+							if (shape.freehand) {
+								polyPoints = convertToGeoJSONPoints(shape.data.getLatLngs());
+							} else {
+								polyPoints = convertToGeoJSONPoints(shape.data.getLatLngs()[0]);
+							}		
+							var polygon=turf.polygon(polyPoints);
+							var centroid;
+							if (polygon) {
+								centroid=turf.centroid(polygon); // GeoJSON point as longitude and latitude
+								return L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+							}
+							else {
+								throw new Error("No polygon could be created for polyPoints: " + JSON.stringify(polyPoints));
+							}
+//							AlertService.consoleDebug("rifs-util-gis.js] polyPoints: " + JSON.stringify(polyPoints) +
+//								"; polygon: " + JSON.stringify(polygon) +
+//								"; centroid: " + JSON.stringify(centroid)); 
+						}
+						else {
+							throw new Error("shape.data is undefined; shape: " + JSON.stringify(shape.data, null, 1));
+						}
+					}
                     return {
                         getPointinpolygon: function (point, poly) {
                             return isPointInPolygon(point, poly);
                         },
                         getPointincircle: function (point, circle) {
                             return isPointInCircle(point, circle);
-                        }
+                        },
+						getdistanceFromNearestSource: function (point, centroid) {
+                            return getdistanceFromNearestSource2(point, centroid);
+                        },
+						getCentroid: function(shape) {
+							return getCentroid2(shape);
+						}
                     };
-                });
+                }]);

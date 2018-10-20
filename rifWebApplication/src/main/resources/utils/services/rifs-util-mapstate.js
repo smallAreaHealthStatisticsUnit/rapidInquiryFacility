@@ -78,7 +78,7 @@ angular.module("RIF")
 							checkAreaType(areaType);
 							return this.areaType.selectedPolygon;
 						},
-						getSelectedPolygonObj: function(areaType, thisPolyId) { // Get selectedPolygon list
+						getSelectedPolygonObj: function(areaType, thisPolyId) { // Get selectedPolygon list element
 							checkAreaType(areaType);
 							return this.areaType.selectedPolygonObj[thisPolyId];
 						},
@@ -169,6 +169,45 @@ angular.module("RIF")
 								this.areaType.selectedPolygon.length);
 							return this.areaType.selectedPolygon;
 						},
+						getMaxIntersectCount: function(areaType, rifShapeId) {
+							checkAreaType(areaType);
+							var maxIntersectCount=0;
+							if (this.areaType.selectedPolygon) {
+								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
+									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapeId] &&
+										this.areaType.selectedPolygon[i].intersectCount > maxIntersectCount) {
+										maxIntersectCount = this.areaType.selectedPolygon[i].intersectCount;
+									}
+								}
+							}
+							AlertService.consoleDebug("[rifs-util-mapstate.js] getMaxIntersectCount(" + 
+								areaType + "," + rifShapeId + "): " + 
+								maxIntersectCount + "/" + (this.areaType.selectedPolygon ? this.areaType.selectedPolygon.length : 0));
+							return maxIntersectCount;
+						},
+						getTotalAreas: function(areaType, rifShapeId) {
+							checkAreaType(areaType);
+							var totalAreas=0;
+							var otherRifShapeId = {};
+							if (this.areaType.selectedPolygon) {
+								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
+									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapeId]) {
+										totalAreas++;
+									}
+									else if (otherRifShapeId[this.areaType.selectedPolygon[i].rifShapeId]){
+										otherRifShapeId[this.areaType.selectedPolygon[i].rifShapeId].count++;
+									}
+									else {
+										otherRifShapeId[this.areaType.selectedPolygon[i].rifShapeId] = {count: 1};	
+									}
+								}
+							}
+							AlertService.consoleDebug("[rifs-util-mapstate.js] getTotalAreas(" + 
+								areaType + "," + rifShapeId + "): " + 
+								totalAreas + "/" + (this.areaType.selectedPolygon ? this.areaType.selectedPolygon.length : 0) +
+								"; otherRifShapeId: " + JSON.stringify(otherRifShapeId));
+							return totalAreas;
+						},
 						initialiseSelectedPolygon: function(areaType, arr) {	// Initialise selectedPolygon from an array arr of items
 							checkAreaType(areaType);	
 							var oldLength=((this.areaType && this.areaType.selectedPolygon) ? this.areaType.selectedPolygon.length : undefined);
@@ -243,6 +282,36 @@ angular.module("RIF")
 //								AlertService.consoleDebug("[rifs-util-mapstate.js] addToSelectedPolygon(" + areaType + ", " + 
 //									JSON.stringify(item) + "): " + 
 //									this.areaType.selectedPolygon.length);
+							}
+							else {
+								throw new Error("Null item/id: " + JSON.stringify(item) + "; areaType: " + areaType);
+							}
+							return this.areaType.selectedPolygon;
+						},
+						updateSelectedPolygon: function(areaType, item) {	// Update item to selectedPolygon
+							checkAreaType(areaType);	
+							if (item && item.id) {
+								if (this.areaType.selectedPolygonObj[item.id]) {
+									var found=false;
+									for (var i=0; i < this.areaType.selectedPolygon.length; i++) {
+										if (this.areaType.selectedPolygon[i].id == item.id) {
+											found=true;
+											this.areaType.selectedPolygon.splice(i, 1);
+											break;
+										}
+									}	
+									if (!found) {
+										throw new Error("Cannot find item: " + id + " in selectedPolygon " + areaType + " list");
+									}
+									this.areaType.selectedPolygonObj[item.id] = angular.copy(item);
+									this.areaType.selectedPolygon.push(angular.copy(item));
+									AlertService.consoleDebug("[rifs-util-mapstate.js] updateSelectedPolygon(" + areaType + ", " + 
+										JSON.stringify(item, null, 1) + "): " + 
+										this.areaType.selectedPolygon.length);
+								}
+								else {
+									throw new Error("No items: " + item.id + " in selectedPolygon " + areaType + " list");
+								}
 							}
 							else {
 								throw new Error("Null item/id: " + JSON.stringify(item) + "; areaType: " + areaType);
