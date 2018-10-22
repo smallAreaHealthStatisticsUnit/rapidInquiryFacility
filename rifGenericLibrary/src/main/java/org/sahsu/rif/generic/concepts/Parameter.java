@@ -20,7 +20,7 @@ public final class Parameter
 	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
 
 	// Use the "null object" pattern instead of returning null.
-	public static final Parameter NULL_PARAM = new Parameter("", "");
+	private static final Parameter NULL_PARAM = new Parameter();
 	
 	/** The name. */
 	private String name;
@@ -34,9 +34,7 @@ public final class Parameter
 	 * @param name the name
 	 * @param value the value
 	 */
-	private Parameter(
-		final String name, 
-		final String value) {
+	private Parameter(final String name, final String value) {
 
 		this.name = name;
 		this.value = value;
@@ -46,23 +44,17 @@ public final class Parameter
      * Instantiates a new parameter.
      */
     private Parameter() {
-		init("", "");
+
+	    this("","");
     }
 
-    private void init(
-    	final String name, 
-    	final String value) {
-    	
-    	this.name = name;
-    	this.value = value;
-    }
-    
 	/**
 	 * New instance.
 	 *
 	 * @return the parameter
 	 */
-	static public Parameter newInstance() {
+	public static Parameter newInstance() {
+
 		return new Parameter();
 	}
 
@@ -73,9 +65,7 @@ public final class Parameter
 	 * @param value the value
 	 * @return the parameter
 	 */
-	static public Parameter newInstance(
-		final String name, 
-		final String value) {
+	public static Parameter newInstance(final String name, final String value) {
 
 		return new Parameter(name, value);
 	}
@@ -92,7 +82,7 @@ public final class Parameter
 			return null;
 		}
 		
-		List<Parameter> cloneParameters = new ArrayList<Parameter>();
+		List<Parameter> cloneParameters = new ArrayList<>();
 		for (Parameter originalParameter : originalParameters) {
 			cloneParameters.add(createCopy(originalParameter));
 		}
@@ -120,19 +110,9 @@ public final class Parameter
 		return cloneParameter;
 	}
 
-	public static List<String> extractParameterNames(final List<Parameter> parameters) {
-		List<String> parameterNames = new ArrayList<>();
-
-		for (Parameter parameter : parameters) {
-			parameterNames.add(parameter.getName());			
-		}
-		
-		return parameterNames;
-	}
-
 	/**
 	 * Returns a {@code Parameter} object if the provided {@code List} contains one whose name
-	 * matches the provided {@code targetParameterName}. If no such {@code Parameter} exists the
+	 * matches the provided {@code targetParameterName}. If no such {@code Parameter} exists, the
 	 * {@code NULL_PARAM} singleton is returned.
 	 * @param targetParameterName the name of the required parameter
 	 * @param parameters the list of parameters to search
@@ -151,8 +131,7 @@ public final class Parameter
 		
 		return NULL_PARAM;
 	}
-	
-	
+
 	/**
 	 * Gets the name.
 	 *
@@ -195,35 +174,6 @@ public final class Parameter
 		this.value = value;
 	}
 
-	public void identifyDifferences(
-		final Parameter anotherParameter,
-		final ArrayList<String> differences) {
-		
-		//@TODO
-	}
-	
-	/**
-	 * Could be useful for identifying which parameters are in one 
-	 * list but not the other
-	 * @param nameOfListOwnerA
-	 * @param parameterListA
-	 * @param nameOfListOwnerB
-	 * @param parameterListB
-	 * @return
-	 */
-	public static ArrayList<String> identifyDifferences(
-		final String nameOfListOwnerA,
-		final ArrayList<Parameter> parameterListA,
-		final String nameOfListOwnerB,
-		final ArrayList<Parameter> parameterListB) {
-
-		ArrayList<String> differences
-			= new ArrayList<>();
-
-		return differences;
-	}
-	
-	
 	/**
 	 * Checks for identical contents.
 	 *
@@ -287,7 +237,6 @@ public final class Parameter
 		return results;
 	}
 	
-	
 	/**
 	 * Checks for identical contents.
 	 *
@@ -334,13 +283,8 @@ public final class Parameter
 				
 		return true;
 	}
-	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
 
-	public void checkSecurityViolations()
-			throws RIFServiceSecurityException {
+	public void checkSecurityViolations() throws RIFServiceSecurityException {
 		
 		String recordType = getRecordType();
 		
@@ -364,10 +308,8 @@ public final class Parameter
 			valueFieldLabel, 
 			value);
 	}
-	
 
-	public void checkErrors()
-			throws RIFServiceException {
+	public void checkErrors() throws RIFServiceException {
 					
 		String recordType = getRecordType();
 		
@@ -377,7 +319,7 @@ public final class Parameter
 		String valueFieldLabel
 			= GENERIC_MESSAGES.getMessage("parameter.value.label");
 				
-		ArrayList<String> errorMessages = new ArrayList<String>();
+		ArrayList<String> errorMessages = new ArrayList<>();
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(name)) {
@@ -398,8 +340,8 @@ public final class Parameter
 			errorMessages.add(errorMessage);			
 		}
 		
-		fieldValidationUtility.throwExceptionIfErrorsFound(RIFGenericLibraryError.INVALID_PARAMETER, errorMessages);
-
+		fieldValidationUtility.throwExceptionIfErrorsFound(RIFGenericLibraryError.INVALID_PARAMETER,
+		                                                   errorMessages);
 	}
 	
 	/**
@@ -435,9 +377,8 @@ public final class Parameter
 				duplicateParameterListing.append(duplicateParameters.get(i).getDisplayName());
 			}
 
-			return GENERIC_MESSAGES.getMessage(
-				"parameter.error.duplicateParameters",
-				duplicateParameterListing.toString());
+			return GENERIC_MESSAGES.getMessage("parameter.error.duplicateParameters",
+			                                   duplicateParameterListing.toString());
 		}		
 	}
 

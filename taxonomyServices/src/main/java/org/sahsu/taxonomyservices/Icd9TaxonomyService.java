@@ -11,7 +11,7 @@ import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 
-import com.google.common.reflect.TypeToken;
+// import com.google.common.reflect.TypeToken;
 
 /**
  * Provides the ICD 9 taxonomy.
@@ -38,7 +38,7 @@ public class Icd9TaxonomyService extends AbstractTaxonomyService {
 		// OK, we've got a real file
 		CsvFile file = new CsvFile(icd9File);
 
-		TypeToken<TaxonomyTerm> t = new TypeToken<TaxonomyTerm>() {};
+		// TypeToken<TaxonomyTerm> t = new TypeToken<TaxonomyTerm>() {};
 		// List<TaxonomyTerm> terms = file.parse(t);
 		List<TaxonomyTerm> terms = file.parseTaxonomyTerms();
 		TaxonomyTermManager manager = TaxonomyTermManager.newInstance(ICD_9_TAXONOMY_NAME);

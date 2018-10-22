@@ -63,6 +63,11 @@ public class CsvFile {
 				       .parse();
 	}
 
+	/**
+	 * Parses a file containing disease taxonomy terms. The headings must match those declared
+	 * in the annotations in {@code TaxonomyTerm}, namely <code>DIAGNOSIS CODE"</code> and
+	 * <code>"LONG DESCRIPTION"</code>.
+	 */
 	public List<TaxonomyTerm> parseTaxonomyTerms() throws RIFServiceException {
 
 		Reader reader;

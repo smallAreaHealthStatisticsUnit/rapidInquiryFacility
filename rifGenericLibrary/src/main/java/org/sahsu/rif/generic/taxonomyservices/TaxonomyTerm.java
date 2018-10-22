@@ -46,14 +46,6 @@ import com.opencsv.bean.CsvBindByName;
  * used to set a name space field in each term.  But instead, the name space is provided in the
  * <code>getIdentifier()</code> method of 
  * {@link TaxonomyServiceAPI}.
- * 
- * 
- * 
- * 
- * 
- * 
- * However, given the taxonomies that the
- * RIF would likely use, it seemed unnecessary.  
  */
 final public class TaxonomyTerm {
 
@@ -113,10 +105,9 @@ final public class TaxonomyTerm {
 	/**
 	 * Adds the sub term.
 	 *
-	 * @param subTerm the sub term
+	 * @param childTerm the sub term
 	 */
-	void addChildTerm(
-			final TaxonomyTerm childTerm) {
+	void addChildTerm(final TaxonomyTerm childTerm) {
 
 		childTerms.add(childTerm);
 	}
@@ -126,8 +117,7 @@ final public class TaxonomyTerm {
 	 *
 	 * @param childTerms the sub terms
 	 */
-	public void addChildTerms(
-		final ArrayList<TaxonomyTerm> childTerms) {
+	public void addChildTerms(final ArrayList<TaxonomyTerm> childTerms) {
 
 		this.childTerms.addAll(childTerms);
 	}
