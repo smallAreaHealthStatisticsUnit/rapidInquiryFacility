@@ -1829,27 +1829,54 @@ angular.module("RIF")
 								$scope.shapeLoadUpdate = (indexKey) + " / " + $scope.selectionData.length + " shapes, " + 
 									(Math.round(((indexKey)/$scope.selectionData.length)*100)) + "%";
 								
-								if (indexKey % 50 == 0) {
-									$timeout(function() { // Be nice to the stack if you are going to be aggressive!
-										DrawSelectionService.makeDrawSelection(item, selectorBands, $scope.input, "areamap", latlngList, callback);
-									}, 100);
-								}	
-								else {	
-									async.setImmediate(function() {
-										DrawSelectionService.makeDrawSelection(item, selectorBands, $scope.input, "areamap", latlngList, callback);
-									});
+								try {
+									if (indexKey % 50 == 0) {
+										$timeout(function() { // Be nice to the stack if you are going to be aggressive!
+											DrawSelectionService.makeDrawSelection(item, selectorBands, $scope.input, "areamap", latlngList, callback);
+										}, 100);
+									}	
+									else {	
+										async.setImmediate(function() {
+											DrawSelectionService.makeDrawSelection(item, selectorBands, $scope.input, "areamap", latlngList, callback);
+										});
+									}
+								}
+								catch (e) {
+									callback(e.message);
 								}
 							}, function done(err) {
 								if (err) {
 									alertScope.showError("[rifd-dsub-maptable.js] completedDrawSelection error: " + err);
 								}
+								else {
+									var end=new Date().getTime();
+									var elapsed=(Math.round((end - start)/100))/10; // in S	
+									$scope.shapeLoadUpdate = $scope.selectionData.length + " shapes loaded in " + elapsed + " S";
+									CommonMappingStateService.getState("areamap").map.spin(false);  // off	
+									alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection in " + elapsed + " S");
+								}
 								
-								var end=new Date().getTime();
-								var elapsed=(Math.round((end - start)/100))/10; // in S	
-								$scope.shapeLoadUpdate = $scope.selectionData.length + " shapes loaded in " + elapsed + " S";
-								CommonMappingStateService.getState("areamap").map.spin(false);  // off	
+								// Update maxIntersectCount
+								var savedShapes;
+								if ($scope.input.name == "ComparisionAreaMap") { 
+									savedShapes=SelectStateService.getState().studySelection.comparisonShapes;
+								}
+								else {
+									savedShapes=SelectStateService.getState().studySelection.studyShapes;
+								}
+								for (var i=0; i<savedShapes.length; i++) {
+									if ($scope.input.name == "ComparisionAreaMap") { 
+										SelectStateService.getState().studySelection.comparisonShapes[i].properties.maxIntersectCount = 
+											CommonMappingStateService.getState("areamap").getMaxIntersectCount($scope.input.name, savedShapes[i].id);
+									}
+									else { 
+										SelectStateService.getState().studySelection.studyShapes[i].properties.maxIntersectCount = 
+											CommonMappingStateService.getState("areamap").getMaxIntersectCount($scope.input.name, savedShapes[i].id);
+									}
+								}
+								CommonMappingStateService.getState("areamap").info.update();
+								
 								$scope.selectionData = [];
-								alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection in " + elapsed + " S");
 								if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
 									CommonMappingStateService.getState("areamap").info.addTo(
 										CommonMappingStateService.getState("areamap").map);

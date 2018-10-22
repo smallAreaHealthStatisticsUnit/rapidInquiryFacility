@@ -43,8 +43,8 @@
  */
 
 angular.module("RIF")
-        .factory('LeafletDrawService', ['$rootScope', 'ParametersService', 
-                function ($rootScope, ParametersService) {
+        .factory('LeafletDrawService', ['$rootScope', 'ParametersService', 'DrawSelectionService',
+                function ($rootScope, ParametersService, DrawSelectionService) {
 					var parameters=ParametersService.getParameters();
                     var selectorBands = { // Study and comparison are selectors
 							weight: 3,
@@ -131,6 +131,7 @@ angular.module("RIF")
                                 //Draw a single circle only (disease mapping comparison area)
                                 if (this._map.band === 1) {
 									
+									
                                     this._map.addLayer(this._shape);
                                     this._fireCreatedEvent();
                                     if (this._shape) {
@@ -141,7 +142,8 @@ angular.module("RIF")
                                             circle: true,
                                             freehand: false,
                                             band: thisBand,
-											finalCircleBand: true
+											finalCircleBand: true,
+											shapePolyId: DrawSelectionService.getNextShapePolyId()
                                         });
                                     }
                                     this.disable();
@@ -167,7 +169,8 @@ angular.module("RIF")
                                             circle: true,
                                             freehand: false,
                                             band: thisBand,
-											finalCircleBand: true
+											finalCircleBand: true,
+											shapePolyId: DrawSelectionService.getCurrentShapePolyId()
                                         });
                                     }
                                     this.disable();
@@ -191,7 +194,8 @@ angular.module("RIF")
                                         data: this._shape,
                                         circle: true,
                                         freehand: false,
-                                        band: thisBand
+                                        band: thisBand,
+										shapePolyId: DrawSelectionService.getCurrentShapePolyId()
                                     });
                                     //increase band number
                                     thisBand++;
