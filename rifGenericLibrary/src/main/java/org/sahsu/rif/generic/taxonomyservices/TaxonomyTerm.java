@@ -1,6 +1,7 @@
 package org.sahsu.rif.generic.taxonomyservices;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.opencsv.bean.CsvBindByName;
 
@@ -90,7 +91,7 @@ final public class TaxonomyTerm {
 	}
 	
 	public static boolean hasTermMatchingLabel(
-		final ArrayList<TaxonomyTerm> taxonomyTerms,
+		final List<TaxonomyTerm> taxonomyTerms,
 		final String targetLabel) {
 		
 		for (TaxonomyTerm taxonomyTerm : taxonomyTerms) {

@@ -20,7 +20,7 @@ public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 	private ArrayList<Parameter> parameters;
 	private AtomicBoolean isServiceWorking = new AtomicBoolean(false);
 	
-	private TaxonomyTermManager taxonomyTermManager;
+	protected TaxonomyTermManager taxonomyTermManager;
 
 	public AbstractTaxonomyService() {
 		identifier = "";

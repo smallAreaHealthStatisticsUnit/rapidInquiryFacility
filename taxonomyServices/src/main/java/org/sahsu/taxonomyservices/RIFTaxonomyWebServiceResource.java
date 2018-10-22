@@ -68,24 +68,22 @@ public class RIFTaxonomyWebServiceResource {
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTaxonomyServiceProviders")
-	public Response getTaxonomyServiceProviders(
-		@Context HttpServletRequest servletRequest) {
+	public Response getTaxonomyServiceProviders(@Context HttpServletRequest servletRequest) {
 
-		String result = "";
+		String result;
 
 		try {
 				
 			checkFederatedServiceWorkingProperly(servletRequest);
-			FederatedTaxonomyService federatedTaxonomyService
-				= FederatedTaxonomyService.getFederatedTaxonomyService();
+			FederatedTaxonomyService federatedTaxonomyService =
+					FederatedTaxonomyService.getFederatedTaxonomyService();
 			
-			ArrayList<TaxonomyServiceProvider> taxonomyServiceProviders
-				= federatedTaxonomyService.getTaxonomyServiceProviders();
-			ArrayList<TaxonomyServiceProviderProxy> serviceProviderProxies
-				= new ArrayList<TaxonomyServiceProviderProxy>();
+			ArrayList<TaxonomyServiceProvider> taxonomyServiceProviders =
+					federatedTaxonomyService.getTaxonomyServiceProviders();
+			ArrayList<TaxonomyServiceProviderProxy> serviceProviderProxies = new ArrayList<>();
 			for (TaxonomyServiceProvider taxonomyServiceProvider : taxonomyServiceProviders) {
-				TaxonomyServiceProviderProxy providerProxy
-					= TaxonomyServiceProviderProxy.newInstance();
+				TaxonomyServiceProviderProxy providerProxy =
+						TaxonomyServiceProviderProxy.newInstance();
 				providerProxy.setIdentifier(
 					taxonomyServiceProvider.getIdentifier());
 				providerProxy.setName(taxonomyServiceProvider.getName());
@@ -93,25 +91,17 @@ public class RIFTaxonomyWebServiceResource {
 				serviceProviderProxies.add(providerProxy);
 			}
 			
-			result 
-				= webServiceResponseUtility.serialiseArrayResult(
-					servletRequest, 
-					serviceProviderProxies);
+			result = webServiceResponseUtility.serialiseArrayResult(
+					servletRequest, serviceProviderProxies);
 		}
 		catch(Exception exception) {
-			rifLogger.error(
-				this.getClass(), 
-				"GET /getTaxonomyServiceProviders method failed: ", 
-				exception);
-			result 
-				= webServiceResponseUtility.serialiseException(
-					servletRequest, 
-					exception);
+			rifLogger.error(getClass(),
+			                "GET /getTaxonomyServiceProviders method failed: ",
+			                exception);
+			result = webServiceResponseUtility.serialiseException(servletRequest, exception);
 		}
 
-		return webServiceResponseUtility.generateWebServiceResponse(
-			servletRequest,
-			result);
+		return webServiceResponseUtility.generateWebServiceResponse(servletRequest, result);
 	}
 	
 	@GET
@@ -150,17 +140,15 @@ public class RIFTaxonomyWebServiceResource {
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getMatchingTerms")
-	public Response getMatchingTerms(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("taxonomy_id") String taxonomyServiceID,
-		@QueryParam("search_text") String searchText,
-		@QueryParam("is_case_sensitive") Boolean isCaseSensitive) {
+	public Response getMatchingTerms(@Context HttpServletRequest servletRequest,
+			@QueryParam("taxonomy_id") String taxonomyServiceID, @QueryParam("search_text") String searchText,
+			@QueryParam("is_case_sensitive") Boolean isCaseSensitive) {
 
-		String result = "";
+		String result;
 		try {
 			checkFederatedServiceWorkingProperly(servletRequest);
-			FederatedTaxonomyService federatedTaxonomyService
-				= FederatedTaxonomyService.getFederatedTaxonomyService();
+			FederatedTaxonomyService federatedTaxonomyService =
+					FederatedTaxonomyService.getFederatedTaxonomyService();
 
 			List<TaxonomyTerm> matchingTerms = federatedTaxonomyService.getMatchingTerms(
 					taxonomyServiceID, searchText, isCaseSensitive);
@@ -183,7 +171,7 @@ public class RIFTaxonomyWebServiceResource {
 		@QueryParam("taxonomy_id") String taxonomyServiceID,
 		@QueryParam("parent_term_id") String parentTermID) {
 
-		String result = "";
+		String result;
 
 		try {
 			checkFederatedServiceWorkingProperly(servletRequest);

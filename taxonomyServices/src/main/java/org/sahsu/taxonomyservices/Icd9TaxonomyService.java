@@ -41,16 +41,15 @@ public class Icd9TaxonomyService extends AbstractTaxonomyService {
 		// TypeToken<TaxonomyTerm> t = new TypeToken<TaxonomyTerm>() {};
 		// List<TaxonomyTerm> terms = file.parse(t);
 		List<TaxonomyTerm> terms = file.parseTaxonomyTerms();
-		TaxonomyTermManager manager = TaxonomyTermManager.newInstance(ICD_9_TAXONOMY_NAME);
+		setTaxonomyTermManager(TaxonomyTermManager.newInstance(ICD_9_TAXONOMY_NAME));
 		for (TaxonomyTerm term : terms) {
 
 			term.setNameSpace(ICD_9_TAXONOMY_NAME);
-			manager.addTerm(term);
+			taxonomyTermManager.addTerm(term);
 		}
 
-		rifLogger.info(getClass(), "ICD9 data loaded. Service started");
 		setIdentifier(taxonomyServiceConfiguration.getServiceIdentifier());
-		setTaxonomyTermManager(manager);
 		setServiceWorking(true);
+		rifLogger.info(getClass(), "ICD9 data loaded. Service started");
 	}
 }
