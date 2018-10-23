@@ -28,8 +28,8 @@ import org.sahsu.rif.services.concepts.RIFStudySubmissionAPI;
 import org.sahsu.rif.services.concepts.Sex;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 /**
  * Main implementation of the RIF middleware.

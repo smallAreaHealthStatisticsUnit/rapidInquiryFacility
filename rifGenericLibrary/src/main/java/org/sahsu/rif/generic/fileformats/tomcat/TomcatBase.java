@@ -1,11 +1,11 @@
-package org.sahsu.rif.services.system.files;
-
-import org.apache.commons.lang.SystemUtils;
-import org.sahsu.rif.generic.util.RIFLogger;
+package org.sahsu.rif.generic.fileformats.tomcat;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.apache.commons.lang3.SystemUtils;
+import org.sahsu.rif.generic.util.RIFLogger;
 
 /**
  * Provides a reference to the base directory of a Tomcat installation, or

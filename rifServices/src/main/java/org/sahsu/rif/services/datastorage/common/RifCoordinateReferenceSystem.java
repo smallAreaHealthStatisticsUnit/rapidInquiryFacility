@@ -18,8 +18,8 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 /**
  *

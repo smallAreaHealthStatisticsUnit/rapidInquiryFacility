@@ -16,8 +16,8 @@ import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.datastorage.JdbcUrl;
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 /**
  * Class that holds configuration settings for rif services.  These will appear

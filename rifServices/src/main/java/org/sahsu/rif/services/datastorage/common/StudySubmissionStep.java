@@ -41,8 +41,8 @@ import org.sahsu.rif.services.concepts.YearRange;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 import org.sahsu.rif.services.util.Json5Parse;
 
 public final class StudySubmissionStep extends BaseSQLManager {

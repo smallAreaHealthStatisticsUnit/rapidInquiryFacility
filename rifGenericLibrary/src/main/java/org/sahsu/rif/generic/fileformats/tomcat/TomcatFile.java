@@ -1,4 +1,4 @@
-package org.sahsu.rif.services.system.files;
+package org.sahsu.rif.generic.fileformats.tomcat;
 
 import java.io.BufferedReader;
 import java.io.IOException;

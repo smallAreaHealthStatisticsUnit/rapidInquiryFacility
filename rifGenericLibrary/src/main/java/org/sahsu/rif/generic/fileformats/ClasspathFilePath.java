@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import org.apache.commons.lang3.StringUtils;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
-public class FilePath {
+public class ClasspathFilePath {
 
 	private final Path filePath;
 
@@ -20,14 +20,14 @@ public class FilePath {
 	 * @param fileName the name of the file we're interested in
 	 * @throws RIFServiceException if the name is not provided or the file is not found.
 	 */
-	public FilePath(final String fileName) throws RIFServiceException {
+	public ClasspathFilePath(final String fileName) throws RIFServiceException {
 
 		if (StringUtils.isEmpty(fileName)) {
 
 			throw new RIFServiceException("Received empty file name");
 		}
 
-		URL url = getClass().getClassLoader().getResource(fileName);
+		URL url = Thread.currentThread().getContextClassLoader().getResource(fileName);
 		if (url == null) {
 
 			throw new RIFServiceException("Couldn't get URL for file " + fileName);
