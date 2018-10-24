@@ -3023,3 +3023,11 @@ Further changes are needed to support risk analysis:
   * Add selector arrow to ICD selector;
   * Fix shape layer order (not ordered as createAreaNameList() not working);
   * Fix clear selection (not clearing selected shapes);
+  * CSV area load button broken;
+  
+#### 22nd to 26th October
+
+* Upgrade demo laptop to current patch level;
+* Demo to Swedish RIF team, discussion of the way ahead;
+* Further work on multiple intersection tracing in shapes and selected polygons;  
+* Load UK EWS2011 population data
