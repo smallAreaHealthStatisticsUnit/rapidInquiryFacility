@@ -118,7 +118,7 @@ public class FederatedTaxonomyService {
 		ArrayList<TaxonomyServiceProvider> results = new ArrayList<>();
 		for (TaxonomyServiceAPI taxonomyService : taxonomyServices) {
 			TaxonomyServiceProvider taxonomyServiceProvider = new TaxonomyServiceProvider();
-			taxonomyServiceProvider.setIdentifier(taxonomyService.getIdentifier());
+			taxonomyServiceProvider.setIdentifier(taxonomyService.getIdentifier().trim());
 			taxonomyServiceProvider.setName(taxonomyService.getName());
 			taxonomyServiceProvider.setDescription(taxonomyService.getDescription());
 			results.add(taxonomyServiceProvider);

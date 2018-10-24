@@ -11,45 +11,45 @@ import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 
-// import com.google.common.reflect.TypeToken;
-
 /**
- * Provides the ICD 9 taxonomy.
+ * Provides a disease taxonomy based on a CSV file.
  */
-public class Icd9TaxonomyService extends AbstractTaxonomyService {
+public class GenericCsvBasedTaxonomyService extends AbstractTaxonomyService {
 
 	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
-	private static final String ICD_9_TAXONOMY_NAME = "icd9";
 
 	@Override
 	public void initialiseService(final String defaultResourceDirectoryPath,
 			final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
 			throws RIFServiceException {
 
-		rifLogger.info(getClass(), "Initialising ICD9 taxonomy service");
+		String taxonomyName = taxonomyServiceConfiguration.getServiceIdentifier();
+		String longName = taxonomyServiceConfiguration.getName();
+		rifLogger.info(getClass(), String.format("Initialising %s taxonomy service", longName));
 		setServiceWorking(false);
 
 		// Basic setup
 		setTaxonomyServiceConfiguration(taxonomyServiceConfiguration);
 
-		// Locate the ICD 9 file
-		Path icd9File = getTaxonomyFilePath(taxonomyServiceConfiguration, "icd9_file");
+		// Locate the taxonomy file. This works on the assumption that the <taxonomy_service>
+		// block contains exactly one <parameter> in its <parameters> block.
+		String fileName = taxonomyServiceConfiguration.getParameters().get(0).getName();
+		Path taxonomyFile = getTaxonomyFilePath(taxonomyServiceConfiguration, fileName);
 
 		// OK, we've got a real file
-		CsvFile file = new CsvFile(icd9File);
+		CsvFile file = new CsvFile(taxonomyFile);
 
-		// TypeToken<TaxonomyTerm> t = new TypeToken<TaxonomyTerm>() {};
-		// List<TaxonomyTerm> terms = file.parse(t);
 		List<TaxonomyTerm> terms = file.parseTaxonomyTerms();
-		setTaxonomyTermManager(TaxonomyTermManager.newInstance(ICD_9_TAXONOMY_NAME));
+		setTaxonomyTermManager(TaxonomyTermManager.newInstance(taxonomyName));
 		for (TaxonomyTerm term : terms) {
 
-			term.setNameSpace(ICD_9_TAXONOMY_NAME);
+			term.setNameSpace(taxonomyName);
 			taxonomyTermManager.addTerm(term);
 		}
 
 		setIdentifier(taxonomyServiceConfiguration.getServiceIdentifier());
 		setServiceWorking(true);
-		rifLogger.info(getClass(), "ICD9 data loaded. Service started");
+		rifLogger.info(getClass(), String.format("Data for taxonomy %s loaded. Service started",
+		                                         longName));
 	}
 }
