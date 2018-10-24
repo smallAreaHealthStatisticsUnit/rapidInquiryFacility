@@ -4,13 +4,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.Reader;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
+import com.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
 import com.opencsv.bean.MappingStrategy;
 
 /**
@@ -81,8 +84,13 @@ public class CsvFile {
 			                              file.toString());
 		}
 
-		MappingStrategy<TaxonomyTerm> strategy = new HeaderColumnNameMappingStrategy<>();
+		Map<String, String> csvColumnsToFields = new HashMap<>();
+		csvColumnsToFields.put("DIAGNOSIS CODE", "label");
+		csvColumnsToFields.put("LONG DESCRIPTION", "description");
+
+		HeaderColumnNameTranslateMappingStrategy<TaxonomyTerm> strategy = new HeaderColumnNameTranslateMappingStrategy<>();
 		strategy.setType(TaxonomyTerm.class);
+		strategy.setColumnMapping(csvColumnsToFields);
 		return new CsvToBeanBuilder<TaxonomyTerm>(reader)
 				       .withMappingStrategy(strategy)
 				       .withType(TaxonomyTerm.class)

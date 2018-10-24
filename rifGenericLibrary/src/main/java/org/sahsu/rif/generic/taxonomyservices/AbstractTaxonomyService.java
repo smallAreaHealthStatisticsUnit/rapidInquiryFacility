@@ -170,7 +170,7 @@ public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 			                              + "file", taxonomyServiceConfiguration.getName());
 		}
 
-		return new TomcatFile(new TomcatBase(), taxonomyFileName).path();
+		return new TomcatFile(new TomcatBase(), taxonomyFileName, true).path();
 	}
 
 	/**

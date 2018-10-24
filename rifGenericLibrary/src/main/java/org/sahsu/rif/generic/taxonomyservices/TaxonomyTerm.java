@@ -51,14 +51,14 @@ import com.opencsv.bean.CsvBindByName;
 final public class TaxonomyTerm {
 
 	/** The label. */
-	@CsvBindByName(column = "DIAGNOSIS CODE", required = true)
+	// @CsvBindByName(column = "DIAGNOSIS CODE", required = true)
 	private String label;
 	
 	/** The name space. */
 	private String nameSpace;
 	
 	/** The description. */
-	@CsvBindByName(column = "LONG DESCRIPTION", required = true)
+	// @CsvBindByName(column = "LONG DESCRIPTION", required = true)
 	private String description;
 	
 	/** The parent term. */
