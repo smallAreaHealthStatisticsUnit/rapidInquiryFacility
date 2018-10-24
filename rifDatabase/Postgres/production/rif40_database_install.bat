@@ -125,10 +125,10 @@ IF %NEWUSER% EQU "rif40"  (
 )
 
 REM
-REM Get passwords from C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf if it exists
+REM Get passwords from %USERPROFILE%\AppData\Roaming\postgresql\pgpass.conf if it exists
 REM
-SET PGPASSWORDDIR="C:\Users\%USERNAME%\AppData\Roaming\postgresql"
-SET PGPASSWORDFILE="C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf"
+SET PGPASSWORDDIR="%USERPROFILE%\AppData\Roaming\postgresql"
+SET PGPASSWORDFILE="%USERPROFILE%\AppData\Roaming\postgresql\pgpass.conf"
 	
 IF NOT EXIST "%PGPASSWORDDIR%" (
 	MKDIR "%PGPASSWORDDIR%"
