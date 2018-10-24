@@ -1050,7 +1050,7 @@ For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy se
   * TaxonomyServicesConfiguration.xml
   * ClaML.dtd
 
-See the: [Taxonomy Services]({{ site.baseurl }}/introduction/Taxonomy-Services)
+See the: [Taxonomy Services]({{ site.baseurl }}/taxonomyServices/Taxonomy-Services)
 manual.
 
 ## 3.2 RIF Web Application

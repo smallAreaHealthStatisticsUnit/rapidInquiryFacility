@@ -196,10 +196,7 @@ ICD 11 code is probably a decade away.
 
 # Adding new ontologies
 
-Currently all configured taxonomy services are loaded on service start.
-
-* Changes would be required to the *getTaxonomyServiceProviders* to filter on a named taxonomy and a
-  taxonomy parameter added to each taxonomy service.
+Adding a new service can be very simple. [See here for how to add new services](./adding-a-new-taxonomy).
 
 # Issues
 
