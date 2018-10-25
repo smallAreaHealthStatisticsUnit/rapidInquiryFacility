@@ -3031,3 +3031,6 @@ Further changes are needed to support risk analysis:
 * Demo to Swedish RIF team, discussion of the way ahead;
 * Further work on multiple intersection tracing in shapes and selected polygons;  
 * Load UK EWS2011 population data
+* Test pull #106: Adds ICD 9 support for branch issue#64_icd9_support. ICD9 functionality is OK. Have added CSS fix to restore 
+  select arrow functionality. Risk analysis changes cause a tomcat server crash for both disease mapping and risk analysis;
+  
