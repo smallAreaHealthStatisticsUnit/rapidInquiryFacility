@@ -1059,8 +1059,8 @@ textarea.description {
     width: 100% !important;
     font-size: 14px;
     text-transform: uppercase;
-    -webkit-appearance: none;
-    -moz-appearance: none;
+/*    -webkit-appearance: none;
+    -moz-appearance: none; */
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
