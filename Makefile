@@ -71,7 +71,7 @@ MAVEN_FLAGS=
 all:
 	$(MAVEN) --version
 	$(MAVEN) $(MAVEN_FLAGS) install
-	$(COPY) taxonomyServices/target/taxonomyServices.war .
+	$(COPY) taxonomyServices/target/taxonomies.war .
 	$(COPY) rifServices/target/rifServices.war .
 	$(COPY) rifWebApplication/target/RIF40.war .
 	$(COPY) rifDataLoaderTool\target\rifDataLoaderTool-jar-with-dependencies.jar rifDataLoaderTool-jar-with-dependencies.jar
@@ -125,7 +125,7 @@ taxonomyservice:
 	$(MAVEN) --version
 	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) install
 	cd taxonomyServices && $(MAVEN) $(MAVEN_FLAGS) install
-	$(COPY) taxonomyServices/target/taxonomyServices.war .
+	$(COPY) taxonomyServices/target/taxonomies.war .
 	
 #
 # Does NOW install RIF40.war
@@ -133,12 +133,12 @@ taxonomyservice:
 install: clean all
 	$(COPY) RIF40.war "$(CATALINA_HOME)/webapps"
 	$(COPY) rifServices.war "$(CATALINA_HOME)/webapps"
-	$(COPY) taxonomyServices.war "$(CATALINA_HOME)/webapps"
+	$(COPY) taxonomies.war "$(CATALINA_HOME)/webapps"
 
 clean: 
 	$(MAVEN) --version
 	$(MAVEN) clean
-	$(DELETE) taxonomyServices.war rifServices.war RIF40.war RIF4.7z
+	$(DELETE) taxonomies.war rifServices.war RIF40.war RIF4.7z
 	
 #
 # Eof
