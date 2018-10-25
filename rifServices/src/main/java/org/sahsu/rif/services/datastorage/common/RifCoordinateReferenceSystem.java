@@ -17,9 +17,8 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.sahsu.rif.generic.fileformats.FilePath;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 /**
  *
@@ -186,7 +185,7 @@ public class RifCoordinateReferenceSystem {
 
 		String file="epsg.properties";
 
-		TomcatFile input = new TomcatFile(new TomcatBase(), file);
+		FilePath input = FilePath.getInstance(file);
 		URL epsg = input.asUrl();
 
 		if (epsg != null) {

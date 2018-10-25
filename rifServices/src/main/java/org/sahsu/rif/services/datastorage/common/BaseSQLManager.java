@@ -22,6 +22,7 @@ import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.fileformats.FilePath;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
@@ -494,15 +495,14 @@ public class BaseSQLManager implements SQLManager {
 				 exception);
 	}
 
-	protected boolean queryLoggingIsDisabled(
+	private boolean queryLoggingIsDisabled(
 			final String queryName) {
 
 		if (prop == null) {
 
 			try {
-				prop = new TomcatFile(
-						new TomcatBase(),
-						BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
+				prop = FilePath.getInstance(BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES)
+						       .properties();
 			} catch (IOException e) {
 				rifLogger.warning(this.getClass(),
 				                  "BaseSQLManager.checkIfQueryLoggingEnabled error for" +

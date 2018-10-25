@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.sahsu.rif.generic.concepts.User;
+import org.sahsu.rif.generic.fileformats.FilePath;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
@@ -736,7 +737,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		RIFLogger rifLogger = RIFLogger.getLogger();
 
 		String jsonFromFile;
-		TomcatFile tcFile = new TomcatFile(new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE);
+		FilePath tcFile = new TomcatFile(new TomcatBase(), FilePath.FRONT_END_PARAMETERS_FILE);
 
 		try (BufferedReader reader = tcFile.reader()) {
 

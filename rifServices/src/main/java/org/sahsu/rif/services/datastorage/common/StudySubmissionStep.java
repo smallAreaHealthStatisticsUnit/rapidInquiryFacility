@@ -19,6 +19,7 @@ import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
+import org.sahsu.rif.generic.fileformats.FilePath;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -143,11 +144,11 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		try {
 
 			BufferedReader reader = new TomcatFile(
-					new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
+					new TomcatBase(), FilePath.FRONT_END_PARAMETERS_FILE).reader();
 
 			Json5Parse json5Parse = new Json5Parse(reader);
 			String jsonText = json5Parse.toString();
-		
+
 			JSONObject json = json5Parse.toJson(); // Check it parses OK
 			JSONObject parametersJson = json.optJSONObject("parameters");
 			if (parametersJson == null) {

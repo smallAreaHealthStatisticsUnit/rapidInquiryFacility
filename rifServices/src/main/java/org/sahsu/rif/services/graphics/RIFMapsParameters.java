@@ -5,21 +5,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.sun.rowset.CachedRowSetImpl;
-
-import org.sahsu.rif.services.util.Json5Parse;
-import org.sahsu.rif.services.datastorage.common.SQLManager;
-
 import org.geotools.feature.DefaultFeatureCollection;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
-import org.sahsu.rif.services.system.RIFServiceError;
+import org.sahsu.rif.generic.fileformats.FilePath;
 import org.sahsu.rif.generic.system.RIFServiceException;
-
+import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.StudyType;
+import org.sahsu.rif.services.datastorage.common.SQLManager;
+import org.sahsu.rif.services.system.RIFServiceError;
+import org.sahsu.rif.services.util.Json5Parse;
+
+import com.sun.rowset.CachedRowSetImpl;
 
 /**
  *
@@ -357,8 +354,7 @@ public class RIFMapsParameters {
 		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");
 		String printState=manager.getColumnFromResultSet(rif40Studies, "print_state", true /* allowNulls */, false /*  allowNoRows */);
 		
-		BufferedReader reader = new TomcatFile(
-				new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
+		BufferedReader reader = FilePath.getInstance(FilePath.FRONT_END_PARAMETERS_FILE).reader();
 
 		Json5Parse frontEndJson5Parse = new Json5Parse(reader);
 		JSONObject frontEndJson = frontEndJson5Parse.toJson(); // Check it parses OK

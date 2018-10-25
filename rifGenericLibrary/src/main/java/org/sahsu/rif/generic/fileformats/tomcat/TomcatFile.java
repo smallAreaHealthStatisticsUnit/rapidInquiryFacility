@@ -9,13 +9,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import org.sahsu.rif.generic.fileformats.FilePath;
+
 /**
  * Retrieves files from standard Tomcat locations, and makes their contents
  * available in various forms.
  */
-public class TomcatFile {
-
-	public static final String FRONT_END_PARAMETERS_FILE = "frontEndParameters.json5";
+public class TomcatFile implements FilePath {
 
 	private static final String CONF_DIRECTORY = "conf";
 	private static final String WEBAPPS_DIRECTORY = "webapps";
@@ -59,6 +59,7 @@ public class TomcatFile {
 		file = tempPath;
 	}
 
+	@Override
 	public Path path() {
 
 		return file;
@@ -74,6 +75,7 @@ public class TomcatFile {
 		return libPath;
 	}
 
+	@Override
 	public BufferedReader reader() throws IOException {
 
 		if (reader == null) {
@@ -82,6 +84,7 @@ public class TomcatFile {
 		return reader;
 	}
 
+	@Override
 	public Properties properties() throws IOException {
 
 		if (props == null) {
@@ -91,11 +94,13 @@ public class TomcatFile {
 		return props;
 	}
 
+	@Override
 	public String absolutePath() {
 
 		return file.toFile().getAbsolutePath();
 	}
 
+	@Override
 	public URL asUrl() throws MalformedURLException {
 
 		return file.toFile().toURI().toURL();
