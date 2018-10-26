@@ -318,11 +318,12 @@ angular.module("RIF")
 													var shapeLayer=CommonMappingStateService.getState("areamap").shapes.getLayer(areaIdList[l]);
 													if (shapeLayer && typeof shapeLayer.bringToFront === "function") { 
 
-														if (areaNameList == undefined) {
+														if (areaNameList == undefined || 
+														    (Object.keys(areaNameList).length === 0 && areaNameList.constructor === Object)) {
 															alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
 																"; band: " + shapeLayer.options.band +
 																"; area: " + shapeLayer.options.area +
-																"; polygons: unknwon");
+																"; polygons: unknown");
 															shapeLayer.bringToFront();
 														}
 														else if (shapeLayer.options.band && 
@@ -1998,6 +1999,7 @@ angular.module("RIF")
 									this._div.innerHTML = '<h4>Mouse over area names</h4>';
 								}
 								this._div.innerHTML += '<b>Centroids: ' + $scope.centroid_type + '</b>';
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] set info: " + this._div.innerHTML);
 							}
 							else {
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] no info <div>"); 

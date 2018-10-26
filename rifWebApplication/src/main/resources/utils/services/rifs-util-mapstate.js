@@ -45,6 +45,10 @@ angular.module("RIF")
 						"diseasemap2": "Disease mapping right hand map",
 						"viewer": "Viewer map"
 					};
+				
+					var shapeId=0;
+					var shapeFileId=0;
+					var shapePolyId=0;
 					
 					function checkAreaType(areaType) { // Check: $scope.input.name
 						if (areaType == "ComparisionAreaMap" || areaType == "StudyAreaMap") { // OK
@@ -60,15 +64,17 @@ angular.module("RIF")
 						shapes: undefined,
 						drawnItems: undefined,
 						info: undefined,
-						studyArea: {
+						StudyAreaMap: {
 							selectedPolygon: [],				
 							selectedPolygonObj: {},
-							areaNameList: {}
+							areaNameList: {},
+							shapeFileList: {}
 						},
-						comparisonArea: {
+						ComparisionAreaMap: {
 							selectedPolygon: [],				
 							selectedPolygonObj: {},
-							areaNameList: {}
+							areaNameList: {},
+							shapeFileList: {}
 						},
 						maxbounds: undefined,						
 						currentBand: undefined,
@@ -305,9 +311,9 @@ angular.module("RIF")
 									}
 									this.areaType.selectedPolygonObj[item.id] = angular.copy(item);
 									this.areaType.selectedPolygon.push(angular.copy(item));
-									AlertService.consoleDebug("[rifs-util-mapstate.js] updateSelectedPolygon(" + areaType + ", " + 
-										JSON.stringify(item, null, 1) + "): " + 
-										this.areaType.selectedPolygon.length);
+//									AlertService.consoleDebug("[rifs-util-mapstate.js] updateSelectedPolygon(" + areaType + ", " + 
+//										JSON.stringify(item, null, 1) + "): " + 
+//										this.areaType.selectedPolygon.length);
 								}
 								else {
 									throw new Error("No items: " + item.id + " in selectedPolygon " + areaType + " list");
@@ -346,6 +352,49 @@ angular.module("RIF")
 								throw new Error("removeFromSselectedPolygon() Null id: " + areaType);
 							}
 							return this.areaType.selectedPolygon;
+						},
+						getNextShapeId: function() {
+							shapeId++;
+							return 'RIF_' + shapeId;
+						},
+						getNextShapeFileId: function (areaType, shapefile) {
+							checkAreaType(areaType);	
+							if (shapefile == undefined) {
+								throw new Error("shapefile is undefined");
+							}
+							else if (shapefile.fileName == undefined) {
+								throw new Error("shapefile.fileName is undefined");
+							}
+							else {
+								if (this.areaType.shapeFileList == undefined) {
+									this.areaType.shapeFileList = {};
+								}
+								shapeFileId++;
+								this.areaType.shapeFileList[shapefile.fileName] = shapefile;
+								this.areaType.shapeFileList[shapefile.fileName].shapeFileId = 'RIFSHAPEFILE_' + shapeFileId;
+								return 'RIFSHAPEFILE_' + shapeFileId;
+							}
+						},
+						getNextShapePolyId: function () {
+							shapePolyId++;
+							return 'RIFPOLY_' + shapePolyId;
+						},
+						getShapeByFileId: function (areaType, shapeFileId) {
+							checkAreaType(areaType);
+							if (shapeFileId == undefined) {
+								throw new Error("shapeFileId is undefined");
+							}
+							else {
+								if (this.areaType.shapeFileList == undefined) {
+									this.areaType.shapeFileList = {};
+								}
+								for (var key in this.areaType.shapeFileList) {
+									if (this.areaType.shapeFileList[key].shapeFileId == shapeFileId) {
+										return shapeFileList[key];
+									}
+								}
+								return undefined;
+							}
 						}
 					};
 									

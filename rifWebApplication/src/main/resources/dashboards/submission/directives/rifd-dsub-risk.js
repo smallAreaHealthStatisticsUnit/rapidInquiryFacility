@@ -397,6 +397,8 @@ angular.module("RIF")
                                 alertScope.showError("File: " + scope.shapeFile.fileName + ": is not a shapefile");
                                 return false;
                             }
+							var rifShapeFileId=CommonMappingStateService.getState("areamap").getNextShapeFileId(scope.$parent.input.name, scope.shapeFile);
+							
 							if (scope.bandAttr.length > 0) {
 								SelectStateService.getState().studySelection.bandAttr=angular.copy(scope.bandAttr);
 							}
@@ -498,9 +500,8 @@ angular.module("RIF")
                                 buffers = new L.layerGroup();
 								
 								var points = 0;
-								DrawSelectionService.getNextShapeFileId(scope.shapeFile);
                                 for (var j in poly._layers) {
-									var rifShapeId=DrawSelectionService.getNextShapeId();
+									var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
 									for (i=0; i < scope.bandAttr.length; i++) {
                                         //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
                                         var circle = L.circle(
@@ -530,7 +531,7 @@ angular.module("RIF")
                                             band: i + 1,
 											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100, // Square km to 2dp
 											rifShapeId: rifShapeId,
-											shapeFileId: DrawSelectionService.getCurrentShapeFileId()
+											rifShapeFileId: rifShapeFileId
                                         });
 										points++;
                                     }
@@ -579,14 +580,14 @@ angular.module("RIF")
 								var maxBand=0;
 								var attributeName=undefined;
 								var bandValues={};
-								var shapeList = []
-								DrawSelectionService.getNextShapePolyId();
+								var shapeList = [];
                                 for (var i in poly._layers) {
                                     var polygon = L.polygon(poly._layers[i].feature.geometry.coordinates[0], {});
 									var properties = poly._layers[i].feature.properties;					
 									if (properties['$$hashKey']) {
 										properties['$$hashKey']=undefined;
 									}
+									properties.rifShapeFileId=rifShapeFileId;
                                     var shape = {
 										isShapefile: true,
                                         data: angular.copy(polygon),
@@ -598,17 +599,17 @@ angular.module("RIF")
 										index: i,
 										selectionMethod: scope.selectionMethod
                                     };
-									shape.shapePolyId = DrawSelectionService.getNextShapePolyId();
+									shape.rifShapePolyId = CommonMappingStateService.getState("areamap").getNextShapePolyId();
+									shape.rifShapeFileId = rifShapeFileId;
 //									shape.area = turf.area(polygon.toGeoJSON());  // Square m
 									shape.area = Math.round((turf.area(polygon.toGeoJSON())*100)/1000000)/100; // Square km to 2dp
 									shapeList.push(shape);
 								}
 								shapeList.sort(function(a, b){return a.area - b.area}); 
 									// Sort into ascending order by area
-								DrawSelectionService.getNextShapeFileId(scope.shapeFile);	
+                           
                                 for (var i =0; i< shapeList.length; i++) {
 									var shape = shapeList[i];
-									shape.shapeFileId = DrawSelectionService.getCurrentShapeFileId();
                                     if (scope.selectionMethod === 1) { // Single boundary; already set
                                         shape.band = 1;
 										maxBand=1;

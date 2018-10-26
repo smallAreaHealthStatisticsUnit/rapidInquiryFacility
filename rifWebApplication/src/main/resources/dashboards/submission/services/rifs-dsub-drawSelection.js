@@ -37,105 +37,131 @@
 angular.module("RIF")
         .factory('DrawSelectionService', ['SelectStateService', '$timeout', 'AlertService', 'CommonMappingStateService', 'GISService', 
 				
-				function (SelectStateService, $timeout, AlertService, CommonMappingStateService, GISService) {
-
-						var shapeId=0;
-						var shapeFileId=0;
-						var shapePolyId=0;
-						var shapeFileList = {};
-						
-						function getNextShapeId2() {
-							shapeId++;
-							return 'RIF_' + shapeId;
-						}
-					
-						function getShapeByFileId2(shapeFileId) {
-							for (var key in shapeFileList) {
-								if (shapeFileList[key].shapeFileId == shapeFileId) {
-									return shapeFileList[key];
-								}
-							}
-							return undefined;
-						}		
+				function (SelectStateService, $timeout, AlertService, CommonMappingStateService, GISService) {	
 						
                         function makeDrawSelection2(shape, selectorBands, input, mapName, latlngList, makeDrawSelectionCallback) {
-							
-							if (shape.rifShapeId == undefined) {
-								shape.rifShapeId = getNextShapeId2(); // Ensure unique 
-							}
-							if (mapName == undefined) {
-								throw new Error("[rifs-dsub-drawSelection.js] mapName is undefined");
-							}
-							else if (CommonMappingStateService.getState(mapName) == undefined) {
-								throw new Error("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(mapName) is undefined");
-							}
-							else if (CommonMappingStateService.getState(mapName).shapes == undefined) {
-								throw new Error("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(mapName).shapes is undefined");
-							}
-							
+			
 							var polygon=undefined;
 							var circle=undefined;
-							var savedShape=createSavedShape();			
-							if (savedShape == undefined) { // Not created
-								return;
-							}
+							var savedShape;
 							
-							var itemsProcessed = 0;
-							var bboxErrors = 0;
-							var excludedByBbox = 0;
-							var useAsync = false; // Do not use async version - it is much slower					
-							addBbox().then(function(res) {
-								if (useAsync) {
-									async.eachOfSeries(latlngList, 
-										function latlngListIteratee(latLng, indexKey, latlngListCallback) {
-										if (indexKey == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection] async processing latLng " + indexKey + "/" + latlngList.length + 
-												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
-										}
-										else if (indexKey % 500 == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] async processing latLng " + indexKey + "/" + latlngList.length + 
-												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));									
-											$timeout(function() { // Be nice to the stack if you are going to be aggressive!
-												latlngListFunction(latLng, latlngListCallback);
-											}, 100);
-										}	
-										else if (indexKey % 50 == 0) {
-											async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
-												latlngListFunction(latLng, latlngListCallback);
-											});
-										}
-										else {
-											latlngListFunction(latLng, latlngListCallback);
-										}
-									}, function done(err) {
-										if (err) {
-											AlertService.showError("[rifs-dsub-drawSelection.js] latlngList error: " + err);
-										}
-										latlngListEnd(savedShape);
-									});	
-								}		
-								else { // Non async version
-									for (var i=0; i<latlngList.length; i++) {
-										if (i == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
-												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
-										}
-										else if (i % 500 == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
-												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));
-										}												
-										latlngListFunction(latlngList[i], undefined /* no latlngListCallback - not using async */);
-									}
-									latlngListEnd(savedShape);
-								}	
-							}, function (err) {
+							try {
+								if (shape.rifShapeId == undefined) {
+									shape.rifShapeId = CommonMappingStateService.getState(mapName).getNextShapeId(input.name); // Ensure unique 
+								}
+								if (mapName == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] mapName is undefined");
+								}
+								else if (CommonMappingStateService.getState(mapName) == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(mapName) is undefined");
+								}
+								else if (CommonMappingStateService.getState(mapName).shapes == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(mapName).shapes is undefined");
+								}								
+								savedShape=createSavedShape();		
+							}
+							catch (e) {
 								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
-									makeDrawSelectionCallback(err);
+									AlertService.consoleError("[rifs-dsub-drawSelection.js] " + e.message, e);
+									makeDrawSelectionCallback(e.message);
+									return;
 								}
 								else {
 									throw new Error("No makeDrawSelectionCallback() function");
+								}								
+							}	
+							
+							if (savedShape == undefined) { // Not created
+								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+									makeDrawSelectionCallback("savedShape not created");
+									return;
 								}
-							});	
+								else {
+									throw new Error("No makeDrawSelectionCallback() function");
+								}	
+							}
+							
+							try {
+								var itemsProcessed = 0;
+								var bboxErrors = 0;
+								var excludedByBbox = 0;
+								var useAsync = false; // Do not use async version - it is much slower					
+								addBbox().then(function(res) {
+									if (useAsync) {
+										async.eachOfSeries(latlngList, 
+											function latlngListIteratee(latLng, indexKey, latlngListCallback) {
+											if (indexKey == 0) {
+												AlertService.consoleDebug("[rifs-dsub-drawSelection] async processing latLng " + indexKey + "/" + latlngList.length + 
+													" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
+											}
+											else if (indexKey % 500 == 0) {
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] async processing latLng " + indexKey + "/" + latlngList.length + 
+													" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));									
+												$timeout(function() { // Be nice to the stack if you are going to be aggressive!
+													latlngListFunction(latLng, latlngListCallback);
+												}, 100);
+											}	
+											else if (indexKey % 50 == 0) {
+												async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
+													latlngListFunction(latLng, latlngListCallback);
+												});
+											}
+											else {
+												latlngListFunction(latLng, latlngListCallback);
+											}
+										}, function done(err) {
+											if (err) {
+												AlertService.showError("[rifs-dsub-drawSelection.js] latlngList error: " + err);
+											}
+											latlngListEnd(savedShape); // Calls makeDrawSelectionCallback
+										});	
+									}		
+									else { // Non async version
+										for (var i=0; i<latlngList.length; i++) {
+											if (i == 0) {
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
+													" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
+											}
+											else if (i % 500 == 0) {
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
+													" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));
+											}			
+											
+											try {
+												latlngListFunction(latlngList[i], undefined /* no latlngListCallback - not using async */);
+											}
+											catch (e) { // Trap unexpected errors
+												if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+													AlertService.consoleError("[rifs-dsub-drawSelection.js] " + e.message, e);
+													makeDrawSelectionCallback(e.message);
+													return;
+												}
+												else {
+													throw new Error("No makeDrawSelectionCallback() function");
+												}								
+											}
+										}
+										latlngListEnd(savedShape); // Calls makeDrawSelectionCallback
+									}	
+								}, function (err) {
+									if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+										makeDrawSelectionCallback(err);
+									}
+									else {
+										throw new Error("No makeDrawSelectionCallback() function");
+									}
+								});	
+							}
+							catch (e) { // Trap unexpected errors
+								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+									AlertService.consoleError("[rifs-dsub-drawSelection.js] " + e.message, e);
+									makeDrawSelectionCallback(e.message);
+									return;
+								}
+								else {
+									throw new Error("No makeDrawSelectionCallback() function");
+								}								
+							}
 
 //
 // Internal functions
@@ -171,14 +197,19 @@ angular.module("RIF")
 									savedShape.properties.shapePolyId = shape.shapePolyId;
 								}
 								if (shape.shapeFileId) {
-									var shapeFileObj = getShapeByFileId2(shape.shapeFileId);
+									var shapeFileObj =  CommonMappingStateService.getState(mapName).getShapeByFileId(input.name, shape.shapeFileId);
 									savedShape.properties.shapeFileId = shape.shapeFileId;
-									savedShape.fileName=shapeFileObj.fileName;
-									savedShape.featureCount=shapeFileObj.featureCount;
-									savedShape.points=shapeFileObj.points;
-									savedShape.polygons=shapeFileObj.polygons;
-									savedShape.hasBandAttribute=shapeFileObj.hasBandAttribute;
-									savedShape.hasExposureAttributes=shapeFileObj.hasExposureAttributes;
+									if (shapeFileObj) {
+										savedShape.fileName=shapeFileObj.fileName;
+										savedShape.featureCount=shapeFileObj.featureCount;
+										savedShape.points=shapeFileObj.points;
+										savedShape.polygons=shapeFileObj.polygons;
+										savedShape.hasBandAttribute=shapeFileObj.hasBandAttribute;
+										savedShape.hasExposureAttributes=shapeFileObj.hasExposureAttributes;
+									}
+									else {
+										throw new Error("No shapeFileObj for shapeFileId: " + shape.shapeFileId);
+									}
 								}
 	//	
 	// Risk analysis study types (as per rif40_studies.stype_type): 
@@ -512,6 +543,7 @@ angular.module("RIF")
 							 * Returns: 	Nothing
 							 * Description: Callback and end of async series or for loop.
 							 *				Check for and remove any duplicate ids
+							 * Runs callback: makeDrawSelectionCallback()
 							 */							
 							function latlngListEnd(savedShape) { 
 								var areaCheck = {};
@@ -595,6 +627,7 @@ angular.module("RIF")
 							
 								savedShape.properties.totalAreas = 
 									CommonMappingStateService.getState(mapName).getTotalAreas(input.name, savedShape.id);
+								CommonMappingStateService.getState(mapName).setAreaNameList(input.name);
 								
 								// Save to SelectStateService
 								if (input.name == "ComparisionAreaMap") { 
@@ -725,8 +758,11 @@ angular.module("RIF")
 													centroid: centroid
 												};
 											// Re-calculate intersectCount
-											var radius=shape.data.getRadius();
-											selectedPolygonObj.shapeIdList[shape.rifShapeId].radius = radius;
+											var radius;
+											if (shape.circle) {
+												radius=shape.data.getRadius();
+												selectedPolygonObj.shapeIdList[shape.rifShapeId].radius = radius;
+											}
 											selectedPolygonObj.intersectCount=1;
 											for (var key in selectedPolygonObj.shapeIdList) {
 												if (selectedPolygonObj.shapeIdList[key].rifShapeId == shape.rifShapeId) {
@@ -741,16 +777,33 @@ angular.module("RIF")
 																"; radius: " + radius +
 																"; centroid: " + JSON.stringify(centroid) +
 																"; rifShapeId: " + shape.rifShapeId +
+																"; band: " + shape.band +
 																"; selectedPolygonObj: " + 
 																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
 														}	
 													}
+													else if (!shape.circle &&
+													     selectedPolygonObj.shapeIdList[key].distanceFromNearestSource == distanceFromNearestSource &&
+													     selectedPolygonObj.shapeIdList[key].centroid.lat == centroid.lat &&
+													     selectedPolygonObj.shapeIdList[key].centroid.lng == centroid.lng) { // Same polygon centroid 
+
+														if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
+															AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT SAME " +
+																"; distanceFromNearestSource: " + distanceFromNearestSource +
+																"; centroid: " + JSON.stringify(centroid) +
+																"; rifShapeId: " + shape.rifShapeId +
+																"; band: " + shape.band +
+																"; selectedPolygonObj: " + 
+																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
+														}	
+													}													
 													else {
 														var msg="[rifs-dsub-drawSelection.js] INTERSECT ERROR " +
 																"; distanceFromNearestSource: " + distanceFromNearestSource +
 																"; radius: " + radius +
 																"; centroid: " + JSON.stringify(centroid) +
 																"; rifShapeId: " + shape.rifShapeId +
+																"; band: " + shape.band +
 																"; selectedPolygonObj: " + 
 																	JSON.stringify(selectedPolygonObj.shapeIdList[key]);
 														if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
@@ -800,10 +853,10 @@ angular.module("RIF")
 												nearestRifShapeId=selectedPolygonObj.shapeIdList[key];
 												selectedPolygonObj.nearestRifShapeId=nearestRifShapeId.rifShapeId;
 												selectedPolygonObj.distanceFromNearestSource=nearestRifShapeId.distanceFromNearestSource;
-												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Update nearestRifShapeId for old selectedPolygonObj: " + 
-													JSON.stringify(CommonMappingStateService.getState(mapName).getSelectedPolygonObj(
-														input.name, thisPolyID), null, 1) + 
-													"; new: " + JSON.stringify(selectedPolygonObj, null, 1));
+//												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Update nearestRifShapeId for old selectedPolygonObj: " + 
+//													JSON.stringify(CommonMappingStateService.getState(mapName).getSelectedPolygonObj(
+//														input.name, thisPolyID), null, 1) + 
+//													"; new: " + JSON.stringify(selectedPolygonObj, null, 1));
 											}
 										}
 										CommonMappingStateService.getState(mapName).updateSelectedPolygon(input.name, 
@@ -865,36 +918,6 @@ angular.module("RIF")
                 //return the job submission as unformatted JSON
                 makeDrawSelection: function (shape, selectorBands, input, mapName, latlngList, makeDrawSelectionCallback) {
                     return makeDrawSelection2(shape, selectorBands, input, mapName, latlngList, makeDrawSelectionCallback);
-                },
-				getNextShapeId: function() {
-					return getNextShapeId2();
-				},
-				getCurrentShapeId: function() {
-					return 'RIF_' + shapeId;
-				},
-				getNextShapeFileId: function (shapefile) {
-					if (shapefile && shapefile.fileName) {
-						shapeFileId++;
-						shapeFileList[shapefile.fileName] = shapefile;
-						shapeFileList[shapefile.fileName].shapeFileId = 'RIFSHAPEFILE_' + shapeFileId;
-						return 'RIFSHAPEFILE_' + shapeFileId;
-					}
-					else {
-						throw new Error("fileName or shapefile is undefined");
-					}
-				},
-				getCurrentShapeFileId: function () {
-					return 'RIFSHAPEFILE_' + shapeFileId;
-				},
-				getNextShapePolyId: function () {
-					shapePolyId++;
-					return 'RIFPOLY_' + shapePolyId;
-				},
-				getCurrentShapePolyId: function () {
-					return 'RIFPOLY_' + shapePolyId;
-				},
-				getShapeByFileId: function (shapeFileId) {
-					getShapeByFileId2(shapeFileId);
-				}
+                }
             };
         }]);

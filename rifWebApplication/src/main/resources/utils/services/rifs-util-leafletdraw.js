@@ -123,6 +123,7 @@ angular.module("RIF")
 
                                 //add circles 
                                 this._isDrawing = true;
+								var shapePolyId;
                                 //fire new circle at same centre
                                 if (!this._isConcentricing) {
                                     this._startLatLng = e.latlng;
@@ -137,13 +138,14 @@ angular.module("RIF")
                                     if (this._shape) {
                                         this._fireCreatedEvent();
                                         //fire event in directive     
+										shapePolyId=DrawSelectionService.getNextShapePolyId();
                                         $rootScope.$broadcast('makeDrawSelection2', {
                                             data: this._shape,
                                             circle: true,
                                             freehand: false,
                                             band: thisBand,
 											finalCircleBand: true,
-											shapePolyId: DrawSelectionService.getNextShapePolyId()
+											shapePolyId: shapePolyId
                                         });
                                     }
                                     this.disable();
@@ -170,7 +172,7 @@ angular.module("RIF")
                                             freehand: false,
                                             band: thisBand,
 											finalCircleBand: true,
-											shapePolyId: DrawSelectionService.getCurrentShapePolyId()
+											shapePolyId: shapePolyId
                                         });
                                     }
                                     this.disable();
@@ -195,7 +197,7 @@ angular.module("RIF")
                                         circle: true,
                                         freehand: false,
                                         band: thisBand,
-										shapePolyId: DrawSelectionService.getCurrentShapePolyId()
+										shapePolyId: shapePolyId
                                     });
                                     //increase band number
                                     thisBand++;

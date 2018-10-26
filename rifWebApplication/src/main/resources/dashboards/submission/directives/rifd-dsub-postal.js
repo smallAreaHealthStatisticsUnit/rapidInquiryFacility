@@ -50,10 +50,10 @@ angular.module("RIF")
             };
         })
         .directive('postalCode', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'AlertService', 'SubmissionStateService', 
-			'ProjectionService', 'DrawSelectionService', 'user',
+			'ProjectionService', 'DrawSelectionService', 'CommonMappingStateService', 'user',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
             function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, AlertService, SubmissionStateService, ProjectionService,
-				DrawSelectionService, user) {
+				DrawSelectionService, CommonMappingStateService, user) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addPostalCode in rifs-utils-mapTools
                     link: function (scope, element, attr) {
@@ -506,7 +506,7 @@ angular.module("RIF")
 								
 									//make polygons and apply selection
 									var i = 0;
-									DrawSelectionService.getNextShapePolyId();
+									var shapePolyId=CommonMappingStateService.getState("areamap").getNextShapePolyId();
 									for (; i < scope.bandAttr.length; i++) {
 										var circle = L.circle([scope.ycoordinate, scope.xcoordinate],
 												{
@@ -524,7 +524,7 @@ angular.module("RIF")
 											freehand: false,
 											band: i + 1,
 											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100, // Square km to 2dp
-											shapePolyId: DrawSelectionService.getCurrentShapePolyId()
+											shapePolyId: shapePolyId
 										});
 									}
 									
