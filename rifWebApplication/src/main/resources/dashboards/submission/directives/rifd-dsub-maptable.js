@@ -1823,7 +1823,7 @@ angular.module("RIF")
 							
 							CommonMappingStateService.getState("areamap").map.spin(true);  // on	
 							start=new Date().getTime();
-								
+							$scope.selectionData.sort(function(a, b){return ((a.area && b.area) ? (b.area - a.area) : false) });
 							$scope.shapeLoadUpdate = "0 / " + $scope.selectionData.length + " shapes, 0%";
 							async.eachOfSeries($scope.selectionData, 
 								function iteratee(item, indexKey, callback) {
@@ -1866,16 +1866,51 @@ angular.module("RIF")
 									savedShapes=SelectStateService.getState().studySelection.studyShapes;
 								}
 								for (var i=0; i<savedShapes.length; i++) {
+									var maxIntersectCount;
+									var intersectCount;
+									var properties;
 									if ($scope.input.name == "ComparisionAreaMap") { 
-										SelectStateService.getState().studySelection.comparisonShapes[i].properties.maxIntersectCount = 
-											CommonMappingStateService.getState("areamap").getMaxIntersectCount($scope.input.name, savedShapes[i].id);
+										maxIntersectCount = CommonMappingStateService.getState("areamap").getMaxIntersectCount($scope.input.name, savedShapes[i].rifShapePolyId);
+										SelectStateService.getState().studySelection.comparisonShapes[i].properties.maxIntersectCount = maxIntersectCount;
+										if (maxIntersectCount) {
+											var intersectCount = CommonMappingStateService.getState("areamap").getIntersectCounts(
+												$scope.input.name, savedShapes[i].rifShapePolyId);
+											SelectStateService.getState().studySelection.comparisonShapes[i].intersectCount = intersectCount;
+											for (var j=1; j<=maxIntersectCount; j++) {
+												var name="intersect " + j;
+												if (intersectCount[j]) {
+													SelectStateService.getState().studySelection.comparisonShapes[i].properties[name] = 
+														intersectCount[j].total;
+												}
+											}
+										}	
+										properties=SelectStateService.getState().studySelection.comparisonShapes[i].properties;
 									}
 									else { 
-										SelectStateService.getState().studySelection.studyShapes[i].properties.maxIntersectCount = 
-											CommonMappingStateService.getState("areamap").getMaxIntersectCount($scope.input.name, savedShapes[i].id);
+										maxIntersectCount = CommonMappingStateService.getState("areamap").getMaxIntersectCount($scope.input.name, savedShapes[i].rifShapePolyId);
+										SelectStateService.getState().studySelection.studyShapes[i].properties.maxIntersectCount = maxIntersectCount;
+										if (maxIntersectCount) {
+											intersectCount = CommonMappingStateService.getState("areamap").getIntersectCounts(
+												$scope.input.name, savedShapes[i].rifShapePolyId);
+											SelectStateService.getState().studySelection.studyShapes[i].intersectCount = intersectCount;
+											for (var j=1; j<=maxIntersectCount; j++) {
+												var name="intersect " + j;
+												if (intersectCount[j]) {
+													SelectStateService.getState().studySelection.studyShapes[i].properties[name] = 
+														intersectCount[j].total;
+												}
+											}
+										}	
+										properties=SelectStateService.getState().studySelection.studyShapes[i].properties;
 									}
+									alertScope.consoleLog("[rifd-dsub-maptable.js] process shape[" + i + "] area: " + savedShapes[i].area + 
+										"; maxIntersectCount: " + maxIntersectCount +
+										"; intersectCount: " + JSON.stringify(intersectCount) +
+										"; properties: " + JSON.stringify(properties) +
+										"; rifShapePolyId: " + savedShapes[i].rifShapePolyId +
+										"; rifShapeId: " + savedShapes[i].rifShapeId +
+										"; shapeFile: " + (savedShapes[i].fileName ? savedShapes[i].fileName : "N/A"));
 								}
-								CommonMappingStateService.getState("areamap").info.update();
 								
 								$scope.selectionData = [];
 								if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
@@ -1936,6 +1971,26 @@ angular.module("RIF")
 								if (savedShape) {
 									var bandCount = {};
 									var studySelection=CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name);
+									var properties;
+									if ($scope.input.name == "ComparisionAreaMap") { 
+										var comparisonShapes = SelectStateService.getState().studySelection.comparisonShapes;
+										for (var i=0; i<comparisonShapes.length; i++) {
+											if (comparisonShapes[i].rifShapePolyId == savedShape.rifShapePolyId) {
+												properties=comparisonShapes[i].properties;
+											}
+										}
+									}
+									else {
+										var studyShapes = SelectStateService.getState().studySelection.studyShapes;
+										for (var i=0; i<studyShapes.length; i++) {
+											if (studyShapes[i].rifShapePolyId == savedShape.rifShapePolyId) {
+												properties=studyShapes[i].properties;
+											}
+										}
+									}
+									if (properties == undefined) {
+										properties = savedShape.properties;
+									}
 									if (studySelection) {
 										for (var i=0; i<studySelection.length; i++) {
 											var band=studySelection[i].band;
@@ -1973,14 +2028,14 @@ angular.module("RIF")
 										this._div.innerHTML+= '<b>Area: ' + savedShape.area + ' square km</b><br />'
 									}
 										
-									for (var property in savedShape.properties) {
+									for (var property in properties) {
 										if (property == 'area') {
 											if (savedShape.area === undefined) {
-												this._div.innerHTML+= '<b>Area: ' + savedShape.properties[property] + ' square km</b><br />'
+												this._div.innerHTML+= '<b>Area: ' + properties[property] + ' square km</b><br />'
 											}
 										}
 										else if (property != '$$hashKey') {
-											this._div.innerHTML+= '<b>' + property + ': ' + savedShape.properties[property] + '</b><br />';
+											this._div.innerHTML+= '<b>' + property + ': ' + properties[property] + '</b><br />';
 										}
 									}
 									this._div.innerHTML += '<b>Band: ' + (savedShape.band || "unknown") + '</b><br />';

@@ -47,7 +47,10 @@ angular.module("RIF")
 							
 							try {
 								if (shape.rifShapeId == undefined) {
-									shape.rifShapeId = CommonMappingStateService.getState(mapName).getNextShapeId(input.name); // Ensure unique 
+									throw new Error("[rifs-dsub-drawSelection.js] shape.rifShapeId is undefined");
+								}
+								if (shape.rifShapePolyId == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] shape.rifShapePolyId is undefined");
 								}
 								if (mapName == undefined) {
 									throw new Error("[rifs-dsub-drawSelection.js] mapName is undefined");
@@ -178,6 +181,8 @@ angular.module("RIF")
 								var savedShape = {
 									isShapefile: (shape.isShapefile || false),
 									id: shape.rifShapeId,
+									rifShapeId: shape.rifShapeId,
+									rifShapePolyId: shape.rifShapePolyId,
 									circle: shape.circle,
 									freehand: shape.freehand,
 									band: shape.band,
@@ -192,13 +197,9 @@ angular.module("RIF")
 									selectionMethod: shape.selectionMethod
 								}	
 								
-								savedShape.properties.rifShapeId = shape.rifShapeId;
-								if (shape.shapePolyId) {
-									savedShape.properties.shapePolyId = shape.shapePolyId;
-								}
-								if (shape.shapeFileId) {
-									var shapeFileObj =  CommonMappingStateService.getState(mapName).getShapeByFileId(input.name, shape.shapeFileId);
-									savedShape.properties.shapeFileId = shape.shapeFileId;
+								if (shape.rifShapeFileId) {
+									savedShape.rifShapeFileId = shape.rifShapeFileId;
+									var shapeFileObj =  CommonMappingStateService.getState(mapName).getShapeByFileId(input.name, shape.rifShapeFileId);
 									if (shapeFileObj) {
 										savedShape.fileName=shapeFileObj.fileName;
 										savedShape.featureCount=shapeFileObj.featureCount;
@@ -208,8 +209,11 @@ angular.module("RIF")
 										savedShape.hasExposureAttributes=shapeFileObj.hasExposureAttributes;
 									}
 									else {
-										throw new Error("No shapeFileObj for shapeFileId: " + shape.shapeFileId);
+										throw new Error("No shapeFileObj for rifShapeFileId: " + shape.rifShapeFileId);
 									}
+								}
+								else {
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] No rifShapeFileId");
 								}
 	//	
 	// Risk analysis study types (as per rif40_studies.stype_type): 
@@ -297,6 +301,20 @@ angular.module("RIF")
 										};
 			
 								function highLightFeature(e) {
+									var rifShapeId=savedShape.properties.rifShapeId;
+									var studyShapes=SelectStateService.getState().studySelection.studyShapes;
+									
+									for (var i=0; i<studyShapes.length; i++) {
+										if (studyShapes[i].properties.maxIntersectCount) {
+											savedShape.properties.maxIntersectCount=studyShapes[i].properties.maxIntersectCount;
+											for (var j=1; j<studyShapes[i].properties.maxIntersectCount; j++) {
+												var name="intersect " + j;
+												if (studyShapes[i].properties.name) {
+													savedShape.properties=studyShapes[i].properties.name;
+												}
+											}
+										}			
+									}										
 									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection highLightFeature " +  
 											"(" + this._leaflet_id + "; " + JSON.stringify(this._latlng) + "): " +
 											(JSON.stringify(savedShape.properties) || "no properties"));
@@ -626,7 +644,7 @@ angular.module("RIF")
 								}
 							
 								savedShape.properties.totalAreas = 
-									CommonMappingStateService.getState(mapName).getTotalAreas(input.name, savedShape.id);
+									CommonMappingStateService.getState(mapName).getTotalAreas(input.name, savedShape.rifShapePolyId);
 								CommonMappingStateService.getState(mapName).setAreaNameList(input.name);
 								
 								// Save to SelectStateService
@@ -728,32 +746,34 @@ angular.module("RIF")
 											}
 										}
 										
-										if (selectedPolygonObj.shapeIdList[shape.rifShapeId] && (
-										    selectedPolygonObj.shapeIdList[shape.rifShapeId].centroid.lat != centroid.lat ||
-											selectedPolygonObj.shapeIdList[shape.rifShapeId].centroid.lng != centroid.lng) ) {
+										if (selectedPolygonObj.shapeIdList[shape.rifShapePolyId] && (
+										    selectedPolygonObj.shapeIdList[shape.rifShapePolyId].centroid.lat != centroid.lat ||
+											selectedPolygonObj.shapeIdList[shape.rifShapePolyId].centroid.lng != centroid.lng) ) {
 											
 											if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
-												latlngListCallbackFunction("Duplicate shape id: " + shape.rifShapeId + 
+												latlngListCallbackFunction("Duplicate shape id: " + shape.rifShapePolyId + 
 													" in shapeIdList for selectedPolygonObj: " + JSON.stringify(selectedPolygonObj));
 												return;
 											}
 											else {
-												throw new Error("Duplicate shape id: " + shape.rifShapeId + 
+												throw new Error("Duplicate shape id: " + shape.rifShapePolyId + 
 													" in shapeIdList for selectedPolygonObj: " + JSON.stringify(selectedPolygonObj) +
 													"; duplicate: " + JSON.stringify({
 															id: thisPoly,
 															band: selectedPolygonObj.band,
 															rifShapeId: shape.rifShapeId,
+															rifShapePolyId: shape.rifShapePolyId,
 															distanceFromNearestSource: distanceFromNearestSource,
 															centroid: centroid
 														}));
 											}
 										}
 										else {
-											selectedPolygonObj.shapeIdList[shape.rifShapeId] = {
+											selectedPolygonObj.shapeIdList[shape.rifShapePolyId] = {
 													id: thisPoly,
 													band: selectedPolygonObj.band,
 													rifShapeId: shape.rifShapeId,
+													rifShapePolyId: shape.rifShapePolyId,
 													distanceFromNearestSource: distanceFromNearestSource,
 													centroid: centroid
 												};
@@ -761,11 +781,11 @@ angular.module("RIF")
 											var radius;
 											if (shape.circle) {
 												radius=shape.data.getRadius();
-												selectedPolygonObj.shapeIdList[shape.rifShapeId].radius = radius;
+												selectedPolygonObj.shapeIdList[shape.rifShapePolyId].radius = radius;
 											}
 											selectedPolygonObj.intersectCount=1;
 											for (var key in selectedPolygonObj.shapeIdList) {
-												if (selectedPolygonObj.shapeIdList[key].rifShapeId == shape.rifShapeId) {
+												if (selectedPolygonObj.shapeIdList[key].rifShapeId == shape.rifShapeId) { // Match on shape, not polygon
 													 if (shape.circle &&
 													     selectedPolygonObj.shapeIdList[key].distanceFromNearestSource == distanceFromNearestSource && 
 													     selectedPolygonObj.shapeIdList[key].centroid.lat == centroid.lat &&
@@ -777,6 +797,7 @@ angular.module("RIF")
 																"; radius: " + radius +
 																"; centroid: " + JSON.stringify(centroid) +
 																"; rifShapeId: " + shape.rifShapeId +
+																"; rifShapePolyId: " + shape.rifShapePolyId +
 																"; band: " + shape.band +
 																"; selectedPolygonObj: " + 
 																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
@@ -792,6 +813,7 @@ angular.module("RIF")
 																"; distanceFromNearestSource: " + distanceFromNearestSource +
 																"; centroid: " + JSON.stringify(centroid) +
 																"; rifShapeId: " + shape.rifShapeId +
+																"; rifShapePolyId: " + shape.rifShapePolyId +
 																"; band: " + shape.band +
 																"; selectedPolygonObj: " + 
 																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
@@ -803,6 +825,7 @@ angular.module("RIF")
 																"; radius: " + radius +
 																"; centroid: " + JSON.stringify(centroid) +
 																"; rifShapeId: " + shape.rifShapeId +
+																"; rifShapePolyId: " + shape.rifShapePolyId +
 																"; band: " + shape.band +
 																"; selectedPolygonObj: " + 
 																	JSON.stringify(selectedPolygonObj.shapeIdList[key]);
@@ -822,6 +845,7 @@ angular.module("RIF")
 															"; radius: " + radius +
 															"; centroid: " + JSON.stringify(centroid) +
 															"; rifShapeId: " + shape.rifShapeId +
+															"; rifShapePolyId: " + shape.rifShapePolyId +
 															"; selectedPolygonObj: " + 
 																JSON.stringify(selectedPolygonObj.shapeIdList[key]));
 													}				
@@ -829,7 +853,7 @@ angular.module("RIF")
 												}
 											}
 										}
-										var nearestRifShapeId=undefined;
+										var nearestRifShapePolyId=undefined;
 										for (var key in selectedPolygonObj.shapeIdList) {
 											if (selectedPolygonObj.shapeIdList[key].id != thisPoly) {
 												if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
@@ -844,16 +868,16 @@ angular.module("RIF")
 														selectedPolygonObj.shapeIdList[key].id);
 												}
 											}
-											else if (nearestRifShapeId == undefined) {
-												nearestRifShapeId=selectedPolygonObj.shapeIdList[key];
-												selectedPolygonObj.nearestRifShapeId=nearestRifShapeId.rifShapeId;
+											else if (nearestRifShapePolyId == undefined) {
+												nearestRifShapePolyId=selectedPolygonObj.shapeIdList[key];
+												selectedPolygonObj.nearestRifShapePolyId=nearestRifShapePolyId.rifShapePolyId;
 											}
 											else if (selectedPolygonObj.shapeIdList[key].distanceFromNearestSource <
-												nearestRifShapeId.distanceFromNearestSource) {
-												nearestRifShapeId=selectedPolygonObj.shapeIdList[key];
-												selectedPolygonObj.nearestRifShapeId=nearestRifShapeId.rifShapeId;
-												selectedPolygonObj.distanceFromNearestSource=nearestRifShapeId.distanceFromNearestSource;
-//												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Update nearestRifShapeId for old selectedPolygonObj: " + 
+												nearestRifShapePolyId.distanceFromNearestSource) {
+												nearestRifShapePolyId=selectedPolygonObj.shapeIdList[key];
+												selectedPolygonObj.nearestRifShapePolyId=nearestRifShapePolyId.rifShapePolyId;
+												selectedPolygonObj.distanceFromNearestSource=nearestRifShapePolyId.distanceFromNearestSource;
+//												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Update nearestRifShapePolyId for old selectedPolygonObj: " + 
 //													JSON.stringify(CommonMappingStateService.getState(mapName).getSelectedPolygonObj(
 //														input.name, thisPolyID), null, 1) + 
 //													"; new: " + JSON.stringify(selectedPolygonObj, null, 1));
@@ -864,18 +888,19 @@ angular.module("RIF")
 									}
 									else { // Not found - new shape
 										var shapeIdList = {};
-										shapeIdList[shape.rifShapeId] = {
+										shapeIdList[shape.rifShapePolyId] = {
 												id: thisPoly,
 												band: undefined,
 												rifShapeId: shape.rifShapeId,
+												rifShapePolyId: shape.rifShapePolyId,
 												distanceFromNearestSource: distanceFromNearestSource,
 												centroid: centroid
 											};
 										if (shape.circle) {
-											shapeIdList[shape.rifShapeId].radius = shape.data.getRadius();
+											shapeIdList[shape.rifShapePolyId].radius = shape.data.getRadius();
 										}
 										var newSelectedPolygon = {
-												nearestRifShapeId: shape.rifShapeId,
+												nearestRifShapePolyId: shape.rifShapePolyId,
 												id: thisPolyID, 
 												gid: thisPolyID, 
 												label: thisPoly, 
@@ -892,7 +917,7 @@ angular.module("RIF")
 											newSelectedPolygon.band = shape.band;
 											latlngList[itemsProcessed].band=shape.band;
 										}
-										shapeIdList[shape.rifShapeId].band = newSelectedPolygon.band;
+										shapeIdList[shape.rifShapePolyId].band = newSelectedPolygon.band;
 										newSelectedPolygon.shapeIdList = shapeIdList;
 										selectedPolygonObj=CommonMappingStateService.getState(mapName).addToSelectedPolygon(input.name, 
 											newSelectedPolygon);

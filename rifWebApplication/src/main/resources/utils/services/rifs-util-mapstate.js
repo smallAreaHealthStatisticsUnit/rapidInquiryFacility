@@ -175,41 +175,76 @@ angular.module("RIF")
 								this.areaType.selectedPolygon.length);
 							return this.areaType.selectedPolygon;
 						},
-						getMaxIntersectCount: function(areaType, rifShapeId) {
+						getMaxIntersectCount: function(areaType, rifShapePolyId) {
 							checkAreaType(areaType);
 							var maxIntersectCount=0;
 							if (this.areaType.selectedPolygon) {
 								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
-									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapeId] &&
-										this.areaType.selectedPolygon[i].intersectCount > maxIntersectCount) {
-										maxIntersectCount = this.areaType.selectedPolygon[i].intersectCount;
+									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapePolyId]) {
+										if (maxIntersectCount == 0) {
+											maxIntersectCount=1;
+										}
+										if (this.areaType.selectedPolygon[i].intersectCount > maxIntersectCount) {
+											maxIntersectCount = this.areaType.selectedPolygon[i].intersectCount;
+										}
 									}
 								}
 							}
 							AlertService.consoleDebug("[rifs-util-mapstate.js] getMaxIntersectCount(" + 
-								areaType + "," + rifShapeId + "): " + 
+								areaType + "," + rifShapePolyId + "): " + 
 								maxIntersectCount + "/" + (this.areaType.selectedPolygon ? this.areaType.selectedPolygon.length : 0));
 							return maxIntersectCount;
 						},
-						getTotalAreas: function(areaType, rifShapeId) {
-							checkAreaType(areaType);
+						getIntersectCounts: function(areaType, rifShapePolyId) {
+							checkAreaType(areaType);	
+							if (rifShapePolyId == undefined) {
+								throw new Error("rifShapePolyId is undefined");
+							}
+							var intersectCount={};
+							if (this.areaType.selectedPolygon) {
+								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
+									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapePolyId] &&
+										this.areaType.selectedPolygon[i].intersectCount) {
+										if (intersectCount[this.areaType.selectedPolygon[i].intersectCount]) {
+											intersectCount[this.areaType.selectedPolygon[i].intersectCount].total++;
+										}
+										else {
+											intersectCount[this.areaType.selectedPolygon[i].intersectCount] = {total: 1};
+										}
+									}
+								}
+							}
+							AlertService.consoleDebug("[rifs-util-mapstate.js] getIntersectCounts(" + 
+								areaType + "," + rifShapePolyId + "): " + 
+								JSON.stringify(intersectCount) + "/" + (this.areaType.selectedPolygon ? this.areaType.selectedPolygon.length : 0));
+							return intersectCount;
+						},
+						getTotalAreas: function(areaType, rifShapePolyId) {
+							checkAreaType(areaType);	
+							if (rifShapePolyId == undefined) {
+								throw new Error("rifShapePolyId is undefined");
+							}
 							var totalAreas=0;
 							var otherRifShapeId = {};
 							if (this.areaType.selectedPolygon) {
 								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
-									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapeId]) {
+									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapePolyId]) {
 										totalAreas++;
 									}
-									else if (otherRifShapeId[this.areaType.selectedPolygon[i].rifShapeId]){
-										otherRifShapeId[this.areaType.selectedPolygon[i].rifShapeId].count++;
-									}
 									else {
-										otherRifShapeId[this.areaType.selectedPolygon[i].rifShapeId] = {count: 1};	
+										for (var key in this.areaType.selectedPolygon[i].shapeIdList) {
+											if (otherRifShapeId[key]){
+												otherRifShapeId[key].count++;
+											}
+											else {
+												otherRifShapeId[key] = {count: 1};	
+											}
+										}
 									}
 								}
 							}
 							AlertService.consoleDebug("[rifs-util-mapstate.js] getTotalAreas(" + 
-								areaType + "," + rifShapeId + "): " + 
+								areaType + "," + rifShapePolyId + "): " + 
 								totalAreas + "/" + (this.areaType.selectedPolygon ? this.areaType.selectedPolygon.length : 0) +
 								"; otherRifShapeId: " + JSON.stringify(otherRifShapeId));
 							return totalAreas;
@@ -390,7 +425,7 @@ angular.module("RIF")
 								}
 								for (var key in this.areaType.shapeFileList) {
 									if (this.areaType.shapeFileList[key].shapeFileId == shapeFileId) {
-										return shapeFileList[key];
+										return this.areaType.shapeFileList[key];
 									}
 								}
 								return undefined;
