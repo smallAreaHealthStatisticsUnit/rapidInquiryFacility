@@ -224,8 +224,7 @@ angular.module("RIF")
 							alertScope.consoleLog("[rifd-dsub-maptable.js] $scope.clear() $scope.input.selectedPolygon");
                             $scope.input.selectedPolygon.length = 0;
 							$scope.selectedPolygonCount = 0;
-                            CommonMappingStateService.getState("areamap").clearSelectedPolygon($scope.input.name);
-							$scope.selectedPolygon = [];
+                            $scope.selectedPolygon = CommonMappingStateService.getState("areamap").clearSelectedPolygon($scope.input.name);
 							$scope.shapeLoadUpdate = "";
 							if (!$scope.geoJSON) {
 							} else if ($scope.geoJSON && $scope.geoJSON._geojsons && $scope.geoJSON._geojsons.default) {
