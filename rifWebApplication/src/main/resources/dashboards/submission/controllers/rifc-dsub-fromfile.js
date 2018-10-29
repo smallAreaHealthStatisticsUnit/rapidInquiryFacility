@@ -542,6 +542,10 @@ angular.module("RIF")
 						if (StudyAreaStateService.getState().polygonIDs.length == 0) {
 							throw new Error("No study area polygons");
 						}
+						else {
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] StudyAreaStateService.getState().polygonIDs[0]: " +
+								JSON.stringify(StudyAreaStateService.getState().polygonIDs[0]));
+						}
 						StudyAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (StudyAreaStateService.getState().polygonIDs.length !== 0) {
 							SubmissionStateService.getState().studyTree = true;
@@ -557,6 +561,10 @@ angular.module("RIF")
 						CompAreaStateService.getState().polygonIDs = rifJob[studyType].comparison_area.map_areas.map_area;
 						if (CompAreaStateService.getState().polygonIDs.length == 0) {
 							throw new Error("No comparison area polygons");
+						}
+						else {
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] CompAreaStateService.getState().polygonIDs[0]: " +
+								JSON.stringify(CompAreaStateService.getState().polygonIDs[0]));
 						}
 						CompAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (CompAreaStateService.getState().polygonIDs.length !== 0) {
