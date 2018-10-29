@@ -19,6 +19,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.core.MediaType;
 
 import org.json.JSONException;
 
@@ -840,8 +841,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		}	
 */		
 
-		Client client = null;
-		
+		Client client;
 		WebResource webResource=null;
 		try {		
 			if (url.equals("https://localhost:8080")) {
@@ -850,19 +850,18 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			else {	
 				client=Client.create();
 			}
-			String URI= url + "/taxonomyServices/getMatchingTerms";
-			webResource = client.resource(URI);
+			String uri = url + "/taxonomies/service/findTermInAnyTaxonomy";
+			webResource = client.resource(uri);
 			if (webResource == null) {
-				throw new Exception("Null WebResource returned by rest client, URI: " + URI);
+				throw new Exception("Null WebResource returned by rest client, URI: " + uri);
 			}
-			webResource = webResource.queryParam("taxonomy_id", "icd10");
 			webResource = webResource.queryParam("search_text", code);
 			webResource = webResource.queryParam("is_case_sensitive", "false");
-			ClientResponse response = webResource.accept("application/json")
+			ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON)
                 .get(ClientResponse.class);
 
 			if (response.getStatus() != 200) {
-			   throw new Exception(URI + " failed: HTTP error code : "
+			   throw new Exception(uri + " failed: HTTP error code : "
 					+ response.getStatus());
 			}
 /*
@@ -884,6 +883,9 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
   ]
  */
 			String output = response.getEntity(String.class);
+
+			rifLogger.info(getClass(), output);
+
 			JSONTokener tokener = new JSONTokener(output);
 			JSONArray array = new JSONArray(tokener);
 			int arrayLen=array.length();

@@ -3,7 +3,10 @@ package org.sahsu.rif.generic.taxonomyservices;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.opencsv.bean.CsvBindByName;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Describes the concept of a taxonomy term.  It comprises the following fields:
@@ -46,19 +49,25 @@ import com.opencsv.bean.CsvBindByName;
  * each term, I've made it a property of the taxonomy service.  For example, "icd10" could be
  * used to set a name space field in each term.  But instead, the name space is provided in the
  * <code>getIdentifier()</code> method of 
- * {@link TaxonomyServiceAPI}.
+ * {@code TaxonomyServiceAPI}.
  */
+@XmlRootElement(name="healthCode")
+// @XmlAccessorType(XmlAccessType.FIELD)
+// @XmlType(propOrder= {
+// 		"identifier",
+// 		"label",
+// 		"description",
+// 		"isTopLevelTerm"
+// })
 final public class TaxonomyTerm {
 
 	/** The label. */
-	// @CsvBindByName(column = "DIAGNOSIS CODE", required = true)
 	private String label;
 	
 	/** The name space. */
 	private String nameSpace;
 	
 	/** The description. */
-	// @CsvBindByName(column = "LONG DESCRIPTION", required = true)
 	private String description;
 	
 	/** The parent term. */
@@ -102,16 +111,6 @@ final public class TaxonomyTerm {
 		
 		return false;
 	}
-	
-	/**
-	 * Adds the sub term.
-	 *
-	 * @param childTerm the sub term
-	 */
-	void addChildTerm(final TaxonomyTerm childTerm) {
-
-		childTerms.add(childTerm);
-	}
 
 	/**
 	 * Adds the sub terms.
@@ -128,7 +127,7 @@ final public class TaxonomyTerm {
 	 *
 	 * @return the sub terms
 	 */
-	ArrayList<TaxonomyTerm> getChildTerms() {
+	public ArrayList<TaxonomyTerm> getChildTerms() {
 		
 		return childTerms;
 	}
@@ -138,6 +137,7 @@ final public class TaxonomyTerm {
 	 *
 	 * @return the label
 	 */
+	@XmlElement(required = true)
 	public String getLabel() {
 		
 		return label;
@@ -159,6 +159,7 @@ final public class TaxonomyTerm {
 	 *
 	 * @return the name space
 	 */
+	@XmlElement(required = true, name = "identifier")
 	public String getNameSpace() {
 
 		return nameSpace;
@@ -172,7 +173,7 @@ final public class TaxonomyTerm {
 	public void setNameSpace(
 		final String nameSpace) {
 
-		this.nameSpace = nameSpace;
+		this.nameSpace = nameSpace != null ? nameSpace.trim() : null;
 	}
 
 	/**
@@ -180,6 +181,7 @@ final public class TaxonomyTerm {
 	 *
 	 * @return the description
 	 */
+	@XmlElement(required = true)
 	public String getDescription() {
 		
 		return description;
@@ -200,7 +202,7 @@ final public class TaxonomyTerm {
 	 *
 	 * @return the parent term
 	 */
-	TaxonomyTerm getParentTerm() {
+	public TaxonomyTerm getParentTerm() {
 		return parentTerm;
 	}
 	
@@ -221,5 +223,12 @@ final public class TaxonomyTerm {
 		buffer.append("-");
 		buffer.append(nameSpace);
 		return buffer.toString();
+	}
+
+	public String toString() {
+
+		ToStringBuilder builder = new ToStringBuilder(this)
+				                          .append(label).append(nameSpace).append(description);
+		return builder.toString();
 	}
 }

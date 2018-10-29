@@ -1,4 +1,4 @@
-package org.sahsu.rif.generic.taxonomyservices;
+package org.sahsu.taxonomyservices;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
+import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
 /**
  * A convenience class to manage a collection of {@link TaxonomyTerm} objects in-memory.  The
@@ -130,7 +131,7 @@ public class TaxonomyTermManager {
 
 		return allTerms.stream().filter(
 				taxonomyTerm -> searchPattern.matcher(taxonomyTerm.getDescription().trim()).matches()
-				             || searchPattern.matcher(taxonomyTerm.getLabel()).matches())
+				             || searchPattern.matcher(taxonomyTerm.getLabel().trim()).matches())
 				       .collect(Collectors.toList());
 	}
 	

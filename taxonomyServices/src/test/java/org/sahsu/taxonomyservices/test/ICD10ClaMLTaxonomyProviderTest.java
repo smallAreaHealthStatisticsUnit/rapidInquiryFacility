@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,8 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
 import org.sahsu.taxonomyservices.ICD10TaxonomyTermParser;
+import org.sahsu.taxonomyservices.TaxonomyTermManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -5,10 +5,6 @@ import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.generic.taxonomyservices.AbstractTaxonomyService;
-import org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfiguration;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 import org.sahsu.taxonomyservices.system.TaxonomyServiceError;
 

@@ -1,4 +1,4 @@
-package org.sahsu.rif.generic.taxonomyservices;
+package org.sahsu.taxonomyservices;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -7,10 +7,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sahsu.rif.generic.concepts.Parameter;
-import org.sahsu.rif.generic.fileformats.ClasspathFilePath;
 import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
 import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
 public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 

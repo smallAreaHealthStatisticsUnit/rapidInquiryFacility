@@ -1,5 +1,5 @@
 
-package org.sahsu.rif.generic.taxonomyservices;
+package org.sahsu.taxonomyservices;
 
 import java.io.File;
 import java.io.InputStream;
