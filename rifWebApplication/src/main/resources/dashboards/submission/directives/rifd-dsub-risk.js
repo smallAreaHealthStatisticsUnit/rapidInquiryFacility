@@ -53,10 +53,10 @@ angular.module("RIF")
             };
         })
         .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'SelectStateService', 
-				'AlertService', 'CommonMappingStateService', 'DrawSelectionService', '$window', '$interval',
+				'AlertService', 'CommonMappingStateService', 'DrawSelectionService', 'GISService', '$window', '$interval',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
             function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, SelectStateService, 
-				AlertService, CommonMappingStateService, DrawSelectionService, $window, $interval) {
+				AlertService, CommonMappingStateService, DrawSelectionService, GISService, $window, $interval) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
                     link: function (scope, element, attr) {
@@ -592,8 +592,9 @@ angular.module("RIF")
 								var attributeName=undefined;
 								var bandValues={};
 								var shapeList = [];
+								var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
                                 for (var i in poly._layers) {
-									var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
+									
 									var rifShapePolyId= CommonMappingStateService.getState("areamap").getNextShapePolyId();
                                     var polygon = L.polygon(poly._layers[i].feature.geometry.coordinates[0], {});
 									var properties = poly._layers[i].feature.properties;					
@@ -611,6 +612,10 @@ angular.module("RIF")
 										index: i,
 										selectionMethod: scope.selectionMethod
                                     };
+									
+									shape.centroid=GISService.getCentroid(shape);
+									shape.polygon=GISService.getPolygon(shape);
+									shape.bbox=GISService.getBoundingBox(shape);
 									shape.rifShapeFileId = rifShapeFileId;
 									shape.rifShapePolyId = rifShapePolyId;
 									shape.rifShapeId = rifShapeId;
@@ -625,9 +630,25 @@ angular.module("RIF")
 								}
 								shapeList.sort(function(a, b){return a.area - b.area}); 
 									// Sort into ascending order by area
-                           
-                                for (var i =0; i< shapeList.length; i++) {
+								var biggestShape=shapeList[shapeList.length-1];
+								var notEnclosedWithinBiggestShape=0;
+								biggestShape.properties.biggestShape=true;
+                                for (var i = 0; i< shapeList.length; i++) {
 									var shape = shapeList[i];
+									var point = GISService.geojsonPointToLatLng(centroid);
+									if (turf.booleanWithin(centroid, biggestShape.polygon)) {
+//									if (GISService.getPointinpolygon(point, biggestShape)) {
+										if (i != (shapeList.length-1)) {
+											shape.properties.enclosedWithinBiggestShape=true;
+										}
+									}
+									else {
+										alertScope.consoleDebug("[rifd-dsub-risk.js] shape: " + i + "/" + shapeList.length + ": " + rifShapePolyId +
+											" is not enclosed" +
+											"; point: " + JSON.stringify(point) +
+											"; centroid: " + JSON.stringify(centroid));
+										notEnclosedWithinBiggestShape++;
+									}
                                     if (scope.selectionMethod === 1) { // Single boundary; already set
                                         shape.band = 1;
 										maxBand=1;
@@ -701,6 +722,17 @@ angular.module("RIF")
 									$rootScope.$broadcast('makeDrawSelection', shape);
                                 } // End of shapefile polygon processing for loop
 								
+								if (notEnclosedWithinBiggestShape == 0) {
+									alertScope.consoleDebug("[rifd-dsub-risk.js] File: " + scope.shapeFile.fileName + " has " + 
+										notEnclosedWithinBiggestShape + "/"+ shapeList.length + " enclosed polygons");
+								}
+								else {
+									alertScope.showError("File: " + scope.shapeFile.fileName + " has " + notEnclosedWithinBiggestShape + "/" + 
+										shapeList.length + " polygons that are not enclosed within the biggest shape: " + shape.rifShapeFileId);
+									scope.bProgress = false;
+									return true; /* Close window */			
+								}
+								
 								var bandsUsed={};
 								var noBandsUsed=0;
 								for (var k in bandValues) {
@@ -729,6 +761,7 @@ angular.module("RIF")
 									alertScope.showError("File: " + scope.shapeFile.fileName +  ": added no bands from " + 
 										Object.keys(poly._layers).length + " polygons using " +
 										getSelectionMethodAsString(attributeName));
+									scope.bProgress = false;
 									return false;			
 								}
 														
@@ -743,13 +776,6 @@ angular.module("RIF")
                                 $rootScope.$broadcast('completedDrawSelection', {maxBand: maxBand});
                             } // End of isPolygon()
 
-                            //add AOI layer to map on modal close                            
-                            try {
-//                                scope.shpfile.addTo(scope.areamap);
-                            } catch (err) {
-                                alertScope.showError("File: " + scope.shapeFile.fileName + ": could not open Shapefile, no valid features");
-                                return false;
-                            }
                             return true;
                         };
                     }

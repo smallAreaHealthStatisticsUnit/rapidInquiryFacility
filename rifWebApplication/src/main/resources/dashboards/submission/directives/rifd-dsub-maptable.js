@@ -1823,7 +1823,8 @@ angular.module("RIF")
 							
 							CommonMappingStateService.getState("areamap").map.spin(true);  // on	
 							start=new Date().getTime();
-							$scope.selectionData.sort(function(a, b){return ((a.area && b.area) ? (b.area - a.area) : false) });
+//							$scope.selectionData.sort(function(a, b){return ((a.area && b.area) ? (a.area - b.area) : false) });
+// Already sorted: DO NOT CHANGE
 							$scope.shapeLoadUpdate = "0 / " + $scope.selectionData.length + " shapes, 0%";
 							async.eachOfSeries($scope.selectionData, 
 								function iteratee(item, indexKey, callback) {
@@ -1876,12 +1877,16 @@ angular.module("RIF")
 											var intersectCount = CommonMappingStateService.getState("areamap").getIntersectCounts(
 												$scope.input.name, savedShapes[i].rifShapePolyId);
 											SelectStateService.getState().studySelection.comparisonShapes[i].intersectCount = intersectCount;
+											var name;
 											for (var j=1; j<=maxIntersectCount; j++) {
-												var name="intersect " + j;
-												if (intersectCount[j]) {
+												if (j == 1) {
+// Do nothing
+												}
+												else if (intersectCount[j]) {
+													name=j + " intersects";
 													SelectStateService.getState().studySelection.comparisonShapes[i].properties[name] = 
 														intersectCount[j].total;
-												}
+												}										
 											}
 										}	
 										properties=SelectStateService.getState().studySelection.comparisonShapes[i].properties;
@@ -1893,9 +1898,13 @@ angular.module("RIF")
 											intersectCount = CommonMappingStateService.getState("areamap").getIntersectCounts(
 												$scope.input.name, savedShapes[i].rifShapePolyId);
 											SelectStateService.getState().studySelection.studyShapes[i].intersectCount = intersectCount;
+											var name;
 											for (var j=1; j<=maxIntersectCount; j++) {
-												var name="intersect " + j;
-												if (intersectCount[j]) {
+												if (j == 1) {
+// Do nothing
+												}
+												else if (intersectCount[j]) {
+													name=j + " intersects";
 													SelectStateService.getState().studySelection.studyShapes[i].properties[name] = 
 														intersectCount[j].total;
 												}

@@ -791,35 +791,33 @@ angular.module("RIF")
 													     selectedPolygonObj.shapeIdList[key].centroid.lat == centroid.lat &&
 													     selectedPolygonObj.shapeIdList[key].centroid.lng == centroid.lng) { // Same circle 
 
-														if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
-															AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT SAME " +
-																"; distanceFromNearestSource: " + distanceFromNearestSource +
-																"; radius: " + radius +
-																"; centroid: " + JSON.stringify(centroid) +
-																"; rifShapeId: " + shape.rifShapeId +
-																"; rifShapePolyId: " + shape.rifShapePolyId +
-																"; band: " + shape.band +
-																"; selectedPolygonObj: " + 
-																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
-														}	
+//														if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
+//															AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT SAME " +
+//																"; distanceFromNearestSource: " + distanceFromNearestSource +
+//																"; radius: " + radius +
+//																"; centroid: " + JSON.stringify(centroid) +
+//																"; rifShapeId: " + shape.rifShapeId +
+//																"; rifShapePolyId: " + shape.rifShapePolyId +
+//																"; band: " + shape.band +
+//																"; selectedPolygonObj: " + 
+//																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
+//														}	
 													}
-													else if (!shape.circle &&
-													     selectedPolygonObj.shapeIdList[key].distanceFromNearestSource == distanceFromNearestSource &&
-													     selectedPolygonObj.shapeIdList[key].centroid.lat == centroid.lat &&
-													     selectedPolygonObj.shapeIdList[key].centroid.lng == centroid.lng) { // Same polygon centroid 
+													else if (!shape.circle) { // Same polygon  											
 
-														if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
-															AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT SAME " +
-																"; distanceFromNearestSource: " + distanceFromNearestSource +
-																"; centroid: " + JSON.stringify(centroid) +
-																"; rifShapeId: " + shape.rifShapeId +
-																"; rifShapePolyId: " + shape.rifShapePolyId +
-																"; band: " + shape.band +
-																"; selectedPolygonObj: " + 
-																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
-														}	
+//														if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
+//															AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT POLY															" +
+//																"; distanceFromNearestSource: " + distanceFromNearestSource +
+//																"; centroid: " + JSON.stringify(centroid) +
+//																"; rifShapeId: " + shape.rifShapeId +
+//																"; rifShapePolyId: " + shape.rifShapePolyId +
+//																"; band: " + shape.band +
+//																"; selectedPolygonObj: " + 
+//																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
+//														}	
 													}													
-													else {
+													else { // Not same centroid or polygon!						
+
 														var msg="[rifs-dsub-drawSelection.js] INTERSECT ERROR " +
 																"; distanceFromNearestSource: " + distanceFromNearestSource +
 																"; radius: " + radius +
@@ -839,16 +837,16 @@ angular.module("RIF")
 													}									 
 												}
 												else {
-													if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
-														AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT INCR " +
-															"; distanceFromNearestSource: " + distanceFromNearestSource +
-															"; radius: " + radius +
-															"; centroid: " + JSON.stringify(centroid) +
-															"; rifShapeId: " + shape.rifShapeId +
-															"; rifShapePolyId: " + shape.rifShapePolyId +
-															"; selectedPolygonObj: " + 
-																JSON.stringify(selectedPolygonObj.shapeIdList[key]));
-													}				
+//													if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
+//														AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT INCR " +
+//															"; distanceFromNearestSource: " + distanceFromNearestSource +
+//															"; radius: " + radius +
+//															"; centroid: " + JSON.stringify(centroid) +
+//															"; rifShapeId: " + shape.rifShapeId +
+//															"; rifShapePolyId: " + shape.rifShapePolyId +
+//															"; selectedPolygonObj: " + 
+//																JSON.stringify(selectedPolygonObj.shapeIdList[key]));
+//													}				
 													selectedPolygonObj.intersectCount++;
 												}
 											}
