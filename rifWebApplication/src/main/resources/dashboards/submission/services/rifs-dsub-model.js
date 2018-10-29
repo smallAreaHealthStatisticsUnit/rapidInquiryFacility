@@ -125,7 +125,11 @@ angular.module("RIF")
                                     "id": StudyAreaStateService.getState().polygonIDs[i].id,
                                     "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
                                     "label": StudyAreaStateService.getState().polygonIDs[i].label,
-                                    "band": StudyAreaStateService.getState().polygonIDs[i].band
+                                    "band": StudyAreaStateService.getState().polygonIDs[i].band,
+                                    "intersectCount": StudyAreaStateService.getState().polygonIDs[i].intersectCount,
+                                    "centroid": StudyAreaStateService.getState().polygonIDs[i].centroid,
+									"shapeIdList": StudyAreaStateService.getState().polygonIDs[i].shapeIdList,
+									"nearestRifShapePolyId": StudyAreaStateService.getState().polygonIDs[i].nearestRifShapePolyId
                                 });
                             }
                             return tmp;

@@ -166,9 +166,9 @@ angular.module("RIF")
 							point.geometry.coordinates && Array.isArray(point.geometry.coordinates) && point.geometry.coordinates.length == 2) {
 							var coordinate=point.geometry.coordinates;
 							var latLng = L.latLng(coordinate[1], coordinate[0]);
-							AlertService.consoleDebug("[rifs-util-gis.js] geojsonPointToLatLng2 point:" + JSON.stringify(point) +
-								"; coordinate: " + JSON.stringify(coordinate) +
-								"; latLng: " + JSON.stringify(latLng));
+//							AlertService.consoleDebug("[rifs-util-gis.js] geojsonPointToLatLng2 point:" + JSON.stringify(point) +
+//								"; coordinate: " + JSON.stringify(coordinate) +
+//								"; latLng: " + JSON.stringify(latLng));
 							return latLng;
 						}
 						else {
@@ -217,7 +217,7 @@ angular.module("RIF")
 							var polygon=getPolygon2(shape);
 							if (polygon) {
 								centroid=turf.centroid(polygon); // GeoJSON point as longitude and latitude
-								return L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+								return L.latLng(centroid.geometry.coordinates[0], centroid.geometry.coordinates[1]);
 							}
 							else {
 								throw new Error("No polygon could be created for polyPoints: " + JSON.stringify(polyPoints));

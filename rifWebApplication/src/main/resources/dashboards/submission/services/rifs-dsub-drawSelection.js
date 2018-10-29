@@ -784,6 +784,7 @@ angular.module("RIF")
 												selectedPolygonObj.shapeIdList[shape.rifShapePolyId].radius = radius;
 											}
 											selectedPolygonObj.intersectCount=1;
+											selectedPolygonObj.centroid=latLng.latLng;
 											for (var key in selectedPolygonObj.shapeIdList) {
 												if (selectedPolygonObj.shapeIdList[key].rifShapeId == shape.rifShapeId) { // Match on shape, not polygon
 													 if (shape.circle &&
