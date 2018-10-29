@@ -43,8 +43,8 @@
  */
 
 angular.module("RIF")
-        .factory('LeafletDrawService', ['$rootScope', 'ParametersService', 'DrawSelectionService',
-                function ($rootScope, ParametersService, DrawSelectionService) {
+        .factory('LeafletDrawService', ['$rootScope', 'ParametersService', 'DrawSelectionService', 'CommonMappingStateService',
+                function ($rootScope, ParametersService, DrawSelectionService, CommonMappingStateService) {
 					var parameters=ParametersService.getParameters();
                     var selectorBands = { // Study and comparison are selectors
 							weight: 3,
@@ -123,7 +123,9 @@ angular.module("RIF")
 
                                 //add circles 
                                 this._isDrawing = true;
-								var shapePolyId;
+								var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
+								var rifShapePolyId= CommonMappingStateService.getState("areamap").getNextShapePolyId();
+								
                                 //fire new circle at same centre
                                 if (!this._isConcentricing) {
                                     this._startLatLng = e.latlng;
@@ -132,20 +134,19 @@ angular.module("RIF")
                                 //Draw a single circle only (disease mapping comparison area)
                                 if (this._map.band === 1) {
 									
-									
                                     this._map.addLayer(this._shape);
                                     this._fireCreatedEvent();
                                     if (this._shape) {
                                         this._fireCreatedEvent();
                                         //fire event in directive     
-										shapePolyId=DrawSelectionService.getNextShapePolyId();
                                         $rootScope.$broadcast('makeDrawSelection2', {
                                             data: this._shape,
                                             circle: true,
                                             freehand: false,
                                             band: thisBand,
 											finalCircleBand: true,
-											shapePolyId: shapePolyId
+											rifShapeId: rifShapeId,
+											rifShapePolyId: rifShapePolyId
                                         });
                                     }
                                     this.disable();
@@ -172,7 +173,8 @@ angular.module("RIF")
                                             freehand: false,
                                             band: thisBand,
 											finalCircleBand: true,
-											shapePolyId: shapePolyId
+											rifShapeId: rifShapeId,
+											rifShapePolyId: rifShapePolyId
                                         });
                                     }
                                     this.disable();
@@ -197,7 +199,8 @@ angular.module("RIF")
                                         circle: true,
                                         freehand: false,
                                         band: thisBand,
-										shapePolyId: shapePolyId
+										rifShapeId: rifShapeId,
+										rifShapePolyId: rifShapePolyId
                                     });
                                     //increase band number
                                     thisBand++;

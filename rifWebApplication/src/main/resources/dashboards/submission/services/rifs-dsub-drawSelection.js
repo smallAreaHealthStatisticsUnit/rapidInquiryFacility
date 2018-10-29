@@ -197,6 +197,20 @@ angular.module("RIF")
 									selectionMethod: shape.selectionMethod
 								}	
 								
+								if (savedShape.properties == undefined) {
+									savedShape.properties = {};
+								}	
+								
+								if (savedShape.properties.area == undefined) {
+									savedShape.properties.area = shape.area;
+								}
+								if (savedShape.properties.rifShapeId == undefined) {
+									savedShape.properties.rifShapeId = shape.rifShapeId;
+								}
+								if (savedShape.properties.rifShapePolyId == undefined) {
+									savedShape.properties.rifShapePolyId = shape.rifShapePolyId;
+								}
+								
 								if (shape.rifShapeFileId) {
 									savedShape.rifShapeFileId = shape.rifShapeFileId;
 									var shapeFileObj =  CommonMappingStateService.getState(mapName).getShapeByFileId(input.name, shape.rifShapeFileId);
@@ -631,8 +645,7 @@ angular.module("RIF")
 									    Math.max.apply(null, CommonMappingStateService.getState(mapName).possibleBands)) {
 										CommonMappingStateService.getState(mapName).currentBand++;
 									}
-								}
-								
+								}							
 								if (bboxErrors > 0) {
 									AlertService.showWarning(bboxErrors + " errors occurred creating bounding boxes for shape");
 									savedShape.properties.bboxErrors = bboxErrors;
