@@ -95,6 +95,7 @@ public abstract class CommonRService implements RService {
 				rifLogger.info(this.getClass(), "Source: '" + nScriptName + "'");
 			}
 			rengine.eval("source('" + nScriptName + "')");
+			rifLogger.info(this.getClass(), "Done: '" + nScriptName + "'");
 		}
 		else {
 			throw new Exception("Cannot find R script: '" + scriptName + "'");
