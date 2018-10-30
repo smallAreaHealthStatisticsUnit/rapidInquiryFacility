@@ -144,7 +144,8 @@ PARTITIONING_SOURCES=
 # Issue with new dataLoader - will become script
 # PARTITIONING_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql
 endif
-SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql v4_0_alter_8.sql v4_0_alter_9.sql v4_0_alter_10.sql  \
+SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql v4_0_alter_8.sql v4_0_alter_9.sql \
+		v4_0_alter_10.sql v4_0_alter_11.sql \
 		 $(PARTITIONING_SOURCES)
  
 # DEV_SOURCES=v4_0_alter_4.sql  
