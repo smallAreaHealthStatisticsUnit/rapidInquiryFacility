@@ -78,9 +78,17 @@ public abstract class CommonRService implements RService {
 		throws Exception {
 			
 		if (script.toFile().exists()) {
-			rifLogger.info(this.getClass(), "Source: '" + script + "'");
-			rengine.eval("source('" + script.toString() + "')");
-			rifLogger.info(this.getClass(), "Done: '" + script + "'");
+			String nScript=null;
+			if (File.separatorChar == '\\') { // Windooze!!! R path strings need to be escaped; they must go through a shell 
+											  // like runtime at some point
+				nScript=script.toString().replace("\\","\\\\");
+				rifLogger.info(this.getClass(), "Source(" + File.separator + "): '" + nScript + "'");
+			}
+			else {
+				rifLogger.info(this.getClass(), "Source: '" + nScript + "'");
+			}
+			rengine.eval("source('" + nScript + "')");
+			rifLogger.info(this.getClass(), "Done: '" + nScript + "'");
 		}
 		else {
 			throw new Exception("Cannot find R script: '" + script + "'");
