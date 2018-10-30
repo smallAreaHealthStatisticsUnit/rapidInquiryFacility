@@ -133,7 +133,7 @@ public class RIFTaxonomyWebServiceResource {
 		}
 
 		// Nothing found, so return empty list.
-		return new TermList(Collections.EMPTY_LIST);
+		return new TermList(Collections.emptyList());
 	}
 
 	@GET
@@ -182,7 +182,7 @@ public class RIFTaxonomyWebServiceResource {
 			                exception);
 		}
 		TermList result = new TermList(matchingTerms);
-		rifLogger.info(getClass(), result.toString());
+		rifLogger.info(getClass(), "Matching terms: " + result.toString());
 		return result;
 	}
 	

@@ -79,7 +79,7 @@ public abstract class CommonRService implements RService {
 			
 		if (script.toFile().exists()) {
 			String nScript=null;
-			if (File.separatorChar == '\\') { // Windooze!!! R path strings need to be escaped; they must go through a shell 
+			if (File.separatorChar == '\\') { // Windooze!!! R path strings need to be escaped;         they must go through a shell
 											  // like runtime at some point
 				nScript=script.toString().replace("\\","\\\\");
 				rifLogger.info(this.getClass(), "Source(" + File.separator + "): '" + nScript + "'");

@@ -211,18 +211,14 @@ final public class TaxonomyTerm {
 	 *
 	 * @param parentTerm the new parent term
 	 */
-	public void setParentTerm(
-		final TaxonomyTerm parentTerm) {
+	public void setParentTerm(final TaxonomyTerm parentTerm) {
 		
 		this.parentTerm = parentTerm;
 	}
 	
 	public String getIdentifier() {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(label);
-		buffer.append("-");
-		buffer.append(nameSpace);
-		return buffer.toString();
+
+		return label + "-" + nameSpace;
 	}
 
 	public String toString() {

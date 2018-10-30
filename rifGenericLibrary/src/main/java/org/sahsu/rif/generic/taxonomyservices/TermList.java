@@ -19,7 +19,7 @@ public class TermList {
 	public TermList() {
 
 		// I don't want this to be called, but it's needed for the @XmlRootElement annotation.
-		terms = Collections.EMPTY_LIST;
+		terms = Collections.emptyList();
 	}
 
 	public TermList(final List<TaxonomyTerm> terms) {
