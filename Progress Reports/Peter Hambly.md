@@ -3023,3 +3023,19 @@ Further changes are needed to support risk analysis:
   * Add selector arrow to ICD selector;
   * Fix shape layer order (not ordered as createAreaNameList() not working);
   * Fix clear selection (not clearing selected shapes);
+  * CSV area load button broken;
+  
+#### 22nd to 26th October
+
+* Upgrade demo laptop to current patch level;
+* Demo to Swedish RIF team, discussion of the way ahead;
+* Further work on multiple intersection tracing in shapes and selected polygons;  
+* Load UK EWS2011 population data
+* Test pull #106: Adds ICD 9 support for branch issue#64_icd9_support. ICD9 functionality is OK. Have added CSS fix to restore 
+  select arrow functionality. Risk analysis changes cause a tomcat server crash for both disease mapping and risk analysis;
+  
+#### 29th October to 2nd November
+
+* Further work on multiple intersection tracing in shapes and selected polygons; 
+* Test Postgres 10 partitioning on UK EWS2011 population data;
+  

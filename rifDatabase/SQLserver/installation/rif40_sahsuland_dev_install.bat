@@ -86,15 +86,15 @@ if %errorlevel% neq 0  (
 REM Does not work in github tree - SQL server needs access permissions!
 REM
 REM BULK INSERT rif_data.lookup_sahsu_grd_level1
-REM FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv'     -- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+REM FROM '%USERPROFILE%\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv'     -- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 REM WITH
 REM (
-REM        FORMATFILE = 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.fmt',            -- Use a format file
+REM        FORMATFILE = '%USERPROFILE%\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.fmt',            -- Use a format file
 REM         TABLOCK                                 -- Table lock
 REM );
 REM
 REM Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
-REM Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
+REM Cannot bulk load because the file "%USERPROFILE%\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 REM
 REM CREATE LOGIN [rif40] WITH PASSWORD='rif40', CHECK_POLICY = OFF;
 
