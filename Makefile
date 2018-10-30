@@ -94,6 +94,9 @@ RIF40:
 RIF40install: RIF40
 	$(COPY) RIF40.war "$(CATALINA_HOME)/webapps"
 	
+rifserviceinstall: rifservice
+	$(COPY) rifServices.war "$(CATALINA_HOME)/webapps"
+	
 dataloader: 
 	$(MAVEN) --version
 	cd rifDataLoaderTool && $(MAVEN) $(MAVEN_FLAGS) install
@@ -123,9 +126,14 @@ doc:
 	
 taxonomyservice:	
 	$(MAVEN) --version
+	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) clean
+	cd taxonomyServices && $(MAVEN) $(MAVEN_FLAGS) clean
 	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) install
 	cd taxonomyServices && $(MAVEN) $(MAVEN_FLAGS) install
 	$(COPY) taxonomyServices/target/taxonomies.war .
+
+taxonomyserviceinstall: taxonomyservice
+	$(COPY) taxonomies.war "$(CATALINA_HOME)/webapps"
 	
 #
 # Does NOW install RIF40.war
@@ -137,6 +145,8 @@ install: clean all
 
 clean: 
 	$(MAVEN) --version
+	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) clean
+	cd taxonomyServices && $(MAVEN) $(MAVEN_FLAGS) clean
 	$(MAVEN) clean
 	$(DELETE) taxonomies.war rifServices.war RIF40.war RIF4.7z
 	

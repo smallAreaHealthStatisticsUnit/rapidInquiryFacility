@@ -2646,7 +2646,7 @@ SELECT a.*, b.coa2011
   1 error(s). Error code is 'HEALTH_CODE_TAXONOMY_SERVICE_ERROR'. Message list is: 'ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.'
   	at org.sahsu.taxonomyservices.claMLTaxonomyService.initialiseService(claMLTaxonomyService.java:170)
   	at org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader.readFile(TaxonomyServiceConfigurationXMLReader.java:206)
-  	at org.sahsu.taxonomyservices.FederatedTaxonomyService.initialise(FederatedTaxonomyService.java:115)
+  	at org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService.initialise(FederatedTaxonomyService.java:115)
   	at org.sahsu.taxonomyservices.RIFTaxonomyWebServiceResource.initialiseService(RIFTaxonomyWebServiceResource.java:83)
 	...
 	<<< End getRootCauseStackTrace.
@@ -3031,3 +3031,11 @@ Further changes are needed to support risk analysis:
 * Demo to Swedish RIF team, discussion of the way ahead;
 * Further work on multiple intersection tracing in shapes and selected polygons;  
 * Load UK EWS2011 population data
+* Test pull #106: Adds ICD 9 support for branch issue#64_icd9_support. ICD9 functionality is OK. Have added CSS fix to restore 
+  select arrow functionality. Risk analysis changes cause a tomcat server crash for both disease mapping and risk analysis;
+  
+#### 29th October to 2nd November
+
+* Further work on multiple intersection tracing in shapes and selected polygons; 
+* Test Postgres 10 partitioning on UK EWS2011 population data;
+  
