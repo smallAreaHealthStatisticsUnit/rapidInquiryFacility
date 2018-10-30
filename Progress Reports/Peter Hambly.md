@@ -3034,3 +3034,8 @@ Further changes are needed to support risk analysis:
 * Test pull #106: Adds ICD 9 support for branch issue#64_icd9_support. ICD9 functionality is OK. Have added CSS fix to restore 
   select arrow functionality. Risk analysis changes cause a tomcat server crash for both disease mapping and risk analysis;
   
+#### 29th October to 2nd November
+
+* Further work on multiple intersection tracing in shapes and selected polygons; 
+* Test Postgres 10 partitioning on UK EWS2011 population data;
+  
