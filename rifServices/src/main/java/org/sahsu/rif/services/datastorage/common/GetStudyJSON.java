@@ -874,7 +874,18 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		"isTopLevelTerm": null
    }
   ]
-  
+
+  2018-10-31: Now in this form:
+	{"terms":
+		{"healthCode":
+			[
+				{"description":"Tuberculosis of limb bones, bacteriological or histological examination not done","label":"01551","identifier":"icd9"},
+				{"description":"Malignant neoplasm of intrahepatic bile ducts","label":"1551","identifier":"icd9"},
+				{"description":"Personal history of traumatic fracture","label":"V1551","identifier":"icd9"}
+			]
+		}
+	}
+
   Cope with:
 
   [{
@@ -886,62 +897,65 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 
 			rifLogger.info(getClass(), output);
 
-			JSONTokener tokener = new JSONTokener(output);
-			JSONArray array = new JSONArray(tokener);
-			int arrayLen=array.length();
+			JSONObject taxonomyTerms = new JSONObject(output);
+
+			rifLogger.info(getClass(), "JSNObject taxonomyTerms: " + taxonomyTerms.toString());
+
+			JSONObject terms = taxonomyTerms.getJSONObject("terms");
+			JSONArray healthCode = terms.getJSONArray("healthCode");
+			int arrayLen = healthCode.length();
 			for (int i = 0; i < arrayLen; i++) {
-				JSONObject jsonObject = array.getJSONObject(i);
+
+				JSONObject jsonObject = healthCode.getJSONObject(i);
 				if (jsonObject == null) {
 					throw new Exception("Expected JSONObject, got null for code: " + code);
 				}
-				else {	
-					if (jsonObject.has("errorMessages")) {	
-						JSONArray errorArray = jsonObject.getJSONArray("errorMessages");
-						int errorArrayLen=errorArray.length();
-						StringBuilder sb = new StringBuilder();
-						if (errorArray.getString(0). // Handle init (i.e. suppress error)
-							equals("The system for supporting taxonomy services has not yet been initialised.")) {
-							taxonomyInitialiseError=true;
-							rval.put("description", "Not yet available; please run again in 5 minutes");
-						}
-						for (int k = 0; k < errorArrayLen; k++) {
-							sb.append(k + ": " + errorArray.getString(k) + lineSeparator);
-						}
-						throw new Exception("taxonomyservices error: " + sb.toString() +
-							"; for code: " + code);						
+
+				if (jsonObject.has("errorMessages")) {
+
+					JSONArray errorArray = jsonObject.getJSONArray("errorMessages");
+					int errorArrayLen=errorArray.length();
+					StringBuilder sb = new StringBuilder();
+					if (errorArray.getString(0). // Handle init (i.e. suppress error)
+						equals("The system for supporting taxonomy services has not yet been initialised.")) {
+						taxonomyInitialiseError=true;
+						rval.put("description", "Not yet available; please run again in 5 minutes");
 					}
-					else {
-						if (jsonObject.has("label") &&
-							jsonObject.getString("label").toUpperCase().equals(code.toUpperCase())) {
-							if (rvalFound) { // >1 match
-								throw new Exception(">1 match for code: " + code);
-							}
-							else {
-								rvalFound=true;
-								rval=jsonObject;
-								if (rval.isNull("is_top_level_term")) {
-									rval.put("is_top_level_term", "no");
-								}
+
+					for (int k = 0; k < errorArrayLen; k++) {
+						sb.append(k).append(": ").append(errorArray.getString(k))
+								.append(lineSeparator);
+					}
+
+					throw new Exception("taxonomyservices error: " + sb.toString() +
+						"; for code: " + code);
+				} else {
+
+					if (jsonObject.has("label") &&
+						jsonObject.getString("label").toUpperCase().equals(code.toUpperCase())) {
+						if (rvalFound) { // >1 match
+							throw new Exception(">1 match for code: " + code);
+						}
+						else {
+							rvalFound=true;
+							rval=jsonObject;
+							if (rval.isNull("is_top_level_term")) {
+								rval.put("is_top_level_term", "no");
 							}
 						}
-						else { // No match
-						}						
 					}
 				}
 			}
-			rifLogger.info(this.getClass(), code + ": " + output + "; rval: " + rval.toString());	
+			rifLogger.info(this.getClass(), code + ": " + output + "; rval: " + rval.toString());
+		} catch (Exception exception) {
 
-		}
-		catch (Exception exception) {
 			if (webResource == null) {
 				rifLogger.error(this.getClass(), "Error in rest get for code: " + code,
 					exception);
-			}
-			else if (taxonomyInitialiseError) {
+			} else if (taxonomyInitialiseError) {
 				rifLogger.warning(this.getClass(), "taxonomyInitialiseError in rest get: " + webResource.toString() 
 					+ "; for code: " + code + "; please run again in 5 minutes");
-			}
-			else {
+			} else {
 				rifLogger.error(this.getClass(), "Error in rest get: " + webResource.toString() 
 					+ "; for code: " + code, exception);
 				otherTaxonomyError=exception;
