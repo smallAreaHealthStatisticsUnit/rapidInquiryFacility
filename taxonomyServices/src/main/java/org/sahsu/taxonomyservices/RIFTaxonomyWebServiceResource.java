@@ -106,8 +106,9 @@ public class RIFTaxonomyWebServiceResource {
 	}
 
 	/**
-	 * Finds the first occurrence of the received code in any taxonomy that we are currently
-	 * providing.
+	 * Finds the first occurrence of the received value in any taxonomy that we are currently
+	 * providing. The search is done from the newest taxonomy (alphabetically) to the oldest,
+	 * so if a term occurs in both ICD11 and ICD10, the version from ICD11 will be returned.
 	 * @param servletRequest the request
 	 * @return the taxonomy term, if found
 	 */
@@ -121,8 +122,10 @@ public class RIFTaxonomyWebServiceResource {
 		checkFederatedServiceWorkingProperly(servletRequest);
 		FederatedTaxonomyService fed = FederatedTaxonomyService.getFederatedTaxonomyService();
 
-		List<TaxonomyTerm> result = new ArrayList<>();
-		for (TaxonomyServiceProvider service : fed.getTaxonomyServiceProviders()) {
+		// We reverse the list so as to search the newer taxonomies before the older.
+		List<TaxonomyServiceProvider> providers = fed.getTaxonomyServiceProviders();
+		Collections.reverse(providers);
+		for (TaxonomyServiceProvider service : providers) {
 
 			TermList found = getMatchingTerms(servletRequest, service.getIdentifier(),
 			                                            searchText, isCaseSensitive);
