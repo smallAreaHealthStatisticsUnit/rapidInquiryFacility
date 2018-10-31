@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -78,17 +79,23 @@ public abstract class CommonRService implements RService {
 		throws Exception {
 			
 		if (script.toFile().exists()) {
-			String nScript=null;
-			if (File.separatorChar == '\\') { // Windooze!!! R path strings need to be escaped;         they must go through a shell
-											  // like runtime at some point
-				nScript=script.toString().replace("\\","\\\\");
-				rifLogger.info(this.getClass(), "Source(" + File.separator + "): '" + nScript + "'");
+			
+			String scriptString = script.toString();
+
+			// Need to double-escape Windows path separator, or things get confused when we pass
+			// the file to R.
+			if (SystemUtils.IS_OS_WINDOWS) {
+
+				scriptString = scriptString.replace("\\","\\\\");
+				rifLogger.info(this.getClass(), "Source(" + File.separator + "): '"
+				                                + scriptString + "'");
 			}
 			else {
-				rifLogger.info(this.getClass(), "Source: '" + nScript + "'");
+				rifLogger.info(this.getClass(), "Source: '" + scriptString + "'");
 			}
-			rengine.eval("source('" + nScript + "')");
-			rifLogger.info(this.getClass(), "Done: '" + nScript + "'");
+
+			rengine.eval("source('" + scriptString + "')");
+			rifLogger.info(this.getClass(), "Done: '" + scriptString + "'");
 		}
 		else {
 			throw new Exception("Cannot find R script: '" + script + "'");
