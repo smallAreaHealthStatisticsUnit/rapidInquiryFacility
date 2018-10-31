@@ -16,6 +16,13 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerFactory;
+import java.io.StringWriter;
+import java.io.StringReader;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -52,6 +59,7 @@ public class WebService {
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss:SSS");
 	private final ServiceBundle rifStudyServiceBundle;
 	protected RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 	private Date startTime;
 	private WebServiceResponseGenerator webServiceResponseGenerator;
 	private FrontEndLogger frontEndLogger = FrontEndLogger.getLogger();
@@ -1409,16 +1417,31 @@ getParameter("p 1")     yes     c d
 				currentInputLine = reader.readLine();
 			}
 			reader.close();
-
-			rifLogger.debug(this.getClass(), "JSON from UI: " + buffer.toString());
 			
 			JSONObject jsonObject = new JSONObject(buffer.toString());
+			rifLogger.debug(this.getClass(), "ARWS - JSON from UI==" + lineSeparator + jsonObject.toString(2) + lineSeparator + "==");
 			
-			String xml = XML.toString(jsonObject);
+			String xmlString = XML.toString(jsonObject).replace("\r\n", "").replace("\n", "");
+			// Try to pretty print XML to make parsing errors readable
+			try {
+				StreamSource source = new StreamSource(new StringReader(xmlString));
+				Transformer transformer = TransformerFactory.newInstance().newTransformer();
+				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+				//initialize StreamResult with File object to save to file
+				StreamResult result = new StreamResult(new StringWriter());
+				transformer.transform(source, result);
+				xmlString = result.getWriter().toString(); 
+			}
+			catch (Exception e) {
+				rifLogger.warning(getClass(), "ARWS - pretty print XML SAXParseException: " + e.getMessage() + "==" + lineSeparator +
+				xmlString + lineSeparator + "==");
+			}
+
 			InputStream xmlInputStream = new ByteArrayInputStream(
-					xml.getBytes(StandardCharsets.UTF_8));
-			rifLogger.info(getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="
-			                           + xml + "==");
+					xmlString.getBytes(StandardCharsets.UTF_8));
+			rifLogger.info(getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML==" + lineSeparator +
+				xmlString + lineSeparator + "==");
 			RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance(xmlInputStream);
 			
 			// Parse out study_selection to avoid using the XML parser

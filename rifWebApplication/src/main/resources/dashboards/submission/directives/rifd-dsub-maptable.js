@@ -1882,16 +1882,11 @@ angular.module("RIF")
 											var intersectCount = CommonMappingStateService.getState("areamap").getIntersectCounts(
 												$scope.input.name, savedShapes[i].rifShapePolyId);
 											SelectStateService.getState().studySelection.comparisonShapes[i].intersectCount = intersectCount;
-											var name;
-											for (var j=1; j<=maxIntersectCount; j++) {
-												if (j == 1) {
-// Do nothing
-												}
-												else if (intersectCount[j]) {
-													name=j + " intersects";
-													SelectStateService.getState().studySelection.comparisonShapes[i].properties[name] = 
-														intersectCount[j].total;
-												}										
+											for (var key in intersectCount) {
+												if (intersectCount[key].total) {
+													SelectStateService.getState().studySelection.comparisonShapes[i].properties[key] = 
+														intersectCount[key].total;
+												}													
 											}
 										}	
 										properties=SelectStateService.getState().studySelection.comparisonShapes[i].properties;
@@ -1903,16 +1898,11 @@ angular.module("RIF")
 											intersectCount = CommonMappingStateService.getState("areamap").getIntersectCounts(
 												$scope.input.name, savedShapes[i].rifShapePolyId);
 											SelectStateService.getState().studySelection.studyShapes[i].intersectCount = intersectCount;
-											var name;
-											for (var j=1; j<=maxIntersectCount; j++) {
-												if (j == 1) {
-// Do nothing
-												}
-												else if (intersectCount[j]) {
-													name=j + " intersects";
-													SelectStateService.getState().studySelection.studyShapes[i].properties[name] = 
-														intersectCount[j].total;
-												}
+											for (var key in intersectCount) {
+												if (intersectCount[key].total) {
+													SelectStateService.getState().studySelection.studyShapes[i].properties[key] = 
+														intersectCount[key].total;
+												}													
 											}
 										}	
 										properties=SelectStateService.getState().studySelection.studyShapes[i].properties;

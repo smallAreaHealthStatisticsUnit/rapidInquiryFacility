@@ -178,6 +178,19 @@ angular.module("RIF")
 							 */
 							function createSavedShape() {
 								// Create savedShape for SelectStateService
+								var properties = shape.properties;
+								for (var key in properties) {
+									if (key == "$$hashKey") { // Removed later
+									}
+									else if (typeof key == "string" &&  key.replace(/[a-zA-Z_:]([a-zA-Z0-9_:.])*/, "").length > 0) { 
+										// Prevent illegal XML properties irritating middleware
+										AlertService.showWarning("Ignoring property: " + key + 
+											" of rifShapePolyId: " + shape.rifShapePolyId +
+											' as the name contains XML invalid characters: "' + 
+											key.replace(/[a-zA-Z_:]([a-zA-Z0-9_:.])*/, "") + '"');
+										properties[key] = undefined;
+									}
+								}
 								var savedShape = {
 									isShapefile: (shape.isShapefile || false),
 									id: shape.rifShapeId,
@@ -187,7 +200,7 @@ angular.module("RIF")
 									freehand: shape.freehand,
 									band: shape.band,
 									area: shape.area, 
-									properties: shape.properties,
+									properties: properties,
 									radius: shape.radius,
 									latLng: undefined,
 									geojson: undefined,
@@ -322,7 +335,13 @@ angular.module("RIF")
 										if (studyShapes[i].properties.maxIntersectCount) {
 											savedShape.properties.maxIntersectCount=studyShapes[i].properties.maxIntersectCount;
 											for (var j=1; j<studyShapes[i].properties.maxIntersectCount; j++) {
-												var name="intersect " + j;
+												var name;
+												if (j > 1) {
+													name = "with_" + j + "_intersects";
+												}
+												else {
+													name = "with_" + j + "_intersect";
+												}
 												if (studyShapes[i].properties.name) {
 													savedShape.properties=studyShapes[i].properties.name;
 												}

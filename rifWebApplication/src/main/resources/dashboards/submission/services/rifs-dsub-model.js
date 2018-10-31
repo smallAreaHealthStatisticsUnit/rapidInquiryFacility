@@ -61,6 +61,14 @@ angular.module("RIF")
 					throw new Error("Submission state verification failed");
 				}
 				
+				var studySelection = SelectStateService.getState().studySelection;
+				if (studySelection.studyShapes) {
+					for (var i=0; i<studySelection.studyShapes.length; i++) {
+						if (studySelection.studyShapes[i].bbox) {
+							studySelection.studyShapes[i].bbox = undefined; // Will irritate XML parser for _southwest etc
+						}
+					}			
+				}				
                 var model = {
                     "rif_job_submission": {
                         "submitted_by": user.currentUser,
@@ -82,7 +90,7 @@ angular.module("RIF")
                                 "Ratios and Rates"
                             ]
                         },
-						"study_selection": SelectStateService.getState().studySelection
+						"study_selection": studySelection
                     }
                 };
 

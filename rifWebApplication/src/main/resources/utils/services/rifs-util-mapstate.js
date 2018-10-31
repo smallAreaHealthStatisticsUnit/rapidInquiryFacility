@@ -205,11 +205,18 @@ angular.module("RIF")
 								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
 									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapePolyId] &&
 										this.areaType.selectedPolygon[i].intersectCount) {
-										if (intersectCount[this.areaType.selectedPolygon[i].intersectCount]) {
-											intersectCount[this.areaType.selectedPolygon[i].intersectCount].total++;
+										var name;
+										if (this.areaType.selectedPolygon[i].intersectCount > 1) {
+											name = "with_" + this.areaType.selectedPolygon[i].intersectCount + "_intersects";
 										}
 										else {
-											intersectCount[this.areaType.selectedPolygon[i].intersectCount] = {total: 1};
+											name = "with_" + this.areaType.selectedPolygon[i].intersectCount + "_intersect";
+										}
+										if (intersectCount[name]) {
+											intersectCount[name].total++;
+										}
+										else {
+											intersectCount[name] = {total: 1};
 										}
 									}
 								}
