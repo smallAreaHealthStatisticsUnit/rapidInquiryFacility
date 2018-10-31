@@ -21,14 +21,11 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 
-import org.json.JSONException;
-
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.services.concepts.StudyType;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -39,6 +36,7 @@ import com.sun.jersey.client.urlconnection.HTTPSProperties;
 public class GetStudyJSON {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	public static final String HEALTH_CODE = "healthCode";
 	private static String lineSeparator = System.getProperty("line.separator");
 	
 	private final SQLManager manager;
@@ -77,6 +75,7 @@ public class GetStudyJSON {
 			final String url,
 			final String taxonomyServicesServer) 
 					throws Exception {
+
 		this.connection=connection;
 		this.studyID=studyID;
 		if (this.url == null) {
@@ -101,7 +100,7 @@ public class GetStudyJSON {
 		int columnCount = 0;
 		JSONObject rif_job_submission = new JSONObject();
 		JSONObject additionalData = new JSONObject();
-		boolean isDiseaseMappingStudy=false;
+		boolean isDiseaseMappingStudy = false;
 		
 		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username,study_id,extract_table,study_name,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       summary,description,other_notes,study_date,");
@@ -138,8 +137,8 @@ public class GetStudyJSON {
 			String geographyName=null;
 			String comparisonGeolevelName = null;
 			String studyGeolevelName = null;
-			Calendar calendar = null;
-			DateFormat df = null;
+			Calendar calendar;
+			DateFormat df;
 			if (locale != null) {
 				df=DateFormat.getDateTimeInstance(
 					DateFormat.DEFAULT /* Date style */, 
@@ -744,7 +743,7 @@ public class GetStudyJSON {
      * @param code (required)
 	 * @return health code description string
      */	
-	public JSONObject getHealthCodeDesription(
+	public JSONObject getHealthCodeDescription(
 			final String url,
 			final String taxonomyServicesServer,
 			final String code) 
@@ -758,7 +757,7 @@ public class GetStudyJSON {
 		else {
 			throw new Exception("getHealthCodeDesription(): cannot deduce tomcat server from RIF services request or RIFServiceStartup.properties");
 		}
-		return getHealthCodeDesription(code);
+		return getHealthCodeDescription(code);
 	}
 	
 	/**
@@ -767,210 +766,147 @@ public class GetStudyJSON {
      * @param code (required)
 	 * @return health code description string
      */	
-	private JSONObject getHealthCodeDesription(String code) 
-					throws Exception { // Will get from taxonomy service
+	private JSONObject getHealthCodeDescription(String code) {
 		
 		// Set up return value;
-		JSONObject rval=new JSONObject();
+		JSONObject rval = new JSONObject();
 		rval.put("description", "Not available");
 		rval.put("identifier", "Unknown");
 		rval.put("label", code);
 		rval.put("isTopLevelTerm", "no");
-		boolean rvalFound=false;
+		boolean rvalFound = false;
 		
 		if (otherTaxonomyError != null) { // These is an error in the taxonomyservices link
 										  // This will require a tomcat restart to fix
 			return rval;
 		}
-	
-/* Call to taxonomy service: 
 
-http://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms?taxonomy_id=icd10&search_text=c33&is_case_sensitive=false
+		ClientResponse response = null;
+		try {
 
-[{
-		"identifier": "C33-icd10",
-		"label": "C33",
-		"description": "Malignant neoplasm of trachea",
-		"isTopLevelTerm": null
-	}
-]
- */
- 
-/* This code requires javax.ws.rs 2.1 which in turn forces a Jersey 2.1/2.2 upgrade
-
-A mismatch causes a tomcat failure
-
-10:24:53.622 [http-nio-8080-exec-2] ERROR org.apache.juli.logging.DirectJDKLog org.apache.catalina.core.ContainerBase.[Catalina].[lo
-calhost].[/rifServices].[rifServices.rest.ms.MSSQLRIFStudySubmissionWebServiceApplication]: Servlet.service() for serv
-let [rifServices.rest.ms.MSSQLRIFStudySubmissionWebServiceApplication] in context with path [/rifServices] threw excep
-tion [Servlet execution threw an exception] with root cause
-java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String;)Ljavax/ws/rs/core/UriBuilder;
-        at javax.ws.rs.core.UriBuilder.fromUri(UriBuilder.java:120) ~[javax.ws.rs-api-2.1.jar:2.1]
-        at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:669) ~[jersey-servlet-1.19.jar:1.19]
-        at javax.servlet.http.HttpServlet.service(HttpServlet.java:742) ~[servlet-api.jar:?]
-		
-		Client client=null;
-		WebTarget target=null;
-		try {			
-
-			client = ClientBuilder.newClient();
-
-			String URI="http://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms";
-			target = client.target(URI).
-				queryParam("taxonomy_id", "icd10").
-				queryParam("search_text", code).
-				queryParam("is_case_sensitive", "false");
-			
-			String response = target.path("rest").
-	 //                           path("hello").
-								request().
-								accept(MediaType.TEXT_PLAIN).
-								get(Response.class)
-								.toString();
-
-			String plainAnswer =
-					target.path("rest").
-	//				path("hello").
-					request().accept(MediaType.TEXT_PLAIN).get(String.class);
-			rifLogger.info(this.getClass(), code + ": " + plainAnswer);	
-		}
-		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in rest get " + target.toString(),
-				exception);
-			throw exception;
-		}	
-*/		
-
-		Client client;
-		WebResource webResource=null;
-		try {		
-			if (url.equals("https://localhost:8080")) {
-				client=hostIgnoringClient();
-			}
-			else {	
-				client=Client.create();
-			}
-			String uri = url + "/taxonomies/service/findTermInAnyTaxonomy";
-			webResource = client.resource(uri);
-			if (webResource == null) {
-				throw new Exception("Null WebResource returned by rest client, URI: " + uri);
-			}
-			webResource = webResource.queryParam("search_text", code);
-			webResource = webResource.queryParam("is_case_sensitive", "false");
-			ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON)
-                .get(ClientResponse.class);
-
-			if (response.getStatus() != 200) {
-			   throw new Exception(uri + " failed: HTTP error code : "
-					+ response.getStatus());
-			}
-/*
-  Usual response - an array of ICD10 identifiers:
-
-  [{
-		"identifier": "C33-icd10",
-		"label": "C33",
-		"description": "Malignant neoplasm of trachea",
-		"isTopLevelTerm": null
-   }
-  ]
-
-  2018-10-31: Now in this form:
-	{"terms":
-		{"healthCode":
-			[
-				{"description":"Tuberculosis of limb bones, bacteriological or histological examination not done","label":"01551","identifier":"icd9"},
-				{"description":"Malignant neoplasm of intrahepatic bile ducts","label":"1551","identifier":"icd9"},
-				{"description":"Personal history of traumatic fracture","label":"V1551","identifier":"icd9"}
-			]
-		}
-	}
-
-  Cope with:
-
-  [{
-		"errorMessages": ["The system for supporting taxonomy services has not yet been initialised."]
-   }
-  ]
- */
+			response = getClientResponse(code);
 			String output = response.getEntity(String.class);
-
-			rifLogger.info(getClass(), output);
-
 			JSONObject taxonomyTerms = new JSONObject(output);
-
 			rifLogger.info(getClass(), "JSNObject taxonomyTerms: " + taxonomyTerms.toString());
-
 			JSONObject terms = taxonomyTerms.getJSONObject("terms");
-			JSONArray healthCode = terms.getJSONArray("healthCode");
-			int arrayLen = healthCode.length();
-			for (int i = 0; i < arrayLen; i++) {
 
-				JSONObject jsonObject = healthCode.getJSONObject(i);
-				if (jsonObject == null) {
-					throw new Exception("Expected JSONObject, got null for code: " + code);
-				}
+			// With different taxonomies, the healthCode element can sometimes be an array,
+			// sometimes an object. This is all a bit hacky for my taste, but I'm not sure there's
+			// another way.
+			JSONObject healthCode = extractHealthCodeObject(code, terms);
 
-				if (jsonObject.has("errorMessages")) {
-
-					JSONArray errorArray = jsonObject.getJSONArray("errorMessages");
-					int errorArrayLen=errorArray.length();
-					StringBuilder sb = new StringBuilder();
-					if (errorArray.getString(0). // Handle init (i.e. suppress error)
-						equals("The system for supporting taxonomy services has not yet been initialised.")) {
-						taxonomyInitialiseError=true;
-						rval.put("description", "Not yet available; please run again in 5 minutes");
-					}
-
-					for (int k = 0; k < errorArrayLen; k++) {
-						sb.append(k).append(": ").append(errorArray.getString(k))
-								.append(lineSeparator);
-					}
-
-					throw new Exception("taxonomyservices error: " + sb.toString() +
-						"; for code: " + code);
+			if (healthCode.has("label") &&
+			    healthCode.getString("label").toUpperCase().equals(code.toUpperCase())) {
+				if (rvalFound) { // >1 match
+					throw new Exception(">1 match for code: " + code);
 				} else {
-
-					if (jsonObject.has("label") &&
-						jsonObject.getString("label").toUpperCase().equals(code.toUpperCase())) {
-						if (rvalFound) { // >1 match
-							throw new Exception(">1 match for code: " + code);
-						}
-						else {
-							rvalFound=true;
-							rval=jsonObject;
-							if (rval.isNull("is_top_level_term")) {
-								rval.put("is_top_level_term", "no");
-							}
-						}
+					rval = healthCode;
+					if (rval.isNull("is_top_level_term")) {
+						rval.put("is_top_level_term", "no");
 					}
 				}
+			} else if (healthCode.has("errorMessages")) {
+
+				JSONArray errorArray = healthCode.getJSONArray("errorMessages");
+				int errorArrayLen = errorArray.length();
+				StringBuilder sb = new StringBuilder();
+				if (errorArray.getString(0). // Handle init (i.e. suppress error)
+						                             equals(
+						"The system for supporting taxonomy services has not yet been initialised.")) {
+					taxonomyInitialiseError = true;
+					rval.put("description", "Not yet available; please run again in 5 minutes");
+				}
+
+				for (int k = 0; k < errorArrayLen; k++) {
+					sb.append(k).append(": ").append(errorArray.getString(k))
+							.append(lineSeparator);
+				}
+
+				throw new Exception("taxonomyservices error: " + sb.toString() +
+				                    "; for code: " + code);
 			}
+
 			rifLogger.info(this.getClass(), code + ": " + output + "; rval: " + rval.toString());
 		} catch (Exception exception) {
 
-			if (webResource == null) {
+			if (response == null) {
 				rifLogger.error(this.getClass(), "Error in rest get for code: " + code,
 					exception);
 			} else if (taxonomyInitialiseError) {
-				rifLogger.warning(this.getClass(), "taxonomyInitialiseError in rest get: " + webResource.toString() 
-					+ "; for code: " + code + "; please run again in 5 minutes");
+				rifLogger.warning(getClass(), "taxonomyInitialiseError in rest get: "
+				                              + response.getLocation() + "; for code: " + code
+				                              + "; please run again in 5 minutes");
 			} else {
-				rifLogger.error(this.getClass(), "Error in rest get: " + webResource.toString() 
-					+ "; for code: " + code, exception);
-				otherTaxonomyError=exception;
+				rifLogger.error(this.getClass(), "Error in rest get: "
+				                                 + response.getLocation() + "; for code: "
+				                                 + code, exception);
+				otherTaxonomyError = exception;
 			}
 		}	
 			
 		return rval;
 	}
 
+	private JSONObject extractHealthCodeObject(final String code, final JSONObject terms) throws Exception {
+
+		JSONObject codeObject = new JSONObject();
+		if (terms.has(HEALTH_CODE) && terms.get(HEALTH_CODE) instanceof JSONArray) {
+
+			JSONArray healthCode = terms.getJSONArray(HEALTH_CODE);
+			int arrayLen = healthCode.length();
+			for (int i = 0; i < arrayLen; i++) {
+
+				codeObject = healthCode.getJSONObject(i);
+
+				if (codeObject == null) {
+					throw new Exception("Expected JSONObject, got null for code: " + code);
+				}
+			}
+		} else {
+
+			codeObject = terms.getJSONObject("healthCode");
+		}
+		return codeObject;
+	}
+
+	private ClientResponse getClientResponse(final String code) throws Exception {
+
+		WebResource webResource;
+		String uri = url + "/taxonomies/service/findTermInAnyTaxonomy";
+		webResource = getClient().resource(uri);
+		if (webResource == null) {
+			throw new Exception("Null WebResource returned by rest client, URI: " + uri);
+		}
+
+		webResource = webResource.queryParam("search_text", code);
+		webResource = webResource.queryParam("is_case_sensitive", "false");
+		ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON)
+				                          .get(ClientResponse.class);
+
+		if (response.getStatus() != 200) {
+		   throw new Exception(uri + " failed: HTTP error code : "
+				+ response.getStatus());
+		}
+		return response;
+	}
+
+	private Client getClient() throws Exception {
+		final Client client;
+		if (url.equals("https://localhost:8080")) {
+			client=hostIgnoringClient();
+		}
+		else {
+			client=Client.create();
+		}
+		return client;
+	}
+
 	/**
 	 * Return taxonomyInitialiseError
 	 *
 	 * @return Boolean
-     */		
-	public boolean getTaxonomyInitialiseError() {
+     */
+	boolean getTaxonomyInitialiseError() {
 		return taxonomyInitialiseError;
 	}
 	
@@ -1414,11 +1350,11 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 					
 					if (minCondition.length() > 0 && maxCondition.length() > 0) { // BETWEEN
 						JSONObject code = new JSONObject();
-						JSONObject taxonomyObject = getHealthCodeDesription(minCondition);
+						JSONObject taxonomyObject = getHealthCodeDescription(minCondition);
 						code.put("min_condition", minCondition);
 						code.put("min_description", taxonomyObject.getString("description"));
 						code.put("max_condition", maxCondition);
-						code.put("max_description", getHealthCodeDesription(maxCondition).getString("description"));
+						code.put("max_description", getHealthCodeDescription(maxCondition).getString("description"));
 						String is_top_level_term=null;
 						if (!taxonomyObject.isNull("is_top_level_term")) {
 							is_top_level_term=taxonomyObject.getString("is_top_level_term");
@@ -1428,7 +1364,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 					}
 					else if (minCondition.length() > 0 && maxCondition.length() == 0) { // LIKE
 						healthCode.put("code", minCondition);
-						JSONObject taxonomyObject = getHealthCodeDesription(minCondition);
+						JSONObject taxonomyObject = getHealthCodeDescription(minCondition);
 						healthCode.put("description", taxonomyObject.getString("description"));
 						String is_top_level_term=null;
 						if (!taxonomyObject.isNull("is_top_level_term")) {

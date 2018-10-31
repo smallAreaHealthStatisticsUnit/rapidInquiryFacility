@@ -219,12 +219,10 @@ public class RunStudyThread implements Runnable {
 		throws RIFServiceException {
 
 		try {			
-			if (generateResultsSubmissionStep.performStep(
-				connection, 
-				studyID)) {
-				StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
-			}
-			else {
+			if (generateResultsSubmissionStep.performStep(connection, studyID)) {
+
+				studyStateMachine.next(); // Advance to next state
+			} else {
 				createStudySubmissionStep.setStudyExtractToFail(connection, studyID, 
 					generateResultsSubmissionStep.getResult(),
 					generateResultsSubmissionStep.getStack());

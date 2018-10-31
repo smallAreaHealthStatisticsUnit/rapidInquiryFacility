@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.sahsu.rif.generic.concepts.User;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
@@ -28,8 +30,6 @@ import org.sahsu.rif.services.concepts.RIFStudySubmissionAPI;
 import org.sahsu.rif.services.concepts.Sex;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 /**
  * Main implementation of the RIF middleware.
@@ -1026,8 +1026,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 
 	public String getStudyExtractFIleName(
 			final User user,
-			final String studyID)
-		throws RIFServiceException {
+			final String studyID) {
 
 			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();

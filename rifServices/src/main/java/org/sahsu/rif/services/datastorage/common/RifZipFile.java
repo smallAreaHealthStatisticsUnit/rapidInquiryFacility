@@ -1409,14 +1409,14 @@ public class RifZipFile {
 						
 						if (name.equals("min_condition")) {
 							if (!value.equals("&nbsp;")) {
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(url, taxonomyServicesServer, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDescription(url, taxonomyServicesServer, value);
 								minCondition=taxonomyObject.getString("description");
 							}
 						}
 						else if (name.equals("max_condition")) {
 							if (!value.equals("&nbsp;")) {
 								// Add: please run again in 5 minutes support
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(url, taxonomyServicesServer, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDescription(url, taxonomyServicesServer, value);
 								maxCondition=taxonomyObject.getString("description");
 							}
 						}						
