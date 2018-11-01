@@ -413,74 +413,79 @@ public class BaseSQLManager implements SQLManager {
 	}	
 	
 	@Override
-	public void logSQLQuery(final String queryName, final QueryFormatter queryFormatter,
+	public String logSQLQuery(final String queryName, final QueryFormatter queryFormatter,
 			final String... parameters) {
-		
-		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
-			return;
-		}
+
 
 		StringBuilder queryLog = new StringBuilder();
+		queryLog.append("BaseSQLManager logSQLQuery >>>").append(lineSeparator);
 		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
 		queryLog.append("PARAMETERS(" + parameters.length + "): ").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
-			queryLog.append("\t");
+			queryLog.append("     ");
 			queryLog.append(i + 1);
-			queryLog.append(":\"");
+			queryLog.append(": '");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"").append(lineSeparator);
+			queryLog.append("'").append(lineSeparator);
 		}
 		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
 		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
 		queryLog.append("<<< End BaseSQLManager logSQLQuery").append(lineSeparator);
-	
-		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
-			lineSeparator + queryLog.toString());
+		
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
+			return queryLog.toString();
+		}	
+		rifLogger.info(this.getClass(), queryLog.toString());
+		
+		return queryLog.toString();
 	}
 	
-	protected void logSQLQuery(
+	protected String logSQLQuery(
 		final String queryName,
 		final QueryFormatter queryFormatter,
 		final int[] parameters) {
-		
-		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
-			return;
-		}
 
 		StringBuilder queryLog = new StringBuilder();
+		queryLog.append("BaseSQLManager logSQLQuery >>>").append(lineSeparator);
 		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
 		queryLog.append("PARAMETERS:").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
-			queryLog.append("\t");
+			queryLog.append("     ");
 			queryLog.append(i + 1);
-			queryLog.append(":\"");
+			queryLog.append(": '");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"").append(lineSeparator);
+			queryLog.append("'").append(lineSeparator);
 		}
 		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
 		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
 		queryLog.append("<<< End BaseSQLManager logSQLQuery").append(lineSeparator);
-	
-		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
-			lineSeparator + queryLog.toString());	
-
+		
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
+			return queryLog.toString();
+		}
+		
+		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" + queryLog.toString());	
+			
+		return queryLog.toString();
 	}
-	
-	protected void logSQLQuery(
+		
+	protected String logSQLQuery(
 		final String queryName,
 		final QueryFormatter queryFormatter) {
 		
-		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
-			return;
-		}
-		
-		String queryLog = ("QUERY NAME: " + queryName + lineSeparator)
+		String queryLog = "BaseSQLManager logSQLQuery >>>" + lineSeparator
+						  + "QUERY NAME: " + queryName + lineSeparator
 		                  + "NO PARAMETERS." + lineSeparator
 		                  + "SQL QUERY TEXT: " + lineSeparator
 		                  + queryFormatter.generateQuery() + lineSeparator
 		                  + "<<< End BaseSQLManager logSQLQuery" + lineSeparator;
-		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
-		                                lineSeparator + queryLog);
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
+			return queryLog;
+		}
+		
+		rifLogger.info(this.getClass(), queryLog);
+										
+		return queryLog;
 	}
 		
 	@Override

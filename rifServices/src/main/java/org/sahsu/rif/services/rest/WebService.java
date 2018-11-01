@@ -1403,6 +1403,7 @@ getParameter("p 1")     yes     c d
 		final InputStream inputStream)
 		throws RIFServiceException {
 		
+		String xmlString = null;
 		try {
 			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource start");
 			BufferedReader reader
@@ -1421,7 +1422,7 @@ getParameter("p 1")     yes     c d
 			JSONObject jsonObject = new JSONObject(buffer.toString());
 			rifLogger.debug(this.getClass(), "ARWS - JSON from UI==" + lineSeparator + jsonObject.toString(2) + lineSeparator + "==");
 			
-			String xmlString = XML.toString(jsonObject).replace("\r\n", "").replace("\n", "");
+			xmlString = XML.toString(jsonObject).replace("\r\n", "").replace("\n", "");
 			// Try to pretty print XML to make parsing errors readable
 			try {
 				StreamSource source = new StreamSource(new StringReader(xmlString));
@@ -1440,7 +1441,7 @@ getParameter("p 1")     yes     c d
 
 			InputStream xmlInputStream = new ByteArrayInputStream(
 					xmlString.getBytes(StandardCharsets.UTF_8));
-			rifLogger.info(getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML==" + lineSeparator +
+			rifLogger.debug(getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML==" + lineSeparator +
 				xmlString + lineSeparator + "==");
 			RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance(xmlInputStream);
 			
@@ -1457,7 +1458,7 @@ getParameter("p 1")     yes     c d
 					throw new IllegalStateException("Invalid data received: JSON contains "
 					                                + "neither 'disease_mapping_study' nor "
 					                                + "'risk_analysis_study'. Complete JSON is: "
-					                                + "\n" + buffer.toString());
+					                                + lineSeparator + jsonObject.toString(2));
 				}
 
 				String name = study.optString("name");
@@ -1505,7 +1506,8 @@ getParameter("p 1")     yes     c d
 
 		} catch(Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
-			                                 ".getRIFSubmissionFromJSONSource error", exception);
+			                                 ".getRIFSubmissionFromJSONSource error XML==" + lineSeparator +
+				xmlString + lineSeparator + "==", exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage("webService.submitStudy.error.unableToConvertJSONToXML");
 

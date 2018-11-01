@@ -47,6 +47,7 @@ import org.sahsu.rif.services.concepts.YearRange;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 
 public final class StudySubmissionStep extends BaseSQLManager {
 
@@ -248,9 +249,12 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 			rifLogger.info(this.getClass(), "XXXXXXXXXX Study create " + studyID + " OK XXXXXXXXXX");
 			return studyID;
-		} catch (Exception exception) {
+		}
+		catch (RIFSQLException exception) {
 
-			rifLogger.info(this.getClass(), "XXXXXXXXXX Study create " + studyID + " failed: " + exception.getMessage() + " XXXXXXXXXX");
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study create " + (studyID != null ? studyID : "[No study ID yet]") + 
+				" failed: " + 
+				(exception.getMessage() != null ? exception.getMessage() : "[No error message]") + " XXXXXXXXXX");
 			StringBuilder builder = new StringBuilder(exception.getMessage())
 					                        .append(lineSeparator)
 					                        .append("=============================================")
@@ -262,9 +266,40 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			for (StackTraceElement element : exception.getStackTrace()) {
 				builder.append(element.toString()).append(lineSeparator);
 			}
-			builder.append("=============================================")
+			builder.append("=============================================").append(lineSeparator)
+					                        .append("Output from PL/PGSQL or TSQL")
 					                        .append(lineSeparator)
-					                        .append("Output from PL/PGSQL")
+					                        .append("=============================================")
+					                        .append(lineSeparator)
+											.append(sqlWarnings.toString());
+			builder.append("=============================================").append(lineSeparator);
+			builder.append(exception.getSqlQueryText());
+			String stack=builder.toString();
+		
+			SQLQueryUtility.commit(connection);
+			setStudyExtractToFail(connection, studyID, "Study create " + (studyID != null ? studyID : "[No study ID yet]") + 
+				" failed", stack);
+			
+			throw exception;
+		}		
+		catch (Exception exception) {
+
+			rifLogger.info(this.getClass(), "XXXXXXXXXX Study create " + (studyID != null ? studyID : "[No study ID yet]") + 
+				" failed: " + 
+				(exception.getMessage() != null ? exception.getMessage() : "[No error message]") + " XXXXXXXXXX");
+			StringBuilder builder = new StringBuilder(exception.getMessage())
+					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator)
+					                        .append("Stack trace of cause follows")
+					                        .append(lineSeparator)
+					                        .append("=============================================")
+					                        .append(lineSeparator);
+			for (StackTraceElement element : exception.getStackTrace()) {
+				builder.append(element.toString()).append(lineSeparator);
+			}
+			builder.append("=============================================").append(lineSeparator)
+					                        .append("Output from PL/PGSQL or TSQL")
 					                        .append(lineSeparator)
 					                        .append("=============================================")
 					                        .append(lineSeparator)
@@ -272,7 +307,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			String stack=builder.toString();
 		
 			SQLQueryUtility.commit(connection);
-			setStudyExtractToFail(connection, studyID, "Study create " + studyID + " failed", stack);
+			setStudyExtractToFail(connection, studyID, "Study create " + (studyID != null ? studyID : "[No study ID yet]") + 
+				" failed", stack);
 			
 			throw exception;
 		}
@@ -303,7 +339,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			result = String.valueOf(resultSet.getInt(1));
 
 			return result;
-		} finally {
+		}	
+		finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(resultSet);
@@ -321,6 +358,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 		JSONObject studySelection = studySubmission.getStudySelection();
 		int riskAnalysisType=studySelection.optInt("riskAnalysisType", -1);
+		
+		String sqlQueryText = null;
 		
 		PreparedStatement studyShareStatement = null;
 		PreparedStatement addStudyStatement = null;
@@ -346,7 +385,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			studyQueryFormatter.addInsertField("transfer_permitted");
 			studyQueryFormatter.addInsertField("stats_method");
 
-			logSQLQuery("addGeneralInformationToStudy", studyQueryFormatter);
+			sqlQueryText = logSQLQuery("addGeneralInformationToStudy", studyQueryFormatter);
 
 			addStudyStatement = createPreparedStatement(connection, studyQueryFormatter);
 			int ithQueryParameter = 1;
@@ -460,7 +499,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			if (studyShareStatement != null) {
 				sqlWarnings.append(SQLQueryUtility.printWarnings(studyShareStatement) + lineSeparator); // Print output from PL/PGSQL
 			}
-			throw exception;
+			throw new RIFSQLException(this.getClass(), exception, studyShareStatement, sqlQueryText);	
 		} finally {
 			//Cleanup database resources	
 			SQLQueryUtility.close(studyShareStatement);
@@ -472,8 +511,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			final Connection connection,
 			final AbstractStudy study)
 			throws SQLException,
-			       RIFServiceException {
+			       RIFServiceException,
+				   RIFSQLException {
 
+		String sqlQueryText = null;
 		PreparedStatement statement = null;
 		try {
 
@@ -541,7 +582,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 						ndPair,
 						minimumAgeGroup);
 
-				logSQLQuery(
+				sqlQueryText = logSQLQuery(
 						"addInvestigation",
 						queryFormatter,
 						invNameParameter,
@@ -598,7 +639,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			if (statement != null) {
 				sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
 			}
-			throw exception;			
+			throw new RIFSQLException(this.getClass(), exception, statement, sqlQueryText);			
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -666,6 +707,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			throws Exception {
 
 		PreparedStatement statement = null;
+		String sqlQueryText = null;
 		try {
 
 			Geography geography = rifMappingStudy.getGeography();
@@ -685,10 +727,9 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			queryFormatter.setIntoTable("rif40.rif40_study_areas");
 			queryFormatter.addInsertField("area_id");
 			queryFormatter.addInsertField("band_id");
-
-			logSQLQuery(
-					"addStudyAreaToStudy",
-					queryFormatter);
+			queryFormatter.addInsertField("intersect_count");
+			queryFormatter.addInsertField("distance_from_nearest_source");
+			queryFormatter.addInsertField("nearest_rifshapepolyid");
 
 			statement
 					= createPreparedStatement(
@@ -696,25 +737,49 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					queryFormatter);
 			
 //			DatabaseType databaseType = rifDatabaseProperties.getDatabaseType();
-			ArrayList<String> list1 = new ArrayList<String>();
-			ArrayList<Integer> list2 = new ArrayList<Integer>();
+			ArrayList<String> areaIdList = new ArrayList<String>();
+			ArrayList<Integer> bandIdList = new ArrayList<Integer>();
+			ArrayList<Integer> intersectCountList = new ArrayList<Integer>();
+			ArrayList<Double> distanceFromNearestSourceList = new ArrayList<Double>();
+			ArrayList<String> nearestRifShapePolyIdList = new ArrayList<String>();
 			for (MapArea currentMapArea : allMapAreas) {
-				list1.add(currentMapArea.getLabel());
-				list2.add(currentMapArea.getBand());
+				areaIdList.add(currentMapArea.getLabel());
+				bandIdList.add(currentMapArea.getBand());
+				intersectCountList.add((currentMapArea.getIntersectCount() > 0) ? currentMapArea.getIntersectCount(): 0);
+				distanceFromNearestSourceList.add((currentMapArea.getDistanceFromNearestSource() > 0) ? 
+					currentMapArea.getDistanceFromNearestSource() : 0);
+				nearestRifShapePolyIdList.add((currentMapArea.getNearestRifShapePolyId() != null) ?
+					currentMapArea.getNearestRifShapePolyId() : "");
 			}
-			String list1String = String.join(", ", list1);
-			String list2String = list2.stream().map(Object::toString)
+			String areaIdListString = String.join(", ", areaIdList);
+			String bandIdListString = bandIdList.stream().map(Object::toString)
 					.collect(Collectors.joining(", "));
+			String intersectCountListString = null;
+			String distanceFromNearestSourceListString = null;
+			String nearestRifShapePolyIdListString = null;
+			intersectCountListString = intersectCountList.stream().map(Object::toString)
+					.collect(Collectors.joining(", "));
+			distanceFromNearestSourceListString = distanceFromNearestSourceList.stream().map(Object::toString)
+					.collect(Collectors.joining(", "));
+			nearestRifShapePolyIdListString = String.join(", ", nearestRifShapePolyIdList);
 //			if (databaseType == DatabaseType.POSTGRESQL) { 	// Do array insert: not possible, see: https://github.com/swaldman/c3p0/issues/88
-//				Array array1 = connection.createArrayOf("VARCHAR", list1.toArray());
-//				Array array2 = connection.createArrayOf("INTEGER", list2.toArray());
-//				statement.setArray(1, array1);
-//				statement.setArray(2, array2);
 //
-//				rifLogger.info(this.getClass(), "Do Postgres study area array insert; 1: " + list1.size() + "; " + 
-//					(list1String.length() > 100 ? list1String.substring(0, 100) : list1String) +				
-//					"; 2: " + list2.size() + "; " + 
-//					(list2String.length() > 100 ? list2String.substring(0, 100) : list2String));
+//				statement.setArray(1, connection.createArrayOf("VARCHAR", areaIdList.toArray()));
+//				statement.setArray(2, connection.createArrayOf("INTEGER", bandIdList.toArray()));
+//				statement.setArray(3, connection.createArrayOf("INTEGER", intersectCountList.toArray()));
+//				statement.setArray(4, connection.createArrayOf("NUMERIC", distanceFromNearestSourceList.toArray()));
+//				statement.setArray(5, connection.createArrayOf("VARCHAR", nearestRifShapePolyIdList.toArray()));
+//
+//				rifLogger.info(this.getClass(), "Do Postgres study area array insert; 1: " + areaIdList.size() + "; " + 
+//					(areaIdListString.length() > 100 ? areaIdListString.substring(0, 100) : areaIdListString) +				
+//					"; 2: " + bandIdList.size() + "; " + 
+//					(bandIdListString.length() > 100 ? bandIdListString.substring(0, 100) : bandIdListString
+//					"; 3: " + intersectCountList.size() + "; " + 
+//					(intersectCountListString.length() > 100 ? intersectCountListString.substring(0, 100) : intersectCountListString) +				
+//					"; 4: " + distanceFromNearestSourceList.size() + "; " + 
+//					(distanceFromNearestSourceListString.length() > 100 ? distanceFromNearestSourceListString.substring(0, 100) : distanceFromNearestSourceListString) +				
+//					"; 5: " + nearestRifShapePolyIdList.size() + "; " + 
+//					(nearestRifShapePolyIdListString.length() > 100 ? nearestRifShapePolyIdListString.substring(0, 100) : nearestRifShapePolyIdListString));
 //				statement.executeUpdate();
 //			}
 //			else if (databaseType == DatabaseType.SQL_SERVER) { 	// Don't or you will get:
@@ -723,13 +788,34 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 //				rifLogger.info(this.getClass(), "Done SQL Server study area non array insert; 1: " + 
 				rifLogger.info(this.getClass(), "Done study area non array insert; 1: " + 
-					(list1String.length() > 100 ? list1String.substring(0, 100) : list1String) +				
-					"; 2: " + list2.size() + "; " + 
-					(list2String.length() > 100 ? list2String.substring(0, 100) : list2String));
+					(areaIdListString.length() > 100 ? areaIdListString.substring(0, 100) : areaIdListString) +				
+					"; 2: " + bandIdList.size() + "; " + 
+					(bandIdListString.length() > 100 ? bandIdListString.substring(0, 100) : bandIdListString) +				
+					"; 3: " + intersectCountList.size() + "; " + 
+					(intersectCountListString.length() > 100 ? intersectCountListString.substring(0, 100) : intersectCountListString) +				
+					"; 4: " + distanceFromNearestSourceList.size() + "; " + 
+					(distanceFromNearestSourceListString.length() > 100 ? distanceFromNearestSourceListString.substring(0, 100) : distanceFromNearestSourceListString) +				
+					"; 5: " + nearestRifShapePolyIdList.size() + "; " + 
+					(nearestRifShapePolyIdListString.length() > 100 ? nearestRifShapePolyIdListString.substring(0, 100) : nearestRifShapePolyIdListString));
+				int i=1;
 				for (MapArea currentMapArea : allMapAreas) {
+					if (i == 1) {
+						sqlQueryText=logSQLQuery(
+							"addStudyAreaToStudy",
+							queryFormatter,
+							currentMapArea.getLabel(),
+							String.valueOf(currentMapArea.getBand()),
+							String.valueOf(currentMapArea.getIntersectCount()),
+							String.valueOf(currentMapArea.getDistanceFromNearestSource()),
+							currentMapArea.getNearestRifShapePolyId());
+					}
 					statement.setString(1, currentMapArea.getLabel());
 					statement.setInt(2, currentMapArea.getBand());
+					statement.setInt(3, currentMapArea.getIntersectCount());
+					statement.setDouble(4, currentMapArea.getDistanceFromNearestSource());
+					statement.setString(5, currentMapArea.getNearestRifShapePolyId());
 					statement.executeUpdate();
+					i++;
 				}
 //			}
 //			else {
@@ -738,11 +824,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 //			}			
 			rifLogger.info(this.getClass(), "addStudyAreaToStudy() OK");
 		} catch(Exception exception) {
-			rifLogger.error(this.getClass(), "addStudyAreaToStudy() FAILED: " + exception.getMessage(), exception);
 			if (statement != null) {
 				sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
 			}
-			throw exception;	
+			throw new RIFSQLException(this.getClass(), exception, statement, sqlQueryText);	
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -755,12 +840,13 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			throws Exception {
 
 		PreparedStatement statement = null;
+		String sqlQueryText = null;
 		try {
 			InsertQueryFormatter queryFormatter = InsertQueryFormatter.getInstance(
 					rifDatabaseProperties.getDatabaseType());
 			queryFormatter.setIntoTable("rif40.rif40_comparison_areas");
 			queryFormatter.addInsertField("area_id");
-			logSQLQuery(
+			sqlQueryText = logSQLQuery(
 					"addComparisonAreaToStudy",
 					queryFormatter);
 					
@@ -829,8 +915,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		catch(RIFServiceException rifServiceException) {
 			throw rifServiceException;
 		} catch(Exception exception) {
-			sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
-			throw exception;		
+			if (statement != null) {
+				sqlWarnings.append(SQLQueryUtility.printWarnings(statement) + lineSeparator); // Print output from PL/PGSQL
+			}
+			throw new RIFSQLException(this.getClass(), exception, statement, sqlQueryText);	
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
@@ -843,8 +931,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			final AbstractStudy study,
 			final Investigation investigation)
 			throws SQLException,
-			       RIFServiceException {
+			       RIFServiceException,
+				   RIFSQLException {
 
+		String sqlQueryText = null;
 		PreparedStatement getMinMaxCovariateValueStatement = null;
 		PreparedStatement addCovariateStatement = null;
 		try {
@@ -892,7 +982,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			ResultSet getMinMaxCovariateValueResultSet = null;
 			for (AbstractCovariate covariate : covariates) {
 
-				logSQLQuery(
+				sqlQueryText = logSQLQuery(
 						"getMinMaxCovariateValue",
 						getMinMaxCovariateValuesQueryFormatter,
 						geographyName,
@@ -910,7 +1000,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 				Double maximumCovariateValue = getMinMaxCovariateValueResultSet.getDouble(2);
 				getMinMaxCovariateValueResultSet.close();
 
-				logSQLQuery(
+				sqlQueryText = logSQLQuery(
 						"addCovariateValue",
 						addCovariateQueryFormatter,
 						geographyName,
@@ -942,7 +1032,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			if (addCovariateStatement != null) {
 				sqlWarnings.append(SQLQueryUtility.printWarnings(addCovariateStatement) + lineSeparator); // Print output from PL/PGSQL
 			}
-			throw exception;				
+			throw new RIFSQLException(this.getClass(), exception, addCovariateStatement, sqlQueryText);				
 		} finally {
 			//Cleanup database resources			
 			SQLQueryUtility.close(addCovariateStatement);
@@ -954,11 +1044,13 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			final AbstractStudy study,
 			final Investigation investigation)
 			throws SQLException,
-			       RIFServiceException {
+			       RIFServiceException,
+				   RIFSQLException {
 
 		PreparedStatement getOutcomeGroupNameStatement = null;
 		ResultSet getOutcomeGroupNameResultSet = null;
 		PreparedStatement addHealthCodeStatement = null;
+		String sqlQueryText = null;
 		try {
 
 			SelectQueryFormatter getOutcomeGroupNameQueryFormatter =
@@ -973,7 +1065,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			Geography geography = study.getGeography();
 			NumeratorDenominatorPair ndPair = investigation.getNdPair();
 
-			logSQLQuery(
+			sqlQueryText = logSQLQuery(
 					"getOutcomeGroupName",
 					getOutcomeGroupNameQueryFormatter,
 					geography.getName(),
@@ -1030,7 +1122,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					if (currentHealthCode.getCode().contains("-")) { // 
 						String minCondition=currentHealthCode.getCode().substring(0, currentHealthCode.getCode().indexOf("-"));
 						String maxCondition=currentHealthCode.getCode().substring(currentHealthCode.getCode().indexOf("-")+1);
-						logSQLQuery(
+						sqlQueryText = logSQLQuery(
 								"add_inv_condition",
 								addHealthOutcomeQueryFormatter,
 								outcomeGroupName,
@@ -1073,7 +1165,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			if (addHealthCodeStatement != null) {
 				sqlWarnings.append(SQLQueryUtility.printWarnings(addHealthCodeStatement) + lineSeparator); // Print output from PL/PGSQL
 			}
-			throw exception;				
+			
+			throw new RIFSQLException(this.getClass(), exception, addHealthCodeStatement, sqlQueryText);					
 		} finally {
 			//Cleanup database resources	
 			SQLQueryUtility.close(getOutcomeGroupNameStatement);
