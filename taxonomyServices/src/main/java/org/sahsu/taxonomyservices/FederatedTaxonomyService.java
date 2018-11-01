@@ -149,7 +149,7 @@ public class FederatedTaxonomyService {
 
 	public TaxonomyTerm getParentTerm(final String taxonomyServiceIdentifier,
 			final String childTermIdentifier) throws RIFServiceException {
-		
+
 		return getTaxonomyService(taxonomyServiceIdentifier).getParentTerm(childTermIdentifier);
 	}
 	
