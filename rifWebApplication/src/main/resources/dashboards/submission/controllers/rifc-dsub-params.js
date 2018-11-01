@@ -329,7 +329,15 @@ angular.module("RIF")
                 };
                 function handleTextSearch(res) {
                     var myICD = [];
-                    var taxTerms = res.data.terms.healthCode;
+					var taxTerms;
+					if (res && res.data && res.data.terms && res.data.terms.healthCode) {
+						taxTerms = res.data.terms.healthCode;
+					}
+					else {
+						AlertService.showError("[rifc-dsub-params.js: handleTextSearch()] Unable determine taxonomy terms: res.data.terms.healthCode is undefined");
+						return;
+					}
+					
                     var noOfTerms = taxTerms.length;
                     if (noOfTerms !== 0) {
                         for (var i = 0; i < noOfTerms; i++) {
