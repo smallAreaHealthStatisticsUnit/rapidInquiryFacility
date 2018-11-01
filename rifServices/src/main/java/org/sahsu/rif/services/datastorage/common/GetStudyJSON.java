@@ -14,13 +14,12 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,9 +35,11 @@ import com.sun.jersey.client.urlconnection.HTTPSProperties;
 public class GetStudyJSON {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	public static final String HEALTH_CODE = "healthCode";
-	private static String lineSeparator = System.getProperty("line.separator");
-	
+	private static final String HEALTH_CODE = "healthCode";
+	private static final String lineSeparator = System.getProperty("line.separator");
+	private static final String LABEL = "label";
+	private static final String IS_TOP_LEVEL_TERM = "is_top_level_term";
+
 	private final SQLManager manager;
 	private Connection connection;
 	private String studyID;
@@ -68,9 +69,9 @@ public class GetStudyJSON {
      * @param taxonomyServicesServer [from RIFServiceStartupProperties.java parameter] (required; may be NULL)
      * @return JSONObject [front end saves as JSON5 file]
      */
-	public JSONObject addRifStudiesJson(
-			final Connection connection, 
-			final String studyID, 
+	JSONObject addRifStudiesJson(
+			final Connection connection,
+			final String studyID,
 			final Locale locale,
 			final String url,
 			final String taxonomyServicesServer) 
@@ -95,9 +96,9 @@ public class GetStudyJSON {
 		}
 		
 		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
-		ResultSetMetaData rsmd = null;
-		int columnCount = 0;
+		ResultSet resultSet;
+		ResultSetMetaData rsmd;
+		int columnCount;
 		JSONObject rif_job_submission = new JSONObject();
 		JSONObject additionalData = new JSONObject();
 		boolean isDiseaseMappingStudy = false;
@@ -160,9 +161,9 @@ public class GetStudyJSON {
 			for (int i = 1; i <= columnCount; i++ ) {
 				String name = rsmd.getColumnName(i);
 				String value = resultSet.getString(i);
-				Timestamp dateTimeValue=null;
+				Timestamp dateTimeValue;
 				if (value == null) {
-					value="";
+					value = "";
 				}
 
 				/* 
@@ -170,78 +171,87 @@ public class GetStudyJSON {
 				  "name": "",
 				  "description": ""
 				}, */
-				
-				if (name.equals("project") ) {
-					rif_project.put("name", value);	
-				}
-				else if (name.equals("comparison_geolevel_name") ) {
-					additionalData.put(name, value);	
-					comparisonGeolevelName=value;		
-				}
-				else if (name.equals("study_geolevel_name") ) {
-					additionalData.put(name, value);
-					studyGeolevelName=value;					
-				}
-				else if (name.equals("project_description") ) {
-					rif_project.put("description", value);	
-				}
-				else if (name.equals("username") ) {
-					additionalData.put("extracted_by", value);	
-					rif_job_submission.put("submitted_by", value);	
-				}
-				else if (name.equals("study_date") ) {
-					if (value != null && value.length() > 0) {
-						dateTimeValue=resultSet.getTimestamp(i, calendar);
-						rif_job_submission.put("job_submission_date", df.format(dateTimeValue));	
-					}
-					else {
-						rif_job_submission.put("job_submission_date", "ONKNOWN");	
-					}
-				}
-				else if (name.equals("authorised_on") ) {
-					dateTimeValue=resultSet.getTimestamp(i, calendar);
-					additionalData.put(name, df.format(dateTimeValue));	// DD/MM/YY HH24:MI:SS
-				}
 
-				else if (name.equals("study_name") ) {
-					study_type.put("name", value);	
-				}
-				else if (name.equals("description") ) {
-					study_type.put(name, value);	
-				}
-				else if (name.equals("geography") ) {
-					JSONObject geography = new JSONObject();
-					geographyName = value;
-					geography.put("name", geographyName);	
-					geography.put("description", getGeographyDescription(geographyName));	// Need to get from rif40_geographies
-					study_type.put(name, geography);	
-				}
-				else if (name.equals("viewer_mapping") || name.equals("diseasemap1_mapping") || name.equals("diseasemap2_mapping") ) {
-					rif_output_options.put(name, new JSONObject(value)); // Parse value
-				}
-				else if (name.equals("study_type") ) {
-					switch(Integer.parseInt(value)) {
-						case 1: // disease mapping
-							study_type.put("study_type", "Disease Mapping");	
-							isDiseaseMappingStudy=true;
-							break;
-						case 11: 
-							study_type.put("study_type", "Risk Analysis (many areas, one band)");
-							break;
-						case 12: 
-							study_type.put("study_type", "Risk Analysis (point sources)");
-							break;
-						case 13: 
-							study_type.put("study_type", "Risk Analysis (exposure covariates)");
-							break;
-						case 14: 
-							study_type.put("study_type", "Risk Analysis (coverage shapefile)");
-							break;
-						case 15: 
-							study_type.put("study_type", "Risk Analysis (exposure shapefile)");
-							break;
-					}
-				}
+				switch (name) {
+					case "project":
+						rif_project.put("name", value);
+						break;
+					case "comparison_geolevel_name":
+						additionalData.put(name, value);
+						comparisonGeolevelName = value;
+						break;
+					case "study_geolevel_name":
+						additionalData.put(name, value);
+						studyGeolevelName = value;
+						break;
+					case "project_description":
+						rif_project.put("description", value);
+						break;
+					case "username":
+						additionalData.put("extracted_by", value);
+						rif_job_submission.put("submitted_by", value);
+						break;
+					case "study_date":
+						if (value != null && value.length() > 0) {
+							dateTimeValue = resultSet.getTimestamp(i, calendar);
+							rif_job_submission.put("job_submission_date", df.format
+									                                                 (dateTimeValue));
+						} else {
+							rif_job_submission.put("job_submission_date", "ONKNOWN");
+						}
+						break;
+					case "authorised_on":
+						dateTimeValue = resultSet.getTimestamp(i, calendar);
+						additionalData
+								.put(name, df.format(dateTimeValue));    // DD/MM/YY HH24:MI:SS
+
+						break;
+					case "study_name":
+						study_type.put("name", value);
+						break;
+					case "description":
+						study_type.put(name, value);
+						break;
+					case "geography":
+						JSONObject geography = new JSONObject();
+						geographyName = value;
+						geography.put("name", geographyName);
+						geography.put("description", getGeographyDescription(
+								geographyName));    // Need to get from rif40_geographies
+
+						study_type.put(name, geography);
+						break;
+					case "viewer_mapping":
+					case "diseasemap1_mapping":
+					case "diseasemap2_mapping":
+						rif_output_options.put(name, new JSONObject(value)); // Parse value
+
+						break;
+					case "study_type":
+						switch (Integer.parseInt(value)) {
+							case 1: // disease mapping
+								study_type.put("study_type", "Disease Mapping");
+								isDiseaseMappingStudy = true;
+								break;
+							case 11:
+								study_type
+										.put("study_type", "Risk Analysis (many areas, one band)");
+								break;
+							case 12:
+								study_type.put("study_type", "Risk Analysis (point sources)");
+								break;
+							case 13:
+								study_type.put("study_type", "Risk Analysis (exposure "
+								                             + "covariates)");
+								break;
+							case 14:
+								study_type.put("study_type", "Risk Analysis (coverage shapefile)");
+								break;
+							case 15:
+								study_type.put("study_type", "Risk Analysis (exposure shapefile)");
+								break;
+						}
+						break;
 				/* NONE/HET/BYM/CAR
 				"calculation_methods": {
 				  "calculation_method": {
@@ -253,61 +263,72 @@ public class GetStudyJSON {
 					}
 				  }
 				}, */
-				else if (name.equals("stats_method") ) {
-					if (value == null) {
-						value="NONE";
-					}
-					JSONObject calculation_method = new JSONObject();
-					JSONObject calculation_methods = new JSONObject();
-					JSONObject parameters = new JSONObject();
-					JSONArray parameter = new JSONArray();
-					if (resultSet.getString(i).equals("NONE")) {
-						calculation_method.put("name", value);
-						calculation_method.put("code_routine_name", value);
-						calculation_method.put("description", value);
-					}
-					else {
-						calculation_method.put("name", value.toLowerCase());
-						calculation_method.put("code_routine_name", value.toLowerCase() + "_r_procedure");
-						if (value.equals("BYM")) {
-							calculation_method.put("description", "Besag, York and Mollie (BYM) model type");
+					case "stats_method":
+						if (value == null) {
+							value = "NONE";
 						}
-						else if (value.equals("HET")) {
-							calculation_method.put("description", "Heterogenous (HET) model type");
+						JSONObject calculation_method = new JSONObject();
+						JSONObject calculation_methods = new JSONObject();
+						JSONObject parameters = new JSONObject();
+						JSONArray parameter = new JSONArray();
+						if (resultSet.getString(i).equals("NONE")) {
+							calculation_method.put("name", value);
+							calculation_method.put("code_routine_name", value);
+							calculation_method.put("description", value);
+						} else {
+							calculation_method.put("name", value.toLowerCase());
+							calculation_method
+									.put("code_routine_name", value.toLowerCase() +
+									                          "_r_procedure");
+
+							switch (value) {
+								case "BYM":
+									calculation_method.put("description",
+									                       "Besag, York and Mollie (BYM) model "
+									                       + "type");
+									break;
+								case "HET":
+									calculation_method
+											.put("description", "Heterogenous (HET) model type");
+									break;
+								case "CAR":
+									calculation_method.put("description",
+									                       "Conditional Auto Regression (CAR) "
+									                       + "model type");
+									break;
+							}
 						}
-						else if (value.equals("CAR")) {
-							calculation_method.put("description", "Conditional Auto Regression (CAR) model type");
+						parameters.put("parameter", parameter);
+						calculation_method.put("parameters", parameters);
+						calculation_methods.put("calculation_method", calculation_method);
+						rif_job_submission.put("calculation_methods", calculation_methods);
+						break;
+					case "print_state":
+						if (value != null && value.length() > 0) {
+							try {
+								JSONObject printState = new JSONObject(value);
+								rif_job_submission.put("print_selection", printState);
+							} catch (JSONException jsonException) {
+								throw new JSONException(
+										jsonException.getMessage() + "; in: " + name + "=" +
+										value);
+							}
 						}
-					}
-					parameters.put("parameter", parameter);
-					calculation_method.put("parameters", parameters);
-					calculation_methods.put("calculation_method", calculation_method);	
-					rif_job_submission.put("calculation_methods", calculation_methods);
-				}
-				else if (name.equals("print_state") ) {
-					if (value != null && value.length() > 0) {
-						try {
-							JSONObject printState = new JSONObject(value);
-							rif_job_submission.put("print_selection", printState);
+						break;
+					case "select_state":
+						if (value != null && value.length() > 0) {
+							try {
+								selectState = new JSONObject(value);
+								rif_job_submission.put("study_selection", selectState);
+							} catch (JSONException jsonException) {
+								throw new JSONException(
+										jsonException.getMessage() + "; in: " + name + "=" + value);
+							}
 						}
-						catch (JSONException jsonException) {
-							throw new JSONException(jsonException.getMessage() + "; in: " + name + "=" + value);
-						}
-					}
-				}
-				else if (name.equals("select_state") ) {
-					if (value != null && value.length() > 0) {
-						try {
-							selectState = new JSONObject(value);
-							rif_job_submission.put("study_selection", selectState);	
-						}
-						catch (JSONException jsonException) {
-							throw new JSONException(jsonException.getMessage() + "; in: " + name + "=" + value);
-						}
-					}						
-				}
-				else { 
-					additionalData.put(name, value);	
+						break;
+					default:
+						additionalData.put(name, value);
+						break;
 				}
 			}
 			rif_job_submission.put("project", rif_project);	
@@ -389,12 +410,12 @@ public class GetStudyJSON {
 	private String getGeographyDescription(String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifGeographyQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		rifGeographyQueryFormatter.addQueryLine(0, "SELECT description FROM rif40.rif40_geographies WHERE geography = ?");
 		PreparedStatement statement = manager.createPreparedStatement(connection,
 				rifGeographyQueryFormatter);
-		String geographyDescription=null;
+		String geographyDescription;
 		try {			
 			statement.setString(1, geographyName);	
 			resultSet = statement.executeQuery();
@@ -429,7 +450,7 @@ public class GetStudyJSON {
 					throws Exception {
 		JSONArray tableData = new JSONArray();
 		SQLGeneralQueryFormatter addSqlLogQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		addSqlLogQueryFormatter.addQueryLine(0, "SELECT statement_number, COUNT(line_number) AS lines"); 
 		addSqlLogQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_study_sql"); 
@@ -438,19 +459,16 @@ public class GetStudyJSON {
 		addSqlLogQueryFormatter.addQueryLine(0, " ORDER BY statement_number");
 		PreparedStatement statement = manager.createPreparedStatement(connection,
 				addSqlLogQueryFormatter);
-		String geographyDescription=null;
-		try {			
+		try {
 			statement.setInt(1, Integer.parseInt(studyID));		
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
-				int rowCount = 0;
 
 				do {	
 					JSONObject tableRow = new JSONObject();
 					String statementNumber=null;
-					rowCount++;
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
 						String name = rsmd.getColumnName(i);
@@ -496,41 +514,37 @@ public class GetStudyJSON {
 					throws Exception {
 		JSONArray tableData = new JSONArray();
 		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_study_sql_log"); 
 		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "   AND statement_number = ?");
 		PreparedStatement statement = manager.createPreparedStatement(connection,
 				addAdditionalTablesQueryFormatter);
-		String geographyDescription=null;
-		try {			
+		try {
 			statement.setInt(1, Integer.parseInt(studyID));	
 			statement.setInt(2, Integer.parseInt(statementNumber));		
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
-				int rowCount = 0;
 
 				do {	
 					JSONObject tableRow = new JSONObject();
-					rowCount++;
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
 						String name = rsmd.getColumnName(i);
 						String value = resultSet.getString(i);
 						if (value == null) {
 							value="";
-						}		
-						
-						if (name.equals("study_id") || name.equals("username") || 
-						    name.equals("statement_number") || name.equals("audsid") || 
-							name.equals("statement_type")) {
 						}
-						else {
-							tableRow.put(name, value);
-						}
+
+						if (!name.equals("study_id") && !name.equals("username") &&
+						    !name.equals("statement_number") && !name.equals("audsid") &&
+						    !name.equals("statement_type")) {
+
+							    tableRow.put(name, value);
+						    }
 					}
 					tableData.put(tableRow);
 					
@@ -559,7 +573,7 @@ public class GetStudyJSON {
 					throws Exception {
 		JSONArray tableData = new JSONArray();
 		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_study_sql"); 
 		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
@@ -567,31 +581,28 @@ public class GetStudyJSON {
 		addAdditionalTablesQueryFormatter.addQueryLine(0, " ORDER BY line_number");
 		PreparedStatement statement = manager.createPreparedStatement(connection,
 				addAdditionalTablesQueryFormatter);
-		String geographyDescription=null;
-		try {			
+		try {
 			statement.setInt(1, Integer.parseInt(studyID));	
 			statement.setInt(2, Integer.parseInt(statementNumber));		
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
-				int rowCount = 0;
 
 				do {	
 					JSONObject tableRow = new JSONObject();
-					rowCount++;
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
 						String name = rsmd.getColumnName(i);
 						String value = resultSet.getString(i);
 						if (value == null) {
 							value="";
-						}		
-						
-						if (name.equals("study_id") || name.equals("username") || name.equals("status") || 
-						    name.equals("statement_number") || name.equals("statement_type")) {
 						}
-						else {
+
+						if (!name.equals("study_id") && !name.equals("username") &&
+						    !name.equals("status") && !name.equals("statement_number") &&
+						    !name.equals("statement_type")) {
+
 							tableRow.put(name, value);
 						}
 					}
@@ -617,40 +628,36 @@ public class GetStudyJSON {
 	 *
      * @param additionalData (required)
      * @param tableName (required)
-     */	
-	private void addAdditionalTables(JSONObject additionalData, String tableName) 
+     */
+	private void addAdditionalTables(JSONObject additionalData, String tableName)
 					throws Exception {
 		JSONArray tableData = new JSONArray();
 		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
-		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40." + tableName.toLowerCase()); 
+		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40." + tableName.toLowerCase());
 		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		PreparedStatement statement = manager.createPreparedStatement(connection,
 				addAdditionalTablesQueryFormatter);
-		String geographyDescription=null;
-		try {			
+		try {
 			statement.setInt(1, Integer.parseInt(studyID));		
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
-				int rowCount = 0;
 
 				do {	
 					JSONObject tableRow = new JSONObject();
-					rowCount++;
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
 						String name = rsmd.getColumnName(i);
 						String value = resultSet.getString(i);
 						if (value == null) {
 							value="";
-						}		
-						
-						if (name.equals("study_id") || name.equals("username")) {
 						}
-						else {
+
+						if (!name.equals("study_id") && !name.equals("username")) {
+
 							tableRow.put(name, value);
 						}
 					}
@@ -668,7 +675,7 @@ public class GetStudyJSON {
 			closeStatement(statement);
 		}
 		
-		additionalData.put(tableName.toLowerCase(), tableData);	
+		additionalData.put(tableName.toLowerCase(), tableData);
 	}
 
 	/**
@@ -696,8 +703,7 @@ public class GetStudyJSON {
 	 *
 	 * @return Jersey Client
      */
-	private Client hostIgnoringClient() 
-			throws Exception { 
+	private Client hostIgnoringClient() {
 			
 		Client client = null;
 		try {
@@ -714,14 +720,7 @@ public class GetStudyJSON {
 			DefaultClientConfig config = new DefaultClientConfig();
 			Map<String, Object> properties = config.getProperties();
 			HTTPSProperties httpsProperties = new HTTPSProperties(
-					new HostnameVerifier()
-					{
-						@Override
-						public boolean verify( String s, SSLSession sslSession )
-						{
-							return true;
-						}
-					}, sslcontext
+					(s, sslSession) -> true, sslcontext
 			);
 			properties.put( HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties );
 			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
@@ -742,8 +741,8 @@ public class GetStudyJSON {
      * @param taxonomyServicesServer (required)
      * @param code (required)
 	 * @return health code description string
-     */	
-	public JSONObject getHealthCodeDescription(
+     */
+	JSONObject getHealthCodeDescription(
 			final String url,
 			final String taxonomyServicesServer,
 			final String code) 
@@ -755,7 +754,8 @@ public class GetStudyJSON {
 			this.url =url;
 		}
 		else {
-			throw new Exception("getHealthCodeDesription(): cannot deduce tomcat server from RIF services request or RIFServiceStartup.properties");
+			throw new Exception("getHealthCodeDescription(): cannot deduce tomcat server from RIF"
+			                    + " services request or RIFServiceStartup.properties");
 		}
 		return getHealthCodeDescription(code);
 	}
@@ -772,10 +772,9 @@ public class GetStudyJSON {
 		JSONObject rval = new JSONObject();
 		rval.put("description", "Not available");
 		rval.put("identifier", "Unknown");
-		rval.put("label", code);
+		rval.put(LABEL, code);
 		rval.put("isTopLevelTerm", "no");
-		boolean rvalFound = false;
-		
+
 		if (otherTaxonomyError != null) { // These is an error in the taxonomyservices link
 										  // This will require a tomcat restart to fix
 			return rval;
@@ -795,23 +794,20 @@ public class GetStudyJSON {
 			// another way.
 			JSONObject healthCode = extractHealthCodeObject(code, terms);
 
-			if (healthCode.has("label") &&
-			    healthCode.getString("label").toUpperCase().equals(code.toUpperCase())) {
-				if (rvalFound) { // >1 match
-					throw new Exception(">1 match for code: " + code);
-				} else {
-					rval = healthCode;
-					if (rval.isNull("is_top_level_term")) {
-						rval.put("is_top_level_term", "no");
-					}
+			if (healthCode.has(LABEL) &&
+			    healthCode.getString(LABEL).toUpperCase().equals(code.toUpperCase())) {
+				rval = healthCode;
+
+				if (rval.isNull(IS_TOP_LEVEL_TERM)) {
+
+					rval.put(IS_TOP_LEVEL_TERM, "no");
 				}
 			} else if (healthCode.has("errorMessages")) {
 
 				JSONArray errorArray = healthCode.getJSONArray("errorMessages");
 				int errorArrayLen = errorArray.length();
 				StringBuilder sb = new StringBuilder();
-				if (errorArray.getString(0). // Handle init (i.e. suppress error)
-						                             equals(
+				if (errorArray.getString(0).equals(
 						"The system for supporting taxonomy services has not yet been initialised.")) {
 					taxonomyInitialiseError = true;
 					rval.put("description", "Not yet available; please run again in 5 minutes");
@@ -822,7 +818,7 @@ public class GetStudyJSON {
 							.append(lineSeparator);
 				}
 
-				throw new Exception("taxonomyservices error: " + sb.toString() +
+				throw new Exception("taxonomyServices error: " + sb.toString() +
 				                    "; for code: " + code);
 			}
 
@@ -890,7 +886,7 @@ public class GetStudyJSON {
 		return response;
 	}
 
-	private Client getClient() throws Exception {
+	private Client getClient() {
 		final Client client;
 		if (url.equals("https://localhost:8080")) {
 			client=hostIgnoringClient();
@@ -920,13 +916,13 @@ public class GetStudyJSON {
 	private String getOutcomeType(String outcome_group_name) 
 					throws Exception {
 		SQLGeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
 			"SELECT a.outcome_type, b.current_version FROM rif40.rif40_outcome_groups a, rif40.rif40_outcomes b WHERE a.outcome_group_name = ? AND a.outcome_type = b.outcome_type");
 		PreparedStatement statement = manager.createPreparedStatement(connection,
 				rifOutcomeGroupsQueryFormatter);
-		String outcomeGroup=null;
+		String outcomeGroup;
 		try {			
 			statement.setString(1, outcome_group_name);	
 			resultSet = statement.executeQuery();
@@ -958,11 +954,11 @@ public class GetStudyJSON {
      * @param connection (required)
      * @param studyID (required)
 	 * @return JSONObject
-     */	
-	public JSONObject getStudyData(Connection connection, String studyID)
+     */
+	JSONObject getStudyData(Connection connection, String studyID)
 					throws Exception {
 		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username,extract_table,study_name,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       summary,description,other_notes,");
@@ -1020,11 +1016,11 @@ public class GetStudyJSON {
      * @param geolevelName (required)
      * @param geographyName (required)
 	 * @return JSONObject
-     */	
-	public JSONObject getLookupTableName(Connection connection, String geolevelName, String geographyName)
+     */
+	JSONObject getLookupTableName(Connection connection, String geolevelName, String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifGeographyQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		rifGeographyQueryFormatter.addQueryLine(0, "SELECT description,lookup_table,lookup_desc_column");
 		rifGeographyQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_geolevels");
@@ -1086,7 +1082,7 @@ public class GetStudyJSON {
 		JSONObject studyGeolevel = getLookupTableName(connection, studyGeolevelName, geographyName);
 		
 		SQLGeneralQueryFormatter rifStudyAreasQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		rifStudyAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id, a.band_id, b." + 
 			studyGeolevel.getString("lookup_desc_column").toLowerCase() + " AS label, b.gid");		
 		rifStudyAreasQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_study_areas a ");
@@ -1197,7 +1193,7 @@ public class GetStudyJSON {
 		JSONObject comparisonGeolevel = getLookupTableName(connection, comparisonGeolevelName, geographyName);
 		
 		SQLGeneralQueryFormatter rifComparisonAreasQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		rifComparisonAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id, b." + 
 			comparisonGeolevel.getString("lookup_desc_column").toLowerCase() + " AS label, b.gid");			
 		rifComparisonAreasQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_comparison_areas a");
@@ -1302,7 +1298,7 @@ public class GetStudyJSON {
 	private void addHealthCodes(JSONObject healthCodes, String studyID, int invID)
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvConditionsQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		rifInvConditionsQueryFormatter.addQueryLine(0, "SELECT min_condition,max_condition,predefined_group_name,");
 		rifInvConditionsQueryFormatter.addQueryLine(0, "       outcome_group_name,numer_tab,");
 		rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition,CAST(column_comment AS VARCHAR(2000)) AS column_comment");		
@@ -1334,45 +1330,48 @@ public class GetStudyJSON {
 							value="";
 						}
 
-						if (name.equals("min_condition") ) {
-							minCondition = value;
-						}
-						else if (name.equals("max_condition") ) {
-							maxCondition = value;
-						}
-						else if (name.equals("outcome_group_name") ) {
-							healthCode.put("name_space", getOutcomeType(value));
-						}
-						else {
-							healthCode.put(name, value);
+						switch (name) {
+							case "min_condition":
+								minCondition = value;
+								break;
+							case "max_condition":
+								maxCondition = value;
+								break;
+							case "outcome_group_name":
+								healthCode.put("name_space", getOutcomeType(value));
+								break;
+							default:
+								healthCode.put(name, value);
+								break;
 						}
 					}
 					
-					if (minCondition.length() > 0 && maxCondition.length() > 0) { // BETWEEN
+					if (!StringUtils.isEmpty(minCondition) && !StringUtils.isEmpty(maxCondition)) {
+						// BETWEEN
 						JSONObject code = new JSONObject();
 						JSONObject taxonomyObject = getHealthCodeDescription(minCondition);
 						code.put("min_condition", minCondition);
 						code.put("min_description", taxonomyObject.getString("description"));
 						code.put("max_condition", maxCondition);
 						code.put("max_description", getHealthCodeDescription(maxCondition).getString("description"));
-						String is_top_level_term=null;
-						if (!taxonomyObject.isNull("is_top_level_term")) {
-							is_top_level_term=taxonomyObject.getString("is_top_level_term");
+						String is_top_level_term = null;
+						if (!taxonomyObject.isNull(IS_TOP_LEVEL_TERM)) {
+							is_top_level_term=taxonomyObject.getString(IS_TOP_LEVEL_TERM);
 						}
-						healthCode.put("is_top_level_term", is_top_level_term);
+						healthCode.put(IS_TOP_LEVEL_TERM, is_top_level_term);
 						healthCode.put("code", code);
-					}
-					else if (minCondition.length() > 0 && maxCondition.length() == 0) { // LIKE
+					} else if (!StringUtils.isEmpty(minCondition)
+					         && StringUtils.isEmpty(maxCondition)) {
+						// LIKE
 						healthCode.put("code", minCondition);
 						JSONObject taxonomyObject = getHealthCodeDescription(minCondition);
 						healthCode.put("description", taxonomyObject.getString("description"));
-						String is_top_level_term=null;
-						if (!taxonomyObject.isNull("is_top_level_term")) {
-							is_top_level_term=taxonomyObject.getString("is_top_level_term");
+						String is_top_level_term = null;
+						if (!taxonomyObject.isNull(IS_TOP_LEVEL_TERM)) {
+							is_top_level_term=taxonomyObject.getString(IS_TOP_LEVEL_TERM);
 						}
-						healthCode.put("is_top_level_term", is_top_level_term);
-					}
-					else {
+						healthCode.put(IS_TOP_LEVEL_TERM, is_top_level_term);
+					} else {
 						throw new Exception("addHealthCodes(): minCondition: " + minCondition +
 							"; maxCondition: " + maxCondition);
 					}
@@ -1408,7 +1407,7 @@ public class GetStudyJSON {
 	private void addCovariates(JSONArray covariateArray, String studyID, int invID)
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvCovariatesQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		rifInvCovariatesQueryFormatter.addQueryLine(0, "SELECT covariate_name,min,max,geography,study_geolevel_name");
 		rifInvCovariatesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_covariates");
 		rifInvCovariatesQueryFormatter.addQueryLine(0, " WHERE study_id = ? AND inv_id = ?");
@@ -1434,19 +1433,21 @@ public class GetStudyJSON {
 						String value = resultSet.getString(i);
 						if (value == null) {
 							value="";
-						}			
-						
-						if (name.equals("covariate_name") ) {
-							covariate.put("name", value);	
 						}
-						else if (name.equals("min") ) {
-							covariate.put("minimum_value", value);
-						}
-						else if (name.equals("max") ) {
-							covariate.put("maximum_value", value);
-						}
-						else {
-							covariate.put(name, value);	
+
+						switch (name) {
+							case "covariate_name":
+								covariate.put("name", value);
+								break;
+							case "min":
+								covariate.put("minimum_value", value);
+								break;
+							case "max":
+								covariate.put("maximum_value", value);
+								break;
+							default:
+								covariate.put(name, value);
+								break;
 						}
 					}		
 					covariate.put("covariate_type", "adjustable");
@@ -1476,7 +1477,7 @@ public class GetStudyJSON {
 	private void addInvestigations(JSONArray investigation, String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvestigationsQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		rifInvestigationsQueryFormatter.addQueryLine(0, "SELECT inv_id,inv_name,year_start,year_stop,");
 		rifInvestigationsQueryFormatter.addQueryLine(0, "       max_age_group,min_age_group,genders,numer_tab,");
@@ -1518,55 +1519,59 @@ public class GetStudyJSON {
 							value="";
 						}
 
-						if (name.equals("inv_name") ) {
-							investigationObject.put("title", value);
-						}
-						else if (name.equals("username") ) {
-							additionalData.put("extracted_by", value);	
-						}
-						else if (name.equals("numer_tab") ) {
-							numeratorTable=value;
-							JSONObject numerator_denominator_pair = new JSONObject();
-							JSONObject health_theme = new JSONObject();
-							addNumeratorDenominatorPair(numeratorTable, 
-								numerator_denominator_pair, health_theme, geographyName);
+						switch (name) {
+							case "inv_name":
+								investigationObject.put("title", value);
+								break;
+							case "username":
+								additionalData.put("extracted_by", value);
+								break;
+							case "numer_tab":
+								numeratorTable = value;
+								JSONObject numerator_denominator_pair = new JSONObject();
+								JSONObject health_theme = new JSONObject();
+								addNumeratorDenominatorPair(numeratorTable,
+								                            numerator_denominator_pair,
+								                            health_theme, geographyName);
 
-							investigationObject.put("health_theme", health_theme);
-							investigationObject.put("numerator_denominator_pair", numerator_denominator_pair);
-						}
-						else if (name.equals("min_age_group") ) {
-							minAgeGroup=Integer.parseInt(value);
-						}
-						else if (name.equals("max_age_group") ) {
-							maxAgeGroup=Integer.parseInt(value);
-						}
-						else if (name.equals("year_start") ) {
-							yearStart=Integer.parseInt(value);
-							year_range.put("lower_bound", yearStart);
-						}
-						else if (name.equals("year_stop") ) {
-							yearStop=Integer.parseInt(value);
-							year_range.put("upper_bound", yearStop);
-						}
-						else if (name.equals("inv_id") ) {
-							invId=Integer.parseInt(value);
-							additionalData.put(name, invId);
-						}
-						else if (name.equals("genders") ) {
+								investigationObject.put("health_theme", health_theme);
+								investigationObject.put("numerator_denominator_pair",
+								                        numerator_denominator_pair);
+								break;
+							case "min_age_group":
+								minAgeGroup = Integer.parseInt(value);
+								break;
+							case "max_age_group":
+								maxAgeGroup = Integer.parseInt(value);
+								break;
+							case "year_start":
+								yearStart = Integer.parseInt(value);
+								year_range.put("lower_bound", yearStart);
+								break;
+							case "year_stop":
+								yearStop = Integer.parseInt(value);
+								year_range.put("upper_bound", yearStop);
+								break;
+							case "inv_id":
+								invId = Integer.parseInt(value);
+								additionalData.put(name, invId);
+								break;
+							case "genders":
 								switch (Integer.parseInt(value)) {
-									case 1:	
+									case 1:
 										investigationObject.put("sex", "Males");
 										break;
-									case 2:	
+									case 2:
 										investigationObject.put("sex", "Females");
 										break;
-									case 3:	
+									case 3:
 										investigationObject.put("sex", "Both");
 										break;
 								}
-						}
-						else {
-							additionalData.put(name, value);
+								break;
+							default:
+								additionalData.put(name, value);
+								break;
 						}
 					}
 					JSONObject lower_age_group=addAgeSexGroup(minAgeGroup /* Offset */, numeratorTable);
@@ -1637,7 +1642,7 @@ public class GetStudyJSON {
 		ageSexGroupQueryFormatter.addQueryLine(0, "   AND a.age_group_id = b.age_group_id");
 		ageSexGroupQueryFormatter.addQueryLine(0, "   AND b.table_name   = ?");
 		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		PreparedStatement statement = manager.createPreparedStatement(connection,
 				ageSexGroupQueryFormatter);
 		JSONObject age_group = new JSONObject();
@@ -1704,7 +1709,7 @@ public class GetStudyJSON {
 						String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifNumDenomQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		ResultSet resultSet;
 		
 		rifNumDenomQueryFormatter.addQueryLine(0, "SELECT a.geography, a.numerator_table, a.numerator_description,");
 		rifNumDenomQueryFormatter.addQueryLine(0, "       a.theme_description, a.denominator_table, a.denominator_description, b.theme");
@@ -1728,23 +1733,25 @@ public class GetStudyJSON {
 						value="";
 					}
 
-					if (name.equals("numerator_table") ) {
-						numerator_denominator_pair.put("numerator_table_name", value);
-					}
-					else if (name.equals("numerator_description") ) {
-						numerator_denominator_pair.put("numerator_table_description", value);
-					}
-					else if (name.equals("denominator_table") ) {
-						numerator_denominator_pair.put("denominator_table_name", value);
-					}
-					else if (name.equals("denominator_description") ) {
-						numerator_denominator_pair.put("denominator_description", value);
-					}
-					else if (name.equals("theme_description") ) {
-						health_theme.put("description", value);
-					}
-					else if (name.equals("theme") ) {
-						health_theme.put("name", value);
+					switch (name) {
+						case "numerator_table":
+							numerator_denominator_pair.put("numerator_table_name", value);
+							break;
+						case "numerator_description":
+							numerator_denominator_pair.put("numerator_table_description", value);
+							break;
+						case "denominator_table":
+							numerator_denominator_pair.put("denominator_table_name", value);
+							break;
+						case "denominator_description":
+							numerator_denominator_pair.put("denominator_description", value);
+							break;
+						case "theme_description":
+							health_theme.put("description", value);
+							break;
+						case "theme":
+							health_theme.put("name", value);
+							break;
 					}
 				}
 				

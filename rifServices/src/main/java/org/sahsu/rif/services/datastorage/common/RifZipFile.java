@@ -554,16 +554,10 @@ public class RifZipFile {
 			catch (Exception e) {
 				rifLogger.error(this.getClass(), "writeErrorFile() ERROR", e);
 			}
-			
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-					RIFServiceError.ZIPFILE_CREATE_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
-		}
-		finally {
-//			throw new  RIFServiceException(RIFServiceError.ZIPFILE_CREATE_FAILED, "TEST ZIP ERROR");
-//			temporaryDirectory.delete();
+
+			throw new RIFServiceException(
+				RIFServiceError.ZIPFILE_CREATE_FAILED,
+				errorMessage, exception);
 		}
 	}
 
@@ -572,7 +566,7 @@ public class RifZipFile {
 	  * @param Exception exception, 
 	  * @param File submissionZipErrorFile
 	  */
-	public void writeErrorFile(
+	private void writeErrorFile(
 			final Exception exception,
 			final File submissionZipErrorFile)
 				throws Exception {
