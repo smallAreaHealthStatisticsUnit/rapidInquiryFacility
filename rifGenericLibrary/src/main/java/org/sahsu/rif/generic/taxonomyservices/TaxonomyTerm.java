@@ -159,7 +159,6 @@ final public class TaxonomyTerm {
 	 *
 	 * @return the name space
 	 */
-	@XmlElement(required = true, name = "identifier")
 	public String getNameSpace() {
 
 		return nameSpace;
@@ -215,7 +214,8 @@ final public class TaxonomyTerm {
 		
 		this.parentTerm = parentTerm;
 	}
-	
+
+	@XmlElement(required = true)
 	public String getIdentifier() {
 
 		return label + "-" + nameSpace;
