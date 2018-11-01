@@ -12,7 +12,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.sahsu.rif.generic.concepts.User;
-import org.sahsu.rif.generic.fileformats.AppFile;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
@@ -735,7 +736,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		RIFLogger rifLogger = RIFLogger.getLogger();
 
 		String jsonFromFile;
-		AppFile tcFile = AppFile.getFrontEndParametersInstance();
+		TomcatFile tcFile = new TomcatFile(new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE);
 
 		try (BufferedReader reader = tcFile.reader()) {
 
@@ -1025,8 +1026,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 
 	public String getStudyExtractFIleName(
 			final User user,
-			final String studyID)
-		throws RIFServiceException {
+			final String studyID) {
 
 			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();

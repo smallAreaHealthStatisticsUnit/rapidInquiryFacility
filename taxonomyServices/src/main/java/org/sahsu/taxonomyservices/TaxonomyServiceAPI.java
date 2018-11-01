@@ -1,8 +1,9 @@
-package org.sahsu.rif.generic.taxonomyservices;
+package org.sahsu.taxonomyservices;
 
 import java.util.List;
 
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
 public interface TaxonomyServiceAPI {
 

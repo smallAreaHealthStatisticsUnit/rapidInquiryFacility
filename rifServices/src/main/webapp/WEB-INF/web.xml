@@ -4,18 +4,24 @@
 
 <web-app>
 
-  <display-name>RIF Services</display-name>
-  
-   <servlet>  
-    <servlet-name>jersey</servlet-name>  
-    <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>  
+	<display-name>RIF Services</display-name>
 
-    <init-param>
-	    <param-name>com.sun.jersey.config.property.packages</param-name>
-	    <param-value>org.sahsu.rif.services.rest</param-value>
-    </init-param>
+	<servlet>
+		<servlet-name>jersey</servlet-name>
+		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
 
-	<load-on-startup>1</load-on-startup>
-  </servlet>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>org.sahsu.rif.services.rest</param-value>
+		</init-param>
+
+		<init-param>
+			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+			<param-value>true</param-value>
+		</init-param>
+
+		<load-on-startup>1</load-on-startup>
+
+	</servlet>
  
 </web-app>

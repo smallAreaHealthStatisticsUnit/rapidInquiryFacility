@@ -46,4 +46,4 @@
  * @author kgarwood
  * @version
  */
-package org.sahsu.rif.generic.taxonomyservices;
+package org.sahsu.taxonomyservices;

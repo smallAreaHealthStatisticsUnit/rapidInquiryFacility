@@ -1,20 +1,17 @@
 package org.sahsu.taxonomyservices;
 
-import org.sahsu.taxonomyservices.system.TaxonomyServiceError;
-
-import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
-
-import org.sahsu.rif.generic.util.TaxonomyLogger;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
+import org.sahsu.rif.generic.util.TaxonomyLogger;
+import org.sahsu.taxonomyservices.system.TaxonomyServiceError;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,7 +25,7 @@ import org.xml.sax.SAXException;
  * taxonomy terms with {@link TaxonomyTermManager},
  * which is provides a generic mechanism for managing the terms in-memory.  The 
  * <code>TaxonomyTermManager</code> is then made available so that the calling class
- * {@link ICDTaxonomyService}, which uses it to handle most of the
+ * {@code ICDTaxonomyService}, which uses it to handle most of the
  * taxonomy service methods.
  * 
  * <p>

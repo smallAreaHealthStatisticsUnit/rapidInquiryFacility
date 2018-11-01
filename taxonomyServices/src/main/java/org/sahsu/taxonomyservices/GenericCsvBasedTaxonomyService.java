@@ -5,10 +5,7 @@ import java.util.List;
 
 import org.sahsu.rif.generic.fileformats.CsvFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.generic.taxonomyservices.AbstractTaxonomyService;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfiguration;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 
 /**

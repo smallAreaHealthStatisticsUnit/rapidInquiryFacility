@@ -1,4 +1,4 @@
-package org.sahsu.rif.generic.taxonomyservices;
+package org.sahsu.taxonomyservices;
 
 import java.util.ArrayList;
 import java.util.List;

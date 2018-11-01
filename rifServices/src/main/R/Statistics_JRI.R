@@ -275,7 +275,7 @@ runRRiskAnalFunctions <- function() {
 	cat(paste("About to test exitValue", exitValue, "\n"))
 	if (exitValue == 0) {
 		cat("Performing basic stats and risk analysis\n")
-		errorTrace <<- capture.output({
+		statsOutput <- capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
 			
 			#			cat(paste0("About to fetch extract table outside of the try", "\n"))
@@ -325,12 +325,13 @@ runRRiskAnalFunctions <- function() {
 					#lerrorTrace <<- saveDataFrameToDatabaseTable(result)	# may set exitValue
 					#Save the band data
 					lerrorTrace <<- saveDataFrameToDatabaseTable(resultBands)	# may set exitValue
+					if (!is.na(lerrorTrace) && !is.null(lerrorTrace) && length(lerrorTrace)-1 > 0) {
+						cat(lerrorTrace, sep="\n")
+					}
 					if (exitValue == 0) {
 						lerrorTrace2 <<- updateMapTableFromSmoothedResultsTable(FALSE) # may set exitValue
-						if (!is.null(lerrorTrace2) && length(lerrorTrace2)-1 > 0) {
-							append(lerrorTrace, lerrorTrace2)
-						} else {
-							lerrorTrace <<- lerrorTrace2
+						if (!is.na(lerrorTrace2) && !is.null(lerrorTrace2) && length(lerrorTrac2e)-1 > 0) {
+							cat(lerrorTrace2, sep="\n")
 						}
 					}
 
@@ -339,20 +340,27 @@ runRRiskAnalFunctions <- function() {
 				}
 			}) # End of tryCatch
 		})
+		if (!is.null(statsOutput) && length(statsOutput)-1 > 0) {
+#			cat(statsOutput, sep="\n")
+			if (!is.null(errorTrace)) {
+				cat(paste0("Statistics_JRI.R exitValue: ", exitValue, 
+					"; append statsOutput tracer: ", length(statsOutput)-1, 
+					"; to errorTrace tracer: ", length(errorTrace)-1, 
+					"\n"), sep="")
+				errorTrace=c(errorTrace, statsOutput)
+			}
+			else {
+				cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "; statsOutput tracer: ", length(statsOutput)-1, "\n"), sep="")
+				errorTrace <<- statsOutput
+			}
+			cat(paste0("Statistics_JRI.R errorTrace tracer: ", length(errorTrace)-1, "\n"), sep="")
+		}
+		cat("Performing basic stats and risk analysis: Done\n")
 	}
 	else {
 		cat("Could not connect to database\n")	
 		cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 		return(list(exitValue=exitValue, errorTrace=errorTrace))
-	}
-
-	if (!is.null(lerrorTrace) && length(lerrorTrace)-1 > 0) {
-		if (!is.null(errorTrace)) {
-			append(errorTrace, lerrorTrace)
-		}
-		else {
-			errorTrace <<- lerrorTrace
-		}
 	}
 	
 	if (exitValue == 0 && !is.na(connDB)) {
@@ -392,12 +400,7 @@ runRRiskAnalFunctions <- function() {
 	}	
 	cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 	
-	return(list(exitValue=exitValue, errorTrace=errorTrace))
-	
-	#	cat(paste0("Statistics_JRI.R exitValue: ", exitValue, "\n"), sep="")
-	
-	#	return(list(exitValue=exitValue))
-	
+	return(list(exitValue=exitValue, errorTrace=errorTrace))	
 }
 
 

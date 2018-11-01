@@ -3031,3 +3031,27 @@ Further changes are needed to support risk analysis:
 * Demo to Swedish RIF team, discussion of the way ahead;
 * Further work on multiple intersection tracing in shapes and selected polygons;  
 * Load UK EWS2011 population data
+* Test pull #106: Adds ICD 9 support for branch issue#64_icd9_support. ICD9 functionality is OK. Have added CSS fix to restore 
+  select arrow functionality. Risk analysis changes cause a tomcat server crash for both disease mapping and risk analysis;
+  
+#### 29th October to 2nd November
+
+* Further work on multiple intersection tracing in shapes and selected polygons; 
+* Test Postgres 10 and SQL Server partitioning on UK EWS2011 population data;
+* Trace and fix pull #106 fault: Adds ICD 9 support for branch issue#64_icd9_support. Path to R scripts not being escaped correctly:
+  Crashes:
+  ```
+  09:45:03.412 [http-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.RIFLogger : [org.sahsu.rif.services.datastorage.common.StatisticsProcessing]:
+  Source: 'C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\JdbcHandler.R
+  ```
+
+  Does not crash (other branches):
+  ```
+  11:02:04.266 [http-nio-8080-exec-9] INFO  org.sahsu.rif.generic.util.RIFLogger : [org.sahsu.rif.services.datastorage.common.SmoothResultsSubmissionStep]:
+  Source(\): 'C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\JdbcHandler.R
+  ```
+* Fixed:
+  * Add selector arrow to ICD selector;
+  * Fix shape layer order (not ordered as createAreaNameList() not working);
+  * Fix clear selection (not clearing selected shapes);
+  

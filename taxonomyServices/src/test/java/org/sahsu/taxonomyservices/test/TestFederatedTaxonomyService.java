@@ -2,10 +2,9 @@ package org.sahsu.taxonomyservices.test;
 
 import org.junit.Test;
 import org.sahsu.rif.generic.system.ClassFileLocator;
-import org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService;
+import org.sahsu.taxonomyservices.FederatedTaxonomyService;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TestFederatedTaxonomyService {

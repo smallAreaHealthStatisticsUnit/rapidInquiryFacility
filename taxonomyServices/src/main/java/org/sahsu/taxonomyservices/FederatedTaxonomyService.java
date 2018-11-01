@@ -1,4 +1,4 @@
-package org.sahsu.rif.generic.taxonomyservices;
+package org.sahsu.taxonomyservices;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
+import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
 /**
  * This class reads descriptions of taxonomy services from a configuration file and then
@@ -20,14 +21,13 @@ import org.sahsu.rif.generic.system.RIFGenericLibraryError;
  * Kevin Garwood
  * @author kgarwood
  */
-
 public class FederatedTaxonomyService {
 
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	private static final FederatedTaxonomyService federatedTaxonomyService
 			= new FederatedTaxonomyService();
 	private AtomicBoolean hasInitialisationBegun = new AtomicBoolean(false);
-	private volatile boolean isInitialised = false;
+	private volatile boolean isInitialised;
 	private HashMap<String, TaxonomyServiceAPI> taxonomyServiceFromIdentifier;
 
 	private FederatedTaxonomyService() {
@@ -119,8 +119,8 @@ public class FederatedTaxonomyService {
 		for (TaxonomyServiceAPI taxonomyService : taxonomyServices) {
 			TaxonomyServiceProvider taxonomyServiceProvider = new TaxonomyServiceProvider();
 			taxonomyServiceProvider.setIdentifier(taxonomyService.getIdentifier().trim());
-			taxonomyServiceProvider.setName(taxonomyService.getName());
-			taxonomyServiceProvider.setDescription(taxonomyService.getDescription());
+			taxonomyServiceProvider.setName(taxonomyService.getName().trim());
+			taxonomyServiceProvider.setDescription(taxonomyService.getDescription().trim());
 			results.add(taxonomyServiceProvider);
 		}
 		

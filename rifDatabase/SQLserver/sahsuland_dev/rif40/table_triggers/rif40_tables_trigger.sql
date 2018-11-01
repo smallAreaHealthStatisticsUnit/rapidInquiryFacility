@@ -56,16 +56,16 @@ DECLARE @has_studies_check VARCHAR(MAX) =
 );
 
 --delete not allowed
-IF @XTYPE = 'D' AND @has_studies_check>0
-BEGIN TRY
-	rollback;
-	DECLARE @err_msg0 VARCHAR(MAX) = formatmessage(51147);
-	THROW 51147, @err_msg0, 1;
-END TRY
-BEGIN CATCH
-	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_tables]';
-	THROW 51147, @err_msg0, 1;
-END CATCH;		
+--IF @XTYPE = 'D' AND @has_studies_check>0
+--BEGIN TRY
+--	rollback;
+--	DECLARE @err_msg0 VARCHAR(MAX) = formatmessage(51147);
+--	THROW 51147, @err_msg0, 1;
+--END TRY
+--BEGIN CATCH
+--	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_tables]';
+--	THROW 51147, @err_msg0, 1;
+--END CATCH;		
 	
 --Check if column <TABLE_NAME>.TOTAL_FIELD exists
 IF (@XTYPE = 'U' or @XTYPE = 'I') 

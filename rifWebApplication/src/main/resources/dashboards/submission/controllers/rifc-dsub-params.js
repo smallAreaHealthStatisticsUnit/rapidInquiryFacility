@@ -329,8 +329,10 @@ angular.module("RIF")
                 };
                 function handleTextSearch(res) {
                     var myICD = [];
-                    if (res.data.length !== 0) {
-                        for (var i = 0; i < res.data.length; i++) {
+                    var taxTerms = res.data.terms.healthCode;
+                    var noOfTerms = taxTerms.length;
+                    if (noOfTerms !== 0) {
+                        for (var i = 0; i < noOfTerms; i++) {
 							// Deduce taxonomy so that the chapter headings can be removed, e.g I-null
 							/*
 							+6.6: [DEBUG] [rifc-dsub-params.js] handleTextSearch res: {
@@ -347,38 +349,38 @@ angular.module("RIF")
 							} rifc-util-alert.js:194:7
 							*/
 
-							if (res.data[i].label && res.data[i].identifier && res.data[i].label.length > 0) {
-								res.data[i].taxonomy = res.data[i].identifier.substr(res.data[i].label.length+1);
+							if (taxTerms[i].label && taxTerms[i].identifier && taxTerms[i].label.length > 0) {
+								taxTerms[i].taxonomy = taxTerms[i].identifier.substr(taxTerms[i].label.length+1);
 							}		
 							else {
-								res.data[i].taxonomy = "UNK";
+								taxTerms[i].taxonomy = "UNK";
 							}
 							
 							if (i == 0) {
-								AlertService.consoleDebug("[rifc-dsub-params.js] handleTextSearch res: " + JSON.stringify(res.data[i], null, 1));
+								AlertService.consoleDebug("[rifc-dsub-params.js] handleTextSearch res: " + JSON.stringify(taxTerms[i], null, 1));
 							}
-							if (res.data[i].taxonomy && res.data[i].taxonomy == 'null') {
+							if (taxTerms[i].taxonomy && taxTerms[i].taxonomy == 'null') {
 							}
 							else {
 								myICD.push({
-									term_name: res.data[i].label, 
-									term_description: res.data[i].description, 
-									identifier: res.data[i].identifier, 
+									term_name: taxTerms[i].label,
+									identifier: taxTerms[i].identifier,
+									term_description: taxTerms[i].description,
 									selected: 0});
 							}
                             //if selected already, make them green in ICD table
                             for (var j = 0; j < $scope.thisICDselection.length; j++) {
-                                if (res.data[i].identifier === $scope.thisICDselection[j][0]) {
+                                if (taxTerms[i].identifier === $scope.thisICDselection[j][0]) {
                                     myICD[i].selected = 1;
                                     break;
                                 }
                             }
                         }
                     }
-                    if (res.data.length === 1) {
+                    if (noOfTerms === 1) {
                         $scope.hitsCount = "1 term returned";
                     } else {
-                        $scope.hitsCount = res.data.length + " terms returned";
+                        $scope.hitsCount = noOfTerms + " terms returned";
                     }
                     $scope.gridOptionsICD.data = myICD;
                 }

@@ -553,16 +553,10 @@ public class RifZipFile {
 			catch (Exception e) {
 				rifLogger.error(this.getClass(), "writeErrorFile() ERROR", e);
 			}
-			
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-					RIFServiceError.ZIPFILE_CREATE_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
-		}
-		finally {
-//			throw new  RIFServiceException(RIFServiceError.ZIPFILE_CREATE_FAILED, "TEST ZIP ERROR");
-//			temporaryDirectory.delete();
+
+			throw new RIFServiceException(
+				RIFServiceError.ZIPFILE_CREATE_FAILED,
+				errorMessage, exception);
 		}
 	}
 
@@ -571,7 +565,7 @@ public class RifZipFile {
 	  * @param Exception exception, 
 	  * @param File submissionZipErrorFile
 	  */
-	public void writeErrorFile(
+	private void writeErrorFile(
 			final Exception exception,
 			final File submissionZipErrorFile)
 				throws Exception {
@@ -1408,14 +1402,14 @@ public class RifZipFile {
 						
 						if (name.equals("min_condition")) {
 							if (!value.equals("&nbsp;")) {
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(url, taxonomyServicesServer, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDescription(url, taxonomyServicesServer, value);
 								minCondition=taxonomyObject.getString("description");
 							}
 						}
 						else if (name.equals("max_condition")) {
 							if (!value.equals("&nbsp;")) {
 								// Add: please run again in 5 minutes support
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(url, taxonomyServicesServer, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDescription(url, taxonomyServicesServer, value);
 								maxCondition=taxonomyObject.getString("description");
 							}
 						}						
