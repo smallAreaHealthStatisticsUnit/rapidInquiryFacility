@@ -32,40 +32,20 @@ public class RIFTaxonomyWebServiceResource {
 		webServiceResponseUtility = new WebServiceResponseUtility();		
 	}
 
+	/**
+	 * Starts the Taxonomy Service if it is not already running. Normally it should be started
+	 * when the application starts.
+	 * @param servletRequest a servlet request
+	 * @return a Response indicating the status of the start request
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/initialiseService")
-	public Response initialiseService(
-		@Context HttpServletRequest servletRequest) {
-	
-		String result;
-		try {			
-			FederatedTaxonomyService federatedTaxonomyService
-				= FederatedTaxonomyService.getFederatedTaxonomyService();
-			ServletContext servletContext
-				= servletRequest.getServletContext();
-			String fullPath
-				= servletContext.getRealPath("/WEB-INF/classes");
-			federatedTaxonomyService.initialise(fullPath);								
-			webServiceResponseUtility.serialiseStringResult(String.valueOf(true));
-			result = String.valueOf(true);
-		}
-		catch(Exception exception) {	
-			rifLogger.error(
-				this.getClass(), 
-				"GET /initialiseService method failed: ", 
-				exception);
-			result 
-				= webServiceResponseUtility.serialiseException(
-					servletRequest, 
-					exception);
-		}
+	public Response initialiseService(@Context HttpServletRequest servletRequest) {
 
-		return webServiceResponseUtility.generateWebServiceResponse(
-			servletRequest,
-			result);		
+		return StartService.instance().start();
 	}
-	
+
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/getTaxonomyServiceProviders")
@@ -213,60 +193,6 @@ public class RIFTaxonomyWebServiceResource {
 		}
 		return new TermList(childTerms);
 	}
-	
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/getParentTerm")
-	public Response getParentTerm(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("taxonomy_id") String taxonomyServiceID,
-		@QueryParam("child_term_id") String childTermID) {
-	
-		String result;
-
-		try {
-			checkFederatedServiceWorkingProperly(servletRequest);
-			FederatedTaxonomyService federatedTaxonomyService
-				= FederatedTaxonomyService.getFederatedTaxonomyService();
-
-			TaxonomyTerm parentTerm
-				= federatedTaxonomyService.getParentTerm(
-					taxonomyServiceID, 
-					childTermID);
-			result = serialiseTaxonomyTerm(
-						servletRequest, 
-						parentTerm);
-		}
-		catch(Exception exception) {
-			rifLogger.error(
-				this.getClass(), 
-				"GET /getParentTerm method failed: ", 
-				exception);
-			result
-				= webServiceResponseUtility.serialiseException(
-					servletRequest, 
-					exception);
-		}
-		
-		return webServiceResponseUtility.generateWebServiceResponse(
-			servletRequest,
-			result);		
-	}
-	
-	private String serialiseTaxonomyTerm(
-		final HttpServletRequest servletRequest,
-		final TaxonomyTerm taxonomyTerm) 
-		throws Exception {
-
-		TaxonomyTermProxy termProxy
-			= TaxonomyTermProxy.newInstance();
-		termProxy.setIdentifier(taxonomyTerm.getIdentifier());
-		termProxy.setLabel(taxonomyTerm.getLabel());
-		termProxy.setDescription(taxonomyTerm.getDescription());
-		return webServiceResponseUtility.serialiseSingleItemAsArrayResult(
-			servletRequest, 
-			termProxy);
-	}
 
 	/**
 	 * If the federated taxonomy service did not initialise properly, immediately throw 
@@ -286,4 +212,5 @@ public class RIFTaxonomyWebServiceResource {
 			federatedTaxonomyService.initialise(fullPath);								
 		}
 	}
+
 }
