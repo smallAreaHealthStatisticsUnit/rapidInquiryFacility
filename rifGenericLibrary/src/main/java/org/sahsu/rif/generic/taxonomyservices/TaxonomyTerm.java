@@ -3,8 +3,6 @@ package org.sahsu.rif.generic.taxonomyservices;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.opencsv.bean.CsvBindByName;
-
 /**
  * Describes the concept of a taxonomy term.  It comprises the following fields:
  * <ul>

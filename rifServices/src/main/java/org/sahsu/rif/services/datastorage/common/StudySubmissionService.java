@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.sahsu.rif.generic.concepts.User;
-import org.sahsu.rif.generic.fileformats.FilePath;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
@@ -29,8 +29,6 @@ import org.sahsu.rif.services.concepts.RIFStudySubmissionAPI;
 import org.sahsu.rif.services.concepts.Sex;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 /**
  * Main implementation of the RIF middleware.
@@ -737,7 +735,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		RIFLogger rifLogger = RIFLogger.getLogger();
 
 		String jsonFromFile;
-		FilePath tcFile = new TomcatFile(new TomcatBase(), FilePath.FRONT_END_PARAMETERS_FILE);
+		AppFile tcFile = AppFile.getFrontEndParametersInstance();
 
 		try (BufferedReader reader = tcFile.reader()) {
 

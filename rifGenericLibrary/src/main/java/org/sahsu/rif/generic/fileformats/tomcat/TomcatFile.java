@@ -9,13 +9,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
-import org.sahsu.rif.generic.fileformats.FilePath;
+import org.sahsu.rif.generic.fileformats.AppFile;
 
 /**
  * Retrieves files from standard Tomcat locations, and makes their contents
  * available in various forms.
  */
-public class TomcatFile implements FilePath {
+public class TomcatFile implements AppFile {
 
 	private static final String CONF_DIRECTORY = "conf";
 	private static final String WEBAPPS_DIRECTORY = "webapps";
@@ -65,11 +65,13 @@ public class TomcatFile implements FilePath {
 		return file;
 	}
 
+	@Override
 	public Path pathToClassesDirectory() {
 
 		return classesPath;
 	}
 
+	@Override
 	public Path pathToLibDirectory() {
 
 		return libPath;

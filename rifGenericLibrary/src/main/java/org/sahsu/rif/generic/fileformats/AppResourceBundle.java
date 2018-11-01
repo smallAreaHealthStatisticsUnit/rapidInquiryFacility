@@ -1,23 +1,22 @@
-package org.sahsu.rif.generic.fileformats.tomcat;
-
-import org.sahsu.rif.generic.fileformats.FilePath;
-import org.sahsu.rif.generic.util.RIFLogger;
+package org.sahsu.rif.generic.fileformats;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
+import org.sahsu.rif.generic.util.RIFLogger;
+
 /**
- * A wrapper for a {@link TomcatFile}, accessing it as a {@link ResourceBundle}.
+ * A wrapper for a {@link AppFile}, accessing it as a {@link ResourceBundle}.
  */
-public class TomcatResourceBundle {
+public class AppResourceBundle {
 
 	private static RIFLogger rifLogger = RIFLogger.getLogger();
 	private ResourceBundle bundle;
-	private FilePath file;
+	private AppFile file;
 
-	public TomcatResourceBundle(FilePath file) {
+	public AppResourceBundle(AppFile file) {
 
 		this.file = file;
 
@@ -41,7 +40,7 @@ public class TomcatResourceBundle {
 		return bundle;
 	}
 
-	public FilePath tomcatFile() {
+	public AppFile tomcatFile() {
 
 		return file;
 	}

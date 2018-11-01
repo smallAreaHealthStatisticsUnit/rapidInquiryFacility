@@ -22,7 +22,7 @@ import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
-import org.sahsu.rif.generic.fileformats.FilePath;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
@@ -31,8 +31,6 @@ import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
 import org.sahsu.rif.services.datastorage.JdbcUrl;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 import com.sun.rowset.CachedRowSetImpl;
 
@@ -501,7 +499,7 @@ public class BaseSQLManager implements SQLManager {
 		if (prop == null) {
 
 			try {
-				prop = FilePath.getInstance(BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES)
+				prop = AppFile.getInstance(BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES)
 						       .properties();
 			} catch (IOException e) {
 				rifLogger.warning(this.getClass(),

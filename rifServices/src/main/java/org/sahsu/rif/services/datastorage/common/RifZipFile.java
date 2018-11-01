@@ -34,7 +34,7 @@ import org.json.JSONObject;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
-import org.sahsu.rif.generic.fileformats.FilePath;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -46,8 +46,6 @@ import org.sahsu.rif.services.graphics.RIFGraphicsOutputType;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 import com.sun.rowset.CachedRowSetImpl;
 
@@ -1955,7 +1953,7 @@ public class RifZipFile {
 
 	private String readFile(String file) throws IOException {
 
-		FilePath tcFile = new TomcatFile(new TomcatBase(), file);
+		AppFile tcFile = AppFile.getInstance(file);
 				
 		BufferedReader reader = tcFile.reader();
 		String line;

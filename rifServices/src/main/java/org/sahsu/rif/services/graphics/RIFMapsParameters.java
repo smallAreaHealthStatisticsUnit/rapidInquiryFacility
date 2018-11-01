@@ -8,7 +8,7 @@ import java.util.Set;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.sahsu.rif.generic.fileformats.FilePath;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.StudyType;
@@ -354,7 +354,7 @@ public class RIFMapsParameters {
 		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");
 		String printState=manager.getColumnFromResultSet(rif40Studies, "print_state", true /* allowNulls */, false /*  allowNoRows */);
 		
-		BufferedReader reader = FilePath.getInstance(FilePath.FRONT_END_PARAMETERS_FILE).reader();
+		BufferedReader reader = AppFile.getInstance(AppFile.FRONT_END_PARAMETERS_FILE).reader();
 
 		Json5Parse frontEndJson5Parse = new Json5Parse(reader);
 		JSONObject frontEndJson = frontEndJson5Parse.toJson(); // Check it parses OK
