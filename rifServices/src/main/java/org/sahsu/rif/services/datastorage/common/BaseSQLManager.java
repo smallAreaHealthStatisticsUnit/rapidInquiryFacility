@@ -913,6 +913,7 @@ public class BaseSQLManager implements SQLManager {
  * Schema version checks: 
  *
  * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
+ * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
  */ 
 			String errorMessage = schemaVersionChecks(currentConnection);
 			if (errorMessage != null) { // Failed 
@@ -957,6 +958,7 @@ public class BaseSQLManager implements SQLManager {
  * Schema version checks: 
  *
  * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
+ * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
  */ 
 	private String schemaVersionChecks(Connection connection) throws RIFServiceException {
 	
@@ -965,6 +967,9 @@ public class BaseSQLManager implements SQLManager {
 		try {
 			if (!doesColumnExist(connection, "rif40", "t_rif40_studies", "select_state")) { // alter_10.sql has not been run
 				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter10NotRun");
+			}
+			if (!doesColumnExist(connection, "rif40", "t_rif40_study_areas", "intersect_count")) { // alter_11.sql has not been run
+				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter11NotRun");
 			}
 		}
 		catch (Exception exception) {		
