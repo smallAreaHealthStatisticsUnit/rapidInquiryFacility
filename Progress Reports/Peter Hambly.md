@@ -3054,4 +3054,7 @@ Further changes are needed to support risk analysis:
   * Add selector arrow to ICD selector;
   * Fix shape layer order (not ordered as createAreaNameList() not working);
   * Fix clear selection (not clearing selected shapes);
-  
+* Unable to re-create
+  * Fix shape layer order (not ordered as createAreaNameList() not working);  
+* Add intersection code to middleware and database (alter_11.sql)
+* Test Postgres 10 and SQL Server partitioning on UK EWS2011 population data
