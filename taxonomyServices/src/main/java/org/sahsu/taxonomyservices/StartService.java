@@ -1,5 +1,7 @@
 package org.sahsu.taxonomyservices;
 
+import java.nio.file.Path;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -11,7 +13,6 @@ public class StartService {
 
 	private static StartService THE_INSTANCE;
 	private final TaxonomyLogger logger = TaxonomyLogger.getLogger();
-	private final WebServiceResponseUtility webServiceResponseUtility;
 
 	private boolean running;
 
@@ -25,11 +26,6 @@ public class StartService {
 		return THE_INSTANCE;
 	}
 
-	private StartService() {
-
-		webServiceResponseUtility = new WebServiceResponseUtility();
-	}
-
 	public Response start() {
 
 		Response result = Response.ok(String.valueOf(true), MediaType.APPLICATION_JSON).build();
@@ -39,10 +35,8 @@ public class StartService {
 
 				FederatedTaxonomyService federatedTaxonomyService =
 						FederatedTaxonomyService.getFederatedTaxonomyService();
-				String fullPath = new TomcatFile(new TomcatBase(), ".")
-						                  .pathToClassesDirectory().toString();
-				federatedTaxonomyService.initialise(fullPath);
-				webServiceResponseUtility.serialiseStringResult(String.valueOf(true));
+				Path classesPath = new TomcatFile(new TomcatBase(), ".", true).path();
+				federatedTaxonomyService.initialise(classesPath);
 
 				running = true;
 
