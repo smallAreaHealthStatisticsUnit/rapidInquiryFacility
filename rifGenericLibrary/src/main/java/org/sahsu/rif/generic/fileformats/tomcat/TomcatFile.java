@@ -1,6 +1,7 @@
 package org.sahsu.rif.generic.fileformats.tomcat;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -97,7 +98,7 @@ public class TomcatFile implements AppFile {
 	}
 
 	@Override
-	public String absolutePath() {
+	public String asString() {
 
 		return file.toFile().getAbsolutePath();
 	}
@@ -105,6 +106,12 @@ public class TomcatFile implements AppFile {
 	@Override
 	public URL asUrl() throws MalformedURLException {
 
-		return file.toFile().toURI().toURL();
+		return asFile().toURI().toURL();
+	}
+
+
+	public File asFile() {
+
+		return file.toFile();
 	}
 }

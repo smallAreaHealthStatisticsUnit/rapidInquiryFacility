@@ -7,8 +7,7 @@ import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
 public interface TaxonomyServiceAPI {
 
-	void initialiseService(final String defaultResourceDirectoryPath,
-						   final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
+	void initialiseService(final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
 			throws RIFServiceException;
 
 	boolean isServiceWorking();

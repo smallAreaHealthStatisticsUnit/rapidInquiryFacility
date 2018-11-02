@@ -27,8 +27,7 @@ public class ClaMlTaxonomyService extends AbstractTaxonomyService {
 	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
 
 	public void initialiseService(
-		final String defaultResourceDirectoryPath,
-		final TaxonomyServiceConfiguration taxonomyServiceConfiguration) {
+			final TaxonomyServiceConfiguration taxonomyServiceConfiguration) {
 			
 		String name = "UNKNOWN";
 		String description;
