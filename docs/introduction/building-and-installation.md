@@ -47,7 +47,7 @@ See: [Building RIF web services from github and installing securely in Tomcat]({
 
 ### Taxonomy Services
 
-See: [RIF Taxonomy Services]({{ site.baseurl }}/introduction/Taxonomy-Services)
+See: [RIF Taxonomy Services]({{ site.baseurl }}/taxonomyServices/Taxonomy-Services)
 
 ## Data Loading
 

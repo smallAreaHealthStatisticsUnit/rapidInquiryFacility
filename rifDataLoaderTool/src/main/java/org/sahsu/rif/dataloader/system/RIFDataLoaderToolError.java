@@ -1,5 +1,7 @@
 package org.sahsu.rif.dataloader.system;
 
+import org.sahsu.rif.generic.system.RifError;
+
 /**
  * Describes a source of error in the system.
  *
@@ -50,7 +52,7 @@ package org.sahsu.rif.dataloader.system;
  *
  */
 
-public enum RIFDataLoaderToolError {
+public enum RIFDataLoaderToolError implements RifError {
 	INVALID_DATA_SOURCE,
 	DUPLICATE_DATA_SOURCE,
 	CLEAR_ALL_DATA_SOURCES,

@@ -160,49 +160,6 @@ public final class TestGUIScenario
 			for (AbstractCovariate covariate : covariates) {
 				System.out.println("COVARIATE:=="+covariate.getDisplayName()+"==");
 			}
-
-			System.out.println();
-			System.out.println("Simulate navigating through health codes");
-			System.out.println("Start at the very top of ICD10");
-			
-			ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
-				= rifStudySubmissionService.getHealthCodeTaxonomies(testUser);
-			HealthCodeTaxonomy icdHealthCodeTaxonomy
-				= healthCodeTaxonomies.get(1);
-			
-			ArrayList<HealthCode> topLevelHealthCodes
-				= rifStudySubmissionService.getTopLevelHealthCodes(testUser, icdHealthCodeTaxonomy);
-			for (HealthCode topLevelHealthCode : topLevelHealthCodes) {
-				System.out.println("TOP LEVEL ICD10 CATEGORY:=="+topLevelHealthCode.getDisplayName()+"==");			
-			}
-			System.out.println();
-			System.out.println("We'll pick 'Chapter 2'");
-			HealthCode chapter2ICD10HealthCode
-				= HealthCode.newInstance(
-					"Chapter 02",
-					"icd10",
-					"Chapter 02; Neoplasms",
-					true);
-			ArrayList<HealthCode> level3Codes
-				= rifStudySubmissionService.getImmediateChildHealthCodes(testUser, chapter2ICD10HealthCode);
-			for (HealthCode level3Code : level3Codes) {
-				System.out.println("3 CHAR ICD10 CATEGORY:=="+level3Code.getDisplayName()+"==");			
-			}
-			System.out.println();
-			System.out.println("We'll pick 'C85'");
-			HealthCode otherNonHodgkinsICD10HealthCode
-				= HealthCode.newInstance(
-					"C85",
-					"icd10",
-					"other and unspecified types of non-hodgkin's lymphoma",
-					false);
-			ArrayList<HealthCode> level4Codes
-				= rifStudySubmissionService.getImmediateChildHealthCodes(
-					testUser, 
-					otherNonHodgkinsICD10HealthCode);
-			for (HealthCode level4Code : level4Codes) {
-				System.out.println("4 CHAR ICD10 CATEGORY:=="+level4Code.getDisplayName()+"==");			
-			}
 		}
 		catch(RIFServiceException rifServiceException) {
 			List<String> errorMessages = rifServiceException.getErrorMessages();

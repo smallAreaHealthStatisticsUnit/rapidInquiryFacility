@@ -107,21 +107,9 @@ final class TaxonomyTermProxy {
 			= new TaxonomyTermProxy();
 		return taxonomyTermProxy;
 	}
-	
-	public String getIdentifier() {
-		return identifier;
-	}
 
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
-	}
-	
-	public String getIsTopLevelTerm() {
-		return isTopLevelTerm;
-	}
-
-	public void setIsTopLevelTerm(final String isTopLevelTerm) {
-		this.isTopLevelTerm = isTopLevelTerm;
 	}
 
 	public String getLabel() {

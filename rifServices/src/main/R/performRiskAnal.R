@@ -1,32 +1,3 @@
-###
-## The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
-## that rapidly addresses epidemiological and public health questions using 
-## routinely collected health and population data and generates standardised 
-## rates and relative risks for any given health outcome, for specified age 
-## and year ranges, for any given geographical area.
-##
-## Copyright 2016 Imperial College London, developed by the Small Area
-## Health Statistics Unit. The work of the Small Area Health Statistics Unit 
-## is funded by the Public Health England as part of the MRC-PHE Centre for 
-## Environment and Health. Funding for this project has also been received 
-## from the United States Centers for Disease Control and Prevention.  
-##
-## This file is part of the Rapid Inquiry Facility (RIF) project.
-## RIF is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## RIF is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-## GNU Lesser General Public License for more details.
-##
-## You should have received a copy of the GNU Lesser General Public License
-## along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
-## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
-## Boston, MA 02110-1301 USA
-
 ## Brandon Parkes
 ## @author bparkes
 ##
@@ -41,22 +12,48 @@ if (is.na(yd)){ans=0} else {
   if (yd=='NULL'){ans=0} }
 return(ans)}))}
 
-convertToDBFormat=function(dataIn){
+convertToDBFormatRA=function(dataIn){
+  
+  #Copy the db format for disease mapping because the same table will be used (with quite a few columns blank)
+  area_id = as.numeric(NA)
+  gid = as.numeric(NA)
+  gid_rowindex = as.numeric(NA)
+  username = NA
+  study_id = dataIn$study_id
+  dataOut = cbind(area_id,gid,gid_rowindex,username, study_id)
+  inv_id = as.integer(as.character(investigationId)) #Input parameter
+  dataOut = cbind(dataOut, inv_id)
   
   band_id = dataIn$band_id
   genders = dataIn$gender
-  direct_standardisation = 0 # For now RIF only does indirect standardisation
-  dataOut = cbind(band_id, genders, direct_standardisation)
+  direct_standardisation = 0 # For now RIf only does indirect standardisation
+  dataOut = cbind(dataOut, band_id, genders, direct_standardisation)
   
   observed = dataIn$observed
   adjusted = dataIn$adjusted
-  expected = dataIn$expected # assuming direct = TRUE. If direct = FALSE, use RR_UNADJ
-  relative_risk = dataIn$RR_ADJ # assuming indirect. If direct, use null
-  lower95 = dataIn$RRL95_ADJ # assuming direct = TRUE. If direct = FALSE, use RRL95_UNADJ
-  upper95 = dataIn$RRU95_ADJ # assuming direct = TRUE. If direct = FALSE, use RRU95_UNADJ
+  expected = dataIn$expected 
+  relative_risk = dataIn$RR
+  lower95 = dataIn$RRL95
+  upper95 = dataIn$RRU95
   
-  dataOut = cbind(dataOut, adjusted, observed,expected,relative_risk,lower95,upper95)
+  smoothed_relative_risk =  as.numeric(NA)
+  posterior_probability = as.numeric(NA)
+  posterior_probability_upper95 = as.numeric(NA) 
+  posterior_probability_lower95 = as.numeric(NA) 
+  residual_relative_risk = as.numeric(NA) 
+  residual_rr_lower95 = as.numeric(NA) 
+  residual_rr_upper95 = as.numeric(NA) 
+  smoothed_smr = as.numeric(NA)
+  smoothed_smr_lower95 = as.numeric(NA)
+  smoothed_smr_upper95 = as.numeric(NA)
+  
+  
+  dataOut = cbind(dataOut, adjusted, observed,expected,lower95,upper95,relative_risk,smoothed_relative_risk,
+                  posterior_probability ,posterior_probability_upper95,posterior_probability_lower95,
+                  residual_relative_risk,residual_rr_lower95,residual_rr_upper95,
+                  smoothed_smr,smoothed_smr_lower95,smoothed_smr_upper95)
   return(dataOut)
+  
 }
 
 #produce study array taking counts for adjustement
@@ -139,20 +136,24 @@ performBandAnal <- function(data) {
     study_id=x$study_id[1]
     area_id=x$area_id[1]
     band_id=x$band_id[1]
-    exposure=x$exposure[1]
+    #exposure=x$exposure[1]
     gender=x$sex[1]
     observed=sum(x$inv_1)
-    return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))})
+    #return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))
+    return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))
+  })
   RES=RES[,-1]#We delete the sex column
   RES2=ddply(RES,.variables='area_id',.fun=function(x){
     study_or_comparison=x$study_or_comparison[1]
     study_id=x$study_id[1]
     area_id=x$area_id[1]
     band_id=x$band_id[1]
-    exposure=x$exposure[1]
+    #exposure=x$exposure[1]
     gender=3
     observed=sum(x$observed)
-    return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))})
+    #return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))
+    return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))
+  })
   RES=rbind(RES,RES2)
   RES=RES[order(RES$area_id, RES$gender),]
   
@@ -448,24 +449,31 @@ performBandAnal <- function(data) {
   
   #Now the rates have been calculated for each area, need to calulate the rates per band
   #Create dataframe with 1 row for each band/gender
+  # For now we are not going to let the exposure get set within the band, so the 'linearity test' will not be run
   
   Bands = ddply(data, .variables=c('band_id','gender'),.fun=function(x){
+    study_id=x$study_id[1]
     band_id=x$band_id[1]
-    exposure = mean(x$exposure)
+    #exposure = mean(x$exposure)
     gender = x$gender[1]
     observed = sum(x$observed)
-    expected = sum(x$EXP_ADJ)
-    return(data.frame(band_id,exposure,gender,observed, expected))
+    if (adj) { 
+      expected = sum(x$EXP_ADJ)
+    } else {
+      expected = sum(x$EXP_UNADJ)
+    }
+    #return(data.frame(study_id, band_id,exposure,gender,observed, expected))
+    return(data.frame(study_id, band_id,gender,observed, expected))
   })
   
   Bands$adjusted = adj
-  Bands$RR_ADJ=Bands$observed/Bands$expected
+  Bands$RR=Bands$observed/Bands$expected
   
   # calculate the 95% CIs for the RR
-  Bands$RRL95_ADJ=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
+  Bands$RRL95=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
                         FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(-1.96*sqrt(1/x[1])))
                         }else{return(0.5*qchisq(0.025,2*x[1])/x[2])}})
-  Bands$RRU95_ADJ=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
+  Bands$RRU95=apply(cbind(Bands$observed,Bands$expected),MARGIN=1,
                         FUN=function(x){if (x[1]>100){return(x[1]/x[2]*exp(1.96*sqrt(1/x[1])))
                         }else{return(0.5*qchisq(0.975,2*x[1]+2)/x[2])}})
   
@@ -473,7 +481,7 @@ performBandAnal <- function(data) {
 
   
   # call the function to convert data to the format the db is expecting
-  originalExtractTable = convertToDBFormat(Bands)
+  originalExtractTable = convertToDBFormatRA(Bands)
   return(originalExtractTable)
   
 }
@@ -491,6 +499,7 @@ performHomogAnal <- function(Bands) {
   pValHomog = c()
   chisqLT = c()
   pValLT = c()
+  bandsLT5 = c()
   
   HomogRes = data.frame(gender,df, chisqHomog, pValHomog, chisqLT, pValLT)
   
@@ -498,18 +507,22 @@ performHomogAnal <- function(Bands) {
   for (i in 1:3)
   {
     Bandi = Bands[which(Bands$gender==i),]
+    study_id = Bandi[1]$study_id
+    inv_id = as.integer(as.character(investigationId)) #Input parameter
     Osum = sum(Bandi$observed)
     Esum = sum(Bandi$expected)
     
     gender = i
     chisqHomog = sum( (Bandi$observed - (Bandi$expected*Osum/Esum))^2 / (Bandi$expected*Osum/Esum))
     pValHomog = pchisq(chisqHomog, df = df, lower.tail = FALSE)
-    numer = (sum(Bandi$exposure*(Bandi$observed - (Bandi$expected*Osum/Esum))))^2
-    denom = sum((Bandi$exposure)^2 * (Bandi$expected*Osum/Esum)) - (((sum(Bandi$exposure * (Bandi$expected*Osum/Esum)))^2)/Osum)
-    chisqLT = numer / denom
-    pValLT = pchisq(chisqLT, df = df, lower.tail = FALSE)
+    # Not doing linearity test until exposure properly implemented
+    #numer = (sum(Bandi$exposure*(Bandi$observed - (Bandi$expected*Osum/Esum))))^2
+    #denom = sum((Bandi$exposure)^2 * (Bandi$expected*Osum/Esum)) - (((sum(Bandi$exposure * (Bandi$expected*Osum/Esum)))^2)/Osum)
+    #chisqLT = numer / denom
+    #pValLT = pchisq(chisqLT, df = df, lower.tail = FALSE)
+    bandsLT5 = length(which(Bandi$expected < 5))
     
-    HomogRes = rbind(HomogRes, cbind(gender,df, chisqHomog, pValHomog, chisqLT, pValLT))
+    HomogRes = rbind(HomogRes, cbind(study_id, inv_id, gender,df, chisqHomog, pValHomog, chisqLT, pValLT, bandsLT5))
   }  
   return(HomogRes)
   

@@ -30,7 +30,7 @@ public class RunStudyThread implements Runnable {
 	private StudyStateManager studyStateManager;
 	private StudySubmissionStep createStudySubmissionStep;
 	private GenerateResultsSubmissionStep generateResultsSubmissionStep;
-	private SmoothResultsSubmissionStep smoothResultsSubmissionStep;
+	private StatisticsProcessing statisticsProcessing;
 	
 	public RunStudyThread() {
 		studyStateMachine = new StudyStateMachine();
@@ -64,9 +64,8 @@ public class RunStudyThread implements Runnable {
 		generateResultsSubmissionStep = GenerateResultsSubmissionStep.getInstance(
 				studyStateManager, rifDatabaseProperties.getDatabaseType());
 		
-		//KLG: @TODO - we need a facility to feed password to this.
-		smoothResultsSubmissionStep = new SmoothResultsSubmissionStep();
-		smoothResultsSubmissionStep.initialise(
+		statisticsProcessing = new StatisticsProcessing();
+		statisticsProcessing.initialise(
 			user.getUserID(), 
 			password, 
 			rifServiceStartupOptions);			
@@ -220,12 +219,10 @@ public class RunStudyThread implements Runnable {
 		throws RIFServiceException {
 
 		try {			
-			if (generateResultsSubmissionStep.performStep(
-				connection, 
-				studyID)) {
-				StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
-			}
-			else {
+			if (generateResultsSubmissionStep.performStep(connection, studyID)) {
+
+				studyStateMachine.next(); // Advance to next state
+			} else {
 				createStudySubmissionStep.setStudyExtractToFail(connection, studyID, 
 					generateResultsSubmissionStep.getResult(),
 					generateResultsSubmissionStep.getStack());
@@ -248,7 +245,7 @@ public class RunStudyThread implements Runnable {
 		throws RIFServiceException {
 
 		try {
-			smoothResultsSubmissionStep.performStep(
+			statisticsProcessing.performStep(
 				connection,
 				studySubmission, 
 				studyID);

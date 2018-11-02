@@ -13,6 +13,7 @@ import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
+import org.sahsu.rif.generic.system.RifError;
 
 /**
  * Provides common validation methods used by most of the business classes.
@@ -406,7 +407,7 @@ public final class FieldValidationUtility {
 	 * @param errorMessages the error messages
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void throwExceptionIfErrorsFound(final Object rifErrorEnumeration,
+	public void throwExceptionIfErrorsFound(final RifError rifErrorEnumeration,
 			final ArrayList<String> errorMessages) throws RIFServiceException {
 
 		if (errorMessages.size() > 0) {

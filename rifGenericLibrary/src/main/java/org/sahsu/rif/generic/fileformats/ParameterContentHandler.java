@@ -3,119 +3,42 @@ package org.sahsu.rif.generic.fileformats;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
-import org.sahsu.rif.generic.presentation.HTMLUtility;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
+import java.util.List;
 
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.generic.presentation.HTMLUtility;
 import org.sahsu.rif.generic.system.Messages;
+import org.xml.sax.Attributes;
 
 /**
- *
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
+ * Parses XML content for {@code <parameters>} elements of the Taxonomy Services configuration file,
+ * as part of SAX parsing.
  */
+public final class ParameterContentHandler extends AbstractXMLContentHandler {
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-
-final public class ParameterContentHandler 
-	extends AbstractXMLContentHandler {
-
-// ==========================================
-// Section Constants
-// ==========================================
-	
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
-// ==========================================
-// Section Properties
-// ==========================================
 	/** The parameters. */
-	private ArrayList<Parameter> parameters;
+	private List<Parameter> parameters;
 	
 	/** The current parameter. */
 	private Parameter currentParameter;
     
-// ==========================================
-// Section Construction
-// ==========================================
     /**
      * Instantiates a new parameter content handler.
      */
 	public ParameterContentHandler() {
 		
-		parameters = new ArrayList<Parameter>();
 		setSingularRecordName("parameter");
 		setPluralRecordName("parameters");
     }
 
-// ==========================================
-// Section Accessors and Mutators
-// ==========================================
     /**
      * Gets the parameters.
      *
      * @return the parameters
      */
-	public ArrayList<Parameter> getParameters() {
+	public List<Parameter> getParameters() {
 		
 		return parameters;
 	}
@@ -126,9 +49,8 @@ final public class ParameterContentHandler
 	 * @param parameters the parameters
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public void writeXML(
-		final ArrayList<Parameter> parameters) 
-		throws IOException {
+	public void writeXML(final List<Parameter> parameters)
+			throws IOException {
 
 		XMLUtility xmlUtility = getXMLUtility();
 		xmlUtility.writeRecordStartTag("parameters");
@@ -144,9 +66,8 @@ final public class ParameterContentHandler
 	 * @param parameter the parameter
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public void writeXMLParameter(
-		final Parameter parameter) 
-		throws IOException {
+	private void writeXMLParameter(final Parameter parameter)
+			throws IOException {
 
 		String recordName = getSingularRecordName();
 		XMLUtility xmlUtility = getXMLUtility();
@@ -161,31 +82,23 @@ final public class ParameterContentHandler
 	 * Write html.
 	 *
 	 * @param parameters the parameters
-	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public void writeHTML(
-		final ArrayList<Parameter> parameters) 
-		throws IOException {
+	public void writeHTML(final List<Parameter> parameters) {
 
 		HTMLUtility htmlUtility = getHTMLUtility();
 		
-		String parametersLabel
-			= GENERIC_MESSAGES.getMessage("parameters.label");
+		String parametersLabel = GENERIC_MESSAGES.getMessage("parameters.label");
 		int recordHeaderLevel = getRecordHeaderLevel();
 		htmlUtility.writeHeader(recordHeaderLevel, parametersLabel);
 		if (parameters.isEmpty()) {
-			String none
-				= GENERIC_MESSAGES.getMessage("general.emptyList.none");
+			String none = GENERIC_MESSAGES.getMessage("general.emptyList.none");
 			htmlUtility.writeParagraph(none);
-		}
-		else {
+		} else {
 			htmlUtility.beginInvisibleTable();
 			
 			//write out header row
-			String nameFieldLabel
-				= GENERIC_MESSAGES.getMessage("parameter.name.label");
-			String valueFieldLabel
-				= GENERIC_MESSAGES.getMessage("parameter.value.label");
+			String nameFieldLabel = GENERIC_MESSAGES.getMessage("parameter.name.label");
+			String valueFieldLabel = GENERIC_MESSAGES.getMessage("parameter.value.label");
 			htmlUtility.beginRow();
 			htmlUtility.writeBoldColumnValue(nameFieldLabel);
 			htmlUtility.writeBoldColumnValue(valueFieldLabel);			
@@ -201,58 +114,31 @@ final public class ParameterContentHandler
 			htmlUtility.endTable();			
 		}
 	}
-	
-	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
-
-// ==========================================
-// Section Interfaces
-// ==========================================
-
-// ==========================================
-// Section Override
-// ==========================================
-
 
 	@Override
-	public void startElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName,
-		final Attributes attributes) 
-		throws SAXException {
+	public void startElement(final String nameSpaceURI, final String localName,
+			final String qualifiedName, final Attributes attributes) {
 
-		if (isPluralRecordName(qualifiedName) == true) {
-			parameters.clear();
+		if (isPluralRecordName(qualifiedName)) {
+			parameters = new ArrayList<>();
 			activate();
-		}
-		else if (isSingularRecordName(qualifiedName) == true) {
+		} else if (isSingularRecordName(qualifiedName)) {
 			currentParameter = Parameter.newInstance();
 		}
 	}
 	
-
 	@Override
-	public void endElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName) 
-		throws SAXException {
+	public void endElement(final String nameSpaceURI, final String localName,
+			final String qualifiedName) {
 
-		if (isPluralRecordName(qualifiedName) == true) {
+		if (isPluralRecordName(qualifiedName)) {
 			deactivate();
-		}
-		else if (isSingularRecordName(qualifiedName) == true) {
+		} else if (isSingularRecordName(qualifiedName)) {
 			parameters.add(currentParameter);
-		}
-		else if (equalsFieldName("name", qualifiedName) == true) {
+		} else if (equalsFieldName("name", qualifiedName)) {
 			currentParameter.setName(getCurrentFieldValue().trim());
-		}
-		else if (equalsFieldName("value", qualifiedName) == true) {
+		} else if (equalsFieldName("value", qualifiedName)) {
 			currentParameter.setValue(getCurrentFieldValue().trim());						
 		}
 	}
-
 }

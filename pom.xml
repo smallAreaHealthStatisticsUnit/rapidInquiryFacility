@@ -42,8 +42,9 @@
 		<imageio-ext-tiff.version>1.1.20</imageio-ext-tiff.version>
 		<gdal.version>2.2.0</gdal.version>
 		<mockito-core.version>2.16.0</mockito-core.version>
+		<openCsv.version>4.3.2</openCsv.version>
 
-	</properties>
+</properties>
 	
 	<modules>
 	    <module>./rifGenericLibrary</module>
@@ -305,6 +306,12 @@
 				<artifactId>mockito-core</artifactId>
 				<version>${mockito-core.version}</version>
 				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>com.opencsv</groupId>
+				<artifactId>opencsv</artifactId>
+				<version>${openCsv.version}</version>
 			</dependency>
 
 		</dependencies>
