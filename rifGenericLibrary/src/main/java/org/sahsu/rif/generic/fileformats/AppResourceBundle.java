@@ -8,7 +8,7 @@ import java.util.ResourceBundle;
 import org.sahsu.rif.generic.util.RIFLogger;
 
 /**
- * A wrapper for a {@link AppFile}, accessing it as a {@link ResourceBundle}.
+ * A wrapper for an {@link AppFile}, accessing it as a {@link ResourceBundle}.
  */
 public class AppResourceBundle {
 
@@ -40,7 +40,7 @@ public class AppResourceBundle {
 		return bundle;
 	}
 
-	public AppFile tomcatFile() {
+	public AppFile appFile() {
 
 		return file;
 	}

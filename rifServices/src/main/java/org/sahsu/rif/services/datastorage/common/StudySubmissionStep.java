@@ -186,7 +186,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		} catch(IOException ioException) {
 			//Record original exception, throw sanitised, human-readable version
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
-			                                 ".TomcatFile IO error", ioException);
+			                                 " File IO error", ioException);
 			String errorMessage
 					= RIFServiceMessages.getMessage(
 					"studySubmissionStep.unableToSetPrintState",
