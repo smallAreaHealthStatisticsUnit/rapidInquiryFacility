@@ -166,7 +166,7 @@ public class RIFTaxonomyWebServiceResource {
 			                exception);
 		}
 		TermList result = new TermList(matchingTerms);
-		rifLogger.info(getClass(), "Matching terms: " + result.toString());
+		rifLogger.debug(getClass(), "Matching terms: " + result.toString());
 		return result;
 	}
 	

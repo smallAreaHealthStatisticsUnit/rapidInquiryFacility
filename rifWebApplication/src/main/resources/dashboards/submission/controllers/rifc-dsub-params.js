@@ -369,20 +369,30 @@ angular.module("RIF")
 							}
 							if (taxTerms[i].taxonomy && taxTerms[i].taxonomy == 'null') {
 							}
-							else {
+							else if (taxTerms[i] && taxTerms[i].label && taxTerms[i].identifier && taxTerms[i].description) {
 								myICD.push({
 									term_name: taxTerms[i].label,
 									identifier: taxTerms[i].identifier,
 									term_description: taxTerms[i].description,
 									selected: 0});
+								//if selected already, make them green in ICD table
+								for (var j = 0; j < $scope.thisICDselection.length; j++) {
+									if (myICD[(myICD.length -1)] == undefined) {
+										AlertService.showError("[rifc-dsub-params.js: handleTextSearch()] ICD list [" + 
+											(myICD.length -1) + "]: is undefined: " + JSON.stringify(myICD));
+										return;
+									}
+									else if ($scope.thisICDselection[j][0] && 
+										taxTerms[i].identifier === $scope.thisICDselection[j][0]) {
+										myICD[(myICD.length -1)].selected = 1;
+										break;
+									}
+								}
 							}
-                            //if selected already, make them green in ICD table
-                            for (var j = 0; j < $scope.thisICDselection.length; j++) {
-                                if (taxTerms[i].identifier === $scope.thisICDselection[j][0]) {
-                                    myICD[i].selected = 1;
-                                    break;
-                                }
-                            }
+							else {
+								AlertService.showError("[rifc-dsub-params.js: handleTextSearch()] taxonomy term [" + i + "]: is undefined");
+								return;
+							}
                         }
                     }
                     if (noOfTerms === 1) {
