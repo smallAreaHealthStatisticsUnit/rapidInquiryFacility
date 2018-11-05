@@ -63,7 +63,7 @@ public final class RIFServiceStartupProperties {
 							new TomcatBase(), STARTUP_PROPERTIES_FILE));
 			String msg = String.format("%s: loaded resource bundle %s%n",
 			                           getClass().getSimpleName(),
-			                           bundle.tomcatFile().absolutePath());
+			                           bundle.tomcatFile().asString());
 			rifLogger.info(getClass(), msg);
 			resourceBundle = bundle.bundle();
 

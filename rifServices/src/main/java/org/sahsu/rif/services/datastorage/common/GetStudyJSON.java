@@ -786,7 +786,7 @@ public class GetStudyJSON {
 			response = getClientResponse(code);
 			String output = response.getEntity(String.class);
 			JSONObject taxonomyTerms = new JSONObject(output);
-			rifLogger.info(getClass(), "JSNObject taxonomyTerms: " + taxonomyTerms.toString());
+			rifLogger.debug(getClass(), "JSNObject taxonomyTerms: " + taxonomyTerms.toString());
 			JSONObject terms = taxonomyTerms.getJSONObject("terms");
 
 			// With different taxonomies, the healthCode element can sometimes be an array,

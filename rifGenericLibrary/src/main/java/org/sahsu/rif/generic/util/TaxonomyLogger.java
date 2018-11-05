@@ -178,16 +178,9 @@ public final class TaxonomyLogger {
 		
 		log.info("["+callingClass.getName()+"]:" + lineSeparator + message);
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
+	public void debug(final Class callingClass, final String message) {
 
-	// ==========================================
-	// Section Override
-	// ==========================================
+		log.debug("[" + callingClass.getName() + "]:" + lineSeparator + message);
+	}
 }

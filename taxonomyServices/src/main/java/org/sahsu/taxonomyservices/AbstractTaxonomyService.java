@@ -98,7 +98,7 @@ public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 	}
 
 	@Override
-	public abstract void initialiseService(final String defaultResourceDirectoryPath,
+	public abstract void initialiseService(
 			final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
 			throws RIFServiceException;
 	

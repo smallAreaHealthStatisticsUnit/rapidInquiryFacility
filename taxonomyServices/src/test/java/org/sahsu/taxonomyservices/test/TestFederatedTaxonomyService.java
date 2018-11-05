@@ -5,6 +5,7 @@ import org.sahsu.rif.generic.system.ClassFileLocator;
 import org.sahsu.taxonomyservices.FederatedTaxonomyService;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
+import java.nio.file.FileSystems;
 import java.util.List;
 
 public class TestFederatedTaxonomyService {
@@ -19,9 +20,9 @@ public class TestFederatedTaxonomyService {
 			String defaultResourceDirectoryPath
 				= ClassFileLocator.getClassRootLocation("taxonomyServices");
 						
-			service.initialise(defaultResourceDirectoryPath);
+			service.initialise(FileSystems.getDefault().getPath(defaultResourceDirectoryPath));
 			System.out.println("Initialising again");
-			service.initialise(defaultResourceDirectoryPath);
+			service.initialise(FileSystems.getDefault().getPath(defaultResourceDirectoryPath));
 			
 			List<TaxonomyTerm> taxonomyTerms = service.getRootTerms("icd10");
 			for (TaxonomyTerm taxonomyTerm : taxonomyTerms) {
