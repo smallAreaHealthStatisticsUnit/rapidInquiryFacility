@@ -87,7 +87,10 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_study_areas'
                   AND column_name  = 'intersect_count') BEGIN
-	ALTER TABLE t_rif40_study_areas ADD intersect_count NVARCHAR(MAX) NULL;
+	ALTER TABLE t_rif40_study_areas ADD intersect_count INTEGER NULL;
+END
+ELSE  BEGIN
+	ALTER TABLE t_rif40_study_areas ALTER COLUMN intersect_count INTEGER NULL;
 END;
 GO		
 
@@ -112,7 +115,10 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_study_areas'
                   AND column_name  = 'distance_from_nearest_source') BEGIN
-	ALTER TABLE t_rif40_study_areas ADD distance_from_nearest_source NVARCHAR(MAX) NULL;
+	ALTER TABLE t_rif40_study_areas ADD distance_from_nearest_source INTEGER NULL;
+END
+ELSE  BEGIN
+	ALTER TABLE t_rif40_study_areas ALTER COLUMN distance_from_nearest_source INTEGER NULL;
 END;
 GO		
 
