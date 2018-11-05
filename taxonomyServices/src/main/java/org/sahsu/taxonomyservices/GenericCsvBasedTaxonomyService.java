@@ -16,8 +16,7 @@ public class GenericCsvBasedTaxonomyService extends AbstractTaxonomyService {
 	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
 
 	@Override
-	public void initialiseService(final String defaultResourceDirectoryPath,
-			final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
+	public void initialiseService(final TaxonomyServiceConfiguration taxonomyServiceConfiguration)
 			throws RIFServiceException {
 
 		String taxonomyName = taxonomyServiceConfiguration.getServiceIdentifier();

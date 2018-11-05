@@ -742,19 +742,19 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 
 				rifLogger.info(getClass(),
 					"StudySubmissionService.getFrontEndParameters: using: "
-							+ tcFile.absolutePath());
+							+ tcFile.asString());
 
 				// Read and string escape JSON
 				jsonFromFile = "{\"file\": \"" +
-						StringEscapeUtils.escapeJavaScript(tcFile.absolutePath()) +
-						"\", \"frontEndParameters\": \"" +
-						StringEscapeUtils.escapeJavaScript(
+				               StringEscapeUtils.escapeJavaScript(tcFile.asString()) +
+				               "\", \"frontEndParameters\": \"" +
+				               StringEscapeUtils.escapeJavaScript(
 								reader.lines().parallel().collect(Collectors
-										.joining(lineSeparator))) +"\"}";
+										.joining(lineSeparator))) + "\"}";
 		} catch (IOException ioException2) {
 				rifLogger.warning(this.getClass(),
 					"StudySubmissionService.getFrontEndParameters error for file: " +
-						tcFile.absolutePath(), ioException2);
+						tcFile.asString(), ioException2);
 				return defaultJson;
 		}
 
