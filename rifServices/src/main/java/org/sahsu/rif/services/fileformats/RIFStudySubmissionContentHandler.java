@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.fileformats.AbstractXMLContentHandler;
@@ -266,8 +267,8 @@ final public class RIFStudySubmissionContentHandler
 					currentRIFJobSubmission.setStudy(study);
 				} else if (currentDelegatedHandler == calculationMethodContentHandler) {
 
-					ArrayList<CalculationMethod> calculationMethods
-						= calculationMethodContentHandler.getCalculationMethods();
+					List<CalculationMethod> calculationMethods =
+							calculationMethodContentHandler.getCalculationMethods();
 					currentRIFJobSubmission.setCalculationMethods(calculationMethods);
 				} else if (currentDelegatedHandler == rifOutputOptionContentHandler) {
 

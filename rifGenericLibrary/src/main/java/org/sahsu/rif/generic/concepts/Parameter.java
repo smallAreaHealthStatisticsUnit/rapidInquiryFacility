@@ -18,6 +18,9 @@ public final class Parameter
 		implements DisplayableListItemInterface {
 
 	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+
+	// Use the "null object" pattern instead of returning null.
+	private static final Parameter NULL_PARAM = new Parameter();
 	
 	/** The name. */
 	private String name;
@@ -31,9 +34,7 @@ public final class Parameter
 	 * @param name the name
 	 * @param value the value
 	 */
-	private Parameter(
-		final String name, 
-		final String value) {
+	private Parameter(final String name, final String value) {
 
 		this.name = name;
 		this.value = value;
@@ -43,23 +44,17 @@ public final class Parameter
      * Instantiates a new parameter.
      */
     private Parameter() {
-		init("", "");
+
+	    this("","");
     }
 
-    private void init(
-    	final String name, 
-    	final String value) {
-    	
-    	this.name = name;
-    	this.value = value;
-    }
-    
 	/**
 	 * New instance.
 	 *
 	 * @return the parameter
 	 */
-	static public Parameter newInstance() {
+	public static Parameter newInstance() {
+
 		return new Parameter();
 	}
 
@@ -70,9 +65,7 @@ public final class Parameter
 	 * @param value the value
 	 * @return the parameter
 	 */
-	static public Parameter newInstance(
-		final String name, 
-		final String value) {
+	public static Parameter newInstance(final String name, final String value) {
 
 		return new Parameter(name, value);
 	}
@@ -83,14 +76,13 @@ public final class Parameter
 	 * @param originalParameters the original parameters
 	 * @return the array list
 	 */
-	static public ArrayList<Parameter> createCopy(
-		final ArrayList<Parameter> originalParameters) {
+	static public List<Parameter> createCopy(final List<Parameter> originalParameters) {
 
 		if (originalParameters == null) {
 			return null;
 		}
 		
-		ArrayList<Parameter> cloneParameters = new ArrayList<Parameter>();
+		List<Parameter> cloneParameters = new ArrayList<>();
 		for (Parameter originalParameter : originalParameters) {
 			cloneParameters.add(createCopy(originalParameter));
 		}
@@ -118,19 +110,16 @@ public final class Parameter
 		return cloneParameter;
 	}
 
-	public static List<String> extractParameterNames(final List<Parameter> parameters) {
-		List<String> parameterNames = new ArrayList<>();
-
-		for (Parameter parameter : parameters) {
-			parameterNames.add(parameter.getName());			
-		}
-		
-		return parameterNames;
-	}
-	
-	public static Parameter getParameter(
-		final String targetParameterName,
-		final ArrayList<Parameter> parameters) {
+	/**
+	 * Returns a {@code Parameter} object if the provided {@code List} contains one whose name
+	 * matches the provided {@code targetParameterName}. If no such {@code Parameter} exists, the
+	 * {@code NULL_PARAM} singleton is returned.
+	 * @param targetParameterName the name of the required parameter
+	 * @param parameters the list of parameters to search
+	 * @return the matching parameter, or {@code NULL_PARAM}
+	 */
+	public static Parameter getParameter(final String targetParameterName,
+			final List<Parameter> parameters) {
 		
 		for (Parameter parameter : parameters) {
 			String parameterName
@@ -140,11 +129,9 @@ public final class Parameter
 			}
 		}
 		
-		return null;
-		
+		return NULL_PARAM;
 	}
-	
-	
+
 	/**
 	 * Gets the name.
 	 *
@@ -187,35 +174,6 @@ public final class Parameter
 		this.value = value;
 	}
 
-	public void identifyDifferences(
-		final Parameter anotherParameter,
-		final ArrayList<String> differences) {
-		
-		//@TODO
-	}
-	
-	/**
-	 * Could be useful for identifying which parameters are in one 
-	 * list but not the other
-	 * @param nameOfListOwnerA
-	 * @param parameterListA
-	 * @param nameOfListOwnerB
-	 * @param parameterListB
-	 * @return
-	 */
-	public static ArrayList<String> identifyDifferences(
-		final String nameOfListOwnerA,
-		final ArrayList<Parameter> parameterListA,
-		final String nameOfListOwnerB,
-		final ArrayList<Parameter> parameterListB) {
-		
-		ArrayList<String> differences 
-			= new ArrayList<String>();
-		
-		return differences;
-	}
-	
-	
 	/**
 	 * Checks for identical contents.
 	 *
@@ -223,13 +181,10 @@ public final class Parameter
 	 * @param parameterListB the parameter list b
 	 * @return true, if successful
 	 */
-	public static boolean hasIdenticalContents(
-		final ArrayList<Parameter> parameterListA, 
-		final ArrayList<Parameter> parameterListB) {
+	public static boolean hasIdenticalContents(final List<Parameter> parameterListA,
+			final List<Parameter> parameterListB) {
 
-		if (FieldValidationUtility.hasDifferentNullity(
-			parameterListA, 
-			parameterListB)) {
+		if (FieldValidationUtility.hasDifferentNullity(parameterListA, parameterListB)) {
 			//reject if one is null and the other is non-null
 			return false;
 		}
@@ -241,8 +196,8 @@ public final class Parameter
 			
 		//create temporary sorted lists to enable item by item comparisons
 		//in corresponding lists
-		ArrayList<Parameter> parametersA = sortParameters(parameterListA);
-		ArrayList<Parameter> parametersB = sortParameters(parameterListB);
+		List<Parameter> parametersA = sortParameters(parameterListA);
+		List<Parameter> parametersB = sortParameters(parameterListB);
 			
 		int numberOfCalculationMethods = parametersA.size();
 		for (int i = 0; i < numberOfCalculationMethods; i++) {
@@ -250,7 +205,7 @@ public final class Parameter
 				= parametersA.get(i);				
 			Parameter parameterB
 				= parametersB.get(i);
-			if (parameterA.hasIdenticalContents(parameterB) == false) {					
+			if (!parameterA.hasIdenticalContents(parameterB)) {
 				return false;
 			}			
 		}
@@ -264,8 +219,7 @@ public final class Parameter
 	 * @param parameters the parameters
 	 * @return the array list
 	 */
-	private static ArrayList<Parameter> sortParameters(
-		final ArrayList<Parameter> parameters) {
+	private static List<Parameter> sortParameters(final List<Parameter> parameters) {
 		
 		DisplayableItemSorter sorter = new DisplayableItemSorter();
 		
@@ -273,17 +227,15 @@ public final class Parameter
 			sorter.addDisplayableListItem(parameter);
 		}
 
-		ArrayList<Parameter> results = new ArrayList<Parameter>();
-		ArrayList<String> identifiers = sorter.sortIdentifiersList();
+		List<Parameter> results = new ArrayList<>();
+		List<String> identifiers = sorter.sortIdentifiersList();
 		for (String identifier : identifiers) {
-			Parameter sortedParameter 
-				= (Parameter) sorter.getItemFromIdentifier(identifier);
+			Parameter sortedParameter = (Parameter) sorter.getItemFromIdentifier(identifier);
 			results.add(sortedParameter);
 		}
 	
 		return results;
 	}
-	
 	
 	/**
 	 * Checks for identical contents.
@@ -312,7 +264,7 @@ public final class Parameter
 		}
 		else if (name != null) {
 			//they must both be non-null
-			if (collator.equals(name, otherName) == false) {
+			if (!collator.equals(name, otherName)) {
 				
 				return false;
 			}			
@@ -326,21 +278,13 @@ public final class Parameter
 		}
 		else if (value != null) {
 			//they must both be non-null
-			if (collator.equals(value, otherValue) == false) {
-					
-				return false;
-			}			
+			return collator.equals(value, otherValue);
 		}
 				
 		return true;
 	}
-	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
 
-	public void checkSecurityViolations()
-			throws RIFServiceSecurityException {
+	public void checkSecurityViolations() throws RIFServiceSecurityException {
 		
 		String recordType = getRecordType();
 		
@@ -364,10 +308,8 @@ public final class Parameter
 			valueFieldLabel, 
 			value);
 	}
-	
 
-	public void checkErrors()
-			throws RIFServiceException {
+	public void checkErrors() throws RIFServiceException {
 					
 		String recordType = getRecordType();
 		
@@ -377,7 +319,7 @@ public final class Parameter
 		String valueFieldLabel
 			= GENERIC_MESSAGES.getMessage("parameter.value.label");
 				
-		ArrayList<String> errorMessages = new ArrayList<String>();
+		ArrayList<String> errorMessages = new ArrayList<>();
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(name)) {
@@ -398,8 +340,8 @@ public final class Parameter
 			errorMessages.add(errorMessage);			
 		}
 		
-		fieldValidationUtility.throwExceptionIfErrorsFound(RIFGenericLibraryError.INVALID_PARAMETER, errorMessages);
-
+		fieldValidationUtility.throwExceptionIfErrorsFound(RIFGenericLibraryError.INVALID_PARAMETER,
+		                                                   errorMessages);
 	}
 	
 	/**
@@ -408,19 +350,17 @@ public final class Parameter
 	 * @param parameters the parameters
 	 * @return the string
 	 */
-	public static String identifyDuplicateParametersWithinList(
-		final ArrayList<Parameter> parameters) {		
+	public static String identifyDuplicateParametersWithinList(final List<Parameter> parameters) {
 
-		ArrayList<Parameter> duplicateParameters = new ArrayList<Parameter>();
+		List<Parameter> duplicateParameters = new ArrayList<>();
 		
-		HashSet<String> existingNames = new HashSet<String>();
+		HashSet<String> existingNames = new HashSet<>();
 		for (Parameter parameter : parameters) {
 			
 			String currentParameterName = parameter.getName();
 			if (existingNames.contains(currentParameterName)) {
 				duplicateParameters.add(parameter);				
-			}
-			else {
+			} else {
 				existingNames.add(currentParameterName);
 			}			
 		}
@@ -428,8 +368,7 @@ public final class Parameter
 		if (duplicateParameters.isEmpty() ) {
 			//return a null value to indicate no duplicates found
 			return null;
-		}
-		else {
+		} else {
 			StringBuilder duplicateParameterListing = new StringBuilder();
 			for (int i = 0; i < duplicateParameters.size(); i++) {
 				if (i != 0) {
@@ -437,24 +376,15 @@ public final class Parameter
 				}
 				duplicateParameterListing.append(duplicateParameters.get(i).getDisplayName());
 			}
-			
-			String errorMessage
-				= GENERIC_MESSAGES.getMessage(
-					"parameter.error.duplicateParameters", 
-					duplicateParameterListing.toString());
 
-			return errorMessage;
+			return GENERIC_MESSAGES.getMessage("parameter.error.duplicateParameters",
+			                                   duplicateParameterListing.toString());
 		}		
 	}
 
 	public String getDisplayName() {
 
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(name);
-		buffer.append("-");
-		buffer.append(value);
-		
-		return buffer.toString();
+		return name + "-" + value;
 	}
 
 	public String getIdentifier() {
@@ -462,11 +392,6 @@ public final class Parameter
 	}
 
 	public String getRecordType() {
-		String recordNameLabel
-			= GENERIC_MESSAGES.getMessage("parameter.label");
-		return recordNameLabel;
+		return GENERIC_MESSAGES.getMessage("parameter.label");
 	}
-
-
-
 }

@@ -149,7 +149,8 @@ public class StudyExtractManager extends BaseSQLManager {
 			JSONObject json = new JSONObject();
 			GetStudyJSON getStudyJSON = new GetStudyJSON(this);
 			JSONObject rifJobSubmission = getStudyJSON.addRifStudiesJson(connection,
-			                                                             studyID, locale, url, TAXONOMY_SERVICES_SERVER);
+			                                                             studyID, locale, url,
+			                                                             TAXONOMY_SERVICES_SERVER);
 			rifJobSubmission.put("created_by", user.getUserID());
 			json.put("rif_job_submission", rifJobSubmission);
 			result=json.toString();

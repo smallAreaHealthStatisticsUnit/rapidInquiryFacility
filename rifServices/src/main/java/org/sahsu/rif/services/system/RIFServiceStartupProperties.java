@@ -2,15 +2,14 @@ package org.sahsu.rif.services.system;
 
 import java.util.Hashtable;
 import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.apache.commons.lang.StringUtils;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
-import org.sahsu.rif.services.system.files.TomcatResourceBundle;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatResourceBundle;
 
 /**
  * Reads values from the RIFServiceStartupProperties.properties file.

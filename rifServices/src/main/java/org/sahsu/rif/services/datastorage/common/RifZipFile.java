@@ -45,8 +45,8 @@ import org.sahsu.rif.services.graphics.RIFGraphicsOutputType;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 import com.sun.rowset.CachedRowSetImpl;
 
@@ -136,7 +136,7 @@ public class RifZipFile {
 			}
 			else {
 				throw new Exception("R temporary directory: "  + 
-					temporaryDirectory.toString() + " was not created by Adj_Cov_Smooth_JRI.R");
+					temporaryDirectory.toString() + " was not created by Statistics_JRI.R");
 			}
 			
 			submissionZipFile = createSubmissionZipFile(
@@ -343,7 +343,7 @@ public class RifZipFile {
 			}
 			else {
 				throw new Exception("R temporary directory: "  + 
-					temporaryDirectoryPath.toString() + " was not created by Adj_Cov_Smooth_JRI.R");
+					temporaryDirectoryPath.toString() + " was not created by Statistics_JRI.R");
 			}
 				
 			submissionZipSavFile = createSubmissionZipFile(
@@ -554,16 +554,10 @@ public class RifZipFile {
 			catch (Exception e) {
 				rifLogger.error(this.getClass(), "writeErrorFile() ERROR", e);
 			}
-			
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-					RIFServiceError.ZIPFILE_CREATE_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
-		}
-		finally {
-//			throw new  RIFServiceException(RIFServiceError.ZIPFILE_CREATE_FAILED, "TEST ZIP ERROR");
-//			temporaryDirectory.delete();
+
+			throw new RIFServiceException(
+				RIFServiceError.ZIPFILE_CREATE_FAILED,
+				errorMessage, exception);
 		}
 	}
 
@@ -572,7 +566,7 @@ public class RifZipFile {
 	  * @param Exception exception, 
 	  * @param File submissionZipErrorFile
 	  */
-	public void writeErrorFile(
+	private void writeErrorFile(
 			final Exception exception,
 			final File submissionZipErrorFile)
 				throws Exception {
@@ -1409,14 +1403,14 @@ public class RifZipFile {
 						
 						if (name.equals("min_condition")) {
 							if (!value.equals("&nbsp;")) {
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(url, taxonomyServicesServer, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDescription(url, taxonomyServicesServer, value);
 								minCondition=taxonomyObject.getString("description");
 							}
 						}
 						else if (name.equals("max_condition")) {
 							if (!value.equals("&nbsp;")) {
 								// Add: please run again in 5 minutes support
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(url, taxonomyServicesServer, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDescription(url, taxonomyServicesServer, value);
 								maxCondition=taxonomyObject.getString("description");
 							}
 						}						
@@ -1990,7 +1984,7 @@ public class RifZipFile {
 		}
 		else {
 			throw new Exception("R temporary directory: " +
-			                    temporaryDirectoryPath.toFile().getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
+			                    temporaryDirectoryPath.toFile().getAbsolutePath() + " was not created by Statistics_JRI.R");
 		}
 		
 		return newDirectory.getAbsolutePath();

@@ -12,11 +12,10 @@ import org.sahsu.rif.services.datastorage.common.SQLManager;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.generic.system.RIFServiceException;
 

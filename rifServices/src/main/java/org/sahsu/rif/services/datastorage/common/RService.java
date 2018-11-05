@@ -1,5 +1,6 @@
 package org.sahsu.rif.services.datastorage.common;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -13,7 +14,7 @@ import org.sahsu.rif.services.concepts.CalculationMethod;
 
 public interface RService {
 
-	void sourceRScript(Rengine rengine, String scriptName) throws Exception;
+	void sourceRScript(Rengine rengine, Path script) throws Exception;
 	
 	void addParameter(String name, String value);
 
@@ -26,7 +27,7 @@ public interface RService {
 	void setCalculationMethod(CalculationMethod calculationMethod);
 
 	//Fetch parameters array list
-	List<Parameter> getParameterArray();
+	List<Parameter> getParameters();
 
 	/*
 	 * Logging R console output to RIFLogger

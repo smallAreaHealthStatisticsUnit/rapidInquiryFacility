@@ -259,7 +259,7 @@ public final class HealthCode
 	public void setNameSpace(
 		final String nameSpace) {
 		
-		this.nameSpace = nameSpace;
+		this.nameSpace = nameSpace != null ? nameSpace.trim() : null;
 	}
 
 	/**

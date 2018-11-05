@@ -1,7 +1,5 @@
 package org.sahsu.rif.services.test;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -12,7 +10,6 @@ import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
 import org.sahsu.rif.services.concepts.RIFStudyResultRetrievalAPI;
 import org.sahsu.rif.services.concepts.RIFStudySubmissionAPI;
-import org.sahsu.rif.services.datastorage.common.HealthOutcomeManager;
 import org.sahsu.rif.services.datastorage.common.SQLManager;
 import org.sahsu.rif.services.datastorage.common.ServiceBundle;
 import org.sahsu.rif.services.datastorage.common.ServiceResources;
@@ -29,7 +26,7 @@ import static org.mockito.Mockito.when;
 public class AbstractRIFTestCase {
 
 	@Mock
-	public ServiceResources resources;
+	protected ServiceResources resources;
 
 	@Mock
 	private SQLManager sqlMgr;
@@ -41,10 +38,7 @@ public class AbstractRIFTestCase {
 	protected StudyExtractManager extractMgr;
 
 	@Mock
-	HealthOutcomeManager healthOutcomeManager;
-
-	@Mock
-	RIFServiceStartupOptions options;
+	private RIFServiceStartupOptions options;
 
 	protected RIFStudySubmissionAPI rifStudySubmissionService;
 	protected RIFStudyResultRetrievalAPI rifStudyRetrievalService;
@@ -75,7 +69,6 @@ public class AbstractRIFTestCase {
 		when(sqlMgr.userExists(validUser.getUserID())).thenReturn(true);
 		when(resources.getRIFSubmissionManager()).thenReturn(subMgr);
 		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
-		when(resources.getHealthOutcomeManager()).thenReturn(healthOutcomeManager);
 		when(resources.getRIFServiceStartupOptions()).thenReturn(options);
 		when(options.getRifDatabaseType()).thenReturn(DatabaseType.POSTGRESQL); // Shouldn't matter.
 
@@ -105,24 +98,8 @@ public class AbstractRIFTestCase {
 		int actualNumberOfErrorMessages 
 			= rifServiceException.getErrorMessageCount();
 		assertEquals(expectedNumberOfErrors, actualNumberOfErrorMessages);
-	}	
-	
-	/**
-	 * Prints the errors.
-	 *
-	 * @param label the label
-	 * @param rifServiceException the rif service exception
-	 */
-	protected void printErrors(
-		String label,
-		RIFServiceException rifServiceException) {
-		
-		List<String> errorMessages = rifServiceException.getErrorMessages();
-		for (String errorMessage : errorMessages) {
-			System.out.println(label + "=="+errorMessage+"==");
-		}
 	}
-	
+
 	/**
 	 * Gets the test malicious value.
 	 *

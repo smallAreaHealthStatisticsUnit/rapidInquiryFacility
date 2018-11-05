@@ -695,7 +695,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     }
   
   # call the function to convert data to the format the db is expecting
-  originalExtractTable = convertToDBFormat(data)
+  originalExtractTable = convertToDBFormatSmooth(data)
   return(originalExtractTable) 
 }
 
@@ -741,11 +741,11 @@ EmpBayes=function(O,E){
 }
 
 ##====================================================================
-##FUNCTION: convertToDBFormat
+##FUNCTION: convertToDBFormatSmooth
 ##DESCRIPTION: converts old format of output of INLA data into 
 ## a format compatible with what's expected in the database
 ##====================================================================
-convertToDBFormat=function(dataIn){
+convertToDBFormatSmooth=function(dataIn){
   area_id = dataIn$area_id
   gid = as.numeric(NA)
   gid_rowindex = as.numeric(NA)

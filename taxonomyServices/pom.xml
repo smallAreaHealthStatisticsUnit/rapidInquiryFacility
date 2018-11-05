@@ -2,7 +2,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>taxonomyServices</artifactId>
+	<artifactId>taxonomies</artifactId>
 	<packaging>war</packaging>
 	
 	<parent>

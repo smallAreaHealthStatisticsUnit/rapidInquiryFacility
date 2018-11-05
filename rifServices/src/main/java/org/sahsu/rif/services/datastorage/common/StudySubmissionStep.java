@@ -1,30 +1,24 @@
 package org.sahsu.rif.services.datastorage.common;
 
-import org.json.JSONObject;
-
-import org.sahsu.rif.services.system.files.TomcatBase;
-import org.sahsu.rif.services.system.files.TomcatFile;
-import org.sahsu.rif.services.util.Json5Parse;
-
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Array;
-
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.io.BufferedReader;
-import java.io.IOException;
 
+import org.json.JSONObject;
 import org.sahsu.rif.generic.concepts.User;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.InsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
-import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -48,6 +42,9 @@ import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.generic.datastorage.RIFSQLException;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
+import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
+import org.sahsu.rif.services.util.Json5Parse;
 
 public final class StudySubmissionStep extends BaseSQLManager {
 
@@ -69,8 +66,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		setEnableLogging(true);
 	}
 	
-	public void updateSelectState(final Connection connection, final User user, final String studyID, final JSONObject studySelection) 
-		throws RIFServiceException {
+	void updateSelectState(final Connection connection, final User user, final String studyID,
+			final JSONObject studySelection) throws RIFServiceException {
 	
 		if (studySelection == null) {
 			throw new RIFServiceException(
@@ -110,8 +107,6 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					"updateSelectState query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " update");
 			}
 
-		} catch(RIFServiceException rifServiceException) {
-			throw rifServiceException;
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
@@ -128,7 +123,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		}
 	}
 	
-	public	void updatePrintState(final Connection connection, final User user, final String studyID) 
+	void updatePrintState(final Connection connection, final User user, final String studyID)
 		throws RIFServiceException {
 			
 		UpdateQueryFormatter updateSelectStateFormatter1 =
@@ -182,8 +177,6 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					"updatePrintState query 1; expected 1 row, got none for rif40_studies.study_id: " + studyID + " update");
 			}
 
-		} catch(RIFServiceException rifServiceException) {
-			throw rifServiceException;
 		} catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
@@ -213,13 +206,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		
 	String performStep(
 			final Connection connection, final User user, final RIFStudySubmission studySubmission)
-			throws Exception, RIFServiceException {
+			throws Exception {
 
 		studySubmission.checkErrors(ValidationPolicy.RELAXED);
 		checkNonExistentItems(user, connection, studySubmission);
-		
-		//KLG: TODO: Later on we should not rely on casting - it might
-		//be a risk analysis study
 		String studyID="Not yet allocated";
 		AbstractStudy study = studySubmission.getStudy();
 		try {
@@ -1189,8 +1179,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		AbstractStudy study = rifStudySubmission.getStudy();
 		rifMappingStudyManager.checkNonExistentItems(user, connection, study);
 
-		ArrayList<CalculationMethod> calculationMethods
-				= rifStudySubmission.getCalculationMethods();
+		List<CalculationMethod> calculationMethods = rifStudySubmission.getCalculationMethods();
 		for (CalculationMethod calculationMethod : calculationMethods) {
 			checkCalculationMethodExists(
 					connection,

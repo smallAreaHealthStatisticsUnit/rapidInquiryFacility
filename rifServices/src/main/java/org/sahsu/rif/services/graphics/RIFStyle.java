@@ -196,7 +196,7 @@ public class RIFStyle {
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
 				"Error in RIFStyle() constructor", exception);
-			throw new NullPointerException();
+			throw new IllegalArgumentException(exception);
 		}
 	}	
 

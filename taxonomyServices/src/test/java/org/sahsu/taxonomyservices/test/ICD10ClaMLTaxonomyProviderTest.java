@@ -4,15 +4,15 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
 import org.sahsu.taxonomyservices.ICD10TaxonomyTermParser;
+import org.sahsu.taxonomyservices.TaxonomyTermManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -81,7 +81,6 @@ public class ICD10ClaMLTaxonomyProviderTest {
 
 	/**
 	 * Test
-	 *     {@link ICD10TaxonomyTermParser#getTopLevelCodes()}.
 	 * @throws RIFServiceException
 	 */
 	@Test
@@ -100,7 +99,6 @@ public class ICD10ClaMLTaxonomyProviderTest {
 	
 	/**
 	 * Test
-	 *     {@link ICD10TaxonomyTermParser#getTaxonomyTerms()}.
 	 * @throws RIFServiceException
 	 */
 	@Test
@@ -126,7 +124,7 @@ public class ICD10ClaMLTaxonomyProviderTest {
 			taxonomyTermManager.getMatchingTerms("Zec", false).size(),
 			0);
 		
-		ArrayList<TaxonomyTerm> c22Terms
+		List<TaxonomyTerm> c22Terms
 			= taxonomyTermManager.getMatchingTerms("C22", true);
 				
 		//Test if it returns the right answer when searching the code with "C2".
@@ -175,7 +173,6 @@ public class ICD10ClaMLTaxonomyProviderTest {
 	
 	/**
 	 * Test
-	 *     {@link ICD10TaxonomyTermParser#getTaxonomyTerm()}.
 	 * @throws RIFServiceException
 	 */
 	@Test
@@ -193,7 +190,6 @@ public class ICD10ClaMLTaxonomyProviderTest {
 	
 	/**
 	 * Test
-	 *     {@link ICD10TaxonomyTermParser#getImmediateSubterms(TaxonomyTerm)}.
 	 * @throws RIFServiceException
 	 */
 	
@@ -215,7 +211,7 @@ public class ICD10ClaMLTaxonomyProviderTest {
 			taxonomyTermManager.getImmediateChildTerms(null).size(),
 			0);
 		
-		ArrayList<TaxonomyTerm> chapter2Children
+		List<TaxonomyTerm> chapter2Children
 			= taxonomyTermManager.getImmediateChildTerms("II");
 		assertEquals(
 			chapter2Children.size(),
@@ -224,7 +220,7 @@ public class ICD10ClaMLTaxonomyProviderTest {
 			TaxonomyTerm.hasTermMatchingLabel(chapter2Children, "C00-C97"),
 			true);
 			
-		ArrayList<TaxonomyTerm> c00c97Children
+		List<TaxonomyTerm> c00c97Children
 			= taxonomyTermManager.getImmediateChildTerms("C00-C97");
 		assertEquals(1, c00c97Children.size());
 		assertEquals(
@@ -233,7 +229,7 @@ public class ICD10ClaMLTaxonomyProviderTest {
 				c00c97Children, 
 				"C00-C75"));
 		
-		ArrayList<TaxonomyTerm> c00c75Children
+		List<TaxonomyTerm> c00c75Children
 			= taxonomyTermManager.getImmediateChildTerms("C00-C75");
 		assertEquals(
 			5,
@@ -266,7 +262,7 @@ public class ICD10ClaMLTaxonomyProviderTest {
 				"C69-C72"));
 
 		//Now go for a leaf item that will have no children
-		ArrayList<TaxonomyTerm> c717Children
+		List<TaxonomyTerm> c717Children
 			= taxonomyTermManager.getImmediateChildTerms("C717");
 
 		for (TaxonomyTerm term : c717Children) {

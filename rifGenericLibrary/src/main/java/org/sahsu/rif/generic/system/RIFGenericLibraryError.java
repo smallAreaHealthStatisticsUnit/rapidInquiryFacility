@@ -50,7 +50,7 @@ package org.sahsu.rif.generic.system;
  *
  */
 
-public enum RIFGenericLibraryError {
+public enum RIFGenericLibraryError implements RifError {
 	SECURITY_VIOLATION,
 	DB_UNABLE_TO_CLOSE_CONNECTIONS,
 	DB_UNABLE_CLOSE_RESOURCE,

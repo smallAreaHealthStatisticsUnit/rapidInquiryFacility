@@ -1,5 +1,7 @@
 package org.sahsu.taxonomyservices.system;
 
+import org.sahsu.rif.generic.system.RifError;
+
 /**
  *
  *
@@ -50,7 +52,7 @@ package org.sahsu.taxonomyservices.system;
  *
  */
 
-public enum TaxonomyServiceError {
+public enum TaxonomyServiceError implements RifError {
 	FEDERATED_TAXONOMY_SERVICE_NOT_INITIALISED,
 	HEALTH_CODE_TAXONOMY_SERVICE_ERROR
 }

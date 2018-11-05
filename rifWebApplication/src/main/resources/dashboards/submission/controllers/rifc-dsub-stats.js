@@ -61,7 +61,7 @@ angular.module("RIF")
                             StatsStateService.getState().methods = res.data;
                         }
                     } catch (e) {
-                        $scope.showError("Could not retrieve statistical methods");
+                        $scope.showError("Could not retrieve statistical methods: " + e);
                     }
                 }
 

@@ -1,9 +1,11 @@
 package org.sahsu.rif.services.datastorage.common;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -12,11 +14,7 @@ import org.sahsu.rif.services.concepts.CalculationMethod;
 public abstract class CommonRService implements RService {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-		
-	private String odbcDataSourceName;
-	private String userID;
-	private String password;
-	
+
 	private List<Parameter> parameters;
 
 	public CommonRService() {
@@ -36,14 +34,15 @@ public abstract class CommonRService implements RService {
 
 	@Override
 	public void setUser(final String userID, final String password) {
-		
-		this.userID = userID;
-		this.password = password;
+
+		addParameter("userID", userID);
+		addParameter("password", password);
 	}
 	
 	@Override
 	public void setODBCDataSourceName(final String odbcDataSourceName) {
-		this.odbcDataSourceName = odbcDataSourceName;
+
+		addParameter("odbcDataSource", odbcDataSourceName);
 	}	
 
 	private String getRRoutineModelCode(String proc) {
@@ -69,36 +68,36 @@ public abstract class CommonRService implements RService {
 	
 	//Fetch parameters array list
 	@Override
-	public List<Parameter> getParameterArray() {
-	
-		addParameter("odbcDataSource", odbcDataSourceName);
-		addParameter("userID", userID);
-		addParameter("password", password);
-		
+	public List<Parameter> getParameters() {
+
 		return(parameters);
 	}
 	
 	// Source R script
 	@Override
-	public void sourceRScript(Rengine rengine, String scriptName) 
+	public void sourceRScript(Rengine rengine, Path script)
 		throws Exception {
 			
-		File rScript=new File(scriptName);
-		if (rScript.exists()) {
-			String nScriptName=scriptName;
-			if (File.separatorChar == '\\') { // Windooze!!! R path strings need to be escaped; they must go through a shell 
-											  // like runtime at some point
-				nScriptName=scriptName.replace("\\","\\\\");
-				rifLogger.info(this.getClass(), "Source(" + File.separator + "): '" + nScriptName + "'");
+		if (script.toFile().exists()) {
+			
+			String scriptString = script.toString();
+
+			// Need to double-escape Windows path separator, or things get confused when we pass
+			// the file to R.
+			if (SystemUtils.IS_OS_WINDOWS) {
+
+				scriptString = scriptString.replace("\\","\\\\");
+				rifLogger.info(this.getClass(), "Source(" + File.separator + "): '"
+				                                + scriptString + "'");
 			}
 			else {
-				rifLogger.info(this.getClass(), "Source: '" + nScriptName + "'");
+				rifLogger.info(this.getClass(), "Source: '" + scriptString + "'");
 			}
-			rengine.eval("source('" + nScriptName + "')");
-			rifLogger.info(this.getClass(), "Done: '" + nScriptName + "'");
+			rengine.eval("source('" + scriptString + "')");
+			rifLogger.info(this.getClass(), "Done: '" + scriptString + "'");
 		}
 		else {
-			throw new Exception("Cannot find R script: '" + scriptName + "'");
+			throw new Exception("Cannot find R script: '" + script + "'");
 		}
 	}
 }

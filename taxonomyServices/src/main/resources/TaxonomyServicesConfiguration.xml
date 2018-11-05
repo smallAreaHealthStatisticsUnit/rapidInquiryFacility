@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <taxonomy_services>
+
   <taxonomy_service>
     <identifier>icd10</identifier>
-    <name>ICD Taxonomy Service</name>
+    <name>ICD 10 Taxonomy Service</name>
     <description>ICD 10 is a classification of diseases.</description>
     <version>1.0</version>
-    <ontology_service_class_name>org.sahsu.taxonomyservices.claMLTaxonomyService</ontology_service_class_name>
+    <ontology_service_class_name>org.sahsu.taxonomyservices.ClaMlTaxonomyService</ontology_service_class_name>
     <parameters>
       <parameter>
         <name>icd10_ClaML_file</name>
@@ -14,4 +15,19 @@
       </parameter>
     </parameters>
   </taxonomy_service>
+
+  <taxonomy_service>
+    <identifier>icd9</identifier>
+    <name>ICD 9 Taxonomy Service</name>
+    <description>ICD 9 is a classification of diseases.</description>
+    <version>1.0</version>
+    <ontology_service_class_name>org.sahsu.taxonomyservices.GenericCsvBasedTaxonomyService</ontology_service_class_name>
+    <parameters>
+      <parameter>
+        <name>icd9_file</name>
+        <value>icd9.csv</value>
+      </parameter>
+    </parameters>
+  </taxonomy_service>
+
 </taxonomy_services>

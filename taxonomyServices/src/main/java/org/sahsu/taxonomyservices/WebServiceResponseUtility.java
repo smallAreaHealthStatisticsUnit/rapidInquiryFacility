@@ -397,19 +397,17 @@ final class WebServiceResponseUtility {
 	}
 	
 	
-	public String serialiseException(
-		final HttpServletRequest servletRequest,
-		final Exception exceptionThrownByRIFService) {
+	String serialiseException(final HttpServletRequest servletRequest,
+			final Exception exceptionThrownByRIFService) {
 	
 		printClientInformation("serialiseException", servletRequest);
 		
-		String result = "";
+		String result;
 		try {			
-			RIFServiceExceptionProxy rifServiceExceptionProxy
-				= new RIFServiceExceptionProxy();
+			RIFServiceExceptionProxy rifServiceExceptionProxy = new RIFServiceExceptionProxy();
 			if (exceptionThrownByRIFService instanceof RIFServiceException) {
-				RIFServiceException rifServiceException
-					= (RIFServiceException) exceptionThrownByRIFService;
+
+				RIFServiceException rifServiceException = (RIFServiceException) exceptionThrownByRIFService;
 				List<String> errorMessages = rifServiceException.getErrorMessages();
 				rifServiceExceptionProxy.setErrorMessages(errorMessages.toArray(new String[0]));
 			}
