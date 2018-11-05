@@ -126,6 +126,13 @@ public final class MapDataManager extends BaseSQLManager {
 			queryFormatter.addQueryPhrase(geoLevelToMap.getName());
 
 			HashMap<String, Integer> bandHash = new HashMap<String, Integer>();
+			HashMap<String, Integer> intersectCountHash = new HashMap<String, Integer>();
+			HashMap<String, Double> distanceFromNearestSourceHash = new HashMap<String, Double>();
+			HashMap<String, String> nearestRifShapePolyIdHash = new HashMap<String, String>();
+			Integer intersectCount;
+			Double distanceFromNearestSource;
+			String nearestRifShapePolyId;
+			
 			int totalSelectedMapAreas = selectedMapAreas.size();
 			if (totalSelectedMapAreas > 0) {
 
@@ -150,6 +157,9 @@ public final class MapDataManager extends BaseSQLManager {
 					queryFormatter.addQueryPhrase("'");
 					
 					bandHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getBand());
+					intersectCountHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getIntersectCount());
+					nearestRifShapePolyIdHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getNearestRifShapePolyId());
+					distanceFromNearestSourceHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getDistanceFromNearestSource());
 				}
 
 				queryFormatter.addQueryPhrase(")");
@@ -178,6 +188,10 @@ public final class MapDataManager extends BaseSQLManager {
 				String geoLevelSelectName
 						= resultSet.getString(3);
 
+				intersectCount=0;
+				distanceFromNearestSource=0.0;
+				nearestRifShapePolyId=null;
+						
 				// Add band back		
 				int band=-1;
 				if (isDiseaseMappingStudy) {
@@ -186,12 +200,20 @@ public final class MapDataManager extends BaseSQLManager {
 				else if (!isStudyArea) {
 					band=0; /* Comparison area */
 				}
-				else if (isStudyArea) {
+				else if (isStudyArea) { // Risk analysis
 					if (bandHash.containsKey(geoLevelSelectName)) {
 						band=bandHash.get(geoLevelSelectName);
 					}
+					if (intersectCountHash.containsKey(geoLevelSelectName)) {
+						intersectCount=intersectCountHash.get(geoLevelSelectName);
+					}
+					if (distanceFromNearestSourceHash.containsKey(geoLevelSelectName)) {
+						distanceFromNearestSource=distanceFromNearestSourceHash.get(geoLevelSelectName);
+					}
+					if (nearestRifShapePolyIdHash.containsKey(geoLevelSelectName)) {
+						nearestRifShapePolyId=nearestRifShapePolyIdHash.get(geoLevelSelectName);
+					}					
 					if (band < 1) {
-//						band=i; // Just hope it is diease mapping!
 						StringBuilder builder = new StringBuilder();
 						for (Map.Entry<String, Integer> entry : bandHash.entrySet()) {
 							String key = entry.getKey();
@@ -201,6 +223,44 @@ public final class MapDataManager extends BaseSQLManager {
 						rifLogger.info(this.getClass(), "bandHash: " + builder.toString());
 						
 						throw new Exception("No valid band: " + band + "; found for study area selectedMapAreas: " + 
+							identifier + "; map: " + geoLevelToMapName + "; select: " + geoLevelSelectName + ")");
+					}
+					else if (intersectCount == 0 && distanceFromNearestSource == 0.0 && nearestRifShapePolyId == null) {
+						StringBuilder builder = new StringBuilder();
+						for (Map.Entry<String, Integer> entry : intersectCountHash.entrySet()) {
+							String key = entry.getKey();
+							Integer value = entry.getValue();
+							builder.append("Key (areaid): " + key + "; value(intersectCount): " + value + lineSeparator);
+						}
+						rifLogger.info(this.getClass(), "intersectCountHash: " + builder.toString());
+						builder = new StringBuilder();
+						for (Map.Entry<String, Double> entry : distanceFromNearestSourceHash.entrySet()) {
+							String key = entry.getKey();
+							Double value = entry.getValue();
+							builder.append("Key (areaid): " + key + "; value(distanceFromNearestSourceHash): " + value + lineSeparator);
+						}
+						rifLogger.info(this.getClass(), "distanceFromNearestSourceHash: " + builder.toString());
+						builder = new StringBuilder();
+						for (Map.Entry<String, String> entry : nearestRifShapePolyIdHash.entrySet()) {
+							String key = entry.getKey();
+							String value = entry.getValue();
+							builder.append("Key (areaid): " + key + "; value(nearestRifShapePolyIdHash): " + value + lineSeparator);
+						}
+						rifLogger.info(this.getClass(), "nearestRifShapePolyIdHash: " + builder.toString());
+						
+						throw new Exception("No valid intersectCount, distanceFromNearestSource and nearestRifShapePolyId; found for study area selectedMapAreas: " + 
+							identifier + "; map: " + geoLevelToMapName + "; select: " + geoLevelSelectName + ")");
+					}
+					else if (nearestRifShapePolyId == null) {
+						StringBuilder builder = new StringBuilder();
+						for (Map.Entry<String, String> entry : nearestRifShapePolyIdHash.entrySet()) {
+							String key = entry.getKey();
+							String value = entry.getValue();
+							builder.append("Key (areaid): " + key + "; value(nearestRifShapePolyIdHash): " + value + lineSeparator);
+						}
+						rifLogger.info(this.getClass(), "nearestRifShapePolyIdHash: " + builder.toString());
+						
+						throw new Exception("No valid nearestRifShapePolyId; found for study area selectedMapAreas: " + 
 							identifier + "; map: " + geoLevelToMapName + "; select: " + geoLevelSelectName + ")");
 					}
 				}
@@ -214,7 +274,10 @@ public final class MapDataManager extends BaseSQLManager {
 						identifier,
 						identifier,
 						geoLevelToMapName,
-						band);
+						band,
+						intersectCount,
+						distanceFromNearestSource,
+						nearestRifShapePolyId);
 				allRelevantMapAreas.add(mapArea);
 				i++;
 			}

@@ -115,10 +115,10 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_study_areas'
                   AND column_name  = 'distance_from_nearest_source') BEGIN
-	ALTER TABLE t_rif40_study_areas ADD distance_from_nearest_source INTEGER NULL;
+	ALTER TABLE t_rif40_study_areas ADD distance_from_nearest_source NUMERIC NULL;
 END
 ELSE  BEGIN
-	ALTER TABLE t_rif40_study_areas ALTER COLUMN distance_from_nearest_source INTEGER NULL;
+	ALTER TABLE t_rif40_study_areas ALTER COLUMN distance_from_nearest_source NUMERIC NULL;
 END;
 GO		
 

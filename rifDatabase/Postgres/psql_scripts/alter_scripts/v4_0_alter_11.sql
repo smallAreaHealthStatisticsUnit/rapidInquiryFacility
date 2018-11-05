@@ -83,7 +83,7 @@ BEGIN;
 DO LANGUAGE plpgsql $$
 BEGIN
 	ALTER TABLE t_rif40_study_areas ADD COLUMN intersect_count INTEGER NULL;
-	ALTER TABLE t_rif40_study_areas ADD COLUMN distance_from_nearest_source INTEGER NULL;
+	ALTER TABLE t_rif40_study_areas ADD COLUMN distance_from_nearest_source NUMERIC NULL;
 	ALTER TABLE t_rif40_study_areas ADD COLUMN nearest_rifshapepolyid VARCHAR NULL;
 	COMMENT ON COLUMN t_rif40_study_areas.intersect_count IS 'Number of intersects with shapes';
 	COMMENT ON COLUMN t_rif40_study_areas.distance_from_nearest_source IS 'Distance from nearest source (Km)';
@@ -96,6 +96,8 @@ $$;
 
 DROP VIEW IF EXISTS rif40.rif40_study_areas;
 ALTER TABLE t_rif40_study_areas ALTER COLUMN nearest_rifshapepolyid SET DATA TYPE VARCHAR;
+ALTER TABLE t_rif40_study_areas ALTER COLUMN distance_from_nearest_source SET DATA TYPE NUMERIC;
+
 --
 -- Rebuild view
 --
