@@ -78,6 +78,8 @@ GO
 
  1. Fix to allow delete on RIF40_TABLES;	
  2. Intersection counting (study areas only);
+ 3. Exposure value support;
+ 
  */
 
 :r ..\sahsuland_dev\rif40\table_triggers\rif40_tables_trigger.sql
@@ -161,10 +163,63 @@ EXECUTE sp_addextendedproperty
 		@level0type = N'Schema', @level0name = 'rif40',  
 		@level1type = N'Table', @level1name  = 't_rif40_study_areas',
 		@level2type = N'Column', @level2name = 'nearest_rifshapepolyid';
+GO	
+
+--
+-- 3. Exposure value support
+--
+IF NOT EXISTS (SELECT column_name
+                 FROM information_schema.columns
+                WHERE table_schema = 'rif40'
+                  AND table_name   = 't_rif40_study_areas'
+                  AND column_name  = 'exposure_value') BEGIN
+	ALTER TABLE t_rif40_study_areas ADD exposure_value NUMERIC NULL;
+END;
+GO	
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.t_rif40_study_areas';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = 'exposure_value' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Exposure value (when bands selected by exposure values)', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'Table', @level1name  = 't_rif40_study_areas',
+		@level2type = N'Column', @level2name = 'exposure_value';
+GO
+
+IF NOT EXISTS (SELECT column_name
+                 FROM information_schema.columns
+                WHERE table_schema = 'rif40'
+                  AND table_name   = 't_rif40_studies'
+                  AND column_name  = 'risk_analysis_exposure_field') BEGIN
+	ALTER TABLE t_rif40_studies ADD risk_analysis_exposure_field VARCHAR(30) NULL;
+END;
+GO	
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.t_rif40_studies';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = 'risk_analysis_exposure_field' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Risk analysis exposure field (when bands selected by exposure values)', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'Table', @level1name  = 't_rif40_studies',
+		@level2type = N'Column', @level2name = 'risk_analysis_exposure_field';
 GO
 
 --
--- Rebuild view
+-- Rebuild view: rif40_study_areas
 --
 ALTER VIEW [rif40].[rif40_study_areas] AS 
 SELECT c.username,
@@ -373,6 +428,324 @@ BEGIN
 		FROM deleted b
 		WHERE b.study_id=[rif40].[t_rif40_study_areas].study_id
 		AND b.area_id=[rif40].[t_rif40_study_areas].area_id);
+END;
+
+END;
+GO
+
+
+--
+-- Rebuild View: rif40_studies
+--
+ALTER VIEW [rif40].[rif40_studies] AS 
+ SELECT c.username,
+    c.study_id,
+    c.extract_table,
+    c.study_name,
+    c.summary,
+    c.description,
+    c.other_notes,
+    c.study_date,
+    c.geography,
+    c.study_type,
+    c.study_state,
+    c.comparison_geolevel_name,
+    c.denom_tab,
+    c.direct_stand_tab,
+    i.year_start,
+    i.year_stop,
+    i.max_age_group,
+    i.min_age_group,
+    c.study_geolevel_name,
+    c.map_table,
+    c.suppression_value,
+    c.extract_permitted,
+    c.transfer_permitted,
+    c.authorised_by,
+    c.authorised_on,
+    c.authorised_notes,
+    c.audsid,
+	0 AS partition_parallelisation,  --does this apply to SQL Server?
+    l.covariate_table,
+    c.project,
+    pj.description AS project_description,
+	c.stats_method,
+	c.select_state,
+	c.print_state,
+	c.export_date,
+	c.risk_analysis_exposure_field
+   FROM [rif40].[t_rif40_studies] c
+     LEFT JOIN [rif40].[rif40_study_shares] s ON c.study_id = s.study_id AND s.grantee_username=SUSER_SNAME()
+     LEFT JOIN ( SELECT i2.study_id,
+            max(i2.year_stop) AS year_stop,
+            min(i2.year_start) AS year_start,
+            max(i2.max_age_group) AS max_age_group,
+            min(i2.min_age_group) AS min_age_group
+           FROM [rif40].[t_rif40_investigations] i2
+          GROUP BY i2.study_id) i ON c.study_id = i.study_id
+     LEFT JOIN [rif40].[rif40_geographies] g ON c.geography = g.geography
+     LEFT JOIN [rif40].[t_rif40_geolevels] l ON c.geography = l.geography AND c.study_geolevel_name = l.geolevel_name
+     LEFT JOIN [rif40].[t_rif40_projects] pj ON pj.project = c.project
+  WHERE c.username=SUSER_SNAME() OR 
+  IS_MEMBER(N'[rif_manager]') = 1 OR 
+  (s.grantee_username IS NOT NULL AND s.grantee_username <> '')
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_studies';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = 'select_state' AND [object_id] = OBJECT_ID(@tableName)))
+BEGIN
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Study selection state: what the user selected (see: rifs-dsub-selectstate.js):
+
+{
+	studyType: "risk_analysis_study",
+	studySelection: {			
+		studySelectAt: undefined,
+		studySelectedAreas: [],
+		riskAnalysisType: 12, 
+		riskAnalysisDescription: "Risk Analysis (point sources, many areas, one to six bands)",
+		studyShapes: [],
+		comparisonShapes: [],
+		comparisonSelectAt: undefined,
+		comparisonSelectedAreas: [],
+		fileList: [],
+		bandAttr: []
+	},
+	showHideCentroids: false,
+	showHideSelectionShapes: true
+};
+					
+//
+// Risk analysis study types (as per rif40_studies.stype_type): 
+//
+// 11 - Risk Analysis (many areas, one band), 
+// 12 - Risk Analysis (point sources, many areas, one to six bands) [DEFAULT], 
+// 13 - Risk Analysis (exposure covariates), 
+// 14 - Risk Analysis (coverage shapefile), 
+// 15 - Risk Analysis (exposure shapefile)
+
+{
+	studyType: "disease_mapping_study",
+	studySelection: {			
+		studySelectAt: undefined,
+		studySelectedAreas: [],
+		studyShapes: [],
+		comparisonSelectAt: undefined,
+		comparisonSelectedAreas: [],
+		fileList: [],
+		bandAttr: []
+	},
+	showHideCentroids: false,
+	showHideSelectionShapes: true
+};' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'select_state'
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Study print state: what the user selected (see: rifs-util-printstate.js)' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'print_state'
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Study export date' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'export_date'
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Risk analysis exposure field (when bands selected by exposure values)' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'risk_analysis_exposure_field'
+
+END;
+GO
+
+GRANT SELECT, UPDATE, INSERT, DELETE ON rif40.rif40_studies TO rif_user;
+GO
+
+GRANT SELECT, UPDATE, INSERT, DELETE ON rif40.rif40_studies TO rif_manager;
+GO
+
+------------------------------
+-- create trigger code 
+------------------------------
+ALTER trigger [rif40].[tr_rif40_studies]
+on [rif40].[rif40_studies]
+instead of insert , update , delete
+as
+BEGIN 
+--------------------------------------
+--to  Determine the type of transaction 
+---------------------------------------
+DECLARE  @XTYPE varchar(1);
+IF EXISTS (SELECT * FROM DELETED)
+	SET @XTYPE = 'D';
+	
+IF EXISTS (SELECT * FROM INSERTED)
+BEGIN
+	IF (@XTYPE = 'D')
+		SET @XTYPE = 'U'
+	ELSE 
+		SET @XTYPE = 'I'
+END;
+
+IF @XTYPE='I'
+BEGIN
+--
+-- Check (USER = username OR NULL) and USER is a RIF user; if OK INSERT
+--
+	DECLARE @insert_invalid_user VARCHAR(MAX) = 
+	(
+		select SUSER_SNAME() AS username
+		from inserted
+		where NOT (username = SUSER_SNAME() OR username is null)
+		OR NOT ([rif40].[rif40_has_role](SUSER_SNAME(),'rif_user') = 1
+		AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') = 1)
+	);
+
+	IF @insert_invalid_user IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg1 VARCHAR(MAX) = formatmessage(51131, @insert_invalid_user);
+		THROW 51131, @err_msg1, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_studies]';
+		THROW 51131, @err_msg1, 1;
+	END CATCH;	
+
+	DECLARE @study_id INTEGER = (SELECT study_id FROM inserted);
+	IF @study_id IS NULL SET @study_id = (NEXT VALUE FOR [rif40].[rif40_study_id_seq]); /* default value in t_rif40_studies will be: NEXT VALUE FOR [rif40].[rif40_study_id_seq] */
+	
+	INSERT INTO [rif40].[t_rif40_studies] (
+				username,
+				study_id,
+				extract_table,
+				study_name,
+				summary,
+				description,
+				other_notes,
+				study_date,
+				geography,
+				study_type,
+				study_state,
+				comparison_geolevel_name,
+				denom_tab,
+				direct_stand_tab,
+				study_geolevel_name,
+				map_table,
+				suppression_value,
+				extract_permitted,
+				transfer_permitted,
+				authorised_by,
+				authorised_on,
+				authorised_notes,
+				audsid,
+				project,
+				stats_method,
+				select_state,
+				print_state,
+				export_date,
+				risk_analysis_exposure_field)
+	SELECT
+				isnull(username, SUSER_SNAME()),
+				@study_id, 
+				isnull(extract_table, 'S' + CAST(@study_id AS VARCHAR) + '_EXTRACT') /* S<study_id>_EXTRACT */,
+				study_name /* no default value */,
+				summary /* no default value */,
+				description /* no default value */,
+				other_notes /* no default value */,
+				isnull(study_date,sysdatetime()),
+				geography /* no default value */,
+				study_type /* no default value */,
+				isnull(study_state,'C'),
+				comparison_geolevel_name /* no default value */,
+				denom_tab /* no default value */,
+				direct_stand_tab /* no default value */,
+				study_geolevel_name /* no default value */,
+				isnull(map_table, 'S' + CAST(@study_id AS VARCHAR) + '_MAP') /* S<study_id>_MAP */,
+				suppression_value /* no default value */,
+				isnull(extract_permitted, 0),
+				isnull(transfer_permitted, 0),
+				authorised_by /* no default value */,
+				authorised_on /* no default value */,
+				authorised_notes /* no default value */,
+				isnull(audsid, @@spid),
+				project /* no default value */,
+				isnull(stats_method, 'NONE'),
+				select_state,
+				print_state,
+				export_date,
+				risk_analysis_exposure_field
+	FROM inserted;
+END;
+
+IF @XTYPE='U'
+BEGIN
+--
+-- Check USER = OLD.username and NEW.username = OLD.username; if OK UPDATE
+--
+	DECLARE @update_invalid_user VARCHAR(MAX) =
+	(
+		select a.username as 'old_username', b.username as 'new_username', SUSER_SNAME() as 'current_user'
+		from deleted a
+		left outer join inserted b on a.study_id=b.study_id 
+		where a.username != SUSER_SNAME() 
+		or (b.username is not null and a.username != b.username)
+		FOR XML PATH ('')
+	);
+	IF @update_invalid_user IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg2 VARCHAR(MAX) = formatmessage(51132, @update_invalid_user);
+		THROW 51132, @err_msg2, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_studies]';
+		THROW 51132, @err_msg2, 1;
+	END CATCH;	
+	
+--
+-- IG update: extract_permitted, transfer_permitted, authorised_by, authorised_on, authorised_notes
+-- State change: study_state
+--
+	UPDATE a
+       SET extract_permitted=inserted.extract_permitted, 
+           transfer_permitted=inserted.transfer_permitted,
+           authorised_by=inserted.authorised_by, 
+           authorised_on=inserted.authorised_on, 
+           authorised_notes=inserted.authorised_notes,
+           study_state=inserted.study_state,
+           select_state=inserted.select_state,
+           print_state=inserted.print_state,
+           export_date=inserted.export_date,
+		   risk_analysis_exposure_field=inserted.risk_analysis_exposure_field
+      FROM [rif40].[t_rif40_studies] a
+	  JOIN inserted ON (inserted.study_id = a.study_id);
+END;
+
+IF @XTYPE='D'
+BEGIN
+--
+-- Check USER = OLD.username; if OK DELETE
+--
+	DECLARE @delete_invalid_user VARCHAR(MAX) =
+	(
+		select username
+		from deleted
+		where username != SUSER_SNAME()
+		FOR XML PATH('')
+	);
+	IF @delete_invalid_user IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51133, @delete_invalid_user);
+		THROW 51133, @err_msg3, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_studies]';
+		THROW 51133, @err_msg3, 1;
+	END CATCH;		
+	
+	DELETE FROM [rif40].[t_rif40_studies]
+	WHERE EXISTS (
+		SELECT 1
+		FROM deleted b
+		WHERE b.study_id=[rif40].[t_rif40_studies].study_id);
+		
 END;
 
 END;
