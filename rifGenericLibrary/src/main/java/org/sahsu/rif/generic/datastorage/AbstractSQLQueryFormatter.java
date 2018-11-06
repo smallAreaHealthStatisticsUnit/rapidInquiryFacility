@@ -1,11 +1,13 @@
 package org.sahsu.rif.generic.datastorage;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.util.Map;
+import java.nio.file.Path;
 
+import org.sahsu.rif.generic.fileformats.AppFile;
+import org.sahsu.rif.generic.system.RIFGenericLibraryError;
+import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
 
 public class AbstractSQLQueryFormatter implements QueryFormatter {
@@ -13,9 +15,6 @@ public class AbstractSQLQueryFormatter implements QueryFormatter {
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 
-	private static Map<String, String> environmentalVariables = System.getenv();
-	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-	
 	/** The query. */
 	private StringBuilder query;
 	
@@ -196,68 +195,35 @@ public class AbstractSQLQueryFormatter implements QueryFormatter {
 	 * @param  fileName		Name of file containing query
 	 * @return FileReader	Handle
 	 */		
-	private FileReader getQueryFileReader(String fileName)  
-			throws Exception {
+	private FileReader getQueryFileReader(String fileName)
+			throws RIFServiceException {
 
-		FileReader file;
-		
-		String fileName1;
-		String fileName2;
-		String fileName3;
-		String fileName4;
-		
-		if (fileName == null) {
-			throw new Exception("getQueryFileReader: fileName not set"); 
-		}
-		if (databaseType == null) {
-			throw new Exception("getQueryFileReader: databaseType not set"); 
+		Path path = null;
+		AppFile sqlDir = AppFile.getServicesInstance("dataStorageLayerSQL");
+		if (sqlDir.asFile().exists()) {
+
+			if (sqlDir.path().resolve("common").toFile().exists()) {
+
+				path = sqlDir.path().resolve("common");
+			} else if (sqlDir.path().resolve(databaseType.getShortName()).toFile().exists()) {
+
+				path = sqlDir.path().resolve(databaseType.getShortName());
+			}
 		}
 
-		String basePath1;
-		String basePath2;
-		if (catalinaHome != null) {
-// e.g. %CATALINA_HOME%\conf\dataStorageLayerSQL
-			basePath1=catalinaHome + File.separator + "conf" + File.separator + "dataStorageLayerSQL"; 
-// e.g. %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\dataStorageLayerSQL
-			basePath2=catalinaHome + File.separator + "webapps" + File.separator + 
-				"rifServices" + File.separator + "WEB-INF" + File.separator + "classes" + 
-				File.separator + "dataStorageLayerSQL"; 
-		} else {
-			throw new Exception("getQueryFileReader: CATALINA_HOME not set in environment"); 
-		}
-		fileName1=basePath1 + File.separator + "common" + File.separator + fileName;
-		fileName2=basePath1 + File.separator + 
-			databaseType.getShortName() + File.separator + fileName;
-		fileName3=basePath2 + File.separator + "common" + File.separator + fileName;
-		fileName4=basePath2+ File.separator + 
-			databaseType.getShortName() + File.separator + fileName;
-		
-		try {
-			file=new FileReader(fileName1);
-		} 
-		catch (IOException ioException) {
+		if (path != null) {
+
 			try {
-				file=new FileReader(fileName2);
+
+				return new FileReader(path.toFile());
+			} catch (FileNotFoundException e) {
+				// Handled below.
 			}
-			catch (IOException ioException2) {
-				try {
-					file=new FileReader(fileName3);
-				}				
-				catch (IOException ioException3) {
-					try {
-						file=new FileReader(fileName4);
-					}
-					catch (IOException ioException4) {				
-						rifLogger.error(this.getClass(), 
-							"getQueryFileReader error for files: " + 
-								fileName1 + ", " + fileName2 + ", " + fileName3 + " and " + fileName3, 
-							ioException4);
-						throw ioException4;
-					}
-				}
-			}
-		}			
-		return file;
+		}
+
+		throw new RIFServiceException(RIFGenericLibraryError.FILE_NOT_FOUND,
+		                              "File " + fileName + " was not found in any of the standard "
+		                              + "locations.");
 	}
 	
 	@Override

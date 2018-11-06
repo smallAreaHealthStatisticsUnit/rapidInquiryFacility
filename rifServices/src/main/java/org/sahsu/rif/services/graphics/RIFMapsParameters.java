@@ -354,7 +354,7 @@ public class RIFMapsParameters {
 		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");
 		String printState=manager.getColumnFromResultSet(rif40Studies, "print_state", true /* allowNulls */, false /*  allowNoRows */);
 		
-		BufferedReader reader = AppFile.getInstance(AppFile.FRONT_END_PARAMETERS_FILE).reader();
+		BufferedReader reader = AppFile.getServicesInstance(AppFile.FRONT_END_PARAMETERS_FILE).reader();
 
 		Json5Parse frontEndJson5Parse = new Json5Parse(reader);
 		JSONObject frontEndJson = frontEndJson5Parse.toJson(); // Check it parses OK

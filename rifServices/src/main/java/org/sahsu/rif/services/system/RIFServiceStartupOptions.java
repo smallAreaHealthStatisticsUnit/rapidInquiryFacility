@@ -448,7 +448,7 @@ public class RIFServiceStartupOptions {
 
 		if (isWebDeployment) {
 
-			String path = AppFile.getInstance(".").pathToClassesDirectory().toString();
+			String path = AppFile.getServicesInstance(".").pathToClassesDirectory().toString();
 			if (!RChecked) {
 				rifLogger.info(getClass(), "RIFServiceStartupOptions is web deployment");
 
@@ -475,7 +475,7 @@ public class RIFServiceStartupOptions {
 
 		if (isWebDeployment) {
 
-			String path = AppFile.getInstance(".").pathToLibDirectory().toString();
+			String path = AppFile.getServicesInstance(".").pathToLibDirectory().toString();
 			rifLogger.info(getClass(), "Returning path: " + path);
 			return path;
 		}

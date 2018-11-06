@@ -58,7 +58,7 @@ public final class RIFServiceStartupProperties {
 
 		if (resourceBundle == null) {
 			AppResourceBundle bundle = new AppResourceBundle(
-					AppFile.getInstance(STARTUP_PROPERTIES_FILE));
+					AppFile.getServicesInstance(STARTUP_PROPERTIES_FILE));
 			String msg = String.format("%s: loaded resource bundle %s%n",
 			                           getClass().getSimpleName(),
 			                           bundle.appFile().asString());

@@ -24,10 +24,21 @@ public interface AppFile {
 	 * @param fileName the name of the file
 	 * @return a representation of the specified file name
 	 */
-	static AppFile getInstance(String fileName) {
+	static AppFile getServicesInstance(String fileName) {
 
 		// Only Tomcat versions for now
 		return getInstance(fileName, false);
+	}
+
+	/**
+	 * Returns a AppFile for the specified file, assuming we're in the taxonomyServices environment.
+	 * @param fileName the name of the file
+	 * @return a representation of the specified file name
+	 */
+	static AppFile getTaxonomyInstance(String fileName) {
+
+		// Only Tomcat versions for now
+		return getInstance(fileName, true);
 	}
 
 	/**
@@ -44,7 +55,7 @@ public interface AppFile {
 
 	static AppFile getFrontEndParametersInstance() {
 
-		return getInstance(FRONT_END_PARAMETERS_FILE);
+		return getServicesInstance(FRONT_END_PARAMETERS_FILE);
 	}
 
 	/**

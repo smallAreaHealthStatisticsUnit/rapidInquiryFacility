@@ -499,7 +499,7 @@ public class BaseSQLManager implements SQLManager {
 		if (prop == null) {
 
 			try {
-				prop = AppFile.getInstance(BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES)
+				prop = AppFile.getServicesInstance(BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES)
 						       .properties();
 			} catch (IOException e) {
 				rifLogger.warning(this.getClass(),

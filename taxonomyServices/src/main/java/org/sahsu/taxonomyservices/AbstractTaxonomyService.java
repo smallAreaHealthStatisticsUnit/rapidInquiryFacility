@@ -169,7 +169,7 @@ public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 			                              + "file", taxonomyServiceConfiguration.getName());
 		}
 
-		return AppFile.getInstance(taxonomyFileName, true).path();
+		return AppFile.getTaxonomyInstance(taxonomyFileName).path();
 	}
 
 	/**
