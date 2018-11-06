@@ -215,7 +215,7 @@ public class AbstractSQLQueryFormatter implements QueryFormatter {
 
 			try {
 
-				return new FileReader(path.toFile());
+				return new FileReader(path.resolve(fileName).toFile());
 			} catch (FileNotFoundException e) {
 				// Handled below.
 			}
