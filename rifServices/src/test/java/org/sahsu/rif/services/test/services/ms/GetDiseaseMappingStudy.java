@@ -16,7 +16,6 @@ import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.datastorage.common.SampleTestObjectGenerator;
-import org.sahsu.rif.services.fileformats.RIFZipFileWriter;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.test.services.CommonRIFServiceTestCase;
 
@@ -150,13 +149,6 @@ public final class GetDiseaseMappingStudy
 			RIFStudySubmission submission =
 					RIFStudySubmission.newInstance();
 			submission.setStudy(diseaseMappingStudy);
-			
-			RIFZipFileWriter writer = new RIFZipFileWriter();
-			User user = User.newInstance("kgarwood", "xxx");
-			File targetFile = new File("C://rif_scripts/result.zip");
-			writer.writeZipFile(user, targetFile, submission);
-			
-			
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();			

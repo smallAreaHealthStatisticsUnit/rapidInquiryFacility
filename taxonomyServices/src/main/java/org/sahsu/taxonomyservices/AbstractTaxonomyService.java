@@ -7,8 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sahsu.rif.generic.concepts.Parameter;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 
@@ -157,7 +156,7 @@ public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 	 * @throws RIFServiceException if the file name is not in the configuration, or the file is
 	 * not found.
 	 */
-	protected Path getTaxonomyFilePath(
+	Path getTaxonomyFilePath(
 			final TaxonomyServiceConfiguration taxonomyServiceConfiguration,
 			String taxonomyFileParameter) throws RIFServiceException {
 
@@ -170,7 +169,7 @@ public abstract class AbstractTaxonomyService implements TaxonomyServiceAPI {
 			                              + "file", taxonomyServiceConfiguration.getName());
 		}
 
-		return new TomcatFile(new TomcatBase(), taxonomyFileName, true).path();
+		return AppFile.getTaxonomyInstance(taxonomyFileName).path();
 	}
 
 	/**

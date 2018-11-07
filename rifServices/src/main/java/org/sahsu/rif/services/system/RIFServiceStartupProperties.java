@@ -6,10 +6,9 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.lang.StringUtils;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
+import org.sahsu.rif.generic.fileformats.AppFile;
+import org.sahsu.rif.generic.fileformats.AppResourceBundle;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatResourceBundle;
 
 /**
  * Reads values from the RIFServiceStartupProperties.properties file.
@@ -58,12 +57,11 @@ public final class RIFServiceStartupProperties {
 	private RIFServiceStartupProperties() {
 
 		if (resourceBundle == null) {
-			TomcatResourceBundle bundle = new TomcatResourceBundle(
-					new TomcatFile(
-							new TomcatBase(), STARTUP_PROPERTIES_FILE));
+			AppResourceBundle bundle = new AppResourceBundle(
+					AppFile.getServicesInstance(STARTUP_PROPERTIES_FILE));
 			String msg = String.format("%s: loaded resource bundle %s%n",
 			                           getClass().getSimpleName(),
-			                           bundle.tomcatFile().asString());
+			                           bundle.appFile().asString());
 			rifLogger.info(getClass(), msg);
 			resourceBundle = bundle.bundle();
 

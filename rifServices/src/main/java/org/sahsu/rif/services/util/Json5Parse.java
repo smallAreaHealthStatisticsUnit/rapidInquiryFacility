@@ -23,7 +23,8 @@ public class Json5Parse {
 		while ((line = reader.readLine()) != null) {
 			sb.append(line.replaceAll("//.*", "") + lineSeparator); // Remove single line comments
 		} // This could theoretically cause a stack overflow; but it is very, very unlikely...
-			
+
+		reader.close();
 		String jsonText=jsonText=sb.toString();
 		jsonText=removeCstyleComments(jsonText);					// Remove C style comments
 		

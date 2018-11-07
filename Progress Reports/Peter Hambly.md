@@ -3058,3 +3058,11 @@ Further changes are needed to support risk analysis:
   * Fix shape layer order (not ordered as createAreaNameList() not working);  
 * Add intersection code to middleware and database (alter_11.sql)
 * Test Postgres 10 and SQL Server partitioning on UK EWS2011 population data
+
+#### 5th to 11th November
+
+* Test and merge #106: Adds ICD 9 support; #107: Improve taxonomy service startup;
+* Complete intersection middleware insert to database; 
+* RIF Meeting;
+* Fix basemap selection: allow to change, no network support, saved state;
+* Add support for exposure values to alter scripts;

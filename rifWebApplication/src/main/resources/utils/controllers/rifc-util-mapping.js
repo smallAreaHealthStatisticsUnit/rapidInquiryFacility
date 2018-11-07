@@ -1066,6 +1066,12 @@ angular.module("RIF")
 								$scope.thisLayer[mapID].name : undefined);
 								
 							$scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
+							$scope.thisLayer.on("load", function() { 
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap loaded for map: " + mapID + " to: " +  getCurrentBaseMap);
+							});
+							$scope.thisLayer.on("tileerror", function() { 
+								alertScope.consoleLog("[rifd-dsub-maptable.js] tileerror for map: " + mapID + " to: " +  getCurrentBaseMap);
+							});
 							$scope.thisLayer[mapID].addTo($scope.map[mapID]);
 							LeafletBaseMapService.setNoBaseMap(mapID, false);
 							

@@ -48,7 +48,6 @@ import org.sahsu.rif.services.concepts.YearRange;
 import org.sahsu.rif.services.datastorage.common.SampleTestObjectGenerator;
 import org.sahsu.rif.services.datastorage.common.ServiceBundle;
 import org.sahsu.rif.services.datastorage.common.ServiceResources;
-import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLReader;
 import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLWriter;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
@@ -1066,29 +1065,29 @@ public class WebService {
 				result);
 	}
 	
-	protected Response getStudySubmission(
-		final HttpServletRequest servletRequest,
-		final String userID,
-		final String studyID) {
-		
+	Response getStudySubmission(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {
+
 		String result;
-		
+
 		try {
 			User user = createUser(servletRequest, userID);
 
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
-			
+
 			DiseaseMappingStudy diseaseMappingStudy =
 				studySubmissionService.getDiseaseMappingStudy(
 					user,
 					studyID);
-			
+
 			SampleTestObjectGenerator generator = new SampleTestObjectGenerator();
 			RIFStudySubmission sampleStudySubmission
 				= generator.createSampleRIFJobSubmission();
 			sampleStudySubmission.setStudy(diseaseMappingStudy);
-			
+
 			RIFStudySubmissionXMLWriter writer = new RIFStudySubmissionXMLWriter();
 			String xmlResults
 				= writer.writeToString(
@@ -1097,7 +1096,7 @@ public class WebService {
 
 			JSONObject jsonObject
 				= org.json.XML.toJSONObject(xmlResults);
-			
+
 			//run through XML To JSON converter
 			result = jsonObject.toString(4);
 		}
@@ -1109,7 +1108,7 @@ public class WebService {
 					servletRequest,
 					rifServiceException);
 		}
-		
+
 		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);

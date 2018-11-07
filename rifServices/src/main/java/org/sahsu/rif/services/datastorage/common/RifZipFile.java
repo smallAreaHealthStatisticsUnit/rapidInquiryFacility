@@ -25,7 +25,6 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -34,6 +33,7 @@ import org.json.JSONObject;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -45,8 +45,6 @@ import org.sahsu.rif.services.graphics.RIFGraphicsOutputType;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 import com.sun.rowset.CachedRowSetImpl;
 
@@ -54,20 +52,12 @@ public class RifZipFile {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-	private Connection connection;
-	private String studyID;
 	private static String EXTRACT_DIRECTORY;
 	private static int printingDPI;
 	
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
-	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
-	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
-	private static final String GEOGRAPHY_SUBDIRECTORY = "geography";
 	private static final int BASE_FILE_STUDY_NAME_LENGTH = 100;
-	
-	private static Map<String, String> environmentalVariables = System.getenv();
-	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-	
+
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
 	private static int denominatorPyramidWidthPixels;
@@ -1948,7 +1938,7 @@ public class RifZipFile {
 
 	private String readFile(String file) throws IOException {
 
-		TomcatFile tcFile = new TomcatFile(new TomcatBase(), file);
+		AppFile tcFile = AppFile.getServicesInstance(file);
 				
 		BufferedReader reader = tcFile.reader();
 		String line;

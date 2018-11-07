@@ -5,8 +5,7 @@ import java.nio.file.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 
 public class StartService {
@@ -35,7 +34,7 @@ public class StartService {
 
 				FederatedTaxonomyService federatedTaxonomyService =
 						FederatedTaxonomyService.getFederatedTaxonomyService();
-				Path classesPath = new TomcatFile(new TomcatBase(), ".", true).path();
+				Path classesPath = AppFile .getTaxonomyInstance(".").path();
 				federatedTaxonomyService.initialise(classesPath);
 
 				running = true;

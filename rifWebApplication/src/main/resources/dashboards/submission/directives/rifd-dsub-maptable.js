@@ -1673,7 +1673,13 @@ angular.module("RIF")
                             if (!LeafletBaseMapService.getNoBaseMap("areamap")) {
 								var currentBaseMapInUse=(($scope.thisLayer && $scope.thisLayer.name) ? $scope.thisLayer.name: undefined);
                                 $scope.thisLayer = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
-								
+								$scope.thisLayer.on("load", function() { 
+									alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap loaded for map: areamap to: " +  getCurrentBaseMap);
+								});
+								$scope.thisLayer.on("tileerror", function() { 
+									alertScope.consoleLog("[rifd-dsub-maptable.js] tileerror for map: areamap to: " +  getCurrentBaseMap);
+								});
+											
                                 $scope.thisLayer.addTo(CommonMappingStateService.getState("areamap").map);
 								LeafletBaseMapService.setNoBaseMap("areamap", false);
 								
@@ -1684,6 +1690,7 @@ angular.module("RIF")
 									noTiles=Object.keys($scope.thisLayer._tiles).length;
 								}
 								if (getCurrentBaseMap != currentBaseMapInUse) {
+									
 									if (noTiles > 0) {
 										alertScope.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
 									}
