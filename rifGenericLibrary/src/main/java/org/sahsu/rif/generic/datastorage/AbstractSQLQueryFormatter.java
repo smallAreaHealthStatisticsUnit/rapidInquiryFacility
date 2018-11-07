@@ -153,10 +153,9 @@ public class AbstractSQLQueryFormatter implements QueryFormatter {
 			final DatabaseType databaseType)
 			throws Exception {
 		setDatabaseType(databaseType);
-		FileReader file = getQueryFileReader(fileName);
 
-		try (BufferedReader bufferedReader = new BufferedReader(file)) {
-			// wrap a BufferedReader around FileReader
+		try (BufferedReader bufferedReader = new BufferedReader(getQueryFileReader(fileName))) {
+
 			String line;
 
 			// use the readLine method of the BufferedReader to read one line at a time.
@@ -169,7 +168,7 @@ public class AbstractSQLQueryFormatter implements QueryFormatter {
 			for (int i = 0; i < args.length; i++) {
 				queryReplaceAll("%" + (i + 1), args[i]); // replace %1 with args[1] etc
 			}
-		}		
+		}
 	}
 
 	@Override

@@ -93,6 +93,7 @@ public class TomcatFile implements AppFile {
 		if (props == null) {
 			props = new Properties();
 			props.load(reader());
+			reader.close();
 		}
 		return props;
 	}
