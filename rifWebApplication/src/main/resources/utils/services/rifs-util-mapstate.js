@@ -43,7 +43,7 @@ angular.module("RIF")
 						"areamap": "Study and comparison area map",
 						"diseasemap1": "Disease mapping left hand map",
 						"diseasemap2": "Disease mapping right hand map",
-						"viewer": "Viewer map"
+						"viewermap": "Viewer map"
 					};
 				
 					var shapeId=0;
@@ -61,6 +61,8 @@ angular.module("RIF")
 					var s = {};
 					var t = { // All possible mapping elements
 						map: undefined,
+						basemap: undefined,
+						noBasemap: false,
 						shapes: undefined,
 						drawnItems: undefined,
 						info: undefined,
@@ -80,6 +82,14 @@ angular.module("RIF")
 						currentBand: undefined,
 						possibleBands: undefined,
 						description: undefined,
+						setBasemap: function (basemap, noBasemap) {
+							AlertService.consoleLog("[rifs-util-mapstate.js] setBasemap() from: " + this.basemap + " to: " + basemap + 
+								"; noBasemap: " + noBasemap +
+								"; for map: " + this.description);
+							this.basemap = basemap;
+							this.noBasemap = noBasemap;
+							return this.basemap;
+						},
 						getSelectedPolygon: function(areaType) { // Get selectedPolygon list
 							checkAreaType(areaType);
 							return this.areaType.selectedPolygon;

@@ -1631,14 +1631,34 @@ angular.module("RIF")
 						
                         //Set the user defined basemap
 						// Called from rifc-dmap-main.js
-                        $scope.renderMap = function (mapID) {
-							if (thisGeography) {
+                        $scope.renderMap = function (mapID, currentBaseMapInUse) {
+							
+							if (mapID == undefined) {
+								throw new Error("mapID is undefined");
+							}
+							
+							var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse(mapID);
+							if (currentBaseMapInUse && getCurrentBaseMap) {
+								LeafletBaseMapService.setCurrentBaseMapInUse(mapID, currentBaseMapInUse);
+								setBaseMapCallback(undefined /* No error */, mapID);
+							}
+							else if (CommonMappingStateService.getState(mapID).basemap) {
+								LeafletBaseMapService.setCurrentBaseMapInUse(mapID, CommonMappingStateService.getState(mapID).basemap);
+								LeafletBaseMapService.setNoBaseMap(mapID, (CommonMappingStateService.getState(mapID).noBasemap || false));
+								setBaseMapCallback(undefined /* No error */, mapID);
+							}
+							else if (thisGeography) {
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setDefaultMapBackground for map: " + mapID + 
+									"; geography: " + thisGeography + 
+									"; currentBaseMapInUse: " + currentBaseMapInUse + 
+									"; getCurrentBaseMap: " + getCurrentBaseMap, new Error("Dummy"));		
 								LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback, mapID);
 							}
 							else {
-								$scope.consoleLog("[rifc-util-mapping.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
+								alertScope.consoleLog("[rifd-dsub-maptable.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
 									mapID);
 								LeafletBaseMapService.setDefaultBaseMap(mapID);
+								setBaseMapCallback(undefined /* No error */, mapID);
 							}							
                         };
 					
@@ -1647,19 +1667,43 @@ angular.module("RIF")
 								alertScope.consoleLog("[rifd-dsub-maptable.js] LeafletBaseMapService.setDefaultMapBackground had error: " + 
 									err);
 							}
-							
+								
                             CommonMappingStateService.getState("areamap").map.removeLayer($scope.thisLayer);
+							var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse("areamap");
                             if (!LeafletBaseMapService.getNoBaseMap("areamap")) {
-								var newBaseMap = LeafletBaseMapService.getCurrentBaseMapInUse("areamap");
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + newBaseMap);
-                                $scope.thisLayer = LeafletBaseMapService.setBaseMap(newBaseMap);
+								var currentBaseMapInUse=(($scope.thisLayer && $scope.thisLayer.name) ? $scope.thisLayer.name: undefined);
+                                $scope.thisLayer = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
+								
                                 $scope.thisLayer.addTo(CommonMappingStateService.getState("areamap").map);
 								LeafletBaseMapService.setNoBaseMap("areamap", false);
+								
+								CommonMappingStateService.getState("areamap").setBasemap(getCurrentBaseMap, false /* no basemap*/);
+								
+								var noTiles;
+								if ($scope.thisLayer && $scope.thisLayer._tiles) {
+									noTiles=Object.keys($scope.thisLayer._tiles).length;
+								}
+								if (getCurrentBaseMap != currentBaseMapInUse) {
+									if (noTiles > 0) {
+										alertScope.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
+									}
+									else {
+										alertScope.showWarning("Unable to change current base map in use from: " + currentBaseMapInUse + 
+											"; to: " + getCurrentBaseMap + 
+											"; no tiles loaded");
+										LeafletBaseMapService.setNoBaseMap("areamap", true);
+									}
+								}
+								else {	
+									alertScope.consoleLog("[rifd-dsub-maptable.js] setCurrentBaseMapInUse for map: areamap" + 
+										"; currentBaseMapInUse: " + currentBaseMapInUse + 
+										"; getCurrentBaseMap: " + getCurrentBaseMap);	
+								}
                             }
-							else {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: NONE");
-								LeafletBaseMapService.setNoBaseMap("areamap", true);
-							}
+//							else {
+//								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: NONE");
+//								LeafletBaseMapService.setNoBaseMap("areamap", true);
+//							}
                             //hack to refresh map
                             $timeout(function () {
                                 CommonMappingStateService.getState("areamap").map.invalidateSize();

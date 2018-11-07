@@ -38,9 +38,11 @@
 /* global L */
 angular.module("RIF")
         .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'ChoroService', 'ColorBrewerService', 
-            'MappingStateService', 'ViewerStateService', 'MappingService', 'ParametersService', 'SelectStateService', '$timeout', 
+            'MappingStateService', 'ViewerStateService', 'MappingService', 'ParametersService', 'SelectStateService', 
+			'CommonMappingStateService', '$timeout', '$q',
             function ($scope, user, LeafletBaseMapService, ChoroService, ColorBrewerService,
-                    MappingStateService, ViewerStateService, MappingService, ParametersService, SelectStateService, $timeout) {
+                    MappingStateService, ViewerStateService, MappingService, ParametersService, SelectStateService, 
+					CommonMappingStateService, $timeout, $q) {
 
                 //Reference the parent scope, viewer or disease mapping
                 var parentScope = $scope.$parent;
@@ -1029,9 +1031,107 @@ angular.module("RIF")
 				 * This is wrong as a) $scope.tileInfo[mapID].geography is not in scope
 				 * Needs to be called when you change the study ID 
 				 */
-                $scope.renderMap = function (mapID) {
-					var thisGeography = $scope.tileInfo[mapID].geography
-					if (thisGeography) {
+                $scope.renderMap = function (mapID, currentBaseMapInUse, renderMapCallback) {
+					
+					function setBaseMapCallback(err, mapID) {
+						if (err) { // LeafletBaseMapService.setDefaultMapBackground had error
+							$scope.consoleLog("[rifc-util-mapping.js] WARNING LeafletBaseMapService.setDefaultMapBackground for map: " + mapID + 
+								" had error: " + err);
+							if (renderMapCallback && typeof renderMapCallback === "function") {
+								renderMapCallback("[rifc-util-mapping.js] WARNING LeafletBaseMapService.setDefaultMapBackground for map: " + mapID + 
+								" had error: " + err);
+							}
+						}				
+						var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse(mapID);
+							
+						if ($scope.studyID[mapID].study_id) {
+							$scope.consoleDebug("[rifc-util-mapping.js] renderMap (basemap) for mapID: " + mapID + 
+								"; study: " + $scope.studyID[mapID].study_id + 
+								"; sex: " + $scope.sex[mapID] + 
+								"; getCurrentBaseMap: " + getCurrentBaseMap);			
+						}
+						else {
+							$scope.consoleDebug("[rifc-util-mapping.js] renderMap (basemap) for mapID: " + mapID + 
+								"; study: not set; sex: not set ; getCurrentBaseMap: " + getCurrentBaseMap);	
+						}
+						
+						if ($scope.thisLayer[mapID]) {
+							$scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
+						}
+						
+						//add new baselayer if requested
+						if (!LeafletBaseMapService.getNoBaseMap(mapID)) {
+							
+							var currentBaseMapInUse= (($scope.thisLayer[mapID] && $scope.thisLayer[mapID].name) ? 
+								$scope.thisLayer[mapID].name : undefined);
+								
+							$scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
+							$scope.thisLayer[mapID].addTo($scope.map[mapID]);
+							LeafletBaseMapService.setNoBaseMap(mapID, false);
+							
+							var thisGeography = $scope.tileInfo[mapID].geography;
+							if (thisGeography) { // Only set if not the default method
+								CommonMappingStateService.getState(mapID).setBasemap(getCurrentBaseMap, false /* no basemap*/);
+							}
+							
+							var noTiles;
+							if ($scope.thisLayer[mapID] && $scope.thisLayer[mapID]._tiles) {
+								noTiles=Object.keys($scope.thisLayer[mapID]._tiles).length;
+							}
+							if (getCurrentBaseMap != currentBaseMapInUse) {
+								if (noTiles > 0) {
+									$scope.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
+								}
+								else {
+									$scope.showWarning("Unable to change current base map in use from: " + currentBaseMapInUse + 
+										"; to: " + getCurrentBaseMap +
+										"; no tiles loaded");
+									LeafletBaseMapService.setNoBaseMap(mapID, true);
+								}
+							}
+							else {	
+								$scope.consoleLog("[rifc-util-mapping.js] setCurrentBaseMapInUse for map: " + mapID + 
+									"; currentBaseMapInUse: " + currentBaseMapInUse + 
+									"; getCurrentBaseMap: " + getCurrentBaseMap +
+									"; tiles: " + noTiles);	
+							}								
+						}	
+						
+						if (renderMapCallback && typeof renderMapCallback === "function") {
+							renderMapCallback();
+						}
+					};
+				
+					var thisGeography = $scope.tileInfo[mapID].geography;
+					var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse(mapID);
+					
+/*
++141.4: [rifc-util-mapping.js] use CommonMappingStateService.getState("viewermap").basemap for map: viewermap; geography: SAHSULAND; 
+                               currentBaseMapInUse: undefined; getCurrentBaseMap: Thunderforest Transport
+ */
+					if (currentBaseMapInUse && getCurrentBaseMap) {
+						$scope.consoleLog("[rifc-util-mapping.js] use currentBaseMapInUse for map: " + mapID + 
+							"; geography: " + thisGeography + 
+							"; currentBaseMapInUse: " + currentBaseMapInUse + 
+							"; getCurrentBaseMap: " + getCurrentBaseMap);
+						LeafletBaseMapService.setCurrentBaseMapInUse(mapID, currentBaseMapInUse);
+						setBaseMapCallback(undefined /* No error */, mapID);
+					}
+//					else if (CommonMappingStateService.getState(mapID).basemap) {
+//						$scope.consoleLog('[rifc-util-mapping.js] use CommonMappingStateService.getState("' + mapID + '").basemap for map: ' + 
+//							mapID + 
+//							"; geography: " + thisGeography + 
+//							"; currentBaseMapInUse: " + currentBaseMapInUse + 
+//							"; getCurrentBaseMap: " + getCurrentBaseMap);
+//						LeafletBaseMapService.setCurrentBaseMapInUse(mapID, CommonMappingStateService.getState(mapID).basemap);
+//						LeafletBaseMapService.setNoBaseMap(mapID, (CommonMappingStateService.getState(mapID).noBasemap || false));
+//						setBaseMapCallback(undefined /* No error */, mapID);
+//					}
+					else if (thisGeography) {
+						$scope.consoleLog("[rifc-util-mapping.js] setDefaultMapBackground for map: " + mapID + 
+							"; geography: " + thisGeography + 
+							"; currentBaseMapInUse: " + currentBaseMapInUse + 
+							"; getCurrentBaseMap: " + getCurrentBaseMap);	
 						LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback, mapID);
 					}
 					else {
@@ -1039,42 +1139,9 @@ angular.module("RIF")
 						$scope.consoleLog("[rifc-util-mapping.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
 							mapID + 
 							"; using default basemap: " + LeafletBaseMapService.getCurrentBaseMapInUse(mapID));
+						setBaseMapCallback(undefined /* No error */, mapID);
 					}
-					var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse(mapID);
-					if ($scope.thisLayer[mapID]) {
-						$scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
-					}
-					//add new baselayer if requested
-					if (!LeafletBaseMapService.getNoBaseMap(mapID)) {
-						$scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
-						$scope.thisLayer[mapID].addTo($scope.map[mapID]);
-					}	
 				};
-						
-				function setBaseMapCallback(err, mapID) {
-					if (err) { // LeafletBaseMapService.setDefaultMapBackground had error
-						$scope.consoleLog("[rifc-util-mapping.js] WARNING LeafletBaseMapService.setDefaultMapBackground for map: " + mapID + 
-							" had error: " + err);
-					}				
-							
-					var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse(mapID);
-					if ($scope.studyID[mapID].study_id) {
-						$scope.consoleDebug("[rifc-util-mapping.js] renderMap (basemap) for mapID: " + mapID + 
-							"; study: " + $scope.studyID[mapID].study_id + 
-							"; sex: " + $scope.sex[mapID] + 
-							"; getCurrentBaseMap: " + getCurrentBaseMap);			
-					}
-					else {
-						$scope.consoleDebug("[rifc-util-mapping.js] renderMap (basemap) for mapID: " + mapID + 
-							"; study: not set; sex: not set ; getCurrentBaseMap: " + getCurrentBaseMap);	
-					}
-					$scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
-					//add new baselayer if requested
-					if (!LeafletBaseMapService.getNoBaseMap(mapID)) {
-						$scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
-						$scope.thisLayer[mapID].addTo($scope.map[mapID]);
-					}	
-                };
 
                 //Draw the map
                 $scope.refresh = function (mapID) {
@@ -1621,48 +1688,62 @@ angular.module("RIF")
 								}	
 								
 								user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
-									function (res) {
-										$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
-										$scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
-					
-										$scope.renderMap(mapID);
-										
-										$scope.consoleDebug("[rifc-util-mapping.js] set studyType for map: " + mapID + ": " + 
-											$scope.myService.getState().studyType[mapID] + 
-											"; studyID: " + JSON.stringify($scope.studyID[mapID], null, 1) + 
-											"; mappingDefaults: " + JSON.stringify($scope.parameters.mappingDefaults[mapID], null, 1));
-
-										$scope.consoleDebug("[rifc-util-mapping.js] setup ChoroService, mapID: " + mapID + 
-											"; study_id: " + $scope.studyID[mapID].study_id +
-											"; Saved map state: " + JSON.stringify(ChoroService.getMaps(mapID), null, 2));
-										
-										// Synchronised in on load
-										
-										getAttributeTable(mapID, // Needs study_id, sex
-											function getAttributeTableCallBack(msg) {
-												$scope.consoleDebug(msg);
-
-											},
-											function getAttributeTableError(e) {
-												$scope.showError("Error fetching table data for mapID: " + mapID + "; " + e);
-											});
+									function geographyAndLevelForStudyProcessing(res) {
+										return $q(function(resolve, reject) {
+											if (res.data && res.data[0] && res.data[0][0] && res.data[0][1]) { // OK
+											}
+											else {
+												reject("Null data returned by user.getGeographyAndLevelForStudy: " + JSON.stringify(res.data));
+											}	
+											$scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
+											$scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
+											$scope.consoleDebug("[rifc-util-mapping.js] set tileInfo for map: " + mapID + ": " + 
+												"; geography: " + $scope.tileInfo[mapID].geography +
+												"; level: " + $scope.tileInfo[mapID].level);
+						
+											function renderMapCallback(err) {
+												if (err) {
+													reject(err);
+												}
+											}
+											$scope.renderMap(mapID, undefined /* currentBaseMapInUse */, renderMapCallback);
 											
-										$scope.createTopoJSONLayer(mapID);
-										$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
-											"; study: " + $scope.studyID[mapID].study_id);												
-										$scope.map[mapID].addLayer($scope.geoJSON[mapID]); // Add layer to map
-													
-										$scope.map[mapID].whenReady(function(e) {	
-											//pan events                            
-												$scope.map[mapID].on('zoomend', function (e) {
-													$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+											$scope.consoleDebug("[rifc-util-mapping.js] set studyType for map: " + mapID + ": " + 
+												$scope.myService.getState().studyType[mapID] + 
+												"; studyID: " + JSON.stringify($scope.studyID[mapID], null, 1) + 
+												"; mappingDefaults: " + JSON.stringify($scope.parameters.mappingDefaults[mapID], null, 1));
+
+											$scope.consoleDebug("[rifc-util-mapping.js] setup ChoroService, mapID: " + mapID + 
+												"; study_id: " + $scope.studyID[mapID].study_id +
+												"; Saved map state: " + JSON.stringify(ChoroService.getMaps(mapID), null, 2));
+											
+											getAttributeTable(mapID, // Needs study_id, sex
+												function getAttributeTableCallBack(msg) {
+													$scope.consoleDebug(msg);
+													$scope.createTopoJSONLayer(mapID);
+													$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
+														"; study: " + $scope.studyID[mapID].study_id);												
+													$scope.map[mapID].addLayer($scope.geoJSON[mapID]); // Add layer to map
+																
+													$scope.map[mapID].whenReady(function(e) {	
+														//pan events                            
+															$scope.map[mapID].on('zoomend', function (e) {
+																$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+															});
+															$scope.map[mapID].on('moveend', function (e) {
+																$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
+																$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
+															});
+															resolve("Map created " + mapID + " OK");
+														});
+													// End of create grid layer	
+												},
+												function getAttributeTableError(e) {
+													$scope.showError("Error fetching table data for mapID: " + mapID + "; " + e);
+													reject("Error fetching table data for mapID: " + mapID + "; " + e);
 												});
-												$scope.map[mapID].on('moveend', function (e) {
-													$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
-													$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
-												});
-											});
-										// End of create grid layer											
+
+										});										
 
 									}, function (e) { //getGeographyAndLevelForStudy error handler
 										$scope.consoleError("[rifc-util-mapping.js] Unable to getGeographyAndLevelForStudy(): " + 
@@ -1691,6 +1772,9 @@ angular.module("RIF")
 										);
 									});
 									
+								}, function (e) { //getGeographyAndLevelForStudy error handler
+										$scope.consoleError("[rifc-util-mapping.js] Error in geographyAndLevelForStudyProcessing(): " + 
+											JSON.stringify(e));
 								});								
 							}
 						}			
