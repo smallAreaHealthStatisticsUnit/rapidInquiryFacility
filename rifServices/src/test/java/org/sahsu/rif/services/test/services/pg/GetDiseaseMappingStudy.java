@@ -16,7 +16,6 @@ import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.datastorage.common.SampleTestObjectGenerator;
-import org.sahsu.rif.services.fileformats.RIFZipFileWriter;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.test.services.CommonRIFServiceTestCase;
 
@@ -134,61 +133,19 @@ public final class GetDiseaseMappingStudy extends CommonRIFServiceTestCase {
 
 		populateDatabaseWithValidStudy();
 
-		//use an example rif submission from the sample data
-		//generator we have
-		SampleTestObjectGenerator sampleTestObjectGenerator
-			= new SampleTestObjectGenerator();
-		RIFStudySubmission studySubmission
-			= sampleTestObjectGenerator.createSampleRIFJobSubmission();
-
-		DiseaseMappingStudy diseaseMappingStudy
-			= rifStudySubmissionService.getDiseaseMappingStudy(
-				validUser,
-				validStudyID);
-
-		RIFStudySubmission submission =
-				RIFStudySubmission.newInstance();
+		DiseaseMappingStudy diseaseMappingStudy = rifStudySubmissionService.getDiseaseMappingStudy(
+				validUser, validStudyID);
+		RIFStudySubmission submission = RIFStudySubmission.newInstance();
 		submission.setStudy(diseaseMappingStudy);
-
-		RIFZipFileWriter writer = new RIFZipFileWriter();
-		User user = User.newInstance("kgarwood", "xxx");
-		File targetFile = new File("C://rif_scripts/result.zip");
-		writer.writeZipFile(user, targetFile, submission);
 	}
 	
 	
 	@Test
 	public void getDiseaseMappingStudy_EMPTY1() throws RIFServiceException {
 
-		User validUser = cloneValidUser();
-
 		populateDatabaseWithValidStudy();
-
-		//use an example rif submission from the sample data
-		//generator we have
-
-
-		DiseaseMappingStudy diseaseMappingStudy
-			= rifStudySubmissionService.getDiseaseMappingStudy(
-				validUser,
-				validStudyID);
 	}
 	
-	@Test
-	public void submitStudy_EMPTY1() throws RIFServiceException {
-
-		User validUser = cloneValidUser();
-
-		//use an example rif submission from the sample data
-		//generator we have
-
-
-		DiseaseMappingStudy diseaseMappingStudy
-			= rifStudySubmissionService.getDiseaseMappingStudy(
-				validUser,
-				validStudyID);
-	}
-
 	/**
 	 * Ensure empty checks are being done in Investigations
 	 */

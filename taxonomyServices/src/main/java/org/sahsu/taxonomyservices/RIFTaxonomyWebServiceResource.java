@@ -13,8 +13,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 import org.sahsu.rif.generic.taxonomyservices.TermList;
@@ -209,8 +208,7 @@ public class RIFTaxonomyWebServiceResource {
 
 			//none of the taxonomy services will be ready because the
 			//federated service has not been initialised yet.
-			java.nio.file.Path fullPath = new TomcatFile(
-					new TomcatBase(), ".", true).path();
+			java.nio.file.Path fullPath = AppFile.getTaxonomyInstance(".").path();
 			federatedTaxonomyService.initialise(fullPath);								
 		}
 	}

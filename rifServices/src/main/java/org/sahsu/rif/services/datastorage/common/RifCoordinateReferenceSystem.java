@@ -2,7 +2,6 @@ package org.sahsu.rif.services.datastorage.common;
 
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -17,9 +16,8 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 /**
  *
@@ -82,25 +80,17 @@ import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
  */
  
 public class RifCoordinateReferenceSystem {
-	// ==========================================
-	// Section Constants
-	// ==========================================
-	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");
-	
-	private static Map<String, String> environmentalVariables = System.getenv();
-	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 
-    private static HashMap<Integer, CoordinateReferenceSystem> sridHashMap = 
-		new HashMap<Integer, CoordinateReferenceSystem>();
-    private static HashMap<String, MathTransform> transformHashMap = 
-		new HashMap<String, MathTransform>();
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+
+	private static HashMap<Integer, CoordinateReferenceSystem> sridHashMap = new HashMap<>();
+    private static HashMap<String, MathTransform> transformHashMap = new HashMap<>();
 	  
 	/**
      * Constructor.
 	 *
 	 * Setup Coordinate Reference System lookup. Use predictable RIF locations for 
-	 * epsg.properties: %CATALINA_HOME%\conf and %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes
+	 * epsg.properties.
 	 *
 	 * Hash srid to CRS, CRS to maths transforms for efficency.
      */
@@ -180,13 +170,13 @@ public class RifCoordinateReferenceSystem {
 	
 	/** 
 	 * Setup CoordinateReferenceSystem referencing factory. Use predictable RIF locations for 
-	 * epsg.properties: %CATALINA_HOME%\conf and %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes
+	 * epsg.properties.
 	 */
 	private void setupReferencingFactory() throws Exception {
 
 		String file="epsg.properties";
 
-		TomcatFile input = new TomcatFile(new TomcatBase(), file);
+		AppFile input = AppFile.getServicesInstance(file);
 		URL epsg = input.asUrl();
 
 		if (epsg != null) {

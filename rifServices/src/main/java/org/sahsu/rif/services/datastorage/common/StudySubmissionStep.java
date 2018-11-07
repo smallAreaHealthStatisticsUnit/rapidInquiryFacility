@@ -19,6 +19,7 @@ import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -41,8 +42,6 @@ import org.sahsu.rif.services.concepts.YearRange;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 import org.sahsu.rif.services.util.Json5Parse;
 
 public final class StudySubmissionStep extends BaseSQLManager {
@@ -142,12 +141,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		PreparedStatement statement1 = null;
 		try {
 
-			BufferedReader reader = new TomcatFile(
-					new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
+			BufferedReader reader = AppFile.getFrontEndParametersInstance().reader();
 
 			Json5Parse json5Parse = new Json5Parse(reader);
-			String jsonText = json5Parse.toString();
-		
+
 			JSONObject json = json5Parse.toJson(); // Check it parses OK
 			JSONObject parametersJson = json.optJSONObject("parameters");
 			if (parametersJson == null) {
@@ -189,7 +186,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		} catch(IOException ioException) {
 			//Record original exception, throw sanitised, human-readable version
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
-			                                 ".TomcatFile IO error", ioException);
+			                                 " File IO error", ioException);
 			String errorMessage
 					= RIFServiceMessages.getMessage(
 					"studySubmissionStep.unableToSetPrintState",

@@ -10,13 +10,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import org.sahsu.rif.generic.fileformats.AppFile;
+
 /**
  * Retrieves files from standard Tomcat locations, and makes their contents
  * available in various forms.
  */
-public class TomcatFile {
-
-	public static final String FRONT_END_PARAMETERS_FILE = "frontEndParameters.json5";
+public class TomcatFile implements AppFile {
 
 	private static final String CONF_DIRECTORY = "conf";
 	private static final String WEBAPPS_DIRECTORY = "webapps";
@@ -60,21 +60,25 @@ public class TomcatFile {
 		file = tempPath;
 	}
 
+	@Override
 	public Path path() {
 
 		return file;
 	}
 
+	@Override
 	public Path pathToClassesDirectory() {
 
 		return classesPath;
 	}
 
+	@Override
 	public Path pathToLibDirectory() {
 
 		return libPath;
 	}
 
+	@Override
 	public BufferedReader reader() throws IOException {
 
 		if (reader == null) {
@@ -83,24 +87,29 @@ public class TomcatFile {
 		return reader;
 	}
 
+	@Override
 	public Properties properties() throws IOException {
 
 		if (props == null) {
 			props = new Properties();
 			props.load(reader());
+			reader.close();
 		}
 		return props;
 	}
 
+	@Override
 	public String asString() {
 
 		return file.toFile().getAbsolutePath();
 	}
 
+	@Override
 	public URL asUrl() throws MalformedURLException {
 
 		return asFile().toURI().toURL();
 	}
+
 
 	public File asFile() {
 
