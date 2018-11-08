@@ -1668,49 +1668,59 @@ angular.module("RIF")
 									err);
 							}
 								
-                            CommonMappingStateService.getState("areamap").map.removeLayer($scope.thisLayer);
+                            if (CommonMappingStateService.getState("areamap").map.hasLayer($scope.thisLayer)) {
+								CommonMappingStateService.getState("areamap").map.removeLayer($scope.thisLayer);
+							}
 							var getCurrentBaseMap=LeafletBaseMapService.getCurrentBaseMapInUse("areamap");
                             if (!LeafletBaseMapService.getNoBaseMap("areamap")) {
 								var currentBaseMapInUse=(($scope.thisLayer && $scope.thisLayer.name) ? $scope.thisLayer.name: undefined);
                                 $scope.thisLayer = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
-								$scope.thisLayer.on("load", function() { 
-									alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap loaded for map: areamap to: " +  getCurrentBaseMap);
-								});
-								$scope.thisLayer.on("tileerror", function() { 
-									alertScope.consoleLog("[rifd-dsub-maptable.js] tileerror for map: areamap to: " +  getCurrentBaseMap);
-								});
-											
-                                $scope.thisLayer.addTo(CommonMappingStateService.getState("areamap").map);
-								LeafletBaseMapService.setNoBaseMap("areamap", false);
-								
 								CommonMappingStateService.getState("areamap").setBasemap(getCurrentBaseMap, false /* no basemap*/);
-								
-								var noTiles;
-								if ($scope.thisLayer && $scope.thisLayer._tiles) {
-									noTiles=Object.keys($scope.thisLayer._tiles).length;
+								var basemapError=CommonMappingStateService.getState("areamap").getBasemapError(getCurrentBaseMap);
+								if (basemapError == 0) {
+									$scope.thisLayer.on("load", function() { 
+										var basemapError=CommonMappingStateService.getState("areamap").getBasemapError(getCurrentBaseMap);
+										if (LeafletBaseMapService.getNoBaseMap("areamap")) { // Has been disabled by error
+										
+										}
+										else if (getCurrentBaseMap != currentBaseMapInUse) {
+											if (basemapError == 0) {
+												alertScope.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
+											}
+											else {
+												alertScope.showWarning("Unable to change current base map in use from: " + currentBaseMapInUse + 
+													"; to: " + getCurrentBaseMap + "; " + basemapError +
+													" tiles loaded with errors");
+												LeafletBaseMapService.setNoBaseMap("areamap", true); // Disable
+											}
+										}
+										else {	
+											if (basemapError == 0) {
+												alertScope.consoleLog("[rifd-dsub-maptable.js] setCurrentBaseMapInUse for map: areamap" + 
+													"; currentBaseMapInUse: " + currentBaseMapInUse + 
+													"; getCurrentBaseMap: " + getCurrentBaseMap);
+											}
+											else {	
+												alertScope.showWarning("Unable to set base map to: " + getCurrentBaseMap + "; " + basemapError +
+													" tiles loaded with errors");
+												LeafletBaseMapService.setNoBaseMap("areamap", true); // Disable
+											}
+										}
+									});
+									$scope.thisLayer.on("tileerror", function() { 
+										CommonMappingStateService.getState("areamap").basemapError(getCurrentBaseMap);
+									});
+												
+									$scope.thisLayer.addTo(CommonMappingStateService.getState("areamap").map);
 								}
-								if (getCurrentBaseMap != currentBaseMapInUse) {
-									
-									if (noTiles > 0) {
-										alertScope.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
-									}
-									else {
-										alertScope.showWarning("Unable to change current base map in use from: " + currentBaseMapInUse + 
-											"; to: " + getCurrentBaseMap + 
-											"; no tiles loaded");
-										LeafletBaseMapService.setNoBaseMap("areamap", true);
-									}
-								}
-								else {	
-									alertScope.consoleLog("[rifd-dsub-maptable.js] setCurrentBaseMapInUse for map: areamap" + 
-										"; currentBaseMapInUse: " + currentBaseMapInUse + 
-										"; getCurrentBaseMap: " + getCurrentBaseMap);	
+								else {
+									alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + getCurrentBaseMap +
+										" disabled by previous basemapErrors: " + basemapError);
 								}
                             }
-//							else {
-//								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: NONE");
-//								LeafletBaseMapService.setNoBaseMap("areamap", true);
-//							}
+							else {
+								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + getCurrentBaseMap + " disabled by getNoBaseMap");
+							}
                             //hack to refresh map
                             $timeout(function () {
                                 CommonMappingStateService.getState("areamap").map.invalidateSize();

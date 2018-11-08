@@ -62,6 +62,7 @@ angular.module("RIF")
 					var t = { // All possible mapping elements
 						map: undefined,
 						basemap: undefined,
+						basemapErrors: {},
 						noBasemap: false,
 						shapes: undefined,
 						drawnItems: undefined,
@@ -82,13 +83,46 @@ angular.module("RIF")
 						currentBand: undefined,
 						possibleBands: undefined,
 						description: undefined,
+						name: undefined,
 						setBasemap: function (basemap, noBasemap) {
+							if (this.basemapErrors && this.basemapErrors[basemap] !== undefined) {
+							}
+							else {
+								this.basemapErrors[basemap] = 0;
+							}
 							AlertService.consoleLog("[rifs-util-mapstate.js] setBasemap() from: " + this.basemap + " to: " + basemap + 
 								"; noBasemap: " + noBasemap +
-								"; for map: " + this.description);
+								"; basemapErrors: " + ((this.basemapErrors && this.basemapErrors[basemap] !== undefined) ?
+									this.basemapErrors[basemap] : "undefined") +
+								"; for map: " + this.name + ": " + this.description);
 							this.basemap = basemap;
 							this.noBasemap = noBasemap;
 							return this.basemap;
+						},
+						basemapError: function (basemap) {
+							if (this.basemapErrors && this.basemapErrors[basemap] !== undefined) {
+								this.basemapErrors[basemap]++;
+								this.noBasemap = true;
+								if (this.basemapErrors[basemap] < 5) {
+									AlertService.consoleLog("[rifs-util-mapstate.js] basemap tile error: " + this.basemapErrors[basemap] + 
+										" for basemap: " + basemap +
+										"; map: " + this.name + ": " + this.description);
+								}
+							}
+							else {
+								throw new Error("this.basemapErrors[basemap] is undefined for basemap: " + basemap +
+									"; map: " + this.name + ": " + this.description);
+							}
+						},
+						getBasemapError: function (basemap) {
+							if (this.basemapErrors && this.basemapErrors[basemap] !== undefined) {
+								AlertService.consoleLog("[rifs-util-mapstate.js] basemap tile errors: " + this.basemapErrors[basemap]);
+								return this.basemapErrors[basemap];
+							}
+							else {
+								throw new Error("this.basemapErrors[basemap] is undefined for basemap: " + basemap +
+									"; map: " + this.name + ": " + this.description);
+							}
 						},
 						getSelectedPolygon: function(areaType) { // Get selectedPolygon list
 							checkAreaType(areaType);
@@ -459,8 +493,9 @@ angular.module("RIF")
 								}
 								
 								if (s[key] == undefined) { // Initialise
-									s[key] = t;
+									s[key] = angular.copy(t);
 									s[key].description=mapNames[key];
+									s[key].name=key;
 								}								
 							}
 							if (!found) {
@@ -474,8 +509,9 @@ angular.module("RIF")
 								for (var key in mapNames) {
 									if (key == mapName) {
 										found=true;
-										s[key] = t; // Re-Initialise
+										s[key] = angular.copy(t); // Re-Initialise
 										s[key].description=mapNames[key];
+										s[key].name=key;
 										AlertService.consoleDebug("[rifs-util-mapstate.js] resetState(" + key + "): " + 
 											s[key].description);
 									}							
@@ -487,8 +523,9 @@ angular.module("RIF")
 							}
 							else {
 								for (var key in mapNames) {
-									s[key] = t; // Re-Initialise
+									s[key] = angular.copy(t); // Re-Initialise
 									s[key].description=mapNames[key];
+									s[key].name=key;
 									AlertService.consoleDebug("[rifs-util-mapstate.js] resetState(" + key + "): " + 
 										s[key].description);
 								}	

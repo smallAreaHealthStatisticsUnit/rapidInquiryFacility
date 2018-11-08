@@ -1065,43 +1065,54 @@ angular.module("RIF")
 							var currentBaseMapInUse= (($scope.thisLayer[mapID] && $scope.thisLayer[mapID].name) ? 
 								$scope.thisLayer[mapID].name : undefined);
 								
-							$scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
-							$scope.thisLayer.on("load", function() { 
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap loaded for map: " + mapID + " to: " +  getCurrentBaseMap);
-							});
-							$scope.thisLayer.on("tileerror", function() { 
-								alertScope.consoleLog("[rifd-dsub-maptable.js] tileerror for map: " + mapID + " to: " +  getCurrentBaseMap);
-							});
-							$scope.thisLayer[mapID].addTo($scope.map[mapID]);
-							LeafletBaseMapService.setNoBaseMap(mapID, false);
-							
 							var thisGeography = $scope.tileInfo[mapID].geography;
-							if (thisGeography) { // Only set if not the default method
-								CommonMappingStateService.getState(mapID).setBasemap(getCurrentBaseMap, false /* no basemap*/);
-							}
-							
-							var noTiles;
-							if ($scope.thisLayer[mapID] && $scope.thisLayer[mapID]._tiles) {
-								noTiles=Object.keys($scope.thisLayer[mapID]._tiles).length;
-							}
-							if (getCurrentBaseMap != currentBaseMapInUse) {
-								if (noTiles > 0) {
-									$scope.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
-								}
-								else {
-									$scope.showWarning("Unable to change current base map in use from: " + currentBaseMapInUse + 
-										"; to: " + getCurrentBaseMap +
-										"; no tiles loaded");
-									LeafletBaseMapService.setNoBaseMap(mapID, true);
-								}
-							}
-							else {	
-								$scope.consoleLog("[rifc-util-mapping.js] setCurrentBaseMapInUse for map: " + mapID + 
-									"; currentBaseMapInUse: " + currentBaseMapInUse + 
-									"; getCurrentBaseMap: " + getCurrentBaseMap +
-									"; tiles: " + noTiles);	
-							}								
+							$scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(getCurrentBaseMap);
+							CommonMappingStateService.getState(mapID).setBasemap(getCurrentBaseMap, false /* no basemap*/);
+							var basemapError=CommonMappingStateService.getState(mapID).getBasemapError(getCurrentBaseMap);
+							if (basemapError == 0) {
+								$scope.thisLayer[mapID].on("load", function() { 
+									var basemapError=CommonMappingStateService.getState(mapID).getBasemapError(getCurrentBaseMap);
+									if (LeafletBaseMapService.getNoBaseMap(mapID)) { // Has been disabled by error
+									
+									}
+									else if (getCurrentBaseMap != currentBaseMapInUse) {
+										if (basemapError == 0) {
+											$scope.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
+										}
+										else {
+											$scope.showWarning("Unable to change current base map in use from: " + currentBaseMapInUse + 
+												"; to: " + getCurrentBaseMap + "; " + basemapError +
+												" tiles loaded with errors");
+											LeafletBaseMapService.setNoBaseMap(mapID, true); // Disable
+										}
+									}
+									else {	
+										if (basemapError == 0) {
+											$scope.consoleLog("[rifc-util-mapping.js] setCurrentBaseMapInUse for map: " + mapID + 
+												"; currentBaseMapInUse: " + currentBaseMapInUse + 
+												"; getCurrentBaseMap: " + getCurrentBaseMap);
+										}
+										else {	
+											$scope.showWarning("Unable to set base map to: " + getCurrentBaseMap + "; " + basemapError +
+												" tiles loaded with errors");
+											LeafletBaseMapService.setNoBaseMap(mapID, true); // Disable
+										}
+									}
+								});
+								$scope.thisLayer[mapID].on("tileerror", function() { 
+									CommonMappingStateService.getState(mapID).basemapError(getCurrentBaseMap);
+								});
+								
+								$scope.thisLayer[mapID].addTo($scope.map[mapID]);
+                            }	
+							else {
+								$scope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + getCurrentBaseMap +
+									" disabled by previous basemapErrors: " + basemapError);
+							}				
 						}	
+						else {
+							$scope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + getCurrentBaseMap + " disabled by getNoBaseMap");
+						}
 						
 						if (renderMapCallback && typeof renderMapCallback === "function") {
 							renderMapCallback();
