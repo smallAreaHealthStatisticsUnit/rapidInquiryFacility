@@ -47,12 +47,13 @@
 </properties>
 	
 	<modules>
-	    <module>./rifGenericLibrary</module>
-	    <module>./rifServices</module>
-		<module>./taxonomyServices</module>
-	    <module>./rifDataLoaderTool</module>
-		<module>./rifITGovernanceTool</module>
-		<module>./rifWebApplication</module>
+	    <module>rifGenericLibrary</module>
+	    <module>rifServices</module>
+		<module>taxonomyServices</module>
+	    <module>rifDataLoaderTool</module>
+		<module>rifITGovernanceTool</module>
+		<module>rifWebApplication</module>
+		<module>statsService</module>
 	</modules>
 
 	<dependencyManagement>
