@@ -20,7 +20,11 @@ public final class Service {
 
 	private Service() {
 
-		// Prevent instantiation.
+		// Prevent instantiation. This should never happen, of course.
+		if (THE_INSTANCE != null) {
+
+			throw new IllegalStateException("Service cannot be instantiated");
+		}
 	}
 
 	void start() {
