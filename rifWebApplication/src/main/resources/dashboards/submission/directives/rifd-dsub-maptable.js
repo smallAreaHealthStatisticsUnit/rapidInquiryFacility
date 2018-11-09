@@ -1888,6 +1888,8 @@ angular.module("RIF")
 						$scope.$on('completedDrawSelection', function (event, data) {
 							
 							CommonMappingStateService.getState("areamap").map.spin(true);  // on	
+							var riskAnalysisExposureField=undefined;
+
 							start=new Date().getTime();
 //							$scope.selectionData.sort(function(a, b){return ((a.area && b.area) ? (a.area - b.area) : false) });
 // Already sorted: DO NOT CHANGE
@@ -1974,13 +1976,30 @@ angular.module("RIF")
 										"; properties: " + JSON.stringify(properties) +
 										"; rifShapePolyId: " + savedShapes[i].rifShapePolyId +
 										"; rifShapeId: " + savedShapes[i].rifShapeId +
+										"; exposureValue: " + savedShapes[i].exposureValue +
+										"; riskAnalysisExposureField: " + savedShapes[i].riskAnalysisExposureField +
 										"; shapeFile: " + (savedShapes[i].fileName ? savedShapes[i].fileName : "N/A"));
-								}
+									if (savedShapes[i].riskAnalysisExposureField) {
+										if (riskAnalysisExposureField == undefined) {
+											riskAnalysisExposureField=savedShapes[i].riskAnalysisExposureField;	
+										}
+										else if (riskAnalysisExposureField == savedShapes[i].riskAnalysisExposureField) {
+										}
+										else {
+											alertScope.showError("[rifd-dsub-maptable.js] Multi riskAnalysisExposureFields used: " + 
+												riskAnalysisExposureField + "; " + savedShapes[i].riskAnalysisExposureField);
+										}
+									}
+								} // End of for shapes loop
 								
 								$scope.selectionData = [];
 								if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
 									CommonMappingStateService.getState("areamap").info.addTo(
 										CommonMappingStateService.getState("areamap").map);
+								}
+															
+								if ($scope.input.type === "Risk Analysis" && $scope.input.name == "StudyAreaMap" && riskAnalysisExposureField) {
+									SubmissionStateService.getState().riskAnalysisExposureField = riskAnalysisExposureField;
 								}
 								
 								if ($scope.selectedPolygonCount > 0) {

@@ -110,6 +110,10 @@ angular.module("RIF")
                     "investigations": {"investigation": ParameterStateService.getModelInvestigation()}
                 };
 
+				if (SubmissionStateService.getState().riskAnalysisExposureField) {
+					model["rif_job_submission"][type].riskAnalysisExposureField = SubmissionStateService.getState().riskAnalysisExposureField;
+				}
+				
                 model["rif_job_submission"][type][areaType] = {
                     "geo_levels": {
                         "geolevel_select": {
@@ -137,7 +141,8 @@ angular.module("RIF")
                                     "intersectCount": StudyAreaStateService.getState().polygonIDs[i].intersectCount,
                                     "centroid": StudyAreaStateService.getState().polygonIDs[i].centroid,
 									"shapeIdList": StudyAreaStateService.getState().polygonIDs[i].shapeIdList,
-									"nearestRifShapePolyId": StudyAreaStateService.getState().polygonIDs[i].nearestRifShapePolyId
+									"nearestRifShapePolyId": StudyAreaStateService.getState().polygonIDs[i].nearestRifShapePolyId,
+									"exposureValue": StudyAreaStateService.getState().polygonIDs[i].exposureValue
                                 });
                             }
                             return tmp;

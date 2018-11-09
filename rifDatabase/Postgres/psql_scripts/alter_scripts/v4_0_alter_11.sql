@@ -190,7 +190,8 @@ BEGIN
 				band_id,
 				intersect_count,
 				distance_from_nearest_source,
-				nearest_rifshapepolyid
+				nearest_rifshapepolyid,
+				exposure_value
 				)
 			VALUES(
 				coalesce(NEW.username, "current_user"()),
@@ -199,7 +200,8 @@ BEGIN
 				NEW.band_id /* no default value */,
 				NEW.intersect_count /* no default value */,
 				NEW.distance_from_nearest_source /* no default value */,
-				NEW.nearest_rifshapepolyid /* no default value */);
+				NEW.nearest_rifshapepolyid /* no default value */,
+				NEW.exposure_value /* no default value */);
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_study_areas',
 				'Cannot INSERT: User % must have rif_user or rif_manager role, NEW.username (%) must be USER or NULL', USER::VARCHAR, NEW.username::VARCHAR);
@@ -217,7 +219,8 @@ BEGIN
 			       band_id=NEW.band_id,
 				   intersect_count=NEW.intersect_count,
 				   distance_from_nearest_source=NEW.distance_from_nearest_source,
-				   nearest_rifshapepolyid=NEW.nearest_rifshapepolyid
+				   nearest_rifshapepolyid=NEW.nearest_rifshapepolyid,
+				   exposure_value=NEW.exposure_value
 			 WHERE study_id=OLD.study_id
 			   AND area_id=OLD.area_id;
 		ELSE

@@ -207,7 +207,9 @@ angular.module("RIF")
 									bbox: undefined,
 									finalCircleBand: (shape.finalCircleBand || false),
 									style: undefined,
-									selectionMethod: shape.selectionMethod
+									selectionMethod: shape.selectionMethod,
+									exposureValue: shape.exposureValue,
+									riskAnalysisExposureField: shape.riskAnalysisExposureField,
 								}	
 								
 								if (savedShape.properties == undefined) {
@@ -489,6 +491,8 @@ angular.module("RIF")
 										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): added Polygon" + 
 											"; band: " + savedShape.band +
 											"; area: " + savedShape.area +
+											"; exposureValue: " + savedShape.exposureValue +
+											"; riskAnalysisExposureField: " + savedShape.riskAnalysisExposureField +
 											"; freehand: " + savedShape.freehand +
 											"; style: " + JSON.stringify(savedShape.style) +
 											"; " + coordinates.length + " coordinates; " +
@@ -938,7 +942,8 @@ angular.module("RIF")
 												centroid: thisLatLng,
 												distanceFromNearestSource: distanceFromNearestSource,
 												intersectCount: 1,
-												shapeIdList: undefined
+												shapeIdList: undefined,
+												exposureValue: shape.exposureValue,
 											};
 										if (shape.band === -1) {
 											newSelectedPolygon.band = CommonMappingStateService.getState(mapName).currentBand;

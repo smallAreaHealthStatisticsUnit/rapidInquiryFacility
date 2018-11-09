@@ -95,6 +95,7 @@ public final class MapArea
 	private Integer intersectCount;
 	private Double distanceFromNearestSource;
 	private String nearestRifShapePolyId;
+	private Double exposureValue;
 	
 	// ==========================================
 	// Section Construction
@@ -119,6 +120,7 @@ public final class MapArea
 		setIntersectCount(0);
 		setDistanceFromNearestSource(0.0);
 		setNearestRifShapePolyId("");
+		setExposureValue(0.0);
 	}
 	private MapArea(
 		final String geographicalIdentifier,
@@ -127,7 +129,8 @@ public final class MapArea
 		final Integer band,
 		final Integer intersectCount,
 		final Double distanceFromNearestSource,
-		final String nearestRifShapePolyId) {
+		final String nearestRifShapePolyId,
+		final Double exposureValue) {
 		
 		setGeographicalIdentifier(geographicalIdentifier);
 		setIdentifier(identifier);
@@ -136,6 +139,7 @@ public final class MapArea
 		setIntersectCount(intersectCount);
 		setDistanceFromNearestSource(distanceFromNearestSource);
 		setNearestRifShapePolyId(nearestRifShapePolyId);
+		setExposureValue(exposureValue);
 	}
 	
 	/**
@@ -149,6 +153,7 @@ public final class MapArea
 		setIntersectCount(0);
 		setDistanceFromNearestSource(0.0);
 		setNearestRifShapePolyId("");
+		setExposureValue(0.0);
 	}
 
 	/**
@@ -176,7 +181,8 @@ public final class MapArea
 		final Integer band,
 		final Integer intersectCount,
 		final Double distanceFromNearestSource,
-		final String nearestRifShapePolyId) {
+		final String nearestRifShapePolyId,
+		final Double exposureValue) {
 		
 		MapArea mapArea 	
 			= new MapArea(
@@ -186,7 +192,8 @@ public final class MapArea
 				band,
 				intersectCount,
 				distanceFromNearestSource,
-				nearestRifShapePolyId);
+				nearestRifShapePolyId,
+				exposureValue);
 		return mapArea;		
 	}
 	public static MapArea newInstance(
@@ -225,7 +232,8 @@ public final class MapArea
 				originalMapArea.getBand(),
 				originalMapArea.getIntersectCount(),
 				originalMapArea.getDistanceFromNearestSource(),
-				originalMapArea.getNearestRifShapePolyId());
+				originalMapArea.getNearestRifShapePolyId(),
+				originalMapArea.getExposureValue());
 		return cloneMapArea;
 	}
 	
@@ -514,6 +522,26 @@ public final class MapArea
 		final String nearestRifShapePolyId) {
 
 		this.nearestRifShapePolyId = nearestRifShapePolyId;
+	}
+	
+	/**
+	 * Gets the exposureValue.
+	 *
+	 * @return the exposureValue
+	 */
+	public Double getExposureValue() {
+		return exposureValue;
+	}
+
+	/**
+	 * Sets the exposureValue.
+	 *
+	 * @param exposureValue the new exposureValue
+	 */
+	public void setExposureValue(
+		final Double exposureValue) {
+
+		this.exposureValue = exposureValue;
 	}
 	
 	public String getGeographicalIdentifier() {

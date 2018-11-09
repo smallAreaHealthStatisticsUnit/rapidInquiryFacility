@@ -228,7 +228,8 @@ SELECT c.username,
     c.band_id,
 	c.intersect_count,
 	c.distance_from_nearest_source,
-	c.nearest_rifshapepolyid
+	c.nearest_rifshapepolyid,
+	c.exposure_value
    FROM [rif40].[t_rif40_study_areas] c
      LEFT JOIN [rif40].[rif40_study_shares] s ON c.study_id = s.study_id AND s.grantee_username=SUSER_SNAME()
   WHERE c.username=SUSER_SNAME() OR 
@@ -275,6 +276,17 @@ IF NOT EXISTS (
 		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = 'nearest_rifshapepolyid' AND [object_id] = OBJECT_ID(@tableName)))
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Nearest rifshapepolyid (shape reference)', 
 	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_areas', @level2type=N'COLUMN',@level2name=N'nearest_rifshapepolyid'
+GO
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_study_areas';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = 'exposure_value' AND [object_id] = OBJECT_ID(@tableName)))
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Exposure value (when bands selected by exposure values)', 
+	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_study_areas', @level2type=N'COLUMN',@level2name=N'exposure_value'
 GO
 
 --
@@ -335,7 +347,8 @@ BEGIN
 				band_id,
 				intersect_count,
 				distance_from_nearest_source,
-				nearest_rifshapepolyid)
+				nearest_rifshapepolyid,
+				exposure_value)
 	SELECT
 				isnull(username,SUSER_SNAME()),
 				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq')),
@@ -343,7 +356,8 @@ BEGIN
 				band_id /* no default value */,
 				intersect_count /* no default value */,
 				distance_from_nearest_source /* no default value */,
-				nearest_rifshapepolyid /* no default value */
+				nearest_rifshapepolyid /* no default value */,
+				exposure_value /* no default value */
 	FROM inserted;
 
 END;
@@ -387,7 +401,8 @@ BEGIN
 				band_id,
 				intersect_count,
 				distance_from_nearest_source,
-				nearest_rifshapepolyid)
+				nearest_rifshapepolyid,
+				exposure_value)
 	SELECT
 				username,
 				study_id,
@@ -395,7 +410,8 @@ BEGIN
 				band_id,
 				intersect_count /* no default value */,
 				distance_from_nearest_source /* no default value */,
-				nearest_rifshapepolyid /* no default value */
+				nearest_rifshapepolyid /* no default value */,
+				exposure_value /* no default value */
 	FROM inserted;
 END;
 

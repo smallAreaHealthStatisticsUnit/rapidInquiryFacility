@@ -719,6 +719,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			queryFormatter.addInsertField("intersect_count");
 			queryFormatter.addInsertField("distance_from_nearest_source");
 			queryFormatter.addInsertField("nearest_rifshapepolyid");
+			queryFormatter.addInsertField("exposure_value");
 
 			statement
 					= createPreparedStatement(
@@ -731,14 +732,17 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			ArrayList<Integer> intersectCountList = new ArrayList<Integer>();
 			ArrayList<Double> distanceFromNearestSourceList = new ArrayList<Double>();
 			ArrayList<String> nearestRifShapePolyIdList = new ArrayList<String>();
+			ArrayList<Double> exposureValueList = new ArrayList<Double>();
 			for (MapArea currentMapArea : allMapAreas) {
 				areaIdList.add(currentMapArea.getLabel());
 				bandIdList.add(currentMapArea.getBand());
 				intersectCountList.add((currentMapArea.getIntersectCount() > 0) ? currentMapArea.getIntersectCount(): 0);
-				distanceFromNearestSourceList.add((currentMapArea.getDistanceFromNearestSource() > 0) ? 
-					currentMapArea.getDistanceFromNearestSource() : 0);
+				distanceFromNearestSourceList.add((currentMapArea.getDistanceFromNearestSource() > 0.0) ? 
+					currentMapArea.getDistanceFromNearestSource() : 0.0);
 				nearestRifShapePolyIdList.add((currentMapArea.getNearestRifShapePolyId() != null) ?
 					currentMapArea.getNearestRifShapePolyId() : "");
+				exposureValueList.add((currentMapArea.getExposureValue() > 0.0) ? 
+					currentMapArea.getExposureValue() : 0.0);
 			}
 			String areaIdListString = String.join(", ", areaIdList);
 			String bandIdListString = bandIdList.stream().map(Object::toString)
@@ -746,11 +750,14 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			String intersectCountListString = null;
 			String distanceFromNearestSourceListString = null;
 			String nearestRifShapePolyIdListString = null;
+			String exposureValueListString = null;
 			intersectCountListString = intersectCountList.stream().map(Object::toString)
 					.collect(Collectors.joining(", "));
 			distanceFromNearestSourceListString = distanceFromNearestSourceList.stream().map(Object::toString)
 					.collect(Collectors.joining(", "));
 			nearestRifShapePolyIdListString = String.join(", ", nearestRifShapePolyIdList);
+			exposureValueListString = exposureValueList.stream().map(Object::toString)
+					.collect(Collectors.joining(", "));
 //			if (databaseType == DatabaseType.POSTGRESQL) { 	// Do array insert: not possible, see: https://github.com/swaldman/c3p0/issues/88
 //
 //				statement.setArray(1, connection.createArrayOf("VARCHAR", areaIdList.toArray()));
@@ -758,6 +765,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 //				statement.setArray(3, connection.createArrayOf("INTEGER", intersectCountList.toArray()));
 //				statement.setArray(4, connection.createArrayOf("NUMERIC", distanceFromNearestSourceList.toArray()));
 //				statement.setArray(5, connection.createArrayOf("VARCHAR", nearestRifShapePolyIdList.toArray()));
+//				statement.setArray(4, connection.createArrayOf("NUMERIC", exposureValueListString.toArray()));
 //
 //				rifLogger.info(this.getClass(), "Do Postgres study area array insert; 1: " + areaIdList.size() + "; " + 
 //					(areaIdListString.length() > 100 ? areaIdListString.substring(0, 100) : areaIdListString) +				
@@ -769,6 +777,9 @@ public final class StudySubmissionStep extends BaseSQLManager {
 //					(distanceFromNearestSourceListString.length() > 100 ? distanceFromNearestSourceListString.substring(0, 100) : distanceFromNearestSourceListString) +				
 //					"; 5: " + nearestRifShapePolyIdList.size() + "; " + 
 //					(nearestRifShapePolyIdListString.length() > 100 ? nearestRifShapePolyIdListString.substring(0, 100) : nearestRifShapePolyIdListString));
+//					"; 6: " + exposureValueList.size() + "; " + 
+//					(exposureValueListString.length() > 100 ? exposureValueListString.substring(0, 100) : exposureValueListString) +				
+
 //				statement.executeUpdate();
 //			}
 //			else if (databaseType == DatabaseType.SQL_SERVER) { 	// Don't or you will get:
@@ -785,7 +796,10 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					"; 4: " + distanceFromNearestSourceList.size() + "; " + 
 					(distanceFromNearestSourceListString.length() > 100 ? distanceFromNearestSourceListString.substring(0, 100) : distanceFromNearestSourceListString) +				
 					"; 5: " + nearestRifShapePolyIdList.size() + "; " + 
-					(nearestRifShapePolyIdListString.length() > 100 ? nearestRifShapePolyIdListString.substring(0, 100) : nearestRifShapePolyIdListString));
+					(nearestRifShapePolyIdListString.length() > 100 ? nearestRifShapePolyIdListString.substring(0, 100) : nearestRifShapePolyIdListString) +
+					"; 6: " + exposureValueList.size() + "; " + 
+					(exposureValueListString.length() > 100 ? exposureValueListString.substring(0, 100) : exposureValueListString));			
+					
 				int i=1;
 				for (MapArea currentMapArea : allMapAreas) {
 					if (i == 1) {
@@ -796,13 +810,15 @@ public final class StudySubmissionStep extends BaseSQLManager {
 							String.valueOf(currentMapArea.getBand()),
 							String.valueOf(currentMapArea.getIntersectCount()),
 							String.valueOf(currentMapArea.getDistanceFromNearestSource()),
-							currentMapArea.getNearestRifShapePolyId());
+							currentMapArea.getNearestRifShapePolyId(),
+							String.valueOf(currentMapArea.getExposureValue()));
 					}
 					statement.setString(1, currentMapArea.getLabel());
 					statement.setInt(2, currentMapArea.getBand());
 					statement.setInt(3, currentMapArea.getIntersectCount());
 					statement.setDouble(4, currentMapArea.getDistanceFromNearestSource());
 					statement.setString(5, currentMapArea.getNearestRifShapePolyId());
+					statement.setDouble(6, currentMapArea.getExposureValue());
 					statement.executeUpdate();
 					i++;
 				}

@@ -129,9 +129,11 @@ public final class MapDataManager extends BaseSQLManager {
 			HashMap<String, Integer> intersectCountHash = new HashMap<String, Integer>();
 			HashMap<String, Double> distanceFromNearestSourceHash = new HashMap<String, Double>();
 			HashMap<String, String> nearestRifShapePolyIdHash = new HashMap<String, String>();
+			HashMap<String, Double> exposureValueHash = new HashMap<String, Double>();
 			Integer intersectCount;
 			Double distanceFromNearestSource;
 			String nearestRifShapePolyId;
+			Double exposureValue;
 			
 			int totalSelectedMapAreas = selectedMapAreas.size();
 			if (totalSelectedMapAreas > 0) {
@@ -160,6 +162,7 @@ public final class MapDataManager extends BaseSQLManager {
 					intersectCountHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getIntersectCount());
 					nearestRifShapePolyIdHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getNearestRifShapePolyId());
 					distanceFromNearestSourceHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getDistanceFromNearestSource());
+					exposureValueHash.put(selectedMapAreas.get(i).getIdentifier(), selectedMapAreas.get(i).getExposureValue());
 				}
 
 				queryFormatter.addQueryPhrase(")");
@@ -191,6 +194,7 @@ public final class MapDataManager extends BaseSQLManager {
 				intersectCount=0;
 				distanceFromNearestSource=0.0;
 				nearestRifShapePolyId=null;
+				exposureValue=0.0;
 						
 				// Add band back		
 				int band=-1;
@@ -212,6 +216,9 @@ public final class MapDataManager extends BaseSQLManager {
 					}
 					if (nearestRifShapePolyIdHash.containsKey(geoLevelSelectName)) {
 						nearestRifShapePolyId=nearestRifShapePolyIdHash.get(geoLevelSelectName);
+					}	
+					if (exposureValueHash.containsKey(geoLevelSelectName)) {
+						exposureValue=exposureValueHash.get(geoLevelSelectName);
 					}					
 					if (band < 1) {
 						StringBuilder builder = new StringBuilder();
@@ -277,7 +284,19 @@ public final class MapDataManager extends BaseSQLManager {
 						band,
 						intersectCount,
 						distanceFromNearestSource,
-						nearestRifShapePolyId);
+						nearestRifShapePolyId,
+						exposureValue);
+				if (i < 10) {
+					rifLogger.info(this.getClass(), "[" + i + "] MapArea.newInstance(" +
+						identifier + "," +
+						identifier + "," +
+						geoLevelToMapName + "," +
+						band + "," +
+						intersectCount + "," +
+						distanceFromNearestSource + "," +
+						nearestRifShapePolyId + "," +
+						exposureValue);
+				}
 				allRelevantMapAreas.add(mapArea);
 				i++;
 			}

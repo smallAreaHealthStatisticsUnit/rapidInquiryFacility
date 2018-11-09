@@ -160,6 +160,7 @@ public final class MapAreaContentHandler
 		xmlUtility.writeField(recordName, "intersectCount", mapArea.getIntersectCount().toString());
 		xmlUtility.writeField(recordName, "distanceFromNearestSource", mapArea.getDistanceFromNearestSource().toString());
 		xmlUtility.writeField(recordName, "nearestRifShapePolyId", mapArea.getNearestRifShapePolyId());
+		xmlUtility.writeField(recordName, "exposureValue", mapArea.getExposureValue().toString());
 
 		xmlUtility.writeRecordEndTag(recordName);
 	}
@@ -272,6 +273,9 @@ public final class MapAreaContentHandler
 		}			
 		else if (equalsFieldName(qualifiedName, "nearestRifShapePolyId")) {
 			currentMapArea.setNearestRifShapePolyId(getCurrentFieldValue());
+		}				
+		else if (equalsFieldName(qualifiedName, "exposureValue")) {
+			currentMapArea.setExposureValue(Double.parseDouble(getCurrentFieldValue()));
 		}		
 		else {
 			assert false;

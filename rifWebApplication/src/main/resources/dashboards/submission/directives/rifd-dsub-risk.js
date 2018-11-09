@@ -684,9 +684,13 @@ angular.module("RIF")
                                         for (var k = 0; k < scope.bandAttr.length; k++) { // In descending order
                                             if (shape.band == -1 && attr >= scope.bandAttr[k]) {
                                                 shape.band = k  + 1;
+												shape.exposureValue = attr;
+												shape.riskAnalysisExposureField = attributeName;
 												alertScope.consoleDebug("[rifd-dsub-risk.js] selection by attribute value shape.band[" + i + "]: " + shape.band +
 													"; attr value: " + attr +
 													"; k: " + k + 
+													"; exposureValue: " + shape.exposureValue + 
+													"; riskAnalysisExposureField: " + attributeName + 
 													">= scope.bandAttr[k] " + scope.bandAttr[k]);
                                             } 
 											else {
@@ -747,6 +751,7 @@ angular.module("RIF")
 								}								
 								alertScope.consoleDebug("[rifd-dsub-risk.js] " + getSelectionMethodAsString(attributeName) +	
 									"; maxBand: " + maxBand +
+									(scope.selectedAttr ? ("; riskAnalysisExposureField: " + scope.selectedAttr) : "") +
 									"; scope.attrs: " + (scope.attrs||"(no attributes in shapefile)") +
 									"; scope.bandAttr (user supplied band values): " + JSON.stringify(scope.bandAttr) +
 									"; bandsUsed: " + JSON.stringify(bandsUsed, null , 1) +
