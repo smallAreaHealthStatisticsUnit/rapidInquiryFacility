@@ -373,21 +373,25 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			studyQueryFormatter.addInsertField("extract_permitted");
 			studyQueryFormatter.addInsertField("transfer_permitted");
 			studyQueryFormatter.addInsertField("stats_method");
-
-			sqlQueryText = logSQLQuery("addGeneralInformationToStudy", studyQueryFormatter);
+			studyQueryFormatter.addInsertField("risk_analysis_exposure_field");
 
 			addStudyStatement = createPreparedStatement(connection, studyQueryFormatter);
+			String[] parameters = new String[studyQueryFormatter.getInsertFieldCount()];
 			int ithQueryParameter = 1;
 
 			Geography geography = rifStudy.getGeography();
+			parameters[(ithQueryParameter-1)] = geography.getName();
 			addStudyStatement.setString(ithQueryParameter++, geography.getName());
 
+			parameters[(ithQueryParameter-1)] = project.getName();
 			addStudyStatement.setString(ithQueryParameter++, project.getName());
 
+			parameters[(ithQueryParameter-1)] = rifStudy.getName();
 			addStudyStatement.setString(ithQueryParameter++, rifStudy.getName());
 
 			//study type will be "1" for diseaseMappingStudy
 			if (rifStudy.isDiseaseMapping()) {
+				parameters[(ithQueryParameter-1)] = "1";
 				addStudyStatement.setInt(ithQueryParameter++, 1); // disease mapping study
 			}
 			else if (riskAnalysisType == -1) {
@@ -398,6 +402,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					 riskAnalysisType == 13 || 
 					 riskAnalysisType == 14 || 
 					 riskAnalysisType == 15) {
+				parameters[(ithQueryParameter-1)] = Integer.toString(riskAnalysisType);
 				addStudyStatement.setInt(ithQueryParameter++, riskAnalysisType); // From studySelection JSON
 				// 11 - Risk Analysis (many areas, one band), 
 				// 12 - Risk Analysis (point sources), 
@@ -410,11 +415,13 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			}
 			
 			ComparisonArea comparisonArea = rifStudy.getComparisonArea();
+			parameters[(ithQueryParameter-1)] = comparisonArea.getGeoLevelToMap().getName();
 			addStudyStatement.setString(ithQueryParameter++,
 			                            comparisonArea.getGeoLevelToMap().getName());
 
 			AbstractStudyArea rifMappingStudyArea =
 					rifStudy.getStudyArea();
+			parameters[(ithQueryParameter-1)] = rifMappingStudyArea.getGeoLevelToMap().getName();
 			addStudyStatement.setString(ithQueryParameter++,
 			                            rifMappingStudyArea.getGeoLevelToMap().getName());
 
@@ -422,34 +429,42 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			//investigations can have different denominator tables?
 			Investigation firstInvestigation = rifStudy.getInvestigations().get(0);
 			NumeratorDenominatorPair ndPair = firstInvestigation.getNdPair();
+			parameters[(ithQueryParameter-1)] = ndPair.getDenominatorTableName();
 			addStudyStatement.setString(ithQueryParameter++, ndPair.getDenominatorTableName());
 
 			YearRange yearRange = firstInvestigation.getYearRange();
 			//year_start
+			parameters[(ithQueryParameter-1)] = yearRange.getLowerBound();
 			addStudyStatement
 					.setInt(ithQueryParameter++, Integer.valueOf(yearRange.getLowerBound()));
 			//year_stop
+			parameters[(ithQueryParameter-1)] = yearRange.getUpperBound();
 			addStudyStatement
 					.setInt(ithQueryParameter++, Integer.valueOf(yearRange.getUpperBound()));
 
 			//max_age_group
 			AgeGroup maximumAgeGroup = firstInvestigation.getMaximumAgeGroup();
 			int maximumAgeGroupOffset = getOffsetFromAgeGroup(connection, ndPair, maximumAgeGroup);
+			parameters[(ithQueryParameter-1)] = Integer.toString(maximumAgeGroupOffset);
 			addStudyStatement.setInt(ithQueryParameter++, maximumAgeGroupOffset);
 
 			//min_age_group
 			AgeGroup minimumAgeGroup = firstInvestigation.getMinimumAgeGroup();
 			int minimumAgeGroupOffset = getOffsetFromAgeGroup(connection, ndPair, minimumAgeGroup);
+			parameters[(ithQueryParameter-1)] = Integer.toString(minimumAgeGroupOffset);
 			addStudyStatement.setInt(ithQueryParameter++, minimumAgeGroupOffset);
 
 			//KLG: Ask about this -- if we left it out would it get a value automatically?
 			//for now, set suppression threshold to zero
+			parameters[(ithQueryParameter-1)] = "0";
 			addStudyStatement.setInt(ithQueryParameter++, 0);
 
 			//setting extract permitted
+			parameters[(ithQueryParameter-1)] = "0";
 			addStudyStatement.setInt(ithQueryParameter++, 0);
 
 			//setting transfer permitted
+			parameters[(ithQueryParameter-1)] = "0";
 			addStudyStatement.setInt(ithQueryParameter++, 0);
 
 			//setting stats method
@@ -462,7 +477,12 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			                                calculationMethod.getStatsMethod()
 			                                + "; code routine name: " +
 			                                calculationMethod.getCodeRoutineName());
+			parameters[(ithQueryParameter-1)] = calculationMethod.getStatsMethod();
 			addStudyStatement.setString(ithQueryParameter++, calculationMethod.getStatsMethod());
+			parameters[(ithQueryParameter-1)] = studySubmission.getRiskAnalysisExposureField();
+			addStudyStatement.setString(ithQueryParameter++, studySubmission.getRiskAnalysisExposureField());
+			
+			sqlQueryText = logSQLQuery("addGeneralInformationToStudy", studyQueryFormatter, parameters);
 
 			addStudyStatement.executeUpdate();
 			SQLQueryUtility.printWarnings(addStudyStatement); // Print output from T-SQL or PL/pgsql
@@ -478,6 +498,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					connection,
 					studyShareQueryFormatter);
 			studyShareStatement.setString(1, user.getUserID());
+			
 			studyShareStatement.executeUpdate();
 			SQLQueryUtility.printWarnings(studyShareStatement); // Print output from T-SQL or PL/pgsql
 			

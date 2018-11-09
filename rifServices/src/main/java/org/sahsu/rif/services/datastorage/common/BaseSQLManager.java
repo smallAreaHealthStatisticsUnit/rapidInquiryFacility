@@ -467,7 +467,7 @@ public class BaseSQLManager implements SQLManager {
 			
 		return queryLog.toString();
 	}
-		
+	
 	protected String logSQLQuery(
 		final String queryName,
 		final QueryFormatter queryFormatter) {

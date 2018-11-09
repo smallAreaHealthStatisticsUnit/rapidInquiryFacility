@@ -92,6 +92,7 @@ public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 		xmlUtility.writeRecordStartTag(recordName);
 		xmlUtility.writeField(recordName, "name", study.getName());
 		xmlUtility.writeField(recordName, "description", study.getDescription());
+		xmlUtility.writeField(recordName, "riskAnalysisExposureField", study.getRiskAnalysisExposureField());
 
 		Geography geography = study.getGeography();
 		geographyContentHandler.writeXML(geography);
@@ -200,6 +201,9 @@ public class AbstractStudyContentHandler extends AbstractXMLContentHandler {
 		}
 		else if (equalsFieldName("description", qualifiedName)) {
 			currentStudy.setDescription(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("riskAnalysisExposureField", qualifiedName)) {
+			currentStudy.setRiskAnalysisExposureField(getCurrentFieldValue());
 		}
 		else {
 			assert false;

@@ -111,6 +111,8 @@ angular.module("RIF")
                 };
 
 				if (SubmissionStateService.getState().riskAnalysisExposureField) {
+					AlertService.rifMessage('info', "[rifs-dsub-model.js] riskAnalysisExposureField: " + 
+						SubmissionStateService.getState().riskAnalysisExposureField);
 					model["rif_job_submission"][type].riskAnalysisExposureField = SubmissionStateService.getState().riskAnalysisExposureField;
 				}
 				
