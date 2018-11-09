@@ -12,7 +12,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>statsService</artifactId>
+	<artifactId>stats</artifactId>
 	<packaging>war</packaging>
 
 	<dependencies>
@@ -25,6 +25,11 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.nuiton.thirdparty</groupId>
+			<artifactId>JRI</artifactId>
 		</dependency>
 
 	</dependencies>
