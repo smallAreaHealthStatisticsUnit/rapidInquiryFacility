@@ -34,7 +34,7 @@
 		<json.version>20140107</json.version>
 		<jsr311-api.version>1.1.1</jsr311-api.version>
 		<mimepull.version>1.9.3</mimepull.version>
-		<JRI.version>0.8-4</JRI.version>
+		<JRI.version>0.9-9</JRI.version>
 		<batik-all.version>1.9.1</batik-all.version>
 		<fop.version>2.2</fop.version>
 		<jfreechart.version>1.5.0</jfreechart.version>
