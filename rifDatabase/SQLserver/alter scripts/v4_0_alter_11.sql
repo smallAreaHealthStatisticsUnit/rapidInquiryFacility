@@ -79,6 +79,8 @@ GO
  1. Fix to allow delete on RIF40_TABLES;	
  2. Intersection counting (study areas only);
  3. Exposure value support;
+ 4. Add intersection counting and exposure value support to extracts;
+ 5. View rif40_exposure_values;
  
  */
 
@@ -765,6 +767,245 @@ BEGIN
 END;
 
 END;
+GO
+
+--
+-- 4. Add intersection counting and exposure value support to extracts
+--
+:r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_create_insert_statement.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_insert_extract.sql
+
+--
+-- 5. View rif40_exposure_values
+--
+IF EXISTS (SELECT column_name
+			 FROM information_schema.columns
+			WHERE table_schema = 'rif40'
+			  AND table_name   = 'rif40_exposure_values') BEGIN
+	DROP VIEW rif40.rif40_exposure_values;
+END;
+GO
+
+CREATE VIEW rif40.rif40_exposure_values AS
+ SELECT username,
+    study_id,
+	band_id,
+    COUNT(area_id) AS total_areas,
+	COUNT(DISTINCT(nearest_rifshapepolyid)) AS total_rifshapepolyid,
+	MIN(intersect_count) AS min_intersect_count,
+	MAX(intersect_count) AS max_intersect_count,
+	MIN(distance_from_nearest_source) AS min_distance_from_nearest_source,
+	MAX(distance_from_nearest_source) AS max_distance_from_nearest_source,
+	MIN(exposure_value) AS min_exposure_value,
+	MAX(exposure_value) AS max_exposure_value
+   FROM rif40.rif40_study_areas
+  WHERE exposure_value IS NOT NULL
+  GROUP BY username, study_id, band_id;
+GO
+GRANT SELECT ON rif40.rif40_exposure_values TO rif_user, rif_manager;
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name]     = N'MS_Description'
+		   AND [minor_id] = 0)
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Minimum/maximum exposure values by band for risk analysis study areas. Study type: 13 (exposure covariates)', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name = 'rif40_exposure_values';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'username' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Username', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'username';
+GO	
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'study_id' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'study_id';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'band_id' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'A band allocated to the area', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'band_id';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'total_areas' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Total area id', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'total_areas';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'total_rifshapepolyid' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Total rifshapepolyid (shape reference)', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'total_rifshapepolyid';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'min_distance_from_nearest_source' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Minimum distance from nearest source (Km)', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'min_distance_from_nearest_source';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'max_distance_from_nearest_source' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Maximum distance from nearest source (Km)', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'max_distance_from_nearest_source';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'min_intersect_count' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Minimum number of intersects with shapes', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'min_intersect_count';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'max_intersect_count' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Maximum number of intersects with shapes', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'max_intersect_count';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'min_exposure_value' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Minimum exposure value', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'min_exposure_value';
+GO
+
+DECLARE @tableName   sysname 
+SELECT @tableName  = 'rif40.rif40_exposure_values';
+IF NOT EXISTS (
+        SELECT class_desc
+          FROM SYS.EXTENDED_PROPERTIES
+		 WHERE [major_id] = OBJECT_ID(@tableName)
+           AND [name] = N'MS_Description'
+		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS 
+		                      WHERE [name] = 'max_exposure_value' AND [object_id] = OBJECT_ID(@tableName)))
+EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Maximum exposure value', 
+		@level0type = N'Schema', @level0name = 'rif40',  
+		@level1type = N'View', @level1name  = 'rif40_exposure_values',
+		@level2type = N'Column', @level2name = 'max_exposure_value';
 GO
 
 --

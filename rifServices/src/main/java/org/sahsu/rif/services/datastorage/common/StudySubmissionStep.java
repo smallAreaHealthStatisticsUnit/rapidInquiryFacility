@@ -92,7 +92,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		updateSelectStateFormatter1.setUpdateTable("rif40_studies");
 		updateSelectStateFormatter1.addWhereParameter("study_id");
 
-		logSQLQuery("updateSelectState", updateSelectStateFormatter1, studySelectionText, studyID);
+		logSQLQuery("updateSelectState", updateSelectStateFormatter1, studySelectionText.substring(0, 200), studyID);
 	
 		PreparedStatement statement1 = null;
 		try {

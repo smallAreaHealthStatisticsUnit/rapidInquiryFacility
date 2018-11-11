@@ -73,7 +73,8 @@ Description:	Create INSERT SQL statement
 	DECLARE @rval 	INTEGER=1; 	-- Success
 	
 	DECLARE c1insext CURSOR FOR
-		SELECT study_id, extract_table, comparison_geolevel_name, study_geolevel_name, min_age_group, max_age_group, denom_tab
+		SELECT study_id, extract_table, comparison_geolevel_name, study_geolevel_name, min_age_group, max_age_group, denom_tab,
+		       study_type
 		  FROM rif40_studies a
 		 WHERE a.study_id = @study_id;
 	DECLARE @c1_rec_study_id 					INTEGER;
@@ -83,6 +84,7 @@ Description:	Create INSERT SQL statement
 	DECLARE @c1_rec_min_age_group 				INTEGER;
 	DECLARE @c1_rec_max_age_group 				INTEGER;
 	DECLARE @c1_rec_denom_tab					VARCHAR(30);
+	DECLARE @c1_rec_study_type					INTEGER;
 	
 	DECLARE c3insext CURSOR FOR
 		SELECT COUNT(DISTINCT(numer_tab)) AS distinct_numerators
@@ -191,7 +193,8 @@ GO
 --
 	OPEN c1insext;	
 	FETCH NEXT FROM c1insext INTO @c1_rec_study_id, @c1_rec_extract_table, 
-		@c1_rec_comparison_geolevel_name, @c1_rec_study_geolevel_name, @c1_rec_min_age_group, @c1_rec_max_age_group, @c1_rec_denom_tab;
+		@c1_rec_comparison_geolevel_name, @c1_rec_study_geolevel_name, @c1_rec_min_age_group, @c1_rec_max_age_group, 
+		@c1_rec_denom_tab, @c1_rec_study_type;
 	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c1insext;
 		DEALLOCATE c1insext;
@@ -497,7 +500,7 @@ GO
 -- Processing years filter
 --
 		IF @year_start = @year_stop SET @sql_stmt=@sql_stmt + @tab + '   AND c.year = @yearstart' + @tab + @tab + 
-			' /* Numerator (INSERT) year filter */' + @crlf
+			' /* Numerator (INSERT) year filter */' + @crlf;
 		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND c.year BETWEEN @yearstart AND @yearstop' + @tab + 
 			' /* Numerator (INSERT) year filter */' + @crlf;
 
@@ -546,6 +549,10 @@ GO
 	SET @sql_stmt=@sql_stmt + @tab + 'd AS (' + @crlf;
 	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 'SELECT d1.year, s.area_id, CAST(NULL AS INTEGER) AS band_id, d1.'+
 			LOWER(@c8_rec_age_sex_group_field_name) + ',' + @crlf
+	ELSE IF @c1_rec_study_type != 1 /* Risk analysis */ SET @sql_stmt=@sql_stmt + 
+		@tab + 'SELECT d1.year, s.area_id, s.band_id,' + @crlf + 
+		@tab + @tab + 's.intersect_count, s.distance_from_nearest_source, s.nearest_rifshapepolyid, s.exposure_value, d1.' +
+			LOWER(@c8_rec_age_sex_group_field_name) + ',' + @crlf;
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 'SELECT d1.year, s.area_id, s.band_id, d1.' +
 			LOWER(@c8_rec_age_sex_group_field_name) + ',' + @crlf;
 
@@ -615,8 +622,13 @@ GO
 -- Add GROUP BY clause 
 -- [Add support for differing age/sex/group names]
 --
-	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + ' GROUP BY d1.year, s.area_id,' + @crlf;
-	ELSE SET @sql_stmt=@sql_stmt + @tab + ' GROUP BY d1.year, s.area_id, s.band_id,' + @crlf;
+	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + 
+		@tab + ' GROUP BY d1.year, s.area_id,' + @crlf;
+	ELSE IF @c1_rec_study_type != 1 /* Risk analysis */ SET @sql_stmt=@sql_stmt + 
+		@tab + ' GROUP BY d1.year, s.area_id, s.band_id,' + @crlf + 
+		@tab + @tab + 's.intersect_count, s.distance_from_nearest_source, s.nearest_rifshapepolyid, s.exposure_value,' + @crlf;
+	ELSE SET @sql_stmt=@sql_stmt + 
+		@tab + ' GROUP BY d1.year, s.area_id, s.band_id,' + @crlf;
 	IF @covariate_list IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + '          ' + @covariate_list;
 	SET @sql_stmt=@sql_stmt + @tab + '          d1.' + LOWER(@c4_rec_age_sex_group_field_name) + @crlf;
 		
@@ -683,6 +695,18 @@ GO
 		'       @studyid AS study_id,' + @crlf +
 		'       d.area_id,' + @crlf +
 		'       d.band_id,' + @crlf;
+		
+	IF @c1_rec_study_type != 1 /* Risk analysis */ BEGIN
+		IF @study_or_comparison = 'C' 
+			SET @sql_stmt=@sql_stmt + 
+				@tab + @tab + 
+				'NULL AS intersect_count, NULL AS distance_from_nearest_source, NULL AS nearest_rifshapepolyid, NULL AS exposure_value,' + @crlf;
+		ELSE
+			SET @sql_stmt=@sql_stmt + 
+				@tab + @tab + 
+				'd.intersect_count, d.distance_from_nearest_source, d.nearest_rifshapepolyid, d.exposure_value,' + @crlf;
+	END;
+	
 --
 -- [Add support for differing age/sex/group names]
 --

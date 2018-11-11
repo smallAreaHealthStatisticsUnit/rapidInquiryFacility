@@ -69,6 +69,8 @@
  1. Support for Postgres 10 partitioning;
  2. Intersection counting (study areas only);	
  3. Exposure value support;
+ 4. Add intersection counting and exposure value support to extracts;
+ 5. View rif40_exposure_values;
  
  */
 BEGIN;
@@ -118,6 +120,7 @@ EXCEPTION
 END;
 $$;
 	
+DROP VIEW IF EXISTS rif40.rif40_exposure_values;
 DROP VIEW IF EXISTS rif40.rif40_study_areas;
 DROP VIEW IF EXISTS rif40.rif40_studes;
 ALTER TABLE t_rif40_study_areas ALTER COLUMN nearest_rifshapepolyid SET DATA TYPE VARCHAR;
@@ -569,6 +572,59 @@ CREATE TRIGGER trg_rif40_studies
 COMMENT ON TRIGGER trg_rif40_studies ON rif40_studies IS 'INSTEAD OF trigger for view T_RIF40_STUDIES to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
  [NO TABLE/VIEW comments available]';
   
+--
+-- 4. Add intersection counting and exposure value support to extracts
+--
+\i ../../PLpgsql/rif40_sql_pkg/rif40_startup.sql
+\i ../../PLpgsql/rif40_sm_pkg/rif40_create_extract.sql
+\i ../../PLpgsql/rif40_sm_pkg/rif40_create_insert_statement.sql
+
+--
+-- 5. View rif40_exposure_values
+--
+CREATE VIEW rif40.rif40_exposure_values AS
+ SELECT username,
+    study_id,
+	band_id,
+    COUNT(area_id) AS total_areas,
+	COUNT(DISTINCT(nearest_rifshapepolyid)) AS total_rifshapepolyid,
+	MIN(intersect_count) AS min_intersect_count,
+	MAX(intersect_count) AS max_intersect_count,
+	MIN(distance_from_nearest_source) AS min_distance_from_nearest_source,
+	MAX(distance_from_nearest_source) AS max_distance_from_nearest_source,
+	MIN(exposure_value) AS min_exposure_value,
+	MAX(exposure_value) AS max_exposure_value
+   FROM rif40.rif40_study_areas
+  WHERE exposure_value IS NOT NULL
+  GROUP BY username, study_id, band_id
+  ORDER BY username, study_id, band_id;
+GRANT SELECT ON rif40.rif40_exposure_values TO rif_user, rif_manager;
+COMMENT ON VIEW rif40.rif40_exposure_values 
+	IS 'Minimum/maximum exposure values by band for risk analysis study areas. Study type: 13 (exposure covariates)';
+COMMENT ON COLUMN rif40.rif40_exposure_values.username
+    IS 'Username';
+COMMENT ON COLUMN rif40.rif40_exposure_values.study_id
+    IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
+COMMENT ON COLUMN rif40.rif40_exposure_values.band_id
+    IS 'A band allocated to the area';
+COMMENT ON COLUMN rif40.rif40_exposure_values.total_areas
+    IS 'Total area id';
+COMMENT ON COLUMN rif40.rif40_exposure_values.total_rifshapepolyid
+    IS 'Total rifshapepolyid (shape reference)';
+COMMENT ON COLUMN rif40.rif40_exposure_values.min_distance_from_nearest_source 
+	IS 'Minimum distance from nearest source (Km)';
+COMMENT ON COLUMN rif40.rif40_exposure_values.max_distance_from_nearest_source 
+	IS 'Maximum distance from nearest source (Km)';
+COMMENT ON COLUMN rif40.rif40_exposure_values.min_intersect_count 
+	IS 'Minimum number of intersects with shapes';
+COMMENT ON COLUMN rif40.rif40_exposure_values.max_intersect_count 
+	IS 'Maximum number of intersects with shapes';
+COMMENT ON COLUMN rif40.rif40_exposure_values.min_exposure_value 
+	IS 'Minimum exposure value';
+COMMENT ON COLUMN rif40.rif40_exposure_values.max_exposure_value 
+	IS 'Maximum exposure value';
+\dS+ rif40.rif40_exposure_values
+	
 --
 -- Testing stop
 --
