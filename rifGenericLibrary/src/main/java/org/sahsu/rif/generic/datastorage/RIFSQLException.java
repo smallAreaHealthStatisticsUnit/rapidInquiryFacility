@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.lang.Exception;
 
-public class RIFSQLException extends Exception {
+public class RIFSQLException extends RIFServiceException {
 	
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
