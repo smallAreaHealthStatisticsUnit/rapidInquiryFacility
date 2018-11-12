@@ -52,6 +52,7 @@ public class ClaMlTaxonomyService extends AbstractTaxonomyService {
 				icd1011TaxonomyParser.readFile(icd1011File);
 				rifLogger.info(this.getClass(), "icd101/1TaxonomyParser: " + name
 				                                + " read: \"" + icdFile + "\".");
+												
 				setTaxonomyTermManager(icd1011TaxonomyParser.getTaxonomyTermManager());
 				setServiceWorking(true);
 				rifLogger.info(this.getClass(), "icd101/1TaxonomyParser: " + name
