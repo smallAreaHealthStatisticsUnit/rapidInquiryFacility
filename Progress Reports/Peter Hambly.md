@@ -3065,4 +3065,5 @@ Further changes are needed to support risk analysis:
 * Complete intersection middleware insert to database; 
 * RIF Meeting;
 * Fix basemap selection: allow to change, no network support, saved state;
-* Add support for exposure values to alter scripts;
+* Add support for exposure values to alter scripts, middleware and database;
+* Test and merge #109: Improve file handling;
