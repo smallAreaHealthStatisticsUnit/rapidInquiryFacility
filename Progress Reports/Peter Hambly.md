@@ -3083,5 +3083,6 @@ Further changes are needed to support risk analysis:
   - intersect_count: Number of intersects with shapes
   - distance_from_nearest_source: Distance from nearest source (Km)
   - nearest_rifshapepolyid: Nearest rifshapepolyid (shape reference)
-  - exposure_value: Exposure value (when bands selected by exposure values)
-
+  - exposure_value: Exposure value (when bands selected by exposure values);
+* Create pull #112: Risk analysis fixes required enhancements: add support for intersection between risk analysis 
+  shapes and for exposure covariates;
