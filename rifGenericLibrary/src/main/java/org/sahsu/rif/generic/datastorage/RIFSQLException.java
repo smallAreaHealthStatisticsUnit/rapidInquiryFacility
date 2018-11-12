@@ -1,6 +1,7 @@
 package org.sahsu.rif.generic.datastorage;
 
 import org.sahsu.rif.generic.util.RIFLogger;
+import  org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
