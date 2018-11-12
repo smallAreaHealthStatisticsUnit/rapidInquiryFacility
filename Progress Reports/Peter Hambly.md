@@ -3067,3 +3067,21 @@ Further changes are needed to support risk analysis:
 * Fix basemap selection: allow to change, no network support, saved state;
 * Add support for exposure values to alter scripts, middleware and database;
 * Test and merge #109: Improve file handling;
+
+#### 12th to 16th November
+
+* Complete alter 11:
+  1. Support for Postgres 10 partitioning;
+  2. Intersection counting (study areas only);	
+  3. Exposure value support;
+  4. Add intersection counting and exposure value support to extracts;
+  5. View rif40_exposure_values;
+* Create new view *rif40.rif40_exposure_values* has been created to support exposure covariates;
+* The extract table is untouched for disease mapping and the extract has been fixed for risk analysis to support 
+  exposure covariates and intersections;
+* Fixed ZIP extract to support risk analysis correctly and new alter 11 columns:
+  - intersect_count: Number of intersects with shapes
+  - distance_from_nearest_source: Distance from nearest source (Km)
+  - nearest_rifshapepolyid: Nearest rifshapepolyid (shape reference)
+  - exposure_value: Exposure value (when bands selected by exposure values)
+
