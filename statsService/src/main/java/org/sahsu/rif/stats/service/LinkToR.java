@@ -13,12 +13,12 @@ import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.stats.service.logging.LoggingConsole;
 
 /**
- * Provides the statistics services for the Rapid Enquiry Facility.
+ * Provides the link to R functions for the Rapid Inquiry Facility's Statistics Service.
  */
-public final class BridgeToR {
+final class LinkToR {
 
 	// Singleton because there can only be one R engine running in a JVM.
-	private static final BridgeToR THE_INSTANCE = new BridgeToR();
+	private static final LinkToR THE_INSTANCE = new LinkToR();
 	private final RIFLogger logger = RIFLogger.getLogger();
 	private static final List<String> R_SCRIPTS = new ArrayList<>();
 	static {
@@ -36,12 +36,12 @@ public final class BridgeToR {
 	private Rengine rEngine;
 	private Path scriptPath;
 
-	static BridgeToR instance() {
+	static LinkToR instance() {
 
 		return THE_INSTANCE;
 	}
 
-	private BridgeToR() {
+	private LinkToR() {
 
 		// Prevent instantiation. This should never happen, of course.
 		if (THE_INSTANCE != null) {

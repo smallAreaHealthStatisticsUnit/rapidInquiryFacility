@@ -6,18 +6,22 @@ import javax.servlet.annotation.WebListener;
 
 import org.sahsu.rif.generic.util.RIFLogger;
 
+/**
+ * Ensures that the R Engine is started when the server starts, and tries to stop it when the server
+ * stops.
+ */
 @WebListener
 public class Listener implements ServletContextListener {
 
 	private static final RIFLogger logger = RIFLogger.getLogger();
 
-	private BridgeToR bridge;
+	private LinkToR link;
 
 	@Override
 	public void contextInitialized(final ServletContextEvent servletContextEvent) {
 
-		bridge = BridgeToR.instance();
-		bridge.start();
+		link = LinkToR.instance();
+		link.start();
 		logger.info(getClass(), "Statistics Service Context initialised");
 	}
 
@@ -25,9 +29,9 @@ public class Listener implements ServletContextListener {
 	public void contextDestroyed(final ServletContextEvent servletContextEvent) {
 
 		logger.info(getClass(), "Statistics Service Context destroyed. Stopping R engine.");
-		if (bridge.isRunning()) {
+		if (link.isRunning()) {
 
-			bridge.stop();
+			link.stop();
 		}
 	}
 }
