@@ -698,11 +698,11 @@ GO
 		
 	IF @c1_rec_study_type != 1 /* Risk analysis */ BEGIN
 		IF @study_or_comparison = 'C' 
-			SET @sql_stmt=@sql_stmt + 
+			SET @sql_stmt=@sql_stmt + @crlf +
 				@tab + @tab + 
 				'NULL AS intersect_count, NULL AS distance_from_nearest_source, NULL AS nearest_rifshapepolyid, NULL AS exposure_value,' + @crlf;
 		ELSE
-			SET @sql_stmt=@sql_stmt + 
+			SET @sql_stmt=@sql_stmt + @crlf +
 				@tab + @tab + 
 				'd.intersect_count, d.distance_from_nearest_source, d.nearest_rifshapepolyid, d.exposure_value,' + @crlf;
 	END;
