@@ -37,11 +37,16 @@
 /* global L */
 
 angular.module("RIF")
-        .factory('GISService',
-                function () {
+        .factory('GISService', ['AlertService',
+                function (AlertService) {
                     function isPointInPolygon(point, poly) {
-                        //http://stackoverflow.com/questions/31790344/determine-if-a-point-reside-inside-a-leaflet-polygon
-
+                        //http://stackoverflow.com/questions/31790344/determine-if-a-point-reside-inside-a-leaflet-polygon]
+						if (point) { // Do allow grid [0,0]
+						}
+						else {
+							throw new Error("latLng: " + JSON.stringify(point) + " is a Leaflet LatLng");
+						}
+						
                         //the hull
                         var polyPoints;
                         var xi;
@@ -83,14 +88,175 @@ angular.module("RIF")
                     function isPointInCircle(point, circle) {
                         if (circle.data.getLatLng().distanceTo(point) <= circle.data.getRadius()) {
                             return true;
-                        }
+						}
+						else {
+							return false;
+						}
                     }
+					function convertToGeoJSONPoints(LatLngList) { // Convert LatLng list to GeoJSON points array
+						var geoJSONPoints = [];
+						for (var i=0; i<LatLngList.length; i++) {
+							geoJSONPoints.push([LatLngList[i].lng, LatLngList[i].lat]);
+						}
+						if (LatLngList[0].lng == LatLngList[(LatLngList.length-1)].lng &&
+						    LatLngList[0].lng == LatLngList[(LatLngList.length-1)].lng) { // Is a ring
+						}
+						else {
+							geoJSONPoints.push([LatLngList[0].lng, LatLngList[0].lat]); // Make it a ring
+						}
+						return [geoJSONPoints];
+					}
+					function getdistanceFromNearestSource2(point, centroid) { // In metres
+						// Point is Leaflet latLng
+                        if (centroid && point) {
+							return Math.round(centroid.distanceTo(point) * 10)/10;
+						}
+						else {
+							throw new Error("centroid/point is undefined");
+						}
+					}
+					function getBoundingBox2(shape) { // Returns Turf bounding box (bbox) extent in [minX, minY, maxX, maxY] order
+						// Point is Leaflet latLng
+                        if (shape.circle || shape.data) {					
+							var polygon=getPolygon2(shape);	
+//							AlertService.consoleDebug("rifs-util-gis.js] polygon: " + JSON.stringify(polygon)); 	
+							if (polygon) {
+								return turf.bbox(polygon); // GeoJSON bounding box as longitude and latitude
+							}
+							else {
+								return undefined;
+							}
+						}
+						else {
+							throw new Error("shape.data is undefined; shape: " + JSON.stringify(shape.data, null, 1));
+						}
+					}	
+					function pointToLatLng2(point) { // Convert point[x, y] to LatLng
+						if (Array.isArray(point)) {
+							return L.latLng(point[1], point[0]);
+						}
+						else if (point.length != 2) {
+							throw new Error("Point: " + JSON.stringify(point) + " array is not of length 2");
+						}
+						else {
+							throw new Error("Point: " + JSON.stringify(point) + " is not an array");
+						}
+					}	
+					function latLngToPoint2(latLng) { // Convert LatLng to point[x, y]
+						if (latLng) { // Do allow grid [0,0]
+							return [latLng.lng, latLng.lat];
+						}
+						else {
+							throw new Error("latLng: " + JSON.stringify(latLng) + " is a Leaflet LatLng");
+						}
+					}
+					function geojsonPointToLatLng2(point) { // Convert GeoJSON point to LatLng
+					/* 
+					{
+						"type": "Feature",
+						"properties": {},
+						"geometry": {
+							"type": "Point",
+							"coordinates": [54.47166835050224, -6.460631348754439]
+						}
+					}
+					*/
+						if (point && point.type && point.type == "Feature" && 
+						    point.geometry && point.geometry.type && point.geometry.type == "Point" &&
+							point.geometry.coordinates && Array.isArray(point.geometry.coordinates) && point.geometry.coordinates.length == 2) {
+							var coordinate=point.geometry.coordinates;
+							var latLng = L.latLng(coordinate[1], coordinate[0]);
+//							AlertService.consoleDebug("[rifs-util-gis.js] geojsonPointToLatLng2 point:" + JSON.stringify(point) +
+//								"; coordinate: " + JSON.stringify(coordinate) +
+//								"; latLng: " + JSON.stringify(latLng));
+							return latLng;
+						}
+						else {
+							throw new Error("Point: " + JSON.stringify(point) + " is not a GeoJSon point");
+						}
+					}
+					function getPolygon2(shape) { // Returns Turf Polygon
+						var polygon;
+						// Point is Leaflet latLng
+                        if (shape.circle) {	
+							var latLng = shape.data.getLatLng();
+							var centroid = latLngToPoint2(latLng);		
+							var polygon =  turf.circle(centroid, shape.data.getRadius(), undefined /* options */);	
+//							AlertService.consoleDebug("[rifs-util-gis.js] circle" + 
+//								"; radius: " + shape.data.getRadius() +
+//								"; centroid: " + JSON.stringify(centroid) +
+//								"; latLng: " + JSON.stringify(latLng) +
+//								"; polygon: " + JSON.stringify(polygon)); 						
+							return polygon;
+                        }
+						else if (shape.data) {	
+							var polyPoints;
+							if (shape.freehand) {
+								polyPoints = convertToGeoJSONPoints(shape.data.getLatLngs());
+							} else {
+								polyPoints = convertToGeoJSONPoints(shape.data.getLatLngs()[0]);
+							}		
+							polygon = turf.polygon(polyPoints);
+							if (polygon) {
+								return polygon;
+							}
+							else {
+								throw new Error("No polygon could be created for polyPoints: " + JSON.stringify(polyPoints));
+							}
+						}
+						else {
+							throw new Error("shape.data is undefined; shape: " + JSON.stringify(shape.data, null, 1));
+						}
+					}					
+					function getCentroid2(shape) { // Returns Leaflet LatLng centroid
+						// Point is Leaflet latLng
+                        if (shape.circle) {
+							return shape.data.getLatLng();
+                        }
+						else if (shape.data) {	
+							var polygon=getPolygon2(shape);
+							if (polygon) {
+								centroid=turf.centroid(polygon); // GeoJSON point as longitude and latitude
+								return L.latLng(centroid.geometry.coordinates[0], centroid.geometry.coordinates[1]);
+							}
+							else {
+								throw new Error("No polygon could be created for polyPoints: " + JSON.stringify(polyPoints));
+							}
+//							AlertService.consoleDebug("[rifs-util-gis.js] polyPoints: " + JSON.stringify(polyPoints) +
+//								"; polygon: " + JSON.stringify(polygon) +
+//								"; centroid: " + JSON.stringify(centroid)); 
+						}
+						else {
+							throw new Error("shape.data is undefined; shape: " + JSON.stringify(shape.data, null, 1));
+						}
+					}
                     return {
                         getPointinpolygon: function (point, poly) {
                             return isPointInPolygon(point, poly);
                         },
                         getPointincircle: function (point, circle) {
                             return isPointInCircle(point, circle);
-                        }
+                        },
+						getdistanceFromNearestSource: function (point, centroid) {
+                            return getdistanceFromNearestSource2(point, centroid);
+                        },
+						getCentroid: function(shape) {
+							return getCentroid2(shape);
+						},
+						getBoundingBox: function(shape) {
+							return getBoundingBox2(shape);
+						},
+						getPolygon: function(shape) {
+							return getPolygon2(shape);
+						},	
+						geojsonPointToLatLng: function(point) {
+							return geojsonPointToLatLng2(point);
+						},		
+						pointToLatLng: function(point) {
+							return pointToLatLng2(point);
+						},	
+						latLngToPoint: function(latLng) {
+							return latLngToPoint2(latLng);
+						}
                     };
-                });
+                }]);

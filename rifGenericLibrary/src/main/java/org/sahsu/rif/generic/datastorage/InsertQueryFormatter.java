@@ -4,7 +4,7 @@ import org.sahsu.rif.generic.datastorage.ms.MSSQLInsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLInsertQueryFormatter;
 
 public interface InsertQueryFormatter extends QueryFormatter {
-
+	
 	public static InsertQueryFormatter getInstance(DatabaseType type) {
 
 		switch (type) {
@@ -18,7 +18,12 @@ public interface InsertQueryFormatter extends QueryFormatter {
 				                                + "database type");
 		}
 	}
-
+	
+	/**
+	 * Gets the insert field count
+	 */	
+	public int getInsertFieldCount();
+	
 	/**
 	 * Sets the into table.
 	 *

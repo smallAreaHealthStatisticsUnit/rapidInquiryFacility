@@ -156,6 +156,11 @@ public final class MapAreaContentHandler
 		xmlUtility.writeField(recordName, "id", mapArea.getIdentifier());
 		xmlUtility.writeField(recordName, "gid", mapArea.getGeographicalIdentifier());
 		xmlUtility.writeField(recordName, "label", mapArea.getLabel());
+		xmlUtility.writeField(recordName, "band", mapArea.getBand().toString());
+		xmlUtility.writeField(recordName, "intersectCount", mapArea.getIntersectCount().toString());
+		xmlUtility.writeField(recordName, "distanceFromNearestSource", mapArea.getDistanceFromNearestSource().toString());
+		xmlUtility.writeField(recordName, "nearestRifShapePolyId", mapArea.getNearestRifShapePolyId());
+		xmlUtility.writeField(recordName, "exposureValue", mapArea.getExposureValue().toString());
 
 		xmlUtility.writeRecordEndTag(recordName);
 	}
@@ -259,6 +264,18 @@ public final class MapAreaContentHandler
 		}		
 		else if (equalsFieldName(qualifiedName, "band")) {
 			currentMapArea.setBand(Integer.parseInt(getCurrentFieldValue()));
+		}			
+		else if (equalsFieldName(qualifiedName, "intersectCount")) {
+			currentMapArea.setIntersectCount(Integer.parseInt(getCurrentFieldValue()));
+		}			
+		else if (equalsFieldName(qualifiedName, "distanceFromNearestSource")) {
+			currentMapArea.setDistanceFromNearestSource(Double.parseDouble(getCurrentFieldValue()));
+		}			
+		else if (equalsFieldName(qualifiedName, "nearestRifShapePolyId")) {
+			currentMapArea.setNearestRifShapePolyId(getCurrentFieldValue());
+		}				
+		else if (equalsFieldName(qualifiedName, "exposureValue")) {
+			currentMapArea.setExposureValue(Double.parseDouble(getCurrentFieldValue()));
 		}		
 		else {
 			assert false;

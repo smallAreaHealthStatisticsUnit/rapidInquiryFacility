@@ -16,14 +16,24 @@ public final class MSSQLInsertQueryFormatter extends AbstractSQLQueryFormatter
 
 	private ArrayList<Boolean> useQuotesForLiteral;
 
+	private int insertFieldCount;
+	
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
 	public MSSQLInsertQueryFormatter() {
 		insertFields = new ArrayList<>();
 		useQuotesForLiteral = new ArrayList<>();
+		insertFieldCount=0;
 	}
-
+	
+	/**
+	 * Gets the insert field count
+	 */		
+	public int getInsertFieldCount() {
+		return this.insertFieldCount;
+	}
+	
 	@Override
 	public void setIntoTable(
 			final String intoTable) {
@@ -35,6 +45,7 @@ public final class MSSQLInsertQueryFormatter extends AbstractSQLQueryFormatter
 	public void addInsertField(
 			final String insertField) {
 		
+		this.insertFieldCount++;
 		insertFields.add(insertField);
 	}
 	
@@ -43,6 +54,7 @@ public final class MSSQLInsertQueryFormatter extends AbstractSQLQueryFormatter
 			final String insertField,
 			final Boolean useQuotes) {
 				
+		this.insertFieldCount++;
 		insertFields.add(insertField);
 		useQuotesForLiteral.add(useQuotes);
 	}

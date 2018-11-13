@@ -43,8 +43,12 @@ angular.module("RIF")
 						"areamap": "Study and comparison area map",
 						"diseasemap1": "Disease mapping left hand map",
 						"diseasemap2": "Disease mapping right hand map",
-						"viewer": "Viewer map"
+						"viewermap": "Viewer map"
 					};
+				
+					var shapeId=0;
+					var shapeFileId=0;
+					var shapePolyId=0;
 					
 					function checkAreaType(areaType) { // Check: $scope.input.name
 						if (areaType == "ComparisionAreaMap" || areaType == "StudyAreaMap") { // OK
@@ -57,28 +61,74 @@ angular.module("RIF")
 					var s = {};
 					var t = { // All possible mapping elements
 						map: undefined,
+						basemap: undefined,
+						basemapErrors: {},
+						noBasemap: false,
 						shapes: undefined,
 						drawnItems: undefined,
 						info: undefined,
-						studyArea: {
+						StudyAreaMap: {
 							selectedPolygon: [],				
 							selectedPolygonObj: {},
-							areaNameList: {}
+							areaNameList: {},
+							shapeFileList: {}
 						},
-						comparisonArea: {
+						ComparisionAreaMap: {
 							selectedPolygon: [],				
 							selectedPolygonObj: {},
-							areaNameList: {}
+							areaNameList: {},
+							shapeFileList: {}
 						},
 						maxbounds: undefined,						
 						currentBand: undefined,
 						possibleBands: undefined,
 						description: undefined,
+						name: undefined,
+						setBasemap: function (basemap, noBasemap) {
+							if (this.basemapErrors && this.basemapErrors[basemap] !== undefined) {
+							}
+							else {
+								this.basemapErrors[basemap] = 0;
+							}
+							AlertService.consoleLog("[rifs-util-mapstate.js] setBasemap() from: " + this.basemap + " to: " + basemap + 
+								"; noBasemap: " + noBasemap +
+								"; basemapErrors: " + ((this.basemapErrors && this.basemapErrors[basemap] !== undefined) ?
+									this.basemapErrors[basemap] : "undefined") +
+								"; for map: " + this.name + ": " + this.description);
+							this.basemap = basemap;
+							this.noBasemap = noBasemap;
+							return this.basemap;
+						},
+						basemapError: function (basemap) {
+							if (this.basemapErrors && this.basemapErrors[basemap] !== undefined) {
+								this.basemapErrors[basemap]++;
+								this.noBasemap = true;
+								if (this.basemapErrors[basemap] < 5) {
+									AlertService.consoleLog("[rifs-util-mapstate.js] basemap tile error: " + this.basemapErrors[basemap] + 
+										" for basemap: " + basemap +
+										"; map: " + this.name + ": " + this.description);
+								}
+							}
+							else {
+								throw new Error("this.basemapErrors[basemap] is undefined for basemap: " + basemap +
+									"; map: " + this.name + ": " + this.description);
+							}
+						},
+						getBasemapError: function (basemap) {
+							if (this.basemapErrors && this.basemapErrors[basemap] !== undefined) {
+								AlertService.consoleLog("[rifs-util-mapstate.js] basemap tile errors: " + this.basemapErrors[basemap]);
+								return this.basemapErrors[basemap];
+							}
+							else {
+								throw new Error("this.basemapErrors[basemap] is undefined for basemap: " + basemap +
+									"; map: " + this.name + ": " + this.description);
+							}
+						},
 						getSelectedPolygon: function(areaType) { // Get selectedPolygon list
 							checkAreaType(areaType);
 							return this.areaType.selectedPolygon;
 						},
-						getSelectedPolygonObj: function(areaType, thisPolyId) { // Get selectedPolygon list
+						getSelectedPolygonObj: function(areaType, thisPolyId) { // Get selectedPolygon list element
 							checkAreaType(areaType);
 							return this.areaType.selectedPolygonObj[thisPolyId];
 						},
@@ -169,6 +219,87 @@ angular.module("RIF")
 								this.areaType.selectedPolygon.length);
 							return this.areaType.selectedPolygon;
 						},
+						getMaxIntersectCount: function(areaType, rifShapePolyId) {
+							checkAreaType(areaType);
+							var maxIntersectCount=0;
+							if (this.areaType.selectedPolygon) {
+								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
+									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapePolyId]) {
+										if (maxIntersectCount == 0) {
+											maxIntersectCount=1;
+										}
+										if (this.areaType.selectedPolygon[i].intersectCount > maxIntersectCount) {
+											maxIntersectCount = this.areaType.selectedPolygon[i].intersectCount;
+										}
+									}
+								}
+							}
+							AlertService.consoleDebug("[rifs-util-mapstate.js] getMaxIntersectCount(" + 
+								areaType + "," + rifShapePolyId + "): " + 
+								maxIntersectCount + "/" + (this.areaType.selectedPolygon ? this.areaType.selectedPolygon.length : 0));
+							return maxIntersectCount;
+						},
+						getIntersectCounts: function(areaType, rifShapePolyId) {
+							checkAreaType(areaType);	
+							if (rifShapePolyId == undefined) {
+								throw new Error("rifShapePolyId is undefined");
+							}
+							var intersectCount={};
+							if (this.areaType.selectedPolygon) {
+								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
+									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapePolyId] &&
+										this.areaType.selectedPolygon[i].intersectCount) {
+										var name;
+										if (this.areaType.selectedPolygon[i].intersectCount > 1) {
+											name = "with_" + this.areaType.selectedPolygon[i].intersectCount + "_intersects";
+										}
+										else {
+											name = "with_" + this.areaType.selectedPolygon[i].intersectCount + "_intersect";
+										}
+										if (intersectCount[name]) {
+											intersectCount[name].total++;
+										}
+										else {
+											intersectCount[name] = {total: 1};
+										}
+									}
+								}
+							}
+							AlertService.consoleDebug("[rifs-util-mapstate.js] getIntersectCounts(" + 
+								areaType + "," + rifShapePolyId + "): " + 
+								JSON.stringify(intersectCount) + "/" + (this.areaType.selectedPolygon ? this.areaType.selectedPolygon.length : 0));
+							return intersectCount;
+						},
+						getTotalAreas: function(areaType, rifShapePolyId) {
+							checkAreaType(areaType);	
+							if (rifShapePolyId == undefined) {
+								throw new Error("rifShapePolyId is undefined");
+							}
+							var totalAreas=0;
+							var otherRifShapeId = {};
+							if (this.areaType.selectedPolygon) {
+								for (var i=0; i<this.areaType.selectedPolygon.length; i++) {
+									if (this.areaType.selectedPolygon[i].shapeIdList[rifShapePolyId]) {
+										totalAreas++;
+									}
+									else {
+										for (var key in this.areaType.selectedPolygon[i].shapeIdList) {
+											if (otherRifShapeId[key]){
+												otherRifShapeId[key].count++;
+											}
+											else {
+												otherRifShapeId[key] = {count: 1};	
+											}
+										}
+									}
+								}
+							}
+							AlertService.consoleDebug("[rifs-util-mapstate.js] getTotalAreas(" + 
+								areaType + "," + rifShapePolyId + "): " + 
+								totalAreas + "/" + (this.areaType.selectedPolygon ? this.areaType.selectedPolygon.length : 0) +
+								"; otherRifShapeId: " + JSON.stringify(otherRifShapeId));
+							return totalAreas;
+						},
 						initialiseSelectedPolygon: function(areaType, arr) {	// Initialise selectedPolygon from an array arr of items
 							checkAreaType(areaType);	
 							var oldLength=((this.areaType && this.areaType.selectedPolygon) ? this.areaType.selectedPolygon.length : undefined);
@@ -249,6 +380,36 @@ angular.module("RIF")
 							}
 							return this.areaType.selectedPolygon;
 						},
+						updateSelectedPolygon: function(areaType, item) {	// Update item to selectedPolygon
+							checkAreaType(areaType);	
+							if (item && item.id) {
+								if (this.areaType.selectedPolygonObj[item.id]) {
+									var found=false;
+									for (var i=0; i < this.areaType.selectedPolygon.length; i++) {
+										if (this.areaType.selectedPolygon[i].id == item.id) {
+											found=true;
+											this.areaType.selectedPolygon.splice(i, 1);
+											break;
+										}
+									}	
+									if (!found) {
+										throw new Error("Cannot find item: " + id + " in selectedPolygon " + areaType + " list");
+									}
+									this.areaType.selectedPolygonObj[item.id] = angular.copy(item);
+									this.areaType.selectedPolygon.push(angular.copy(item));
+//									AlertService.consoleDebug("[rifs-util-mapstate.js] updateSelectedPolygon(" + areaType + ", " + 
+//										JSON.stringify(item, null, 1) + "): " + 
+//										this.areaType.selectedPolygon.length);
+								}
+								else {
+									throw new Error("No items: " + item.id + " in selectedPolygon " + areaType + " list");
+								}
+							}
+							else {
+								throw new Error("Null item/id: " + JSON.stringify(item) + "; areaType: " + areaType);
+							}
+							return this.areaType.selectedPolygon;
+						},
 						removeFromSselectedPolygon: function(areaType, id) { // Remove item from selectedPolygon
 							checkAreaType(areaType);	
 							if (id) {
@@ -277,6 +438,49 @@ angular.module("RIF")
 								throw new Error("removeFromSselectedPolygon() Null id: " + areaType);
 							}
 							return this.areaType.selectedPolygon;
+						},
+						getNextShapeId: function() {
+							shapeId++;
+							return 'RIF_' + shapeId;
+						},
+						getNextShapeFileId: function (areaType, shapefile) {
+							checkAreaType(areaType);	
+							if (shapefile == undefined) {
+								throw new Error("shapefile is undefined");
+							}
+							else if (shapefile.fileName == undefined) {
+								throw new Error("shapefile.fileName is undefined");
+							}
+							else {
+								if (this.areaType.shapeFileList == undefined) {
+									this.areaType.shapeFileList = {};
+								}
+								shapeFileId++;
+								this.areaType.shapeFileList[shapefile.fileName] = shapefile;
+								this.areaType.shapeFileList[shapefile.fileName].shapeFileId = 'RIFSHAPEFILE_' + shapeFileId;
+								return 'RIFSHAPEFILE_' + shapeFileId;
+							}
+						},
+						getNextShapePolyId: function () {
+							shapePolyId++;
+							return 'RIFPOLY_' + shapePolyId;
+						},
+						getShapeByFileId: function (areaType, shapeFileId) {
+							checkAreaType(areaType);
+							if (shapeFileId == undefined) {
+								throw new Error("shapeFileId is undefined");
+							}
+							else {
+								if (this.areaType.shapeFileList == undefined) {
+									this.areaType.shapeFileList = {};
+								}
+								for (var key in this.areaType.shapeFileList) {
+									if (this.areaType.shapeFileList[key].shapeFileId == shapeFileId) {
+										return this.areaType.shapeFileList[key];
+									}
+								}
+								return undefined;
+							}
 						}
 					};
 									
@@ -289,8 +493,9 @@ angular.module("RIF")
 								}
 								
 								if (s[key] == undefined) { // Initialise
-									s[key] = t;
+									s[key] = angular.copy(t);
 									s[key].description=mapNames[key];
+									s[key].name=key;
 								}								
 							}
 							if (!found) {
@@ -304,8 +509,9 @@ angular.module("RIF")
 								for (var key in mapNames) {
 									if (key == mapName) {
 										found=true;
-										s[key] = t; // Re-Initialise
+										s[key] = angular.copy(t); // Re-Initialise
 										s[key].description=mapNames[key];
+										s[key].name=key;
 										AlertService.consoleDebug("[rifs-util-mapstate.js] resetState(" + key + "): " + 
 											s[key].description);
 									}							
@@ -317,8 +523,9 @@ angular.module("RIF")
 							}
 							else {
 								for (var key in mapNames) {
-									s[key] = t; // Re-Initialise
+									s[key] = angular.copy(t); // Re-Initialise
 									s[key].description=mapNames[key];
+									s[key].name=key;
 									AlertService.consoleDebug("[rifs-util-mapstate.js] resetState(" + key + "): " + 
 										s[key].description);
 								}	

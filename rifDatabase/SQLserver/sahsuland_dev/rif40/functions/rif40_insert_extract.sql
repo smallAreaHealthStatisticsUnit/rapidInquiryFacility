@@ -69,13 +69,14 @@ Description:	Insert data into extract table
 	SET @rval=1; 	-- Success
 	
 	DECLARE c1insext2 CURSOR FOR
-		SELECT study_id, year_start, year_stop, extract_table 
+		SELECT study_id, year_start, year_stop, extract_table, study_type
 		  FROM rif40_studies a
 		 WHERE a.study_id = @study_id;
 	DECLARE @c1_rec_study_id INTEGER;
 	DECLARE @c1_rec_year_start INTEGER;
 	DECLARE @c1_rec_year_stop INTEGER;
 	DECLARE @c1_rec_extract_table		VARCHAR(30);
+	DECLARE @c1_rec_study_type INTEGER;
 --
 	DECLARE @sql_stmt		NVARCHAR(MAX);
 	DECLARE @ddl_stmts 		Sql_stmt_table;
@@ -92,7 +93,8 @@ Description:	Insert data into extract table
 	DECLARE @yearno		INTEGER=0;
 --
 	OPEN c1insext2;	
-	FETCH NEXT FROM c1insext2 INTO @c1_rec_study_id, @c1_rec_year_start, @c1_rec_year_stop, @c1_rec_extract_table;
+	FETCH NEXT FROM c1insext2 INTO @c1_rec_study_id, @c1_rec_year_start, @c1_rec_year_stop, @c1_rec_extract_table,
+		@c1_rec_study_type;
 	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c1insext2;
 		DEALLOCATE c1insext2;
@@ -110,11 +112,17 @@ Description:	Insert data into extract table
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
 --
-	SET @sql_stmt='SELECT study_id, area_id, band_id' + @crlf +
-		'  INTO ##g_rif40_study_areas' + @crlf + 
-		'  FROM rif40.rif40_study_areas' + @crlf +
-		' WHERE study_id = @study_id /* Current study ID */' + @crlf +
-		' ORDER BY study_id, area_id, band_id';
+	IF @c1_rec_study_type != 1 /* Risk Analysis */ 
+		SET @sql_stmt='SELECT study_id, area_id, band_id, intersect_count, distance_from_nearest_source, nearest_rifshapepolyid, exposure_value' + @crlf +
+			'  INTO ##g_rif40_study_areas' + @crlf + 
+			'  FROM rif40.rif40_study_areas' + @crlf +
+			' WHERE study_id = @study_id /* Current study ID */' + @crlf +
+			' ORDER BY study_id, area_id, band_id';
+	ELSE SET @sql_stmt='SELECT study_id, area_id, band_id' + @crlf +
+			'  INTO ##g_rif40_study_areas' + @crlf + 
+			'  FROM rif40.rif40_study_areas' + @crlf +
+			' WHERE study_id = @study_id /* Current study ID */' + @crlf +
+			' ORDER BY study_id, area_id, band_id';
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);	
 	
