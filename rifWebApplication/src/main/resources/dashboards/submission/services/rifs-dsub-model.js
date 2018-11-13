@@ -61,6 +61,14 @@ angular.module("RIF")
 					throw new Error("Submission state verification failed");
 				}
 				
+				var studySelection = SelectStateService.getState().studySelection;
+				if (studySelection.studyShapes) {
+					for (var i=0; i<studySelection.studyShapes.length; i++) {
+						if (studySelection.studyShapes[i].bbox) {
+							studySelection.studyShapes[i].bbox = undefined; // Will irritate XML parser for _southwest etc
+						}
+					}			
+				}				
                 var model = {
                     "rif_job_submission": {
                         "submitted_by": user.currentUser,
@@ -82,7 +90,7 @@ angular.module("RIF")
                                 "Ratios and Rates"
                             ]
                         },
-						"study_selection": SelectStateService.getState().studySelection
+						"study_selection": studySelection
                     }
                 };
 
@@ -102,6 +110,12 @@ angular.module("RIF")
                     "investigations": {"investigation": ParameterStateService.getModelInvestigation()}
                 };
 
+				if (SubmissionStateService.getState().riskAnalysisExposureField) {
+					AlertService.rifMessage('info', "[rifs-dsub-model.js] riskAnalysisExposureField: " + 
+						SubmissionStateService.getState().riskAnalysisExposureField);
+					model["rif_job_submission"][type].riskAnalysisExposureField = SubmissionStateService.getState().riskAnalysisExposureField;
+				}
+				
                 model["rif_job_submission"][type][areaType] = {
                     "geo_levels": {
                         "geolevel_select": {
@@ -125,7 +139,12 @@ angular.module("RIF")
                                     "id": StudyAreaStateService.getState().polygonIDs[i].id,
                                     "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
                                     "label": StudyAreaStateService.getState().polygonIDs[i].label,
-                                    "band": StudyAreaStateService.getState().polygonIDs[i].band
+                                    "band": StudyAreaStateService.getState().polygonIDs[i].band,
+                                    "intersectCount": StudyAreaStateService.getState().polygonIDs[i].intersectCount,
+                                    "centroid": StudyAreaStateService.getState().polygonIDs[i].centroid,
+									"shapeIdList": StudyAreaStateService.getState().polygonIDs[i].shapeIdList,
+									"nearestRifShapePolyId": StudyAreaStateService.getState().polygonIDs[i].nearestRifShapePolyId,
+									"exposureValue": StudyAreaStateService.getState().polygonIDs[i].exposureValue
                                 });
                             }
                             return tmp;

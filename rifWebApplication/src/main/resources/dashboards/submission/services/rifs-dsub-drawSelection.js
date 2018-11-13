@@ -36,96 +36,135 @@
  */
 angular.module("RIF")
         .factory('DrawSelectionService', ['SelectStateService', '$timeout', 'AlertService', 'CommonMappingStateService', 'GISService', 
-				function (SelectStateService, $timeout, AlertService, CommonMappingStateService, GISService) {
-
+				
+				function (SelectStateService, $timeout, AlertService, CommonMappingStateService, GISService) {	
+						
                         function makeDrawSelection2(shape, selectorBands, input, mapName, latlngList, makeDrawSelectionCallback) {
-							
-							if (mapName == undefined) {
-								throw new Error("[rifs-dsub-drawSelection.js] mapName is undefined");
-							}
-							else if (CommonMappingStateService.getState(mapName) == undefined) {
-								throw new Error("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(mapName) is undefined");
-							}
-							else if (CommonMappingStateService.getState(mapName).shapes == undefined) {
-								throw new Error("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(mapName).shapes is undefined");
-							}
-							
+			
 							var polygon=undefined;
 							var circle=undefined;
-							var savedShape=createSavedShape();			
-							if (savedShape == undefined) { // Not created
-								return;
-							}
+							var savedShape;
 							
-							// Save to SelectStateService
-							if (input.name == "ComparisionAreaMap") { 
-								SelectStateService.getState().studySelection.comparisonShapes.push(angular.copy(ssavedShape));
-								AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Save to ComparisionAreaMap SelectStateService " +
-									SelectStateService.getState().studySelection.comparisonShapes.length);
+							try {
+								if (shape.rifShapeId == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] shape.rifShapeId is undefined");
+								}
+								if (shape.rifShapePolyId == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] shape.rifShapePolyId is undefined");
+								}
+								if (mapName == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] mapName is undefined");
+								}
+								else if (CommonMappingStateService.getState(mapName) == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(mapName) is undefined");
+								}
+								else if (CommonMappingStateService.getState(mapName).shapes == undefined) {
+									throw new Error("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(mapName).shapes is undefined");
+								}								
+								savedShape=createSavedShape();		
 							}
-							else {
-								SelectStateService.getState().studySelection.studyShapes.push(angular.copy(savedShape));							
-							
-								AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Save to StudyAreaMap SelectStateService " +
-									SelectStateService.getState().studySelection.studyShapes.length);
-							}
-
-							var itemsProcessed = 0;
-							var bboxErrors = 0;
-							var excludedByBbox = 0;
-							var useAsync = false; // Do not use async version - it is much slower					
-							addBbox().then(function(res) {
-								if (useAsync) {
-									async.eachOfSeries(latlngList, 
-										function latlngListIteratee(latLng, indexKey, latlngListCallback) {
-										if (indexKey == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection] async processing latLng " + indexKey + "/" + latlngList.length + 
-												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
-										}
-										else if (indexKey % 500 == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] async processing latLng " + indexKey + "/" + latlngList.length + 
-												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));									
-											$timeout(function() { // Be nice to the stack if you are going to be aggressive!
-												latlngListFunction(latLng, latlngListCallback);
-											}, 100);
-										}	
-										else if (indexKey % 50 == 0) {
-											async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
-												latlngListFunction(latLng, latlngListCallback);
-											});
-										}
-										else {
-											latlngListFunction(latLng, latlngListCallback);
-										}
-									}, function done(err) {
-										if (err) {
-											AlertService.showError("[rifs-dsub-drawSelection.js] latlngList error: " + err);
-										}
-										latlngListEnd();
-									});	
-								}		
-								else { // Non async version
-									for (var i=0; i<latlngList.length; i++) {
-										if (i == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
-												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
-										}
-										else if (i % 500 == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
-												" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));
-										}												
-										latlngListFunction(latlngList[i], undefined /* no latlngListCallback - not using async */);
-									}
-									latlngListEnd();
-								}	
-							}, function (err) {
+							catch (e) {
 								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
-									makeDrawSelectionCallback(err);
+									AlertService.consoleError("[rifs-dsub-drawSelection.js] " + e.message, e);
+									makeDrawSelectionCallback(e.message);
+									return;
 								}
 								else {
 									throw new Error("No makeDrawSelectionCallback() function");
+								}								
+							}	
+							
+							if (savedShape == undefined) { // Not created
+								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+									makeDrawSelectionCallback("savedShape not created");
+									return;
 								}
-							});	
+								else {
+									throw new Error("No makeDrawSelectionCallback() function");
+								}	
+							}
+							
+							try {
+								var itemsProcessed = 0;
+								var bboxErrors = 0;
+								var excludedByBbox = 0;
+								var useAsync = false; // Do not use async version - it is much slower					
+								addBbox().then(function(res) {
+									if (useAsync) {
+										async.eachOfSeries(latlngList, 
+											function latlngListIteratee(latLng, indexKey, latlngListCallback) {
+											if (indexKey == 0) {
+												AlertService.consoleDebug("[rifs-dsub-drawSelection] async processing latLng " + indexKey + "/" + latlngList.length + 
+													" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
+											}
+											else if (indexKey % 500 == 0) {
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] async processing latLng " + indexKey + "/" + latlngList.length + 
+													" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));									
+												$timeout(function() { // Be nice to the stack if you are going to be aggressive!
+													latlngListFunction(latLng, latlngListCallback);
+												}, 100);
+											}	
+											else if (indexKey % 50 == 0) {
+												async.setImmediate(function() { // Be nice to the stack if you are going to be aggressive!
+													latlngListFunction(latLng, latlngListCallback);
+												});
+											}
+											else {
+												latlngListFunction(latLng, latlngListCallback);
+											}
+										}, function done(err) {
+											if (err) {
+												AlertService.showError("[rifs-dsub-drawSelection.js] latlngList error: " + err);
+											}
+											latlngListEnd(savedShape); // Calls makeDrawSelectionCallback
+										});	
+									}		
+									else { // Non async version
+										for (var i=0; i<latlngList.length; i++) {
+											if (i == 0) {
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
+													" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));	
+											}
+											else if (i % 500 == 0) {
+												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] processing latLng " + i + "/" + latlngList.length + 
+													" to check if in shape: " + (shape.bbox ? JSON.stringify(shape.bbox) : "no bbox"));
+											}			
+											
+											try {
+												latlngListFunction(latlngList[i], undefined /* no latlngListCallback - not using async */);
+											}
+											catch (e) { // Trap unexpected errors
+												if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+													AlertService.consoleError("[rifs-dsub-drawSelection.js] " + e.message, e);
+													makeDrawSelectionCallback(e.message);
+													return;
+												}
+												else {
+													throw new Error("No makeDrawSelectionCallback() function");
+												}								
+											}
+										}
+										latlngListEnd(savedShape); // Calls makeDrawSelectionCallback
+									}	
+								}, function (err) {
+									if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+										makeDrawSelectionCallback(err);
+									}
+									else {
+										throw new Error("No makeDrawSelectionCallback() function");
+									}
+								});	
+							}
+							catch (e) { // Trap unexpected errors
+								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
+									AlertService.consoleError("[rifs-dsub-drawSelection.js] " + e.message, e);
+									makeDrawSelectionCallback(e.message);
+									return;
+								}
+								else {
+									throw new Error("No makeDrawSelectionCallback() function");
+								}								
+							}
 
 //
 // Internal functions
@@ -139,22 +178,73 @@ angular.module("RIF")
 							 */
 							function createSavedShape() {
 								// Create savedShape for SelectStateService
+								var properties = shape.properties;
+								for (var key in properties) {
+									if (key == "$$hashKey") { // Removed later
+									}
+									else if (typeof key == "string" &&  key.replace(/[a-zA-Z_:]([a-zA-Z0-9_:.])*/, "").length > 0) { 
+										// Prevent illegal XML properties irritating middleware
+										AlertService.showWarning("Ignoring property: " + key + 
+											" of rifShapePolyId: " + shape.rifShapePolyId +
+											' as the name contains XML invalid characters: "' + 
+											key.replace(/[a-zA-Z_:]([a-zA-Z0-9_:.])*/, "") + '"');
+										properties[key] = undefined;
+									}
+								}
 								var savedShape = {
 									isShapefile: (shape.isShapefile || false),
+									id: shape.rifShapeId,
+									rifShapeId: shape.rifShapeId,
+									rifShapePolyId: shape.rifShapePolyId,
 									circle: shape.circle,
 									freehand: shape.freehand,
 									band: shape.band,
 									area: shape.area, 
-									properties: shape.properties,
+									properties: properties,
 									radius: shape.radius,
 									latLng: undefined,
 									geojson: undefined,
 									bbox: undefined,
 									finalCircleBand: (shape.finalCircleBand || false),
 									style: undefined,
-									selectionMethod: shape.selectionMethod
+									selectionMethod: shape.selectionMethod,
+									exposureValue: shape.exposureValue,
+									riskAnalysisExposureField: shape.riskAnalysisExposureField,
+								}	
+								
+								if (savedShape.properties == undefined) {
+									savedShape.properties = {};
+								}	
+								
+								if (savedShape.properties.area == undefined) {
+									savedShape.properties.area = shape.area;
 								}
-	//							
+								if (savedShape.properties.rifShapeId == undefined) {
+									savedShape.properties.rifShapeId = shape.rifShapeId;
+								}
+								if (savedShape.properties.rifShapePolyId == undefined) {
+									savedShape.properties.rifShapePolyId = shape.rifShapePolyId;
+								}
+								
+								if (shape.rifShapeFileId) {
+									savedShape.rifShapeFileId = shape.rifShapeFileId;
+									var shapeFileObj =  CommonMappingStateService.getState(mapName).getShapeByFileId(input.name, shape.rifShapeFileId);
+									if (shapeFileObj) {
+										savedShape.fileName=shapeFileObj.fileName;
+										savedShape.featureCount=shapeFileObj.featureCount;
+										savedShape.points=shapeFileObj.points;
+										savedShape.polygons=shapeFileObj.polygons;
+										savedShape.hasBandAttribute=shapeFileObj.hasBandAttribute;
+										savedShape.hasExposureAttributes=shapeFileObj.hasExposureAttributes;
+									}
+									else {
+										throw new Error("No shapeFileObj for rifShapeFileId: " + shape.rifShapeFileId);
+									}
+								}
+								else {
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] No rifShapeFileId");
+								}
+	//	
 	// Risk analysis study types (as per rif40_studies.stype_type): 
 	//
 	// 11 - Risk Analysis (many areas, one band), 
@@ -240,6 +330,26 @@ angular.module("RIF")
 										};
 			
 								function highLightFeature(e) {
+									var rifShapeId=savedShape.properties.rifShapeId;
+									var studyShapes=SelectStateService.getState().studySelection.studyShapes;
+									
+									for (var i=0; i<studyShapes.length; i++) {
+										if (studyShapes[i].properties.maxIntersectCount) {
+											savedShape.properties.maxIntersectCount=studyShapes[i].properties.maxIntersectCount;
+											for (var j=1; j<studyShapes[i].properties.maxIntersectCount; j++) {
+												var name;
+												if (j > 1) {
+													name = "with_" + j + "_intersects";
+												}
+												else {
+													name = "with_" + j + "_intersect";
+												}
+												if (studyShapes[i].properties.name) {
+													savedShape.properties=studyShapes[i].properties.name;
+												}
+											}
+										}			
+									}										
 									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection highLightFeature " +  
 											"(" + this._leaflet_id + "; " + JSON.stringify(this._latlng) + "): " +
 											(JSON.stringify(savedShape.properties) || "no properties"));
@@ -253,20 +363,27 @@ angular.module("RIF")
 								}		
 								
 								if (shape.circle) { // Represent circles as a point and a radius
-									if (savedShape.radius == undefined) {
+									if (savedShape.radius == undefined && shape.data) {
 										savedShape.radius=shape.data.getRadius();
 									}
 									savedShape.latLng=shape.data.getLatLng();
-									if (savedShape.area == undefined || savedShape.area == 0) {
-										savedShape.area = Math.round((Math.PI*Math.pow(shape.data.getRadius(), 2)*100)/1000000)/100 // Square km to 2dp
-										
-										if (savedShape.area == undefined || savedShape.area == 0) {
-											AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): Cannot determine area" +
-												"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
-											AlertService.showError("Could not create circle shape");
-										}
+									if (savedShape.area == undefined || savedShape.area == 0) { // Calculate area from radius
+																								// using Euclidean postulate 3)
+										savedShape.area = Math.round((
+											Math.PI*Math.pow(shape.data.getRadius(), 2)*100)/1000000)/100 // Square km to 2dp
 									}
-									if ((shape.band == 1) || (shape.band > 1 && !savedShape.finalCircleBand)) {
+									
+									if (shape.data == undefined || savedShape.latLng == undefined) {
+										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): Cannot determine area" +
+											"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
+										AlertService.showError("Could not create circle shape, cannot determine LatLng");
+									}									
+									else if (savedShape.area == undefined || savedShape.area == 0) {
+										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): Cannot determine area" +
+											"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
+										AlertService.showError("Could not create circle shape, cannot determine area");
+									}
+									else if ((shape.band == 1) || (shape.band > 1 && !savedShape.finalCircleBand)) {
 										// basic shape to map shapes layer group
 										circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
 												pane: 'shapes', 
@@ -374,6 +491,8 @@ angular.module("RIF")
 										AlertService.consoleDebug("[rifs-dsub-drawSelection.js] makeDrawSelection(): added Polygon" + 
 											"; band: " + savedShape.band +
 											"; area: " + savedShape.area +
+											"; exposureValue: " + savedShape.exposureValue +
+											"; riskAnalysisExposureField: " + savedShape.riskAnalysisExposureField +
 											"; freehand: " + savedShape.freehand +
 											"; style: " + JSON.stringify(savedShape.style) +
 											"; " + coordinates.length + " coordinates; " +
@@ -475,19 +594,20 @@ angular.module("RIF")
 
 							/* 
 							 * Function: 	latlngListEnd()
-							 * Parameters: 	None
+							 * Parameters: 	savedShape
 							 * Returns: 	Nothing
 							 * Description: Callback and end of async series or for loop.
 							 *				Check for and remove any duplicate ids
+							 * Runs callback: makeDrawSelectionCallback()
 							 */							
-							function latlngListEnd() { 
-								CommonMappingStateService.getState(mapName).areaNameList = {};
+							function latlngListEnd(savedShape) { 
 								var areaCheck = {};
 								var duplicateAreaCheckIds = [];
 								
 								// Check for duplicate selectedPolygons 
-								for (var j = 0; j < CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).length; j++) {
-									var thisPolyID = CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name)[j].id;
+								var selectPolygonArr=CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name);
+								for (var j = 0; j < selectPolygonArr.length; j++) {
+									var thisPolyID = selectPolygonArr[j].id;
 									if (areaCheck[thisPolyID]) {
 										areaCheck[thisPolyID].count++;
 									}
@@ -523,10 +643,6 @@ angular.module("RIF")
 								}
 								
 								var selectedPolygonObj = CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj(input.name);
-								var areaNameList = CommonMappingStateService.getState("areamap").getAreaNameList(input.name);
-								
-								AlertService.consoleLog("[rifs-dsub-drawSelection.js] getAreaNameList() for: " + input.name + 
-									"; areaNameList: " + (areaNameList ? Object.keys(areaNameList).length : "0"));
 
 								for (var i = 0; i < latlngList.length; i++) {
 									var thisPolyID = latlngList[i].id;
@@ -537,28 +653,13 @@ angular.module("RIF")
 										break;
 									} 	
 									// Sync table - done by submissionMapTable $scope.$watchCollection() above
-                            									
-									// Update areaNameList for debug
-									if (latlngList[i].band && latlngList[i].band != -1) {
-										if (areaNameList[latlngList[i].band]) {
-											areaNameList[latlngList[i].band].push(latlngList[i].name);
-										}
-										else {
-											areaNameList[latlngList[i].band] = [];
-											areaNameList[latlngList[i].band].push(latlngList[i].name);
-										}
-									}
+                            								
 								}
 										
 								AlertService.consoleDebug("[rifs-dsub-drawSelection.js] CommonMappingStateService.getState(" + mapName + 
 									").selectedPolygon.length: " + 
 									CommonMappingStateService.getState(mapName).getSelectedPolygon(input.name).length);
-								
-								for (var band in CommonMappingStateService.getState(mapName).areaNameList) {
-									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] areaNameList band: " + 
-									band + "; " + CommonMappingStateService.getState(mapName).areaNameList[band].length + " areas");
-//										": " + JSON.stringify(CommonMappingStateService.getState(mapName).areaNameList[band]));	
-								}
+							
 
 								if (!shape.circle && !shape.shapefile) {
 									removeMapDrawItems();
@@ -567,15 +668,34 @@ angular.module("RIF")
 									    Math.max.apply(null, CommonMappingStateService.getState(mapName).possibleBands)) {
 										CommonMappingStateService.getState(mapName).currentBand++;
 									}
-								}
-								
+								}							
 								if (bboxErrors > 0) {
-									AlertService.showWarning(bboxErrors + " errors occurred create bounding boxes for shape");
+									AlertService.showWarning(bboxErrors + " errors occurred creating bounding boxes for shape");
+									savedShape.properties.bboxErrors = bboxErrors;
 								}
 								if (excludedByBbox > 0) {
-									AlertService.showWarning(excludedByBbox + " shapes would have been excluded by using a bounding box");
+									AlertService.showWarning(excludedByBbox + 
+										" shapes would have been excluded by using a bounding box");
+									savedShape.properties.excludedByBbox = excludedByBbox;
 								}
+							
+								savedShape.properties.totalAreas = 
+									CommonMappingStateService.getState(mapName).getTotalAreas(input.name, savedShape.rifShapePolyId);
+								CommonMappingStateService.getState(mapName).setAreaNameList(input.name);
 								
+								// Save to SelectStateService
+								if (input.name == "ComparisionAreaMap") { 
+									SelectStateService.getState().studySelection.comparisonShapes.push(angular.copy(savedShape));
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Save to ComparisionAreaMap SelectStateService " +
+										SelectStateService.getState().studySelection.comparisonShapes.length);
+								}
+								else {
+									SelectStateService.getState().studySelection.studyShapes.push(angular.copy(savedShape));							
+								
+									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Save to StudyAreaMap SelectStateService " +
+										SelectStateService.getState().studySelection.studyShapes.length);
+								}
+							
 								if (makeDrawSelectionCallback && typeof makeDrawSelectionCallback === "function") {
 									makeDrawSelectionCallback();
 								}
@@ -631,11 +751,13 @@ angular.module("RIF")
 									var thisPoly = latLng.name;
 									var thisPolyID = latLng.id;
 									var bFound = false;
+									var centroid=GISService.getCentroid(shape);
+									var distanceFromNearestSource=GISService.getdistanceFromNearestSource(latLng.latLng, centroid);
 									
-//									AlertService.consoleDebug("[rifs-dsub-drawSelection.js] latlngList.forEach(" +
-//										itemsProcessed + ")");
 									// Selects the correct polygons
-									var selectedPolygonObj=CommonMappingStateService.getState(mapName).getSelectedPolygonObj(input.name, thisPolyID);
+									var selectedPolygonObj=angular.copy(
+										CommonMappingStateService.getState(mapName).getSelectedPolygonObj(
+											input.name, thisPolyID));
 									if (selectedPolygonObj) { // Found
 										
 										if (selectedPolygonObj.band == undefined || selectedPolygonObj.band === -1) { 
@@ -655,32 +777,189 @@ angular.module("RIF")
 												}
 												else {
 													selectedPolygonObj.band=shape.band;
-												}		
+												}	
+												latlngList[itemsProcessed].band=selectedPolygonObj.band;
 											}
 										}
+										
+										if (selectedPolygonObj.shapeIdList[shape.rifShapePolyId] && (
+										    selectedPolygonObj.shapeIdList[shape.rifShapePolyId].centroid.lat != centroid.lat ||
+											selectedPolygonObj.shapeIdList[shape.rifShapePolyId].centroid.lng != centroid.lng) ) {
+											
+											if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
+												latlngListCallbackFunction("Duplicate shape id: " + shape.rifShapePolyId + 
+													" in shapeIdList for selectedPolygonObj: " + JSON.stringify(selectedPolygonObj));
+												return;
+											}
+											else {
+												throw new Error("Duplicate shape id: " + shape.rifShapePolyId + 
+													" in shapeIdList for selectedPolygonObj: " + JSON.stringify(selectedPolygonObj) +
+													"; duplicate: " + JSON.stringify({
+															id: thisPoly,
+															band: selectedPolygonObj.band,
+															rifShapeId: shape.rifShapeId,
+															rifShapePolyId: shape.rifShapePolyId,
+															distanceFromNearestSource: distanceFromNearestSource,
+															centroid: centroid
+														}));
+											}
+										}
+										else {
+											selectedPolygonObj.shapeIdList[shape.rifShapePolyId] = {
+													id: thisPoly,
+													band: selectedPolygonObj.band,
+													rifShapeId: shape.rifShapeId,
+													rifShapePolyId: shape.rifShapePolyId,
+													distanceFromNearestSource: distanceFromNearestSource,
+													centroid: centroid
+												};
+											// Re-calculate intersectCount
+											var radius;
+											if (shape.circle) {
+												radius=shape.data.getRadius();
+												selectedPolygonObj.shapeIdList[shape.rifShapePolyId].radius = radius;
+											}
+											selectedPolygonObj.intersectCount=1;
+											selectedPolygonObj.centroid=latLng.latLng;
+											for (var key in selectedPolygonObj.shapeIdList) {
+												if (selectedPolygonObj.shapeIdList[key].rifShapeId == shape.rifShapeId) { // Match on shape, not polygon
+													 if (shape.circle &&
+													     selectedPolygonObj.shapeIdList[key].distanceFromNearestSource == distanceFromNearestSource && 
+													     selectedPolygonObj.shapeIdList[key].centroid.lat == centroid.lat &&
+													     selectedPolygonObj.shapeIdList[key].centroid.lng == centroid.lng) { // Same circle 
+
+//														if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
+//															AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT SAME " +
+//																"; distanceFromNearestSource: " + distanceFromNearestSource +
+//																"; radius: " + radius +
+//																"; centroid: " + JSON.stringify(centroid) +
+//																"; rifShapeId: " + shape.rifShapeId +
+//																"; rifShapePolyId: " + shape.rifShapePolyId +
+//																"; band: " + shape.band +
+//																"; selectedPolygonObj: " + 
+//																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
+//														}	
+													}
+													else if (!shape.circle) { // Same polygon  											
+
+//														if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
+//															AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT POLY															" +
+//																"; distanceFromNearestSource: " + distanceFromNearestSource +
+//																"; centroid: " + JSON.stringify(centroid) +
+//																"; rifShapeId: " + shape.rifShapeId +
+//																"; rifShapePolyId: " + shape.rifShapePolyId +
+//																"; band: " + shape.band +
+//																"; selectedPolygonObj: " + 
+//																	JSON.stringify(selectedPolygonObj.shapeIdList[key]));
+//														}	
+													}													
+													else { // Not same centroid or polygon!						
+
+														var msg="[rifs-dsub-drawSelection.js] INTERSECT ERROR " +
+																"; distanceFromNearestSource: " + distanceFromNearestSource +
+																"; radius: " + radius +
+																"; centroid: " + JSON.stringify(centroid) +
+																"; rifShapeId: " + shape.rifShapeId +
+																"; rifShapePolyId: " + shape.rifShapePolyId +
+																"; band: " + shape.band +
+																"; selectedPolygonObj: " + 
+																	JSON.stringify(selectedPolygonObj.shapeIdList[key]);
+														if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
+															latlngListCallbackFunction(msg);
+															return;
+														}
+														else {
+															throw new Error(msg);
+														}
+													}									 
+												}
+												else {
+//													if (Object.keys(selectedPolygonObj.shapeIdList).length > 1) {
+//														AlertService.consoleDebug("[rifs-dsub-drawSelection.js] INTERSECT INCR " +
+//															"; distanceFromNearestSource: " + distanceFromNearestSource +
+//															"; radius: " + radius +
+//															"; centroid: " + JSON.stringify(centroid) +
+//															"; rifShapeId: " + shape.rifShapeId +
+//															"; rifShapePolyId: " + shape.rifShapePolyId +
+//															"; selectedPolygonObj: " + 
+//																JSON.stringify(selectedPolygonObj.shapeIdList[key]));
+//													}				
+													selectedPolygonObj.intersectCount++;
+												}
+											}
+										}
+										var nearestRifShapePolyId=undefined;
+										for (var key in selectedPolygonObj.shapeIdList) {
+											if (selectedPolygonObj.shapeIdList[key].id != thisPoly) {
+												if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
+													latlngListCallbackFunction("shapeIdList id mismatch: " + thisPoly + 
+														" in shapeIdList for selectedPolygonObj: " + 
+														selectedPolygonObj.shapeIdList[key].id);
+													return;
+												}
+												else {
+													throw new Error("shapeIdList id mismatch: " + thisPoly + 
+														" in shapeIdList for selectedPolygonObj: " + 
+														selectedPolygonObj.shapeIdList[key].id);
+												}
+											}
+											else if (nearestRifShapePolyId == undefined) {
+												nearestRifShapePolyId=selectedPolygonObj.shapeIdList[key];
+												selectedPolygonObj.nearestRifShapePolyId=nearestRifShapePolyId.rifShapePolyId;
+											}
+											else if (selectedPolygonObj.shapeIdList[key].distanceFromNearestSource <
+												nearestRifShapePolyId.distanceFromNearestSource) {
+												nearestRifShapePolyId=selectedPolygonObj.shapeIdList[key];
+												selectedPolygonObj.nearestRifShapePolyId=nearestRifShapePolyId.rifShapePolyId;
+												selectedPolygonObj.distanceFromNearestSource=nearestRifShapePolyId.distanceFromNearestSource;
+//												AlertService.consoleDebug("[rifs-dsub-drawSelection.js] Update nearestRifShapePolyId for old selectedPolygonObj: " + 
+//													JSON.stringify(CommonMappingStateService.getState(mapName).getSelectedPolygonObj(
+//														input.name, thisPolyID), null, 1) + 
+//													"; new: " + JSON.stringify(selectedPolygonObj, null, 1));
+											}
+										}
+										CommonMappingStateService.getState(mapName).updateSelectedPolygon(input.name, 
+											selectedPolygonObj);
 									}
-									else {
-										if (shape.band === -1) {
-											CommonMappingStateService.getState(mapName).addToSelectedPolygon(input.name, {
+									else { // Not found - new shape
+										var shapeIdList = {};
+										shapeIdList[shape.rifShapePolyId] = {
+												id: thisPoly,
+												band: undefined,
+												rifShapeId: shape.rifShapeId,
+												rifShapePolyId: shape.rifShapePolyId,
+												distanceFromNearestSource: distanceFromNearestSource,
+												centroid: centroid
+											};
+										if (shape.circle) {
+											shapeIdList[shape.rifShapePolyId].radius = shape.data.getRadius();
+										}
+										var newSelectedPolygon = {
+												nearestRifShapePolyId: shape.rifShapePolyId,
 												id: thisPolyID, 
 												gid: thisPolyID, 
 												label: thisPoly, 
-												band: CommonMappingStateService.getState(mapName).currentBand, 
-												centroid: thisLatLng
-											});
+												centroid: thisLatLng,
+												distanceFromNearestSource: distanceFromNearestSource,
+												intersectCount: 1,
+												shapeIdList: undefined,
+												exposureValue: shape.exposureValue,
+											};
+										if (shape.band === -1) {
+											newSelectedPolygon.band = CommonMappingStateService.getState(mapName).currentBand;
 											latlngList[itemsProcessed].band=CommonMappingStateService.getState(mapName).currentBand;
-										} else {
-											CommonMappingStateService.getState(mapName).addToSelectedPolygon(input.name, {
-													id: thisPolyID, 
-													gid: thisPolyID, 
-													label: thisPoly, 
-													band: shape.band, 
-													centroid: thisLatLng
-												});
+										} 
+										else {
+											newSelectedPolygon.band = shape.band;
 											latlngList[itemsProcessed].band=shape.band;
 										}
+										shapeIdList[shape.rifShapePolyId].band = newSelectedPolygon.band;
+										newSelectedPolygon.shapeIdList = shapeIdList;
+										selectedPolygonObj=CommonMappingStateService.getState(mapName).addToSelectedPolygon(input.name, 
+											newSelectedPolygon);
 									}
-								}
+
+								} // Intersects
 								itemsProcessed++;
 								if (latlngListCallbackFunction && typeof latlngListCallbackFunction === "function") {
 									latlngListCallbackFunction();

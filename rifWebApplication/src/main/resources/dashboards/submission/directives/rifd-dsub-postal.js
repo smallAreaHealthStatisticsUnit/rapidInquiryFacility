@@ -50,10 +50,10 @@ angular.module("RIF")
             };
         })
         .directive('postalCode', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'AlertService', 'SubmissionStateService', 
-			'ProjectionService', 'user',
+			'ProjectionService', 'DrawSelectionService', 'CommonMappingStateService', 'user',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
             function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, AlertService, SubmissionStateService, ProjectionService,
-				user) {
+				DrawSelectionService, CommonMappingStateService, user) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addPostalCode in rifs-utils-mapTools
                     link: function (scope, element, attr) {
@@ -506,7 +506,9 @@ angular.module("RIF")
 								
 									//make polygons and apply selection
 									var i = 0;
+									var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
 									for (; i < scope.bandAttr.length; i++) {
+										var rifShapePolyId= CommonMappingStateService.getState("areamap").getNextShapePolyId();
 										var circle = L.circle([scope.ycoordinate, scope.xcoordinate],
 												{
 													radius: scope.bandAttr[i],
@@ -516,14 +518,21 @@ angular.module("RIF")
 													fillOpacity: (selectorBands.fillOpacity || 0),
 													color: selectorBands.bandColours[i] // Band i+1
 												});
-										$rootScope.$broadcast('makeDrawSelection', {
+										var shape={
 											data: circle,
 											properties: scope.properties,
 											circle: true,
 											freehand: false,
 											band: i + 1,
-											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100 // Square km to 2dp
-										});
+											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100, // Square km to 2dp
+											rifShapeId: rifShapeId,
+											rifShapePolyId: rifShapePolyId,
+										};											
+										shape.properties.area=shape.area;
+										shape.properties.rifShapeId=rifShapeId;
+										shape.properties.rifShapePolyId=rifShapePolyId;
+										
+										$rootScope.$broadcast('makeDrawSelection', shape);
 									}
 									
 									$rootScope.$broadcast('completedDrawSelection', { maxBand: i});

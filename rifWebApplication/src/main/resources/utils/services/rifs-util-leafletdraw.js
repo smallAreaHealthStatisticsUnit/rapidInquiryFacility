@@ -43,8 +43,8 @@
  */
 
 angular.module("RIF")
-        .factory('LeafletDrawService', ['$rootScope', 'ParametersService', 
-                function ($rootScope, ParametersService) {
+        .factory('LeafletDrawService', ['$rootScope', 'ParametersService', 'DrawSelectionService', 'CommonMappingStateService',
+                function ($rootScope, ParametersService, DrawSelectionService, CommonMappingStateService) {
 					var parameters=ParametersService.getParameters();
                     var selectorBands = { // Study and comparison are selectors
 							weight: 3,
@@ -123,6 +123,9 @@ angular.module("RIF")
 
                                 //add circles 
                                 this._isDrawing = true;
+								var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
+								var rifShapePolyId= CommonMappingStateService.getState("areamap").getNextShapePolyId();
+								
                                 //fire new circle at same centre
                                 if (!this._isConcentricing) {
                                     this._startLatLng = e.latlng;
@@ -141,7 +144,9 @@ angular.module("RIF")
                                             circle: true,
                                             freehand: false,
                                             band: thisBand,
-											finalCircleBand: true
+											finalCircleBand: true,
+											rifShapeId: rifShapeId,
+											rifShapePolyId: rifShapePolyId
                                         });
                                     }
                                     this.disable();
@@ -167,7 +172,9 @@ angular.module("RIF")
                                             circle: true,
                                             freehand: false,
                                             band: thisBand,
-											finalCircleBand: true
+											finalCircleBand: true,
+											rifShapeId: rifShapeId,
+											rifShapePolyId: rifShapePolyId
                                         });
                                     }
                                     this.disable();
@@ -191,7 +198,9 @@ angular.module("RIF")
                                         data: this._shape,
                                         circle: true,
                                         freehand: false,
-                                        band: thisBand
+                                        band: thisBand,
+										rifShapeId: rifShapeId,
+										rifShapePolyId: rifShapePolyId
                                     });
                                     //increase band number
                                     thisBand++;

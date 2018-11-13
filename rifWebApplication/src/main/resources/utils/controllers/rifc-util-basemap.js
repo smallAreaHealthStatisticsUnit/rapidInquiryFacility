@@ -36,8 +36,8 @@
  */
 
 angular.module("RIF")
-        .controller('BaseMapModalCtrl', ['$scope', '$uibModal', 'LeafletBaseMapService',
-            function ($scope, $uibModal, LeafletBaseMapService) {
+        .controller('BaseMapModalCtrl', ['$scope', '$uibModal', 'LeafletBaseMapService', 'AlertService',
+            function ($scope, $uibModal, LeafletBaseMapService, AlertService) {
                 //List of all layers by name for drop-down fill
                 $scope.myBaseMaps = LeafletBaseMapService.getBaseMapList();
 
@@ -75,20 +75,25 @@ angular.module("RIF")
                         scope: myScope
                     });
                     modalInstance.result.then(function () {
-                        myScope.renderMap(myScope.id);
+						var currentBaseMapInUse=LeafletBaseMapService.getCurrentBaseMapInUse(myScope.id);
+						AlertService.consoleDebug("[rifc-util-basemap.js] selectedBaseMap " + myScope.id + ": " + currentBaseMapInUse);
+                        myScope.renderMap(myScope.id, currentBaseMapInUse);
                     });
                 };
             }])
-        .controller('BaseMapModalInstanceCtrl', function ($scope, $uibModalInstance, LeafletBaseMapService) {
+        .controller('BaseMapModalInstanceCtrl', ['$scope', '$uibModalInstance', 'LeafletBaseMapService', 'AlertService', 
+			function ($scope, $uibModalInstance, LeafletBaseMapService, AlertService) {
             $scope.input = {};
             $scope.input.selectedBaseMap = LeafletBaseMapService.getCurrentBaseMapInUse($scope.id);
             $scope.input.checkboxBaseMap = LeafletBaseMapService.getNoBaseMap($scope.id);
-
+//			AlertService.consoleDebug("[rifc-util-basemap.js] selectedBaseMap: " + $scope.input.selectedBaseMap +
+//				"; checkboxBaseMap: " + $scope.input.checkboxBaseMap);
+									
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };
             $scope.apply = function () {
                 $uibModalInstance.close();
             };
-        });
+        }]);
 
