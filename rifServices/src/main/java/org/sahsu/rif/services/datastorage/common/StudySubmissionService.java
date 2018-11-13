@@ -12,8 +12,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.sahsu.rif.generic.concepts.User;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
@@ -736,25 +735,25 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		RIFLogger rifLogger = RIFLogger.getLogger();
 
 		String jsonFromFile;
-		TomcatFile tcFile = new TomcatFile(new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE);
+		AppFile appFile = AppFile.getFrontEndParametersInstance();
 
-		try (BufferedReader reader = tcFile.reader()) {
+		try (BufferedReader reader = appFile.reader()) {
 
 				rifLogger.info(getClass(),
 					"StudySubmissionService.getFrontEndParameters: using: "
-							+ tcFile.absolutePath());
+							+ appFile.asString());
 
 				// Read and string escape JSON
 				jsonFromFile = "{\"file\": \"" +
-						StringEscapeUtils.escapeJavaScript(tcFile.absolutePath()) +
-						"\", \"frontEndParameters\": \"" +
-						StringEscapeUtils.escapeJavaScript(
+				               StringEscapeUtils.escapeJavaScript(appFile.asString()) +
+				               "\", \"frontEndParameters\": \"" +
+				               StringEscapeUtils.escapeJavaScript(
 								reader.lines().parallel().collect(Collectors
-										.joining(lineSeparator))) +"\"}";
+										.joining(lineSeparator))) + "\"}";
 		} catch (IOException ioException2) {
 				rifLogger.warning(this.getClass(),
 					"StudySubmissionService.getFrontEndParameters error for file: " +
-						tcFile.absolutePath(), ioException2);
+						appFile.asString(), ioException2);
 				return defaultJson;
 		}
 

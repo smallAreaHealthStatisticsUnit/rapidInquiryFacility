@@ -27,8 +27,7 @@ public class ClaMlTaxonomyService extends AbstractTaxonomyService {
 	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
 
 	public void initialiseService(
-		final String defaultResourceDirectoryPath,
-		final TaxonomyServiceConfiguration taxonomyServiceConfiguration) {
+			final TaxonomyServiceConfiguration taxonomyServiceConfiguration) {
 			
 		String name = "UNKNOWN";
 		String description;
@@ -38,7 +37,6 @@ public class ClaMlTaxonomyService extends AbstractTaxonomyService {
 			ICD10TaxonomyTermParser icd1011TaxonomyParser = new ICD10TaxonomyTermParser();
 			
 			setTaxonomyServiceConfiguration(taxonomyServiceConfiguration);
-
 			String icdParm = "icd10_ClaML_file";
 			if (StringUtils.isEmpty(extractParameterValue(taxonomyServiceConfiguration, icdParm))) {
 				icdParm = "icd11_ClaML_file";
@@ -53,6 +51,7 @@ public class ClaMlTaxonomyService extends AbstractTaxonomyService {
 				icd1011TaxonomyParser.readFile(icd1011File);
 				rifLogger.info(this.getClass(), "icd101/1TaxonomyParser: " + name
 				                                + " read: \"" + icdFile + "\".");
+												
 				setTaxonomyTermManager(icd1011TaxonomyParser.getTaxonomyTermManager());
 				setServiceWorking(true);
 				rifLogger.info(this.getClass(), "icd101/1TaxonomyParser: " + name

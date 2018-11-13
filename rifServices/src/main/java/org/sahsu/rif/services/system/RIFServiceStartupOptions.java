@@ -10,14 +10,13 @@ import org.apache.commons.lang.SystemUtils;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.datastorage.JdbcUrl;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 /**
  * Class that holds configuration settings for rif services.  These will appear
@@ -449,7 +448,7 @@ public class RIFServiceStartupOptions {
 
 		if (isWebDeployment) {
 
-			String path = new TomcatFile(new TomcatBase(), ".").pathToClassesDirectory().toString();
+			String path = AppFile.getServicesInstance(".").pathToClassesDirectory().toString();
 			if (!RChecked) {
 				rifLogger.info(getClass(), "RIFServiceStartupOptions is web deployment");
 
@@ -476,7 +475,7 @@ public class RIFServiceStartupOptions {
 
 		if (isWebDeployment) {
 
-			String path = new TomcatFile(new TomcatBase(), ".").pathToLibDirectory().toString();
+			String path = AppFile.getServicesInstance(".").pathToLibDirectory().toString();
 			rifLogger.info(getClass(), "Returning path: " + path);
 			return path;
 		}

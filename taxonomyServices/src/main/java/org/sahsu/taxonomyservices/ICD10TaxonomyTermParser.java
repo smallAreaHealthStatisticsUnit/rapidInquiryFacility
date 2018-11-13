@@ -136,40 +136,38 @@ public final class ICD10TaxonomyTermParser {
 
 	}
 	
-	private void parseICD10ClaMLFile(final File ICD10XmlFile) 
-		throws ParserConfigurationException, 
-		SAXException, 
-		IOException {
+	private void parseICD10ClaMLFile(final File icd10XmlFile)
+			throws ParserConfigurationException, SAXException, IOException {
 			
 		//How to handle three exceptions?
 		// XXE defence: ttps://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#JAXP_DocumentBuilderFactory.2C_SAXParserFactory_and_DOM4J
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		String FEATURE = null;
+		String feature = null;
 		try {
 			// This is the PRIMARY defense. If DTDs (doctypes) are disallowed, almost all XML entity attacks are prevented
 			// Xerces 2 only - http://xerces.apache.org/xerces2-j/features.html#disallow-doctype-decl
 			
 			// Cannot be enabled because of <!DOCTYPE ClaML SYSTEM "ClaML.dtd">: 
 			/// [Fatal Error] icdClaML2016ens.xml:2:10: DOCTYPE is disallowed when the feature "http://apache.org/xml/features/disallow-doctype-decl" set to true.
-			//FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
-			// dbf.setFeature(FEATURE, true);
+			//feature = "http://apache.org/xml/features/disallow-doctype-decl";
+			// dbf.setFeature(feature, true);
  
 			// If you can't completely disable DTDs, then at least do the following:
 			// Xerces 1 - http://xerces.apache.org/xerces-j/features.html#external-general-entities
 			// Xerces 2 - http://xerces.apache.org/xerces2-j/features.html#external-general-entities
 			// JDK7+ - http://xml.org/sax/features/external-general-entities    
-			FEATURE = "http://xml.org/sax/features/external-general-entities";
-			dbf.setFeature(FEATURE, false);
+			feature = "http://xml.org/sax/features/external-general-entities";
+			dbf.setFeature(feature, false);
  
 			// Xerces 1 - http://xerces.apache.org/xerces-j/features.html#external-parameter-entities
 			// Xerces 2 - http://xerces.apache.org/xerces2-j/features.html#external-parameter-entities
 			// JDK7+ - http://xml.org/sax/features/external-parameter-entities    
-			FEATURE = "http://xml.org/sax/features/external-parameter-entities";
-			dbf.setFeature(FEATURE, false);
+			feature = "http://xml.org/sax/features/external-parameter-entities";
+			dbf.setFeature(feature, false);
  
 			// Disable external DTDs as well
-			FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
-			dbf.setFeature(FEATURE, false);
+			feature = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+			dbf.setFeature(feature, false);
  
 			// and these as well, per Timothy Morgan's 2014 paper: "XML Schema, DTD, and Entity Attacks"
 			dbf.setXIncludeAware(false);
@@ -185,7 +183,7 @@ public final class ICD10TaxonomyTermParser {
 		} catch (ParserConfigurationException e) {
              // This should catch a failed setFeature feature
              rifLogger.warning(this.getClass(), "ParserConfigurationException was thrown. The feature '" +
-                 FEATURE + "' is probably not supported by your XML processor.", e);
+                 feature + "' is probably not supported by your XML processor.", e);
         }
 // Disabled: will not compile 		
 //      catch (SAXException e) {
@@ -197,7 +195,7 @@ public final class ICD10TaxonomyTermParser {
 //             rifLogger.warning(this.getClass(), "IOException occurred, XXE may still possible: " + e);
 //      }
 		DocumentBuilder safebuilder = dbf.newDocumentBuilder();			
-		Document icd10Source = safebuilder.parse(ICD10XmlFile);
+		Document icd10Source = safebuilder.parse(icd10XmlFile);
 		
 		icd10Source.getDocumentElement().normalize();
 				

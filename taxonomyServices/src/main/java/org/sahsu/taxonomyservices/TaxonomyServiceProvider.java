@@ -20,7 +20,7 @@ package org.sahsu.taxonomyservices;
  * will be used for the <code>taxonomyServiceID</code> parameter for methods called in 
  * {@code FederatedTaxonomyService}.
  */
-public class TaxonomyServiceProvider {
+public class TaxonomyServiceProvider implements Comparable<TaxonomyServiceProvider> {
 
 	private String identifier;
 	private String name;
@@ -30,10 +30,6 @@ public class TaxonomyServiceProvider {
 
 	}
 
-	public String getDisplayName() {
-		return name;
-	}
-	
 	public void setName(final String name) {
 		this.name = name;
 	}
@@ -42,11 +38,11 @@ public class TaxonomyServiceProvider {
 		return name;
 	}
 
-	public String getIdentifier() {
+	String getIdentifier() {
 		return identifier;
 	}
 	
-	public void setIdentifier(final String identifier) {
+	void setIdentifier(final String identifier) {
 		this.identifier = identifier;
 	}
 	
@@ -58,8 +54,10 @@ public class TaxonomyServiceProvider {
 
 		this.description = description;
 	}
-	
-	// ==========================================
-	// Section Override
-	// ==========================================
+
+	@Override
+	public int compareTo(final TaxonomyServiceProvider o) {
+
+		return getIdentifier().compareTo(o.getIdentifier());
+	}
 }

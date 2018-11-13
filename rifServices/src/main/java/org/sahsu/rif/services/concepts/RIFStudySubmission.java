@@ -443,12 +443,14 @@ public final class RIFStudySubmission extends AbstractRIFConcept {
 	public String getDisplayName() {
 		return study.getDisplayName();
 	}
-	
 
 	@Override
 	public String getRecordType() {
 
 		return SERVICE_MESSAGES.getMessage("rifStudySubmission.label");
 	}
-	
+
+	public String getRiskAnalysisExposureField() {
+		return study.getRiskAnalysisExposureField();
+	}
 }

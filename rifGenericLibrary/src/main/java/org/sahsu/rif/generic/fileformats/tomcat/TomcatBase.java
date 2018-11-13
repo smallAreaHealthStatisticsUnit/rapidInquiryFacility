@@ -23,9 +23,9 @@ public class TomcatBase {
 		if (catalinaHome != null) {
 			baseDir = FileSystems.getDefault().getPath(catalinaHome);
 		} else {
-			rifLogger.warning("rifServices.system.RIFServiceStartupProperties",
+			rifLogger.warning(getClass(),
 					"RIFServiceStartupProperties: CATALINA_HOME not set in environment." +
-							"Trying Windows defaults");
+							"Trying system defaults");
 
 			if (SystemUtils.IS_OS_WINDOWS) {
 				baseDir = Paths.get("C:", "Program Files",

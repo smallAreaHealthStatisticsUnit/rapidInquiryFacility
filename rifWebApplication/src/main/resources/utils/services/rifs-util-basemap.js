@@ -37,8 +37,8 @@
 
 /* global L */
 angular.module("RIF")
-        .factory('LeafletBaseMapService', ['user', 'AlertService',
-                function (user, AlertService) {
+        .factory('LeafletBaseMapService', ['user', 'AlertService', 'CommonMappingStateService',
+                function (user, AlertService, CommonMappingStateService) {
 
 				    var defaultBaseMap = 'OpenStreetMap Mapnik';
 					
@@ -210,6 +210,16 @@ angular.module("RIF")
                     basemaps.push({name: "Code-Point Open UK Postcodes", tile: L.tileLayer(window.location.protocol + '//random.dev.openstreetmap.org/postcodes/tiles/pc-os/{z}/{x}/{y}.png', {
                             attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">Code-Point Open layers</a>'
                         })});
+						
+						
+					function setCurrentBaseMapInUse2(map, layer) {
+						if (layer && baseMapInUse[map] != layer) {
+							AlertService.consoleDebug("[rifs-util-basemap.js] map: " + map + "; set new current baseMapInUse from: " +
+								baseMapInUse[map] + "; to: " + layer);
+							baseMapInUse[map] = layer;
+						}
+					}
+						
                     return {
                         //Get a list of all basemaps available to fill modal selects
                         getBaseMapList: function () {
@@ -221,16 +231,27 @@ angular.module("RIF")
                         },
                         //Sets the selected basemap by updating "tile" in leaflet directive
                         setBaseMap: function (layer) {
+							var found=false;
                             for (var i = 0; i < basemaps.length; i++) {
                                 if (basemaps[i].name === layer) {
+									found=true;
+									
+									AlertService.consoleDebug("[rifs-util-basemap.js] set baseMap: " + layer);
                                     //Need to return a copy of the map as directive cannot share instance
-                                    return angular.copy(basemaps[i].tile);
+                                    var tile=angular.copy(basemaps[i].tile);
+									tile.name = layer;
+									
+									return tile;
                                 }
                             }
+							if (!found) {
+								AlertService.rifMessage("warning", "Unable to set basemap; map: " + layer + " is invalid");
+								return undefined;
+							}
                         },
                         //state on current basemap
                         setCurrentBaseMapInUse: function (map, layer) {
-                            baseMapInUse[map] = layer;
+							setCurrentBaseMapInUse2(map, layer);
                         },
                         getCurrentBaseMapInUse: function (map) {
                             return baseMapInUse[map];
@@ -244,6 +265,8 @@ angular.module("RIF")
                         },
 						setDefaultBaseMap(map) {
 							noBaseMap[map] = false;
+							
+							AlertService.consoleDebug("[rifs-util-basemap.js] map: " + map + "; default baseMapInUse: " + defaultBaseMap);
 							baseMapInUse[map] = defaultBaseMap;
 							return defaultBaseMap;
 						},
@@ -280,7 +303,8 @@ angular.module("RIF")
 										" for map: " + map +
 										" and geography: " + geography);
 									noBaseMap[map] = true;
-									baseMapInUse[map] = defaultBaseMap;
+									setCurrentBaseMapInUse2(map, defaultBaseMap);
+									CommonMappingStateService.getState(map).setBasemap(defaultBaseMap, true /* no basemap*/);
 								}
 								else if (mapBackground && mapBackground.mapBackground) {
 									var basemapsList = [];
@@ -289,12 +313,14 @@ angular.module("RIF")
 										if (basemaps[i].name == mapBackground.mapBackground) {
 											found=true;
 									
-											AlertService.consoleDebug('[rifs-util-basemap.js]: mapBackground is: ' + mapBackground.mapBackground +
+											AlertService.consoleDebug('[rifs-util-basemap.js] mapBackground is: ' + mapBackground.mapBackground +
 												" for map: " + map +
-												" and geography: " + geography);
+												" and geography: " + geography, new Error("dummy"));
 
 											noBaseMap[map] = false;
 											baseMapInUse[map] = mapBackground.mapBackground;
+											setCurrentBaseMapInUse2(map, mapBackground.mapBackground);
+											CommonMappingStateService.getState(map).setBasemap(mapBackground.mapBackground, false /* no basemap*/);
 										}	
 									}
 								}

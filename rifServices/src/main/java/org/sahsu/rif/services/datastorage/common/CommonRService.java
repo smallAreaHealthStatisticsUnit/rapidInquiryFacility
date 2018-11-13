@@ -93,7 +93,6 @@ public abstract class CommonRService implements RService {
 			else {
 				rifLogger.info(this.getClass(), "Source: '" + scriptString + "'");
 			}
-
 			rengine.eval("source('" + scriptString + "')");
 			rifLogger.info(this.getClass(), "Done: '" + scriptString + "'");
 		}

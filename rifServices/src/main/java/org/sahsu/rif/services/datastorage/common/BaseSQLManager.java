@@ -22,6 +22,7 @@ import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
@@ -30,8 +31,6 @@ import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
 import org.sahsu.rif.services.datastorage.JdbcUrl;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatBase;
-import org.sahsu.rif.generic.fileformats.tomcat.TomcatFile;
 
 import com.sun.rowset.CachedRowSetImpl;
 
@@ -413,74 +412,79 @@ public class BaseSQLManager implements SQLManager {
 	}	
 	
 	@Override
-	public void logSQLQuery(final String queryName, final QueryFormatter queryFormatter,
+	public String logSQLQuery(final String queryName, final QueryFormatter queryFormatter,
 			final String... parameters) {
-		
-		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
-			return;
-		}
+
 
 		StringBuilder queryLog = new StringBuilder();
+		queryLog.append("BaseSQLManager logSQLQuery >>>").append(lineSeparator);
 		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
 		queryLog.append("PARAMETERS(" + parameters.length + "): ").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
-			queryLog.append("\t");
+			queryLog.append("     ");
 			queryLog.append(i + 1);
-			queryLog.append(":\"");
+			queryLog.append(": '");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"").append(lineSeparator);
+			queryLog.append("'").append(lineSeparator);
 		}
 		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
 		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
 		queryLog.append("<<< End BaseSQLManager logSQLQuery").append(lineSeparator);
-	
-		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
-			lineSeparator + queryLog.toString());
+		
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
+			return queryLog.toString();
+		}	
+		rifLogger.info(this.getClass(), queryLog.toString());
+		
+		return queryLog.toString();
 	}
 	
-	protected void logSQLQuery(
+	protected String logSQLQuery(
 		final String queryName,
 		final QueryFormatter queryFormatter,
 		final int[] parameters) {
-		
-		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
-			return;
-		}
 
 		StringBuilder queryLog = new StringBuilder();
+		queryLog.append("BaseSQLManager logSQLQuery >>>").append(lineSeparator);
 		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
 		queryLog.append("PARAMETERS:").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
-			queryLog.append("\t");
+			queryLog.append("     ");
 			queryLog.append(i + 1);
-			queryLog.append(":\"");
+			queryLog.append(": '");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"").append(lineSeparator);
+			queryLog.append("'").append(lineSeparator);
 		}
 		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
 		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
 		queryLog.append("<<< End BaseSQLManager logSQLQuery").append(lineSeparator);
-	
-		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
-			lineSeparator + queryLog.toString());	
-
+		
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
+			return queryLog.toString();
+		}
+		
+		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" + queryLog.toString());	
+			
+		return queryLog.toString();
 	}
 	
-	protected void logSQLQuery(
+	protected String logSQLQuery(
 		final String queryName,
 		final QueryFormatter queryFormatter) {
 		
-		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
-			return;
-		}
-		
-		String queryLog = ("QUERY NAME: " + queryName + lineSeparator)
+		String queryLog = "BaseSQLManager logSQLQuery >>>" + lineSeparator
+						  + "QUERY NAME: " + queryName + lineSeparator
 		                  + "NO PARAMETERS." + lineSeparator
 		                  + "SQL QUERY TEXT: " + lineSeparator
 		                  + queryFormatter.generateQuery() + lineSeparator
 		                  + "<<< End BaseSQLManager logSQLQuery" + lineSeparator;
-		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
-		                                lineSeparator + queryLog);
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
+			return queryLog;
+		}
+		
+		rifLogger.info(this.getClass(), queryLog);
+										
+		return queryLog;
 	}
 		
 	@Override
@@ -494,15 +498,14 @@ public class BaseSQLManager implements SQLManager {
 				 exception);
 	}
 
-	protected boolean queryLoggingIsDisabled(
+	private boolean queryLoggingIsDisabled(
 			final String queryName) {
 
 		if (prop == null) {
 
 			try {
-				prop = new TomcatFile(
-						new TomcatBase(),
-						BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
+				prop = AppFile.getServicesInstance(BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES)
+						       .properties();
 			} catch (IOException e) {
 				rifLogger.warning(this.getClass(),
 				                  "BaseSQLManager.checkIfQueryLoggingEnabled error for" +
@@ -908,6 +911,7 @@ public class BaseSQLManager implements SQLManager {
  * Schema version checks: 
  *
  * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
+ * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
  */ 
 			String errorMessage = schemaVersionChecks(currentConnection);
 			if (errorMessage != null) { // Failed 
@@ -952,6 +956,7 @@ public class BaseSQLManager implements SQLManager {
  * Schema version checks: 
  *
  * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
+ * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
  */ 
 	private String schemaVersionChecks(Connection connection) throws RIFServiceException {
 	
@@ -960,6 +965,9 @@ public class BaseSQLManager implements SQLManager {
 		try {
 			if (!doesColumnExist(connection, "rif40", "t_rif40_studies", "select_state")) { // alter_10.sql has not been run
 				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter10NotRun");
+			}
+			if (!doesColumnExist(connection, "rif40", "t_rif40_study_areas", "intersect_count")) { // alter_11.sql has not been run
+				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter11NotRun");
 			}
 		}
 		catch (Exception exception) {		

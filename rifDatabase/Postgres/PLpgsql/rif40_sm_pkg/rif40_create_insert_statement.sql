@@ -547,7 +547,11 @@ WITH n1 AS (	-* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total *-
 	IF study_or_comparison = 'C' THEN
 		sql_stmt:=sql_stmt||E'\t'||'SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.'||
 			quote_ident(LOWER(c8_rec.age_sex_group_field_name))||','||E'\n';
-	ELSE
+	ELSIF c1_rec.study_type != 1 THEN /* Risk analysis study areas */		
+		sql_stmt:=sql_stmt||E'\t'||'SELECT d1.year, s.area_id, s.band_id,'||E'\n'||
+			E'\t'||E'\t'||'s.intersect_count, s.distance_from_nearest_source, s.nearest_rifshapepolyid, s.exposure_value, d1.'||
+			quote_ident(LOWER(c8_rec.age_sex_group_field_name))||','||E'\n';
+	ELSE /* Disease mapping study areas */
 		sql_stmt:=sql_stmt||E'\t'||'SELECT d1.year, s.area_id, s.band_id, d1.'||
 			quote_ident(LOWER(c8_rec.age_sex_group_field_name))||','||E'\n';
 	END IF;
@@ -612,11 +616,13 @@ WITH n1 AS (	-* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total *-
 -- Add GROUP BY clause
 --
 	IF study_or_comparison = 'C' THEN
-		sql_stmt:=sql_stmt||E'\t'||' GROUP BY d1.year, s.area_id,'||E'\n';
-	ELSE
-		sql_stmt:=sql_stmt||E'\t'||' GROUP BY d1.year, s.area_id, s.band_id,'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||' GROUP BY d1.year, s.area_id, /* Comparison areas */'||E'\n';
+	ELSIF c1_rec.study_type != 1 THEN 	
+		sql_stmt:=sql_stmt||E'\t'||' GROUP BY d1.year, s.area_id, s.band_id, /* Risk analysis study areas */'||E'\n'||
+			E'\t'||E'\t'||'s.intersect_count, s.distance_from_nearest_source, s.nearest_rifshapepolyid, s.exposure_value,'||E'\n';
+	ELSE 	
+		sql_stmt:=sql_stmt||E'\t'||' GROUP BY d1.year, s.area_id, s.band_id, /* Disease mapping study areas */'||E'\n';
 	END IF;
-	
 	IF covariate_list IS NOT NULL THEN
 		sql_stmt:=sql_stmt||E'\t'||'          '||covariate_list;
 	END IF;
@@ -631,6 +637,17 @@ WITH n1 AS (	-* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total *-
 	sql_stmt:=sql_stmt||'       $1 AS study_id,'||E'\n';
 	sql_stmt:=sql_stmt||'       d.area_id,'||E'\n';
 	sql_stmt:=sql_stmt||'       d.band_id,'||E'\n';
+	
+	IF c1_rec.study_type != 1 /* Risk analysis */ THEN
+		IF study_or_comparison = 'C' THEN
+			sql_stmt:=sql_stmt||E'\t'||E'\t'|| 
+				'NULL::Integer AS intersect_count, NULL::Numeric AS distance_from_nearest_source, NULL AS nearest_rifshapepolyid, NULL::Numeric AS exposure_value,' || E'\n';
+		ELSE 
+			sql_stmt:=sql_stmt||E'\t'||E'\t'|| 
+				'd.intersect_count, d.distance_from_nearest_source, d.nearest_rifshapepolyid, d.exposure_value,' || E'\n';
+		END IF;
+	END IF;
+	
 --
 -- [Add support for differing age/sex/group names]
 --

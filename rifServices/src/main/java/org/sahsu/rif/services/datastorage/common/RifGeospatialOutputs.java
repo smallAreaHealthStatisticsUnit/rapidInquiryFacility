@@ -17,10 +17,7 @@ import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
-
-import org.json.JSONObject;
 
 import org.geotools.data.FeatureWriter;
 import org.geotools.data.Transaction;
@@ -36,6 +33,7 @@ import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -63,27 +61,17 @@ public class RifGeospatialOutputs {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-	private Connection connection;
-	private String studyID;
-	private static String EXTRACT_DIRECTORY;
 	private static int printingDPI;
-	
-	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
-	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
-	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
+
 	private static final String GEOGRAPHY_SUBDIRECTORY = "geography";
 	private static final String DATA_SUBDIRECTORY = "data";
-	private static final int BASE_FILE_STUDY_NAME_LENGTH = 100;
-	
+
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
 	
 	private static GeometryFactory geometryFactory = null;
 	private static GeometryJSON geoJSONWriter = null;
 
-	private static Map<String, String> environmentalVariables = System.getenv();
-	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-	
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = null;
 	private RIFMaps rifMaps = null;
 	private static int roundDP=3;
@@ -220,7 +208,7 @@ public class RifGeospatialOutputs {
 		
 		
 		if (databaseType == DatabaseType.POSTGRESQL) { 
-			extraColumns=", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
+			extraColumns=", b.zoomlevel, a.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
 //				"/*, c.direct_standardisation */" +
 				", ROUND(c.adjusted::NUMERIC, " + roundDP + ") As adjusted, c.observed" +
 				", ROUND(c.expected::NUMERIC, " + roundDP + ") AS expected" +
@@ -236,7 +224,7 @@ public class RifGeospatialOutputs {
 				", ROUND(c.smoothed_smr_upper95::NUMERIC, " + roundDP + ") AS sm_smr_u95";
 		}
 		else {
-			extraColumns=", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
+			extraColumns=", b.zoomlevel, a.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
 //				"/*, c.direct_standardisation */" +
 				", ROUND(c.adjusted, " + roundDP + ") As adjusted, c.observed" +
 				", ROUND(c.expected, " + roundDP + ") AS expected" +
@@ -251,6 +239,44 @@ public class RifGeospatialOutputs {
 				", ROUND(c.smoothed_smr_lower95, " + roundDP + ") AS sm_smr_l95" +
 				", ROUND(c.smoothed_smr_upper95, " + roundDP + ") AS sm_smr_u95";
 		}
+		
+		// Add alter 11 columns
+		if (manager.doesColumnExist(connection, "rif_studies", mapTable.toLowerCase(), "intersect_count")) { 
+			extraColumns=extraColumns + ", c.intersect_count";
+		}
+		if (manager.doesColumnExist(connection, "rif_studies", mapTable.toLowerCase(), "nearest_rifshapepolyid")) { 
+			extraColumns=extraColumns + ", c.nearest_rifshapepolyid";
+		}
+		if (manager.doesColumnExist(connection, "rif_studies", mapTable.toLowerCase(), "distance_from_nearest_source")) { 
+			if (databaseType == DatabaseType.POSTGRESQL) { 
+				extraColumns=extraColumns + ", ROUND(c.distance_from_nearest_source::NUMERIC, " + roundDP + 
+					") AS distance_from_nearest_source";
+			}
+			else {
+				extraColumns=extraColumns + ", ROUND(c.distance_from_nearest_source, " + roundDP + 
+					") AS distance_from_nearest_source";
+			}
+		}
+		if (manager.doesColumnExist(connection, "rif_studies", mapTable.toLowerCase(), "exposure_value")) { 
+			if (databaseType == DatabaseType.POSTGRESQL) { 
+				extraColumns=extraColumns + ", ROUND(c.exposure_value::NUMERIC, " + roundDP + 
+					") AS exposure_value";
+			}
+			else {
+				extraColumns=extraColumns + ", ROUND(c.exposure_value, " + roundDP + 
+					") AS exposure_value";
+			}
+		}
+		
+		String additionalJoin=null;
+		if (isDiseaseMappingStudy) {
+			additionalJoin="LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
+					" c ON (a.area_id = c.area_id) /* Disease mapping */";
+		}
+		else {
+			additionalJoin="LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
+					" c ON (a.band_id = c.band_id) /* Risk analysis */";
+		}
 		RifFeatureCollection mapFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
@@ -264,9 +290,7 @@ public class RifGeospatialOutputs {
 				studyID,
 				null, 					/* areaType */
 				extraColumns,			/* extraColumns: reduced to 10 characters */
-				"LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
-					" c ON (a.area_id = c.area_id)"
-														/* additionalJoin */,
+				additionalJoin,			
 				locale);
 				
 		rifMaps.writeResultsMaps(
@@ -1069,8 +1093,8 @@ public class RifGeospatialOutputs {
 		else {
 			queryFormatter.addQueryLine(0, "LEFT OUTER JOIN rif_data.lookup_" + geolevelName + 
 				" c ON (a.area_id = c." + geolevelName + ")");
-		}
-		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
+		}	
+		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");	
 		
 		PreparedStatement statement = manager.createPreparedStatement(connection, queryFormatter);
 		

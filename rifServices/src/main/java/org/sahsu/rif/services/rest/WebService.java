@@ -16,6 +16,13 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerFactory;
+import java.io.StringWriter;
+import java.io.StringReader;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -41,7 +48,6 @@ import org.sahsu.rif.services.concepts.YearRange;
 import org.sahsu.rif.services.datastorage.common.SampleTestObjectGenerator;
 import org.sahsu.rif.services.datastorage.common.ServiceBundle;
 import org.sahsu.rif.services.datastorage.common.ServiceResources;
-import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLReader;
 import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLWriter;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
@@ -52,6 +58,7 @@ public class WebService {
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss:SSS");
 	private final ServiceBundle rifStudyServiceBundle;
 	protected RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 	private Date startTime;
 	private WebServiceResponseGenerator webServiceResponseGenerator;
 	private FrontEndLogger frontEndLogger = FrontEndLogger.getLogger();
@@ -1058,29 +1065,29 @@ public class WebService {
 				result);
 	}
 	
-	protected Response getStudySubmission(
-		final HttpServletRequest servletRequest,
-		final String userID,
-		final String studyID) {
-		
+	Response getStudySubmission(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {
+
 		String result;
-		
+
 		try {
 			User user = createUser(servletRequest, userID);
 
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
-			
+
 			DiseaseMappingStudy diseaseMappingStudy =
 				studySubmissionService.getDiseaseMappingStudy(
 					user,
 					studyID);
-			
+
 			SampleTestObjectGenerator generator = new SampleTestObjectGenerator();
 			RIFStudySubmission sampleStudySubmission
 				= generator.createSampleRIFJobSubmission();
 			sampleStudySubmission.setStudy(diseaseMappingStudy);
-			
+
 			RIFStudySubmissionXMLWriter writer = new RIFStudySubmissionXMLWriter();
 			String xmlResults
 				= writer.writeToString(
@@ -1089,7 +1096,7 @@ public class WebService {
 
 			JSONObject jsonObject
 				= org.json.XML.toJSONObject(xmlResults);
-			
+
 			//run through XML To JSON converter
 			result = jsonObject.toString(4);
 		}
@@ -1101,7 +1108,7 @@ public class WebService {
 					servletRequest,
 					rifServiceException);
 		}
-		
+
 		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
@@ -1395,6 +1402,7 @@ getParameter("p 1")     yes     c d
 		final InputStream inputStream)
 		throws RIFServiceException {
 		
+		String xmlString = null;
 		try {
 			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource start");
 			BufferedReader reader
@@ -1409,16 +1417,31 @@ getParameter("p 1")     yes     c d
 				currentInputLine = reader.readLine();
 			}
 			reader.close();
-
-			rifLogger.debug(this.getClass(), "JSON from UI: " + buffer.toString());
 			
 			JSONObject jsonObject = new JSONObject(buffer.toString());
+			rifLogger.debug(this.getClass(), "ARWS - JSON from UI==" + lineSeparator + jsonObject.toString(2) + lineSeparator + "==");
 			
-			String xml = XML.toString(jsonObject);
+			xmlString = XML.toString(jsonObject).replace("\r\n", "").replace("\n", "");
+			// Try to pretty print XML to make parsing errors readable
+			try {
+				StreamSource source = new StreamSource(new StringReader(xmlString));
+				Transformer transformer = TransformerFactory.newInstance().newTransformer();
+				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+				//initialize StreamResult with File object to save to file
+				StreamResult result = new StreamResult(new StringWriter());
+				transformer.transform(source, result);
+				xmlString = result.getWriter().toString(); 
+			}
+			catch (Exception e) {
+				rifLogger.warning(getClass(), "ARWS - pretty print XML SAXParseException: " + e.getMessage() + "==" + lineSeparator +
+				xmlString + lineSeparator + "==");
+			}
+
 			InputStream xmlInputStream = new ByteArrayInputStream(
-					xml.getBytes(StandardCharsets.UTF_8));
-			rifLogger.info(getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="
-			                           + xml + "==");
+					xmlString.getBytes(StandardCharsets.UTF_8));
+			rifLogger.debug(getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML==" + lineSeparator +
+				xmlString + lineSeparator + "==");
 			RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance(xmlInputStream);
 			
 			// Parse out study_selection to avoid using the XML parser
@@ -1434,7 +1457,7 @@ getParameter("p 1")     yes     c d
 					throw new IllegalStateException("Invalid data received: JSON contains "
 					                                + "neither 'disease_mapping_study' nor "
 					                                + "'risk_analysis_study'. Complete JSON is: "
-					                                + "\n" + buffer.toString());
+					                                + lineSeparator + jsonObject.toString(2));
 				}
 
 				String name = study.optString("name");
@@ -1482,7 +1505,8 @@ getParameter("p 1")     yes     c d
 
 		} catch(Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
-			                                 ".getRIFSubmissionFromJSONSource error", exception);
+			                                 ".getRIFSubmissionFromJSONSource error XML==" + lineSeparator +
+				xmlString + lineSeparator + "==", exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage("webService.submitStudy.error.unableToConvertJSONToXML");
 

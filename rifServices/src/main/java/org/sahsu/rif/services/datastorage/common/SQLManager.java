@@ -70,7 +70,7 @@ public interface SQLManager {
 	
 	boolean userExists(final String userID);
 	
-	void logSQLQuery(
+	String logSQLQuery(
 			String queryName,
 			QueryFormatter queryFormatter,
 			String... parameters);

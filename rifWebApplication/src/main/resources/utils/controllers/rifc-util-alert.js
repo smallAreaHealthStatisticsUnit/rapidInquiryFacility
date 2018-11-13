@@ -164,13 +164,13 @@ angular.module("RIF")
 						if (isIE()) {
 							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
 								console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + // IE safe
-									err.mesage);
+									err.message);
 							}
 						}
 					}
 					else {
 						console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + // IE safe
-							err.mesage);
+							err.message);
 					}	
 				}
 			}
@@ -181,24 +181,26 @@ angular.module("RIF")
 			 * Returns: 	Nothing
 			 * Description:	IE safe console log for debug messages. Requires debugEnabled to be enabled
 			 */
-			$scope.consoleDebug = function(msg) {
+			$scope.consoleDebug = function(msg, rifError) {
 				var end=new Date().getTime();
 				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
 				if ($scope.parameters.debugEnabled && window.console && console && console.log && typeof console.log == "function") { // IE safe
 					if (isIE()) {
 						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-							console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
+							console.log("+" + elapsed + ": [DEBUG] " + msg + 
+								(rifError ? "\nStack: " + rifError.stack : "")); // IE safe
 						}
 					}
 					else {
-						console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
+						console.log("+" + elapsed + ": [DEBUG] " + msg + 
+							(rifError ? "\nStack: " + rifError.stack : "")); // IE safe
 					}
 				}  			
 				callRifFrontEndLogger(
 					level.debug,
 					msg, 
 					undefined /* errorMessage */,
-					undefined /* err.stack */,
+					(rifError ? rifError.stack : undefined) /* err.stack */,
 					elapsed);
 			}
 			
@@ -208,17 +210,19 @@ angular.module("RIF")
 			 * Returns: 	Nothing
 			 * Description:	IE safe console log 
 			 */
-			$scope.consoleLog = function(msg) {
+			$scope.consoleLog = function(msg, rifError) {
 				var end=new Date().getTime();
 				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
 				if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 					if (isIE()) {
 						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-							console.log("+" + elapsed + ": " + msg); // IE safe
+							console.log("+" + elapsed + ": " + msg + 
+								(rifError ? "\nStack: " + rifError.stack : "")); // IE safe
 						}
 					}
 					else {
-						console.log("+" + elapsed + ": " + msg); // IE safe
+						console.log("+" + elapsed + ": " + msg + 
+								(rifError ? "\nStack: " + rifError.stack : "")); // IE safe
 					}
 				}  
 				
@@ -226,7 +230,7 @@ angular.module("RIF")
 					level.info,
 					msg, 
 					undefined /* errorMessage */,
-					undefined /* err.stack */,
+					(rifError ? rifError.stack : undefined) /* err.stack */,
 					elapsed);
 			}
 			
@@ -284,7 +288,7 @@ angular.module("RIF")
 				}
                 $scope.lastMessage = angular.copy(msg);
 				$scope.lastMessageTime = angular.copy(end);
-				var msgList = $scope.messageList;
+/*				var msgList = $scope.messageList;
 				var msgItem = {
 					sequence:	$scope.messageCount,
 					message: 	msg,
@@ -294,7 +298,7 @@ angular.module("RIF")
 					level:		level.error
 				}
 				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);	
+				$scope.messageList = angular.copy(msgList);	 */
 				
 				callRifFrontEndLogger(
 					level.error,
@@ -414,7 +418,7 @@ angular.module("RIF")
 				}
                 $scope.lastMessage = angular.copy(msg);
 				$scope.lastMessageTime = angular.copy(end);
-				var msgList = $scope.messageList;
+/*				var msgList = $scope.messageList;
 				var msgItem = {
 					sequence:	$scope.messageCount,
 					message: 	msg,
@@ -424,14 +428,14 @@ angular.module("RIF")
 					level:		messageLevel
 				}
 				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);	
+				$scope.messageList = angular.copy(msgList);	*/
 
 				callRifFrontEndLogger(
 					messageLevel,
 					msg, 
 					err.message,
 					err.stack,
-					elapsed);				
+					elapsed);			
 			}
 			
             $scope.showError = function (msg, rifError) {

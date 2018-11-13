@@ -2,6 +2,7 @@ package org.sahsu.rif.generic.fileformats;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -73,28 +74,29 @@ public class CsvFile {
 	 */
 	public List<TaxonomyTerm> parseTaxonomyTerms() throws RIFServiceException {
 
-		Reader reader;
-		try {
-			reader = new FileReader(file.toFile());
-		} catch (FileNotFoundException e) {
+		try (Reader reader = new FileReader(file.toFile())) {
+
+			Map<String, String> csvColumnsToFields = new HashMap<>();
+			csvColumnsToFields.put("DIAGNOSIS CODE", "label");
+			csvColumnsToFields.put("LONG DESCRIPTION", "description");
+
+			HeaderColumnNameTranslateMappingStrategy<TaxonomyTerm> strategy =
+					new HeaderColumnNameTranslateMappingStrategy<>();
+			strategy.setType(TaxonomyTerm.class);
+			strategy.setColumnMapping(csvColumnsToFields);
+
+			return new CsvToBeanBuilder<TaxonomyTerm>(reader)
+					       .withMappingStrategy(strategy)
+					       .withType(TaxonomyTerm.class)
+					       .build()
+					       .parse();
+
+		} catch (IOException e) {
 
 			// This can't actually happen if the current object was constructed, but we have to
 			// handle the Exception
 			throw new RIFServiceException(e, "It seems impossible, but %s was not found",
 			                              file.toString());
 		}
-
-		Map<String, String> csvColumnsToFields = new HashMap<>();
-		csvColumnsToFields.put("DIAGNOSIS CODE", "label");
-		csvColumnsToFields.put("LONG DESCRIPTION", "description");
-
-		HeaderColumnNameTranslateMappingStrategy<TaxonomyTerm> strategy = new HeaderColumnNameTranslateMappingStrategy<>();
-		strategy.setType(TaxonomyTerm.class);
-		strategy.setColumnMapping(csvColumnsToFields);
-		return new CsvToBeanBuilder<TaxonomyTerm>(reader)
-				       .withMappingStrategy(strategy)
-				       .withType(TaxonomyTerm.class)
-				       .build()
-				       .parse();
 	}
 }

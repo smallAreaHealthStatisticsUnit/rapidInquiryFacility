@@ -95,14 +95,21 @@ The basis for this is the performance tests created from the new EHA extract for
 The table has the following standard columns
 
 CREATE TABLE <extract_table> (
- 	year                    SMALLINT 	NOT NULL,
-	study_or_comparison	VARCHAR(1) 	NOT NULL,
-	study_id		INTEGER 	NOT NULL,
- 	area_id                 VARCHAR 	NOT NULL,
-	band_id			INTEGER,
- 	sex                     SMALLINT,
- 	age_group               VARCHAR,
- 	total_pop               DOUBLE PRECISION,
+ 	year                    	SMALLINT 	NOT NULL,
+	study_or_comparison			VARCHAR(1) 	NOT NULL,
+	study_id					INTEGER 	NOT NULL,
+ 	area_id                 	VARCHAR 	NOT NULL,	
+	band_id						INTEGER,
+    intersect_count         	INTEGER,         
+    distance_from_nearest_source NUMERIC,  
+    nearest_rifshapepolyid      VARCHAR,
+    exposure_value              NUMERIC,	
+ 	sex                     	SMALLINT,
+ 	age_group               	VARCHAR,
+ 	total_pop               	DOUBLE PRECISION,
+
+Disease mapping extract tables do not contain: intersect_count, distance_from_nearest_source, 
+nearest_rifshapepolyid, exposure_value
 
 One column per distinct covariate
 
@@ -167,12 +174,10 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	index_column	VARCHAR;
 	index_columns 	VARCHAR[] := ARRAY['area_id', 'band_id', 'sex', 'age_group'];
 	table_column	VARCHAR;
-	table_columns	VARCHAR[] := ARRAY['year', 'study_or_comparison', 'study_id', 'area_id',
-		'band_id', 'sex',  'age_group', 'total_pop'];
+	table_columns	VARCHAR[];
 	pk_index_columns VARCHAR[] := ARRAY['year', 'study_or_comparison', 'study_id', 'area_id',
 		'sex',  'age_group'];
-	column_comments	VARCHAR[] := ARRAY['Year', 'Study (S) or comparison (C) area', 'Study ID', 'Area ID',
-		'Band ID', 'Sex',  'Age group', 'Total population'];
+	column_comments	VARCHAR[];
 	i		INTEGER:=0;
 BEGIN
 	OPEN c1_creex(study_id);
@@ -233,7 +238,26 @@ BEGIN
 			c1_rec.username::VARCHAR	/* Study owner */,
 			USER::VARCHAR			/* User of this function */);
 	END IF;
-
+	
+--
+-- Disease mapping extract tables do not contain: intersect_count, distance_from_nearest_source, 
+-- nearest_rifshapepolyid, exposure_value  
+--	
+	IF c1_rec.study_type != 1 THEN /* Risk analysis */
+		table_columns := ARRAY['year', 'study_or_comparison', 'study_id', 'area_id',
+			'band_id', 'sex',  'age_group', 'total_pop', 
+			'intersect_count', 'distance_from_nearest_source', 'nearest_rifshapepolyid', 'exposure_value'];
+		column_comments := ARRAY['Year', 'Study (S) or comparison (C) area', 'Study ID', 'Area ID',
+			'Band ID', 'Sex',  'Age group', 'Total population', 'Number of intersects with shapes', 
+			'Distance from nearest source (Km)', 'Nearest rifshapepolyid (shape reference)', 
+			'Exposure value (when bands selected by exposure values)'];
+	ELSE
+		table_columns := ARRAY['year', 'study_or_comparison', 'study_id', 'area_id',
+			'band_id', 'sex',  'age_group', 'total_pop'];
+		column_comments := ARRAY['Year', 'Study (S) or comparison (C) area', 'Study ID', 'Area ID',
+			'Band ID', 'Sex',  'Age group', 'Total population'];
+	END IF;
+	
 --
 -- Create extract table
 --
@@ -241,23 +265,36 @@ BEGIN
 -- The table has the following standard columns
 --
 --CREATE TABLE <extract_table> (
--- 	year                    SMALLINT 	NOT NULL,
---	study_or_comparison	VARCHAR(1) 	NOT NULL,
---	study_id		INTEGER 	NOT NULL,
--- 	area_id                 VARCHAR 	NOT NULL,
---	band_id			INTEGER,
--- 	sex                     SMALLINT,
--- 	age_group               VARCHAR,
--- 	total_pop               DOUBLE PRECISION,
+-- 	year                    	SMALLINT 	NOT NULL,
+--	study_or_comparison			VARCHAR(1) 	NOT NULL,
+--	study_id					INTEGER 	NOT NULL,
+-- 	area_id                 	VARCHAR 	NOT NULL,
+--	band_id						INTEGER,
+--  intersect_count         	INTEGER,         
+--  distance_from_nearest_source NUMERIC, 
+--  nearest_rifshapepolyid      VARCHAR,
+--  exposure_value              NUMERIC,
+-- 	sex                     	SMALLINT,
+-- 	age_group               	VARCHAR,
+-- 	total_pop               	DOUBLE PRECISION,
+--
+-- Disease mapping extract tables do not contain: intersect_count, distance_from_nearest_source, 
+-- nearest_rifshapepolyid, exposure_value  
 --
 	sql_stmt:='CREATE TABLE rif_studies.'||LOWER(c1_rec.extract_table)||' ('||E'\n'||
-		 	E'\t'||'year                    SMALLINT 	NOT NULL,'||E'\n'||
-			E'\t'||'study_or_comparison	VARCHAR(1) 	NOT NULL,'||E'\n'||
-			E'\t'||'study_id		INTEGER 	NOT NULL,'||E'\n'||
- 			E'\t'||'area_id                 VARCHAR 	NOT NULL,'||E'\n'||
-			E'\t'||'band_id			INTEGER,'||E'\n'||
- 			E'\t'||'sex                     SMALLINT,'||E'\n'||
- 			E'\t'||'age_group               SMALLINT,'||E'\n';
+		 	E'\t'||'year                    	SMALLINT 	NOT NULL,'||E'\n'||
+			E'\t'||'study_or_comparison			VARCHAR(1) 	NOT NULL,'||E'\n'||
+			E'\t'||'study_id					INTEGER 	NOT NULL,'||E'\n'||
+ 			E'\t'||'area_id                 	VARCHAR 	NOT NULL,'||E'\n'||
+			E'\t'||'band_id						INTEGER,'||E'\n';
+	IF c1_rec.study_type != 1 THEN /* Risk analysis */
+		sql_stmt:=sql_stmt||E'\t'||'intersect_count         	INTEGER,'||E'\n'||
+							E'\t'||'distance_from_nearest_source NUMERIC,'||E'\n'||
+							E'\t'||'nearest_rifshapepolyid      VARCHAR,'||E'\n'||
+							E'\t'||'exposure_value    	     	NUMERIC,'||E'\n';
+	END IF;
+	sql_stmt:=sql_stmt||E'\t'||'sex                     	SMALLINT,'||E'\n'||
+					    E'\t'||'age_group               	SMALLINT,'||E'\n';
 --
 -- One column per distinct covariate
 --
@@ -426,14 +463,18 @@ The basis for this is the performance tests created from the new EHA extract for
 The table has the following standard columns
 
 CREATE TABLE <extract_table> (
- 	year                    SMALLINT 	NOT NULL,
-	study_or_comparison	VARCHAR(1) 	NOT NULL,
-	study_id		INTEGER 	NOT NULL,
- 	area_id                 VARCHAR 	NOT NULL,
-	band_id			INTEGER,
- 	sex                     SMALLINT,
- 	age_group               VARCHAR,
- 	total_pop               DOUBLE PRECISION,
+ 	year                    	SMALLINT 	NOT NULL,
+	study_or_comparison			VARCHAR(1) 	NOT NULL,
+	study_id					INTEGER 	NOT NULL,
+ 	area_id                 	VARCHAR 	NOT NULL,	
+	band_id						INTEGER,
+    intersect_count         	INTEGER,         
+    distance_from_nearest_source NUMERIC,  
+    nearest_rifshapepolyid      VARCHAR,
+    exposure_value              NUMERIC,	
+ 	sex                     	SMALLINT,
+ 	age_group               	VARCHAR,
+ 	total_pop               	DOUBLE PRECISION,
 
 One column per distinct covariate
 
@@ -445,6 +486,9 @@ One column per investigation
 
 Index: year, study_or_comparison if no partitoning
        area_id, band_id, sex, age_group
+
+Disease mapping extract tables do not contain: intersect_count, distance_from_nearest_source, 
+nearest_rifshapepolyid, exposure_value
 
 Comment extract table and columns
 
