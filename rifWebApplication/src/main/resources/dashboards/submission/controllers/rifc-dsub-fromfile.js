@@ -48,6 +48,7 @@ angular.module("RIF")
                 var rifJob;
                 var studyType = "disease_mapping_study";
                 var studyAreaType = "disease_mapping_study_area";
+				var riskAnalysisExposureField;
                 var tmpProjects;
                 var tmpGeography;
                 var tmpGeoLevel;
@@ -103,6 +104,12 @@ angular.module("RIF")
 						study_selection: false
 					};
 					expectedHeaders[studyType]=true;
+					
+					if (rifJob[studyType].riskAnalysisExposureField) {	
+						riskAnalysisExposureField = rifJob[studyType].riskAnalysisExposureField;
+						$scope.consoleDebug("[rifc-dsub-fromfile.js] riskAnalysisExposureField: " + 
+							riskAnalysisExposureField);
+					}
 					
 					// Check for missing
 					var headerMissingCount = 0;
@@ -167,7 +174,6 @@ angular.module("RIF")
 						return "No " + studyType + "." + studyAreaType + " object found; keys: " +
 							JSON.stringify(keys, null, 0);
 					}
-					
                     $scope.consoleDebug("[rifc-dsub-fromfile.js] Parsed study: " + studyType + 
 						"; " + thisHeaders.length + " headers found");
 					
@@ -514,7 +520,7 @@ angular.module("RIF")
 								return "Invalid SelectStateService.getState().studyType: " + SelectStateService.getState().studyType;
 							}
 							return true; // Optional for backward compatibility
-						}	
+						}				
                     } catch (e) {
 						$scope.consoleDebug("[rifc-dsub-fromfile.js] SelectStateService.getState(): " + 
 							JSON.stringify(SelectStateService.getState(), null, 1));
@@ -542,6 +548,10 @@ angular.module("RIF")
 						if (StudyAreaStateService.getState().polygonIDs.length == 0) {
 							throw new Error("No study area polygons");
 						}
+						else {
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] StudyAreaStateService.getState().polygonIDs[0]: " +
+								JSON.stringify(StudyAreaStateService.getState().polygonIDs[0]));
+						}
 						StudyAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (StudyAreaStateService.getState().polygonIDs.length !== 0) {
 							SubmissionStateService.getState().studyTree = true;
@@ -550,6 +560,11 @@ angular.module("RIF")
 							StudyAreaStateService.getState().type = "Risk Analysis";	
 						}
 						SubmissionStateService.getState().studyType = StudyAreaStateService.getState().type;
+						if (riskAnalysisExposureField) {
+							SubmissionStateService.getState().riskAnalysisExposureField	= riskAnalysisExposureField;			
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] SubmissionStateService.getState().riskAnalysisExposureField: " + 
+								SubmissionStateService.getState().riskAnalysisExposureField);
+						} 
 						
 						//Comparison area
 						CompAreaStateService.getState().selectAt = rifJob[studyType].comparison_area.geo_levels.geolevel_select.name;
@@ -557,6 +572,10 @@ angular.module("RIF")
 						CompAreaStateService.getState().polygonIDs = rifJob[studyType].comparison_area.map_areas.map_area;
 						if (CompAreaStateService.getState().polygonIDs.length == 0) {
 							throw new Error("No comparison area polygons");
+						}
+						else {
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] CompAreaStateService.getState().polygonIDs[0]: " +
+								JSON.stringify(CompAreaStateService.getState().polygonIDs[0]));
 						}
 						CompAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (CompAreaStateService.getState().polygonIDs.length !== 0) {

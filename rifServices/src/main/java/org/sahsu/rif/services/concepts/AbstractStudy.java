@@ -50,6 +50,8 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 	private ArrayList<Investigation> investigations;
 
 	private StudyType studyType;
+	
+	private String riskAnalysisExposureField;
 
 	public static AbstractStudy newInstance(StudyType studyType) {
 
@@ -74,6 +76,7 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 		name = "";
 		description = "";
 		otherNotes = "";
+		riskAnalysisExposureField = null;
 		this.studyType = studyType;
 		geography = Geography.newInstance();
 		comparisonArea = ComparisonArea.newInstance();
@@ -401,6 +404,7 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 		cloneDiseaseMappingStudy.setIdentifier(originalDiseaseMappingStudy.getIdentifier());
 		cloneDiseaseMappingStudy.setName(originalDiseaseMappingStudy.getName());
 		cloneDiseaseMappingStudy.setDescription(originalDiseaseMappingStudy.getDescription());
+		cloneDiseaseMappingStudy.setRiskAnalysisExposureField(originalDiseaseMappingStudy.getRiskAnalysisExposureField());
 		AbstractStudyArea cloneDiseaseMappingStudyArea
 			= AbstractStudyArea.copy(originalDiseaseMappingStudy.getStudyArea());
 		cloneDiseaseMappingStudy.setStudyArea(cloneDiseaseMappingStudyArea);
@@ -694,6 +698,14 @@ public abstract class AbstractStudy extends AbstractRIFConcept {
 	public String getDisplayName() {
 		
 		return name;
+	}
+
+	public void setRiskAnalysisExposureField(String riskAnalysisExposureField) {	
+		this.riskAnalysisExposureField = riskAnalysisExposureField;
+	}	
+	
+	public String getRiskAnalysisExposureField() {	
+		return riskAnalysisExposureField;
 	}
 
 	public StudyType type() {

@@ -104,13 +104,15 @@ angular.module("RIF")
                         consoleDebug: function (msg, rifError) {
                             $rootScope.$broadcast('consoleMessage', { 
 								messageLevel: "DEBUG", 
-								msg: msg
+								msg: msg,
+								rifError: rifError
 							});
                         },
                         consoleLog: function (msg, rifError) {
                             $rootScope.$broadcast('consoleMessage', { 
 								messageLevel: "INFO", 
-								msg: msg
+								msg: msg,
+								rifError: rifError
 							});
                         },
                         consoleError: function (msg, rifError) {

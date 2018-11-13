@@ -53,10 +53,10 @@ angular.module("RIF")
             };
         })
         .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'SelectStateService', 
-				'AlertService', 'CommonMappingStateService', '$window', '$interval',
+				'AlertService', 'CommonMappingStateService', 'DrawSelectionService', 'GISService', '$window', '$interval',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
             function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, SelectStateService, 
-				AlertService, CommonMappingStateService, $window, $interval) {
+				AlertService, CommonMappingStateService, DrawSelectionService, GISService, $window, $interval) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
                     link: function (scope, element, attr) {
@@ -173,7 +173,7 @@ angular.module("RIF")
                             try {
                                 if (file.name.slice(-3) !== 'zip') {
                                     //not a zip file
-                                    alertScope.showError("All parts of the shapefile expected in one zipped file");
+                                    alertScope.showError("File: " + file.name + ": all parts of the shapefile expected in one zipped file");
                                     return;
                                 } else {
 
@@ -279,7 +279,7 @@ angular.module("RIF")
                                     return deferred.promise;
                                 }
                             } catch (err) {
-                                alertScope.showError("Could not open Shapefile: " + err.message);
+                                alertScope.showError("Could not open Shapefile: " + file.name + "; error: " + err.message);
                                 scope.bProgress = false;
                             }
                         }
@@ -308,7 +308,7 @@ angular.module("RIF")
 								shapefileGridOptions.onRegisterApi = shapefileGridLoaded;
 						
                                 if (!scope.isPolygon & !scope.isPoint) {
-                                    alertScope.showError("This is not a valid point or polygon zipped shapefile");
+                                    alertScope.showError("File: " + file.name + ": is not a valid point or polygon zipped shapefile");
                                 }
 								
 								var columnDefs = {};
@@ -394,9 +394,11 @@ angular.module("RIF")
                         scope.displayShapeFile = function () {
                             //exit if there is no shapefile
                             if (!scope.isPolygon && !scope.isPoint) {
-                                alertScope.showError("File is not a shapefile");
+                                alertScope.showError("File: " + scope.shapeFile.fileName + ": is not a shapefile");
                                 return false;
                             }
+							var rifShapeFileId=CommonMappingStateService.getState("areamap").getNextShapeFileId(scope.$parent.input.name, scope.shapeFile);
+							
 							if (scope.bandAttr.length > 0) {
 								SelectStateService.getState().studySelection.bandAttr=angular.copy(scope.bandAttr);
 							}
@@ -415,7 +417,8 @@ angular.module("RIF")
                                             bZero.push(0);
                                         }
                                     } else {
-                                        alertScope.showError("Non-numeric band value entered");
+                                        alertScope.showError("File: " + scope.shapeFile.fileName + ': has a non-numeric band value entered: "' + 
+											thisBreak + '"');
                                         return false; //and only display the points
                                     }
                                 }
@@ -438,7 +441,7 @@ angular.module("RIF")
                                 }
                                 if (scope.isPoint) {
 									if (scope.bandAttr.length == 0) {
-										alertScope.showError(" No distance band values supplied for points");
+										alertScope.showError("File: " + scope.shapeFile.fileName + ": has no distance band values supplied for points");
 										return false;
 									}
 									else {
@@ -451,20 +454,20 @@ angular.module("RIF")
 												b.toString() != scope.bandAttr[i+1]) {
 												alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
 													JSON.stringify(scope.bandAttr));
-												alertScope.showError("Distance band values are not integers");
+												alertScope.showError("File: " + scope.shapeFile.fileName + ": has distance band values that are not integers");
 												return false;
 											}
 											else if (a > b) {
 												alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
 													JSON.stringify(scope.bandAttr));
-												alertScope.showError("Distance band values are not in ascending order");
+												alertScope.showError("File: " + scope.shapeFile.fileName +  ": has distance band values that are not in ascending order");
 												return false;
 											}
 										}
 									}
                                 } else {
 									if (scope.bandAttr.length == 0) {
-										alertScope.showError(" No exposure attribute values supplied for shapefile");
+										alertScope.showError("File: " + scope.shapeFile.fileName + ": has no exposure attribute values supplied for shapefile");
 										return false;
 									}
 									else {
@@ -477,13 +480,13 @@ angular.module("RIF")
 												b.toString() != scope.bandAttr[i+1]) {
 												alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
 													JSON.stringify(scope.bandAttr));
-												alertScope.showError("Distance band values are not integers");
+												alertScope.showError("File: " + scope.shapeFile.fileName + ": has distance band values are not integers");
 												return false;
 											}
 											else if (a < b) {
 												alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
 													JSON.stringify(scope.bandAttr));
-												alertScope.showError("Exposure band values are not in descending order");
+												alertScope.showError("File: " + scope.shapeFile.fileName + ": has exposure band values are not in descending order");
 												return false;
 											}
 										}
@@ -496,10 +499,11 @@ angular.module("RIF")
                                 //make polygons and apply selection
                                 buffers = new L.layerGroup();
 								
-								var i = 0;
 								var points = 0;
-                                for (; i < scope.bandAttr.length; i++) {
-                                    for (var j in poly._layers) {
+                                for (var j in poly._layers) {
+									var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
+									for (i=0; i < scope.bandAttr.length; i++) {
+										var rifShapePolyId= CommonMappingStateService.getState("areamap").getNextShapePolyId();
                                         //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
                                         var circle = L.circle(
 											[poly._layers[j].feature.geometry.coordinates[1],
@@ -520,39 +524,52 @@ angular.module("RIF")
 										if (!scope.bProgress) {
 											scope.bProgress = true;
 										}
-                                        $rootScope.$broadcast('makeDrawSelection', {
+										var shape={
                                             data: circle,
 											properties: properties,
                                             circle: true,
                                             freehand: false,
                                             band: i + 1,
-											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100 // Square km to 2dp
-                                        });
+											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100, // Square km to 2dp
+											rifShapeId: rifShapeId,
+											rifShapePolyId: rifShapePolyId,
+											rifShapeFileId: rifShapeFileId
+                                        };
+										
+										shape.properties.area=shape.area;
+										shape.properties.rifShapeFileId=rifShapeFileId;
+										shape.properties.rifShapeId=rifShapeId;
+										shape.properties.rifShapePolyId=rifShapePolyId;
+									
+                                        $rootScope.$broadcast('makeDrawSelection', shape);
 										points++;
                                     }
                                 }
 								
-								alertScope.showSuccess("Adding " +i + " band(s) from " + 
+								alertScope.showSuccess("Adding " + i + " band(s) from shape file: " + scope.shapeFile.fileName + ": " + 
 									points + " points using " +
 									getSelectionMethodAsString());
 								scope.bProgress = false;
-                                $rootScope.$broadcast('completedDrawSelection', { maxBand: i});
-                            } else if (scope.isPolygon) {
+                                $rootScope.$broadcast('completedDrawSelection', { maxBand: scope.bandAttr.length });
+                            } 
+							else if (scope.isPolygon) {
                                 if (scope.selectionMethod === 2) { // make selection by band attribute in file
                                     for (var i in poly._layers) {
                                         //check these are valid bands
 										if (poly._layers[i].feature.properties.band == undefined) {                                            //band number not recognized
-                                            alertScope.showError("Invalid band descriptor: (no band field)");
+                                            alertScope.showError("File: " + scope.shapeFile.fileName + ": invalid band descriptor: (no band field)");
                                             return false;
 										}
                                         if (scope.possibleBands.indexOf(poly._layers[i].feature.properties.band) === -1) {
                                             //band number not recognized
-                                            alertScope.showError("Invalid band descriptor: " + poly._layers[i].feature.properties.band);
+                                            alertScope.showError("File: " + scope.shapeFile.fileName +  ": invalid band descriptor: " + poly._layers[i].feature.properties.band);
                                             return false;
                                         }
                                     }
-                                } else if (scope.selectionMethod === 3) {
+                                } 
+								else if (scope.selectionMethod === 3) {
                                     //check the attribute is numeric etc
+									scope.shapeFile.selectedAttr = scope.selectedAttr;
                                     for (var i in poly._layers) {
                                         //check these are valid exposure values
                                         if (!angular.isNumber(poly._layers[i].feature.properties[scope.selectedAttr])) {
@@ -562,7 +579,7 @@ angular.module("RIF")
 											}
 											else {
 												//number not recognized 
-												alertScope.showError("Non-numeric value in file: " + 
+												alertScope.showError("File: " + scope.shapeFile.fileName + ": non-numeric value in file: " + 
 													poly._layers[i].feature.properties[scope.selectedAttr]);
 												return false;
 											}
@@ -574,8 +591,11 @@ angular.module("RIF")
 								var maxBand=0;
 								var attributeName=undefined;
 								var bandValues={};
-								var shapeList = []
+								var shapeList = [];
+								var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
                                 for (var i in poly._layers) {
+									
+									var rifShapePolyId= CommonMappingStateService.getState("areamap").getNextShapePolyId();
                                     var polygon = L.polygon(poly._layers[i].feature.geometry.coordinates[0], {});
 									var properties = poly._layers[i].feature.properties;					
 									if (properties['$$hashKey']) {
@@ -592,14 +612,43 @@ angular.module("RIF")
 										index: i,
 										selectionMethod: scope.selectionMethod
                                     };
+									
+									shape.centroid=GISService.getCentroid(shape);
+									shape.polygon=GISService.getPolygon(shape);
+									shape.bbox=GISService.getBoundingBox(shape);
+									shape.rifShapeFileId = rifShapeFileId;
+									shape.rifShapePolyId = rifShapePolyId;
+									shape.rifShapeId = rifShapeId;
 //									shape.area = turf.area(polygon.toGeoJSON());  // Square m
 									shape.area = Math.round((turf.area(polygon.toGeoJSON())*100)/1000000)/100; // Square km to 2dp
+									
+									shape.properties.area=shape.area;
+									shape.properties.rifShapeFileId=rifShapeFileId;
+									shape.properties.rifShapeId=rifShapeId;
+									shape.properties.rifShapePolyId=rifShapePolyId;
 									shapeList.push(shape);
 								}
 								shapeList.sort(function(a, b){return a.area - b.area}); 
 									// Sort into ascending order by area
-                                for (var i =0; i< shapeList.length; i++) {
+								var biggestShape=shapeList[shapeList.length-1];
+								var notEnclosedWithinBiggestShape=0;
+								biggestShape.properties.biggestShape=true;
+                                for (var i = 0; i< shapeList.length; i++) {
 									var shape = shapeList[i];
+									var point = GISService.geojsonPointToLatLng(centroid);
+									if (turf.booleanWithin(centroid, biggestShape.polygon)) {
+//									if (GISService.getPointinpolygon(point, biggestShape)) {
+										if (i != (shapeList.length-1)) {
+											shape.properties.enclosedWithinBiggestShape=true;
+										}
+									}
+									else {
+										alertScope.consoleDebug("[rifd-dsub-risk.js] shape: " + i + "/" + shapeList.length + ": " + rifShapePolyId +
+											" is not enclosed" +
+											"; point: " + JSON.stringify(point) +
+											"; centroid: " + JSON.stringify(centroid));
+										notEnclosedWithinBiggestShape++;
+									}
                                     if (scope.selectionMethod === 1) { // Single boundary; already set
                                         shape.band = 1;
 										maxBand=1;
@@ -635,9 +684,13 @@ angular.module("RIF")
                                         for (var k = 0; k < scope.bandAttr.length; k++) { // In descending order
                                             if (shape.band == -1 && attr >= scope.bandAttr[k]) {
                                                 shape.band = k  + 1;
+												shape.exposureValue = attr;
+												shape.riskAnalysisExposureField = attributeName;
 												alertScope.consoleDebug("[rifd-dsub-risk.js] selection by attribute value shape.band[" + i + "]: " + shape.band +
 													"; attr value: " + attr +
 													"; k: " + k + 
+													"; exposureValue: " + shape.exposureValue + 
+													"; riskAnalysisExposureField: " + attributeName + 
 													">= scope.bandAttr[k] " + scope.bandAttr[k]);
                                             } 
 											else {
@@ -673,6 +726,17 @@ angular.module("RIF")
 									$rootScope.$broadcast('makeDrawSelection', shape);
                                 } // End of shapefile polygon processing for loop
 								
+								if (notEnclosedWithinBiggestShape == 0) {
+									alertScope.consoleDebug("[rifd-dsub-risk.js] File: " + scope.shapeFile.fileName + " has " + 
+										notEnclosedWithinBiggestShape + "/"+ shapeList.length + " enclosed polygons");
+								}
+								else {
+									alertScope.showError("File: " + scope.shapeFile.fileName + " has " + notEnclosedWithinBiggestShape + "/" + 
+										shapeList.length + " polygons that are not enclosed within the biggest shape: " + shape.rifShapeFileId);
+									scope.bProgress = false;
+									return true; /* Close window */			
+								}
+								
 								var bandsUsed={};
 								var noBandsUsed=0;
 								for (var k in bandValues) {
@@ -687,27 +751,29 @@ angular.module("RIF")
 								}								
 								alertScope.consoleDebug("[rifd-dsub-risk.js] " + getSelectionMethodAsString(attributeName) +	
 									"; maxBand: " + maxBand +
+									(scope.selectedAttr ? ("; riskAnalysisExposureField: " + scope.selectedAttr) : "") +
 									"; scope.attrs: " + (scope.attrs||"(no attributes in shapefile)") +
 									"; scope.bandAttr (user supplied band values): " + JSON.stringify(scope.bandAttr) +
 									"; bandsUsed: " + JSON.stringify(bandsUsed, null , 1) +
 									"; bandValues: " + JSON.stringify(bandValues, null , 1));
 								if (maxBand > 0) {
-									alertScope.showSuccess("Adding " + 
+									alertScope.showSuccess("File: " + scope.shapeFile.fileName + ": adding " + 
 										Object.keys(bandsUsed).length + "/" + maxBand + " band(s) from " + 
 										Object.keys(poly._layers).length + " polygons using " +
 										getSelectionMethodAsString(attributeName));
 								}
 								else {
-									alertScope.showError("Added no bands from " + 
+									alertScope.showError("File: " + scope.shapeFile.fileName +  ": added no bands from " + 
 										Object.keys(poly._layers).length + " polygons using " +
 										getSelectionMethodAsString(attributeName));
+									scope.bProgress = false;
 									return false;			
 								}
 														
 //								try {
 //									scope.shpfile.addLayer(poly); // Add poly to layerGroup
 //								} catch (err) {
-//									alertScope.showError("Could not open Shapefile, no valid features");
+//									alertScope.showError("File: " + scope.shapeFile.fileName + ": could not open Shapefile, no valid features");
 //									return false;
 //								} 
 								
@@ -715,13 +781,6 @@ angular.module("RIF")
                                 $rootScope.$broadcast('completedDrawSelection', {maxBand: maxBand});
                             } // End of isPolygon()
 
-                            //add AOI layer to map on modal close                            
-                            try {
-//                                scope.shpfile.addTo(scope.areamap);
-                            } catch (err) {
-                                alertScope.showError("Could not open Shapefile, no valid features");
-                                return false;
-                            }
                             return true;
                         };
                     }

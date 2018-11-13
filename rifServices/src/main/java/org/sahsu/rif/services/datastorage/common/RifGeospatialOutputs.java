@@ -208,7 +208,7 @@ public class RifGeospatialOutputs {
 		
 		
 		if (databaseType == DatabaseType.POSTGRESQL) { 
-			extraColumns=", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
+			extraColumns=", b.zoomlevel, a.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
 //				"/*, c.direct_standardisation */" +
 				", ROUND(c.adjusted::NUMERIC, " + roundDP + ") As adjusted, c.observed" +
 				", ROUND(c.expected::NUMERIC, " + roundDP + ") AS expected" +
@@ -224,7 +224,7 @@ public class RifGeospatialOutputs {
 				", ROUND(c.smoothed_smr_upper95::NUMERIC, " + roundDP + ") AS sm_smr_u95";
 		}
 		else {
-			extraColumns=", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
+			extraColumns=", b.zoomlevel, a.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
 //				"/*, c.direct_standardisation */" +
 				", ROUND(c.adjusted, " + roundDP + ") As adjusted, c.observed" +
 				", ROUND(c.expected, " + roundDP + ") AS expected" +
@@ -239,6 +239,44 @@ public class RifGeospatialOutputs {
 				", ROUND(c.smoothed_smr_lower95, " + roundDP + ") AS sm_smr_l95" +
 				", ROUND(c.smoothed_smr_upper95, " + roundDP + ") AS sm_smr_u95";
 		}
+		
+		// Add alter 11 columns
+		if (manager.doesColumnExist(connection, "rif_studies", mapTable.toLowerCase(), "intersect_count")) { 
+			extraColumns=extraColumns + ", c.intersect_count";
+		}
+		if (manager.doesColumnExist(connection, "rif_studies", mapTable.toLowerCase(), "nearest_rifshapepolyid")) { 
+			extraColumns=extraColumns + ", c.nearest_rifshapepolyid";
+		}
+		if (manager.doesColumnExist(connection, "rif_studies", mapTable.toLowerCase(), "distance_from_nearest_source")) { 
+			if (databaseType == DatabaseType.POSTGRESQL) { 
+				extraColumns=extraColumns + ", ROUND(c.distance_from_nearest_source::NUMERIC, " + roundDP + 
+					") AS distance_from_nearest_source";
+			}
+			else {
+				extraColumns=extraColumns + ", ROUND(c.distance_from_nearest_source, " + roundDP + 
+					") AS distance_from_nearest_source";
+			}
+		}
+		if (manager.doesColumnExist(connection, "rif_studies", mapTable.toLowerCase(), "exposure_value")) { 
+			if (databaseType == DatabaseType.POSTGRESQL) { 
+				extraColumns=extraColumns + ", ROUND(c.exposure_value::NUMERIC, " + roundDP + 
+					") AS exposure_value";
+			}
+			else {
+				extraColumns=extraColumns + ", ROUND(c.exposure_value, " + roundDP + 
+					") AS exposure_value";
+			}
+		}
+		
+		String additionalJoin=null;
+		if (isDiseaseMappingStudy) {
+			additionalJoin="LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
+					" c ON (a.area_id = c.area_id) /* Disease mapping */";
+		}
+		else {
+			additionalJoin="LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
+					" c ON (a.band_id = c.band_id) /* Risk analysis */";
+		}
 		RifFeatureCollection mapFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
@@ -252,9 +290,7 @@ public class RifGeospatialOutputs {
 				studyID,
 				null, 					/* areaType */
 				extraColumns,			/* extraColumns: reduced to 10 characters */
-				"LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
-					" c ON (a.area_id = c.area_id)"
-														/* additionalJoin */,
+				additionalJoin,			
 				locale);
 				
 		rifMaps.writeResultsMaps(
@@ -1057,8 +1093,8 @@ public class RifGeospatialOutputs {
 		else {
 			queryFormatter.addQueryLine(0, "LEFT OUTER JOIN rif_data.lookup_" + geolevelName + 
 				" c ON (a.area_id = c." + geolevelName + ")");
-		}
-		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
+		}	
+		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");	
 		
 		PreparedStatement statement = manager.createPreparedStatement(connection, queryFormatter);
 		

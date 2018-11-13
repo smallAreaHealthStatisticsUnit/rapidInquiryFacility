@@ -17,14 +17,24 @@ public final class PGSQLInsertQueryFormatter extends AbstractSQLQueryFormatter
 	
 	private ArrayList<Boolean> useQuotesForLiteral;
 
+	private int insertFieldCount;
+
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
 	public PGSQLInsertQueryFormatter() {
 		insertFields = new ArrayList<>();
 		useQuotesForLiteral = new ArrayList<>();
+		insertFieldCount=0;
 	}
 
+	/**
+	 * Gets the insert field count
+	 */		
+	public int getInsertFieldCount() {
+		return this.insertFieldCount;
+	}
+	
 	/**
 	 * Sets the into table.
 	 *
@@ -45,6 +55,7 @@ public final class PGSQLInsertQueryFormatter extends AbstractSQLQueryFormatter
 	public void addInsertField(
 		final String insertField) {
 		
+		this.insertFieldCount++;
 		insertFields.add(insertField);
 	}
 
@@ -53,6 +64,7 @@ public final class PGSQLInsertQueryFormatter extends AbstractSQLQueryFormatter
 		final String insertField,
 		final Boolean useQuotes) {
 			
+		this.insertFieldCount++;
 		insertFields.add(insertField);
 		useQuotesForLiteral.add(useQuotes);
 	}

@@ -334,7 +334,7 @@ angular.module("RIF")
 						taxTerms = res.data.terms.healthCode;
 					}
 					else {
-						AlertService.showError("[rifc-dsub-params.js: handleTextSearch()] Unable determine taxonomy terms: res.data.terms.healthCode is undefined");
+						AlertService.showWarning($scope.taxonomyScheme.toUpperCase() + ' query of "' + $scope.searchText + '" returned no rows');
 						return;
 					}
 					

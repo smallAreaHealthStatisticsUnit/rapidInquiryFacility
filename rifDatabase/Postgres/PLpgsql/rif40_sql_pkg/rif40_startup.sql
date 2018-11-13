@@ -514,9 +514,13 @@ BEGIN
 --		sql_stmt:='DROP TABLE IF EXISTS g_rif40_study_areas';
 --		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='CREATE TEMPORARY TABLE g_rif40_study_areas ('||E'\n'||
-			E'\t'||'study_id		INTEGER 	NOT NULL,'||E'\n'||
-			E'\t'||'area_id			VARCHAR(300) 	NOT NULL,'||E'\n'||
-			E'\t'||'band_id			INTEGER) ON COMMIT PRESERVE ROWS';
+			E'\t'||'study_id						INTEGER 		NOT NULL,'||E'\n'||
+			E'\t'||'area_id							VARCHAR(300) 	NOT NULL,'||E'\n'||
+			E'\t'||'band_id							INTEGER			NULL,'||E'\n'||
+			E'\t'||'intersect_count 				INTEGER 		NULL,'||E'\n'||
+			E'\t'||'distance_from_nearest_source 	NUMERIC 		NULL,'||E'\n'||
+			E'\t'||'nearest_rifshapepolyid 			VARCHAR 		NULL,'||E'\n'||
+			E'\t'||'exposure_value					NUMERIC			NULL) ON COMMIT PRESERVE ROWS';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON TABLE g_rif40_study_areas 		IS ''Local session cache of links study areas and bands for a given study. Created for high performance in extracts.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -526,6 +530,15 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.band_id 	IS ''A band allocated to the area''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.intersect_count IS ''Number of intersects with shapes''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.distance_from_nearest_source IS ''Distance from nearest source (Km)''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.nearest_rifshapepolyid IS ''Nearest rifshapepolyid (shape reference)''';	
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.exposure_value IS ''Exposure value (when bands selected by exposure values)''';	
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created temporary table: g_rif40_study_areas');
 		i:=i+1;
 	ELSE
