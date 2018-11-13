@@ -88,6 +88,7 @@ ECHO # INVESTIGATIONID=%INVESTIGATIONID%
 ECHO # ODBCDATASOURCE=%ODBCDATASOURCE%
 ECHO # MODEL=%MODEL%
 ECHO # COVARIATENAME=%COVARIATENAME%
+ECHO # RISKANAL=%RISKANAL%
 ECHO #
 ECHO ##########################################################################################
 
@@ -95,7 +96,6 @@ REM
 REM Edit to change if required. Disable dump to R data frames to scratch directory. Set scratch
 REM directory to be current working directory
 REM
-REM SET SCRATCHSPACE=c:\rifDemo\scratchSpace\
 SET SCRATCHSPACE=%CD%\\
 SET DUMPFRAMESTOCSV=FALSE
 	
@@ -109,12 +109,12 @@ ECHO --studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigation
 ECHO --model=%MODEL% --covariateName=%COVARIATENAME% ^^
 ECHO --userID=%USERID% --password=XXXXXXXXXXXXXXXXXXXXXX ^^
 ECHO --scratchspace="%SCRATCHSPACE%" --dumpframestocsv=%DUMPFRAMESTOCSV%
-"%R_HOME%\bin\x64\RScript" %SCRIPT_NAME% ^
+"%R_HOME%\bin\x64\RScript" Statistics_csv.R ^
 	--db_driver_prefix=%DB_DRIVER_PREFIX% --db_driver_class_name=%DB_DRIVER_CLASS_NAME% --odbcDataSource=%ODBCDATASOURCE% ^
 	--dbHost=%DB_HOST% --dbPort=%DB_PORT% --dbName=%DB_NAME% ^
 	--studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^
 	--model=%MODEL% --covariateName=%COVARIATENAME% ^
-	--scratchspace="%SCRATCHSPACE%" --dumpframestocsv=%DUMPFRAMESTOCSV%
+	--scratchspace="%SCRATCHSPACE%" --dumpframestocsv=%DUMPFRAMESTOCSV% --riskAnal=%RISKANAL% --
 SET SERRORLEVEL=%errorlevel%
 REM
 REM Clear seetings
@@ -135,13 +135,13 @@ REM
 (SET NEWUSER=)
 
 if %SERRORLEVEL% neq 0 (
-	ECHO Test study failed: Adj_Cov_Smooth_csv.R procedure had error for study: %STUDYID%; investigation: %INVESTIGATIONID%	
+	ECHO Test study failed: Statistics_csv.R procedure had error for study: %STUDYID%; investigation: %INVESTIGATIONID%	
 	(SET STUDYID=)
 	(SET INVESTIGATIONID=)
 	(SET SERRORLEVEL=)
 	exit /b 1
 ) ELSE (
-	ECHO Adj_Cov_Smooth_csv.R procedure OK for study: %STUDYID%; investigation: %INVESTIGATIONID%
+	ECHO Statistics_csv.R procedure OK for study: %STUDYID%; investigation: %INVESTIGATIONID%
 	(SET STUDYID=)
 	(SET INVESTIGATIONID=)
 	(SET SERRORLEVEL=)

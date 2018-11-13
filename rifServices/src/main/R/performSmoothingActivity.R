@@ -714,6 +714,7 @@ EmpBayes=function(O,E){
   theta=O/E
   # Check to stop the function giving an error if the Expected value is zero
   theta[is.nan(theta)] = 1
+  theta[is.infinite(theta)] = 1
   gamma=mean(theta)
   B=sum((theta-gamma)^2/E)
   C=sum((theta-gamma)^2)/(gamma*(N-1))
@@ -724,8 +725,9 @@ EmpBayes=function(O,E){
   alpha
   nu
   c=0
-  while((max(abs(thetap-theta))>0.0001)&c==0){
-    thetap=theta
+  
+ while((max(abs(thetap-theta))>0.0001)&c==0){
+      thetap=theta
     theta=(O+nu)/(E+alpha)
     gamma=mean(theta)
     B=sum((theta-gamma)^2/E)
