@@ -91,8 +91,6 @@ final class LinkToR {
 		rEngine = null;
 	}
 
-
-
 	boolean isRunning() {
 
 		return running;

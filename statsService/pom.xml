@@ -8,11 +8,15 @@
 
 	<artifactId>stats</artifactId>
 	<packaging>war</packaging>
+	
+	<name>RIF Statistics Service</name>
+	<description>Provides statistical processing for the RIF</description>
 
 	<parent>
 		<artifactId>rifGeneral</artifactId>
 		<groupId>org.sahsu.rif</groupId>
 		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>

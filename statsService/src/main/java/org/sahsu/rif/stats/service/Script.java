@@ -12,5 +12,10 @@ abstract class Script {
 	Response run(Parameters parameters) {
 
 		LinkToR r = LinkToR.instance();
+
+
+
+
+		return null;
 	}
 }
