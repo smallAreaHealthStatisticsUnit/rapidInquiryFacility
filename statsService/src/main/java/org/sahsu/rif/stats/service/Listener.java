@@ -7,8 +7,7 @@ import javax.servlet.annotation.WebListener;
 import org.sahsu.rif.generic.util.RIFLogger;
 
 /**
- * Ensures that the R Engine is started when the server starts, and tries to stop it when the server
- * stops.
+ * Starts the R Engine when the server starts, and tries to stop it when the server stops.
  */
 @WebListener
 public class Listener implements ServletContextListener {
