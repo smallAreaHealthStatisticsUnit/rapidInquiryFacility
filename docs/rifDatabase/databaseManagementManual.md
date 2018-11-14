@@ -1102,7 +1102,7 @@ There is no support currently planned for:
 * "Splitting" or "merging" partitions using dedicated commands;
 * Automatic creation of partitions (e.g. for values not covered).
 
-An example of Postgres 10 native partitioning:
+An example of Postgres 10 native partitioning. With Postgres each partition has to be created manually:
 
 ```sql
 --
@@ -1221,7 +1221,7 @@ you may need a full enterprise license.
 
 An example of SQL Server native partitioning:
 
-1. Create the partition function and scheme as an administrator:
+* Create the partition function and scheme as an administrator:
 
 ```sql
 CREATE PARTITION FUNCTION [pf_ews2011_population_year](SMALLINT) AS RANGE LEFT FOR VALUES (
@@ -1235,7 +1235,7 @@ CREATE PARTITION SCHEME [pf_ews2011_population_year] AS PARTITION [pf_ews2011_po
 GO
 ```
 
-2. Create the objects as the schema owner:
+* Create the objects as the schema owner:
 
 ```sql
 --
@@ -1341,17 +1341,19 @@ The RIF supports [SQL/MED SQL Management of External Data](https://wiki.postgres
 ### Postgres with a remote Oracle database
 
 The uses the [Oracle foreign data wrapper](https://github.com/laurenz/oracle_fdw) with downloads for Windows at: 
-(https://github.com/laurenz/oracle_fdw/releases/tag/ORACLE_FDW_2_1_0). Use the Oracle instant client 
-(https://www.oracle.com/technetwork/database/database-technologies/instant-client/overview/index.html). On Windows 
-you may get: *ERROR:  could not load library "C:/POSTGR~1/pg10/../pg10/lib/postgresql/oracle_fdw.dll": The specified module could not
-be found.*. There us a good article explaining what to do at: (https://github.com/laurenz/oracle_fdw/issues/160). The key 
+(https://github.com/laurenz/oracle_fdw/releases/tag/ORACLE_FDW_2_1_0). 
+
+* Use the [Oracle instant client](https://www.oracle.com/technetwork/database/database-technologies/instant-client/overview/index.html). 
+
+On Windows you may get: *ERROR:  could not load library "C:/POSTGR~1/pg10/../pg10/lib/postgresql/oracle_fdw.dll": The specified module could not
+be found*. There us a good article explaining what to do at: [Cannot load oracle_fdw.dll under Windows Server 2012 R2 #160](https://github.com/laurenz/oracle_fdw/issues/160). The key 
 issue is the path: 
 
 * The Postgres bin directory: *C:\PostgreSQL\pg10\bin";
 * The extension folder: *C:\PostgreSQL\pg10\lib\postgresql";
 * The Oracle instant client directory (I choose: *C:\Program Files\Oracle Instant Client\instantclient_18_3*);
 
-The local postgres environment setup file *C:\PostgreSQL\pg10\pg10-env.bat* was changed from:
+The local Postgres environment setup file *C:\PostgreSQL\pg10\pg10-env.bat* was changed from:
 
 ```
 set PATH=C:\POSTGR~1\pg10\bin;%PATH%
@@ -1363,10 +1365,63 @@ To:
 set PATH=C:\POSTGR~1\pg10\bin;C:\POSTGR~1\pg10\lib\postgresql;C:\PROGRA~1\ORACLE~1\INSTAN~1;%PATH%
 ```
 
-Note that the path is in the old DOS format.
+The server was then restarted. Note that the path is in the old DOS format.
+
+* Create the extension as Postgres in the production database:
+
+```CREATE EXTENSION oracle_fdw;```
+
+* Test extension. Note the Oracle instant client:
+
+```sql
+SELECT oracle_diag();
+                         oracle_diag
+-------------------------------------------------------------
+ oracle_fdw 2.1.0, PostgreSQL 10.5, Oracle client 18.3.0.0.0
+(1 row)
+```
+
+* Create a remote server and grant access to RIF users:
+
+```sql
+CREATE SERVER oradb FOREIGN DATA WRAPPER oracle_fdw
+              OPTIONS (dbserver '//dbserver.mydomain.com:1521/ORADB');
+GRANT USAGE ON FOREIGN SERVER oradb TO rif_user, rif_manager;
+```	
+
+* Create a remote user. This will not normally be a schema owner:
+
+```sql
+CREATE USER MAPPING FOR peter SERVER oradb
+              OPTIONS (user 'orapeter', password 'oraretep');
+```
+
+* Create a remote table link:
+
+```sql
+CREATE FOREIGN TABLE rif_data.oratab (
+              id        integer           OPTIONS (key 'true')  NOT NULL,
+              text      character varying(30),
+              floating  double precision  NOT NULL
+           ) SERVER oradb OPTIONS (schema 'ORAUSER', table 'ORATAB');
+```
+
+* **There is no need to grant access on the foreign table to specific users, the user mapping controls the access.**
 
 ### SQL Server with a remote Oracle database
 
+* Requires the Oracle instant client (see Postgres);
+* Download [64-bit Oracle Data Access Components (ODAC)](https://www.oracle.com/technetwork/database/windows/downloads/index-090165.html)
+* Unzip the download and CD into its base, run ```install.bat all c:\oracle odac```
+  ```
+  C:\>cd C:\Users\support\Downloads\ODAC122010Xcopy_x64
+
+  C:\Users\support\Downloads\ODAC122010Xcopy_x64>install.bat all c:\oracle odac
+  ```
+  This installs in *C:\oracle*.
+* The Oracle OLEDB provider is picked up in SQL Server manager:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/docs/rifDatabase/DataLoaderData/Oracle_OLEDB_provider.PNG?raw=true "Postgres event log custom view")
+  
 ### Postgres with a remote SQL Server database 
 
 This requires [TDS foreign data wrapper](https://github.com/tds-fdw/tds_fdw) and is not currently compiled for Windows.
