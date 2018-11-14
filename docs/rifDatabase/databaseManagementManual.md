@@ -1420,7 +1420,7 @@ CREATE FOREIGN TABLE rif_data.oratab (
   ```
   This installs in *C:\oracle*.
 * The Oracle OLEDB provider is picked up in SQL Server manager:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/docs/rifDatabase/DataLoaderData/Oracle_OLEDB_provider.PNG?raw=true "Postgres event log custom view")
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/docs/rifDatabase/DataLoaderData/Oracle_OLEDB_provider.PNG?raw=true?raw=true "Oracle OLEDB provider")
   
 ### Postgres with a remote SQL Server database 
 
