@@ -6,7 +6,7 @@ title: Database Management Manual
 1. Contents
 {:toc}
 
-# 1. Overview
+# Overview
 
 This manual details how to manage RIF databases. See also the:
 
@@ -15,14 +15,14 @@ This manual details how to manage RIF databases. See also the:
 * [RIF Manual Data Loading manual]({{ base.url }}/rifDatabase\DataLoaderData\DataLoading)
   for details on the manual process for the loading of data into the RIF.
 
-# 2. User Management
+# User Management
 
-## 2.1 Creating new users
+## Creating new users
 
 New users must be created in lower case, start with a letter, and only contain the characters: ```[a-z][0-9]_```. **Do not use mixed case, upper case, dashes, space or non
 ASCII e.g. UTF8) characters**. Beware; the database stores user names internally in upper case. This is because of the RIF's Oracle heritage.
 
-### 2.1.1 Postgres
+### Postgres
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment.
 This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as a normal user or an
@@ -37,6 +37,7 @@ psql  -U postgres -d postgres -w -e -f rif40_production_user.sql -v newuser=kevi
 * Will fail to re-create a user if the user already has objects (tables, views etc);
 
 Test connection and object privileges, access to RIF numerators and denominators:
+
 ```
 C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>psql -U kevin
 Password for user kevin:
@@ -84,7 +85,7 @@ sahsuland=> \q
 C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>
 ```
 
-#### 2.1.1.1 Manually creating a new user
+#### Manually creating a new user
 
 These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD environment.
 
@@ -102,7 +103,7 @@ BEGIN
 	END IF;
 END;
 $$;
-```sql
+```
 
 2. Create Login; connect as user *postgres* on the database *mydatabasename* (.e.g. sahsuland):
 
@@ -186,7 +187,7 @@ $$;
 
 3. Create user and grant roles:
 
-```
+```sql
 DO LANGUAGE plpgsql $$
 DECLARE
 	sql_stmt VARCHAR;
@@ -219,7 +220,7 @@ $$;
 The user specific object views: *rif40_num_denom*, *rif40_num_denom_errors* are automatically created. These must be created as the user so they run with the users
 privileges and therefore only return RIF data tables to which the user has been granted access permission.
 
-### 2.1.2 SQL Server
+### SQL Server
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment.
 This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as *Administrator*:
@@ -233,7 +234,8 @@ sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXX
 * Will fail to re-create a user if the user already has objects (tables, views etc);
 
 Test connection and object privileges, access to RIF numerators and denominators:
-```
+
+```sql
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
 1> SELECT db_name() AS db_name INTO test_table;
 2> SELECT * FROM test_table;
@@ -257,7 +259,7 @@ SAHSULAND                                          NUM_SAHSULAND_CANCER         
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
 
-#### 2.1.2.1 Manually creating a new user
+#### Manually creating a new user
 
 These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD environment.
 
@@ -266,7 +268,8 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 * Change "mydatabasepassword" to the name of your users password;
 
 1. Validate the RIF user
-```SQL
+
+```sql
 USE [master];
 GO
 DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
@@ -289,7 +292,8 @@ GO
 ```
 
 2. Create Login
-```SQL
+
+```sql
 USE [master];
 GO
 IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
@@ -301,7 +305,8 @@ GO
 ```
 
 3. Creare user and grant roles
-```SQL
+
+```sql
 USE mydatabasename;
 GO
 BEGIN
@@ -323,12 +328,13 @@ BEGIN
 END;
 GO
 ```
+
 * **Change the password**. The password is set to *mydatabasepassword*.
 
 4. Create user specific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
    RIF data tables to which the user has been granted access permission.
 
-```SQL
+```sql
 USE mydatabasename;
 GO
 --
@@ -579,13 +585,13 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description',
 GO
 ```
 
-## 2.2 Changing passwords
+## Changing passwords
 
 Valid characters for passwords have been tested as: ```[A-Z][a-z][0-9]!@$^~_-```. Passwords must be up to 30 characters long; longer passwords may be supported. The following are definitely **NOT**
 valid: [SQL Server/ODBC special characters](http://msdn.microsoft.com/en-us/library/windows/desktop/ms715433%28v=vs.85%29.aspx): ```[]{}(),;?*=!@```.
 Use of special characters]: ```\/&%``` is not advised as command line users will need to use an escaping URI to connect.
 
-### 2.2.1 Postgres
+### Postgres
 
 The file .pgpass in a user's home directory or the file referenced by PGPASSFILE can contain passwords to be used if the connection requires a password
 (and no password has been specified otherwise). On Microsoft Windows the file is named %APPDATA%\postgresql\pgpass.conf (where %APPDATA% refers to the
@@ -616,19 +622,20 @@ Notes:
 * No passwords are set in the normal user *&lt;pgpass&gt;* file;
 
 To change a Postgres password:
-```SQL
+
+```sql
 ALTER ROLE rif40 WITH PASSWORD 'XXXXXXXX';
 ```
 
-### 2.2.2 SQL Server
+### SQL Server
 
 To change a SQL server password:
-```SQL
+```sql
 ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
 GO
 ```
 
-## 2.3 Proxy accounts
+## Proxy accounts
 
 Proxy accounts are of use to the RIF as it can allow a normal user to login as a schema owner. Good practice is not the set the schema owner passwords (e.g. *rif40*) as these tend to be known by
 several people and tend to get written down as these accounts are infrequently used. Proxy accounts allow for privilege minimisation. Importantly the use proxy accounts is fully audited, in
@@ -641,7 +648,7 @@ The RIF front end application and middleware use user name and passwords to auth
 a [GSSAPI](https://en.wikipedia.org/wiki/Generic_Security_Services_Application_Program_Interface) implementation in the middleware. Invariably substantial browser and server key
 set-up is required and this is very difficult to set up (some years ago the SAHSU private network used this for five years; the experiment was not repeated).
 
-### 2.3.1 Postgres
+### Postgres
 
 If you need to integrate into you Active Directory or authentication services you are advised to use [LDAP](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol).
 This permits user name and password authentication; *ldap* does not support proxying. Login to the database using the command lines can then use *SSPI* and this can then be proxied
@@ -666,6 +673,7 @@ The Windows installer guide for Postgres has examples:
 * [Proxy user setup - ident.conf]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#proxy-user-setup-identconf)
 
 So, if I setup SSPI as per the examples to use *SSPI* in *hba.conf*:
+
 ```
 #
 # Active directory GSSAPI connections with pg_ident.conf maps for schema accounts
@@ -677,6 +685,7 @@ hostssl	sahsuland_dev	all	 	::1/128 		sspi 	map=sahsuland_dev
 ```
 
 With the maps *sahsuland* and *sahsuland_dev* defined in ident.conf:
+
 ```
 # MAPNAME       SYSTEM-USERNAME         PG-USERNAME
 #
@@ -724,14 +733,14 @@ Type "help" for help.
 sahsuland=>
 ```
 
-### 2.3.2 SQL Server
+### SQL Server
 
 This needs to be investigated as it is not certain SQL Server has the correct functionality and the setup would need to be trialled. See:
 
 * [Create a SQL Server Agent Proxy](https://docs.microsoft.com/en-us/sql/ssms/agent/create-a-sql-server-agent-proxy?view=sql-server-2017);
 * [Creating an LDAP user authentication environment (MSSQL)](http://dcx.sap.com/sa160/en/dbusage/ug-ldap-setup-sql.html)
 
-## 2.4 Granting permission
+## Granting permission
 
 The RIF is setup so that three roles control access to the application:
 
@@ -749,20 +758,22 @@ Access to data is controlled by the permissions granted to that data and not by 
 * In the *SAHSULAND* example database data access is granted to *rif_user*, *rif_manager* and *rif_student*.
 * In the *SEER* dataset data access is granted to *seer_user*.
 
-### 2.4.1 Postgres
+### Postgres
 
 To create the SEER_USER role and grant it to a user (peter) logon as the administrator (postgres):
-```
+
+```sql
 psql -U postgres -d postgres
 CREATE ROLE seer_user;
 GRANT seer_user TO peter;
 ```
 
-### 2.4.2 SQL Server
+### SQL Server
 
 To create the SEER_USER role and grant it to a user (peter) logon as the administrator in an Administrator
 *cmd* window:
-```
+
+```sql
 sqlcmd -E
 USE sahsuland;
 IF DATABASE_PRINCIPAL_ID('seer_user') IS NULL
@@ -772,13 +783,13 @@ ALTER ROLE [seer_user] ADD MEMBER [peter];
 GO
 ```
 
-## 2.5 Viewing your user setup
+## Viewing your user setup
 
-### 2.5.1 Postgres
+### Postgres
 
 To view roles, privileges and role membership:
 
-```
+```sql
 C:\Users\phamb\OneDrive\SEER Data>psql -U postgres -d sahsuland
 You are connected to database "sahsuland" as user "postgres" on host "localhost" at port "5432".
 psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.12s  rif40_startup(): disabled - user postgres is not or has rif_user or rif_manager role
@@ -838,11 +849,11 @@ Where the access privileges (*+* is a line continuation character) are:
 * c: CONNECT
 * T: TEMPORARY
 
-### 2.5.2 SQL Server
+### SQL Server
 
 To view roles, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```SQL
+```sql
 SELECT name, type_desc, default_schema_name, authentication_type_desc
   FROM sys.database_principals;
 GO
@@ -874,9 +885,10 @@ db_denydatawriter                                                               
 
 (22 rows affected)
 ```
+
 To view server roles, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```SQL
+```sql
 SELECT sys.server_role_members.role_principal_id, role.name AS RoleName,
     sys.server_role_members.member_principal_id, member.name AS MemberName
 FROM sys.server_role_members
@@ -902,7 +914,7 @@ role_principal_id RoleName      member_principal_id MemberName
 
 To view role membership, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```SQL
+```sql
 SELECT DP1.name AS DatabaseRoleName, isnull (DP2.name, 'No members') AS DatabaseUserName
   FROM sys.database_role_members AS DRM
 		RIGHT OUTER JOIN sys.database_principals AS DP1
@@ -981,7 +993,8 @@ rif_studies            s5_map               peter      rif40      Grant       Up
 
 (36 rows affected)
 ```
-# 3. Data Management
+
+# Data Management
 
 ## 3.1 Creating new schemas
 
@@ -1105,14 +1118,14 @@ To grant via a role, you must first create a role. for example create and GRANT 
 
 Logon as the Postgres saperuser *postgres" or other role with the *superuser* privilege.
 
-```SQL
+```sql
 psql -U postgres -d postgres
 CREATE ROLE seer_user;
 GRANT seer_user TO peter;
 ```
 
 There is no *CREATE ROLE IF NOT EXIST*.
-```SQL
+```sql
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'seer_user') THEN
@@ -1126,7 +1139,7 @@ To view all roles: ```SELECT * FROM pg_roles;```
 
 ### 3.4.2 SQL Server
 
-```SQL
+```sql
 sqlcmd -E
 USE sahsuland;
 IF DATABASE_PRINCIPAL_ID('seer_user') IS NULL
@@ -1599,7 +1612,7 @@ data loading (especially geospatial) will generally hit a few large tables often
 more OLTP like less so. There run these queries often under different loads.
 
 Firstly see how many buffers are in use by database:
-```SQL
+```sql
 SELECT CASE
 			WHEN d.datname = current_database() THEN d.datname || ' (current)'
 			ELSE d.datname
@@ -1622,7 +1635,7 @@ This is across all databases. 100% is not unusual, much less than 100% probably 
 too large (unless the other databases are doing substantial work).
 
 Now see what is being used in the current database:
-```SQL
+```sql
 SELECT n.nspname AS "schema",
 	   c.relname AS "table name",
 	   c2.relname AS "toast table",
@@ -1706,7 +1719,7 @@ TOAST (The Oversized-Attribute Storage Technique) is used to store large field v
 for instance the geometry databases on *cntry2011* as in this example.
 
 Now it is possible to determine an **ideal** value for *shared_buffers*:
-```SQL
+```sql
 SELECT CASE
 			WHEN d.datname = current_database() THEN d.datname || ' (current)'
 			ELSE d.datname
@@ -1753,7 +1766,7 @@ You will need to run this many times under different loads to determine a suitab
 
 The problem with just looking at the buffer cache is it does not tell you what effect cache misses are having on performance.
 
-```SQL
+```sql
 WITH all_tables AS (
 	SELECT *
 		 FROM (
@@ -2127,7 +2140,7 @@ SQL Server automatically allocates memory as needed by the server up to the limi
 
 By default SQL Server is not using *largepages* (the names for *huge_pages* in SQL Server):
 
-```SQL
+```sql
 1> SELECT large_page_allocations_kb FROM sys.dm_os_process_memory;
 2> go
 large_page_allocations_kb
