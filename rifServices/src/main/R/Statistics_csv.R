@@ -22,10 +22,8 @@ library(INLA)
 library(maptools)
 library(spdep)
 library(Matrix)
-library(here)
 
-source(here::here("Statistics_Common.R"))
-source(here::here("performSmoothingActivity.R"))
+source("Statistics_Common.R")
 
 ##====================================================================
 # SCRIPT VARIABLES
@@ -127,6 +125,9 @@ runRSmoothingFunctions <- function() {
 # Call: performSmoothingActivity()
 #						
 						result <- performSmoothingActivity(data, AdjRowset)
+						write.csv(result, file=temporarySmoothedResultsFileName)
+						
+						
 					})
 				},
 				warning=function(w) {		
@@ -239,12 +240,19 @@ runRRiskAnalFunctions <- function() {
           #
           cat(paste0("About to calculate band data", "\n"))
           resultBands <- performBandAnal(data)
+          resultBands = data.frame(resultBands)
+          write.csv(resultBands, file=temporarySmoothedResultsFileName)
           
           #
           # Call: performHomogAnal()
           # This runs the test for homogeneity and linearity using the band results from the performBandAnal function 
           cat(paste0("About to run homogeneity tests", "\n"))
           resultHomog <- performHomogAnal(resultBands)
+          resultHomog = data.frame(resultHomog)
+          
+          write.csv(resultHomog, file=temporaryHomogFileName)
+          
+          
         })
       },
       warning=function(w) {		
@@ -423,7 +431,7 @@ if (file.exists(performRiskAnalScript)) {
 	source(performRiskAnalScript)
 }
 
-if (hasperformRiskAnalScript & hasperformSmoothingActivityScript) {
+if (hasperformRiskAnalScript | hasperformSmoothingActivityScript) {
 
 	parametersDataFrame <- processCommandLineArguments()
 	print(parametersDataFrame)
@@ -436,11 +444,10 @@ if (hasperformRiskAnalScript & hasperformSmoothingActivityScript) {
 	returnValues <- list(exitValue=1, errorTrace="Cannot find R scripts")
 }
 
-if (!exists('returnValues') {
+if (!exists('returnValues')) {
 	cat("R script ran but did not return returnValues\n")
 	quit("no", 1, FALSE)
-}
-else if (returnValues$exitValue == 0) {
+} else if (returnValues$exitValue == 0) {
 	cat("R script ran OK\n")
 	quit("no", 0, FALSE)
 } else {

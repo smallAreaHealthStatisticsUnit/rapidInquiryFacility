@@ -28,7 +28,7 @@ createWindowsScript <- function(script_name) {
 			paste0("SET INVESTIGATIONID=", investigationId),
 			paste0("SET MODEL=", model),
 			paste0("SET COVARIATENAME=", paste0(names.adj)),
-			paste0("SET SCRIPT_NAME=", paste0(script_name)),
+			paste0("SET RISKANAL=", paste0(riskAnal)),
 			sep="\n");
 
 		rif40_run_R_envB <- file.path(scratchSpace, "rif40_run_R_env.bat") # Target
