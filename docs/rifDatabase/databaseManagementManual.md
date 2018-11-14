@@ -93,6 +93,7 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 * Change "mydatabasepassword" to the name of your users password;
 
 1. Validate the RIF user; connect as user *postgres* on the database *postgres*:
+
 ```SQL
 DO LANGUAGE plpgsql $$
 BEGIN
@@ -105,6 +106,7 @@ $$;
 ```
 
 2. Create Login; connect as user *postgres* on the database *mydatabasename* (.e.g. sahsuland):
+
 ```SQL
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -183,7 +185,8 @@ END;
 $$;
 ```
 
-3. Create user and grant roles
+3. Create user and grant roles:
+
 ```SQL
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -211,6 +214,7 @@ BEGIN
 END;
 $$;
 ```
+
 * **Change the password**. The password is set to *mydatabasepassword*.
 
 The user specific object views: *rif40_num_denom*, *rif40_num_denom_errors* are automatically created. These must be created as the user so they run with the users
