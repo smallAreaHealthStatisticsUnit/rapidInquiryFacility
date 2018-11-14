@@ -11,10 +11,8 @@ abstract class Script {
 
 	Response run(Parameters parameters) {
 
-		LinkToR r = LinkToR.instance();
-
-
-
+		ScriptService r = ScriptService.instance();
+		int returnValue = r.runScript(parameters);
 
 		return null;
 	}

@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.generic.concepts.Parameters;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
@@ -39,6 +40,7 @@ public class StatisticsProcessing extends CommonRService {
 	private RIFServiceStartupOptions rifStartupOptions;
 
 	StatisticsProcessing() {
+
 		String logManagerName=System.getProperty("java.util.logging.manager");
 		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
 			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
@@ -83,10 +85,8 @@ public class StatisticsProcessing extends CommonRService {
 	
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
 			final String studyID) throws RIFServiceException {
-		
-		String rErrorTrace="No R error tracer (see Tomcat log)";
 
-		try {		
+		try {
 
 			//KLG: For now it only works with the first study.  For some reason, newer extract
 			//tables cause the R program we use to generate an error.
@@ -105,17 +105,17 @@ public class StatisticsProcessing extends CommonRService {
 			addParameter("covariate_name", covariateName);
 
 			Integer investigationID = getInvestigationID(connection, studyID, firstInvestigation);
-					
+
 			String studyName=studySubmission.getStudy().getName();
 			addParameter("studyName", studyName);
-					
+
 			String studyDescription=studySubmission.getStudy().getDescription();
 			addParameter("studyDescription", studyDescription);
-					
-			rifLogger.info(this.getClass(), "Study id: " + studyID + 
-				"; Study name: " + studyName + 
-				"; Study description: " + studyDescription + 
-				"; Investigation name: " + firstInvestigation.getTitle() + 
+
+			rifLogger.info(this.getClass(), "Study id: " + studyID +
+				"; Study name: " + studyName +
+				"; Study description: " + studyDescription +
+				"; Investigation name: " + firstInvestigation.getTitle() +
 				"; ID: "+ investigationID);
 
 			addParameter("investigationId", String.valueOf(investigationID));
@@ -125,175 +125,57 @@ public class StatisticsProcessing extends CommonRService {
 			} else {
 				addParameter("studyType", "diseaseMapping");
 			}
-				
+
 			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
+			addParameter("working_dir", rifStartupOptions.getExtractDirectory());
+			addParameter("databaseType", rifStartupOptions.getRifDatabaseType().getShortName());
+
+			Parameters parameters = new Parameters(getParameters());
 
 			int exitValue = 0;
 
-			Rengine rengine = null;
-
-			try {	
-				//Create an R engine with JRI
-				rengine = Rengine.getMainEngine();
-				if (rengine == null) {
-					String[] rArgs={"--vanilla"};
-					rengine = new Rengine(
-						rArgs,								// Args
-						false, 							// runMainLoop
-						new LoggingConsole(log)); 			// RMainLoopCallbacks implementation
-															// Logger log not used - uses RIFLogger
-				}
-
-				if (!rengine.waitForR()) {
-					rifLogger.warning(getClass(),
-					                  "Cannot load the R engine (probably already loaded)");
-				}
-				Rengine.DEBUG = 10;
-				rengine.eval("Rpid<-Sys.getpid()");
-				REXP rPid = rengine.eval("Rpid");
-				rifLogger.info(getClass(), "Rengine Started" +
-				                                "; Rpid: " + rPid.asInt() +
-				                                "; JRI version: " + Rengine.getVersion() +
-                                                "; thread ID: " + Thread.currentThread().getId());
-
-				//Start R operations
-				
-				//Check library path
-				rengine.eval("rm(list=ls())"); //just in case!
-				rengine.eval("print(.libPaths())");
-
-				// Session Info
-				rengine.eval("print(sessionInfo())");
-
-				// Set connection details and parameters
-				StringBuilder logMsg = new StringBuilder();
-				for (Parameter parameter : getParameters()) {
-					String name = parameter.getName();
-					String value = parameter.getValue();
-
-					switch (name) {
-						case "password":
-							// Hide password
-							logMsg.append(name).append("=XXXXXXXX").append(lineSeparator);
-							rengine.assign(name, value);
-							break;
-						case "covariate_name":
-							logMsg.append("names.adj.1=").append(value).append(lineSeparator);
-							rengine.assign("names.adj.1", value);
-							logMsg.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);
-							rengine.assign("adj.1", getRAdjust(value));
-							break;
-						default:
-							logMsg.append(name).append("=").append(value).append(lineSeparator);
-							rengine.assign(name, value);
-							break;
-					}
-				}
-
-				rifLogger.info(getClass(), "R parameters: " + lineSeparator
-				                           + logMsg.toString());
-
-				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
-
-				Path scriptPath = FileSystems.getDefault().getPath(
-						rifStartupOptions.getClassesDirectory());
-
-				if (rifStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER) {
-					sourceRScript(rengine, scriptPath.resolve("OdbcHandler.R"));
-				} else {
-					sourceRScript(rengine, scriptPath.resolve("JdbcHandler.R"));
-				}
-
-				sourceRScript(rengine, scriptPath.resolve("Statistics_Common.R"));
-				sourceRScript(rengine, scriptPath.resolve("Statistics_JRI.R"));
-				sourceRScript(rengine, scriptPath.resolve("CreateWindowsScript.R"));
-
-				// We do either Risk Analysis or Smoothing
-				if (studySubmission.getStudy().isRiskAnalysis()) {
-
-					rifLogger.info(getClass(), "Calling Risk Analysis R function");
-					sourceRScript(rengine, scriptPath.resolve("performRiskAnal.R"));
-					rengine.eval("returnValues <- runRRiskAnalFunctions()");
-				} else {
-
-					rifLogger.info(getClass(), "Calling Disease Mapping R function");
-					// Run the actual smoothing
-					sourceRScript(rengine, scriptPath.resolve("performSmoothingActivity.R"));
-					rengine.eval("returnValues <- runRSmoothingFunctions()");
-				}
-
-				REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
-				if (exitValueFromR != null) {
-					exitValue = exitValueFromR.asInt();
-				} else {
-					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR (returnValues$exitValue) is NULL");
-					exitValue = 1;
-				}
-
-				REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
-				if (errorTraceFromR != null) {
-					String[] strArr=errorTraceFromR.asStringArray();
-				 	StringBuilder strBuilder = new StringBuilder();
-				 	for (final String aStrArr : strArr) {
-				 		strBuilder.append(aStrArr).append(lineSeparator);
-				 	}
-				 	int index;
-				 	String toReplace="'";
-				 	while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
-				 		strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
-				 	}
-				 	rErrorTrace = strBuilder.toString();
-				} else {
-				 	rifLogger.warning(getClass(), "JRI R ERROR: errorTraceFromR (returnValues$errorTrace) is NULL");
-				}
-			} catch(Exception error) {
-
-				rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error);
-			} finally {
-				try {
-					loggingConsole.rFlushConsole(rengine);
-				} catch(Exception error2) {
-					rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error2);
-				} finally {
-					rifMemoryManager.printThreadMemory();
-
-					try {
-						rengine.end();
-					}
-					catch(Exception error3) {
-						rifLogger.error(getClass(), "JRI rengine.end() ERROR", error3);
-					}
-					finally {
-						rifLogger.info(getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
-
-					}
-				}
-			}
-
-			if (exitValue != 0) {
-
-				RIFServiceExceptionFactory rifServiceExceptionFactory =
-						new RIFServiceExceptionFactory();
-				throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
-			}
-		} catch (RIFServiceException rifServiceException) {
-			rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
-			throw rifServiceException;
-		} catch(Exception rException) {
-			rifLogger.error(this.getClass(), "JRI R engine exception", rException);		
-			RIFServiceExceptionFactory rifServiceExceptionFactory = new RIFServiceExceptionFactory();
-			throw rifServiceExceptionFactory.createREngineException(
-					rifStartupOptions.getClassesDirectory());
-		}		
-	}
-
-	private String getRAdjust(String covar) {
-		String name = covar.toUpperCase();
-		if (!name.equals("NONE")) {
-			return "TRUE";
-		} else {
-			return "FALSE";
-		}	
+		// 	try {
+		//
+		//
+		// 	} catch(Exception error) {
+		//
+		// 		rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error);
+		// 	} finally {
+		// 		try {
+		// 			loggingConsole.rFlushConsole(rengine);
+		// 		} catch(Exception error2) {
+		// 			rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error2);
+		// 		} finally {
+		// 			rifMemoryManager.printThreadMemory();
+		//
+		// 			try {
+		// 				rengine.end();
+		// 			}
+		// 			catch(Exception error3) {
+		// 				rifLogger.error(getClass(), "JRI rengine.end() ERROR", error3);
+		// 			}
+		// 			finally {
+		// 				rifLogger.info(getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
+		//
+		// 			}
+		// 		}
+		// // 	}
+		//
+		// 	if (exitValue != 0) {
+		//
+		// 		RIFServiceExceptionFactory rifServiceExceptionFactory =
+		// 				new RIFServiceExceptionFactory();
+		// 		throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
+		// 	}
+		// } catch (RIFServiceException rifServiceException) {
+		// 	rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
+		// 	throw rifServiceException;
+		// } catch(Exception rException) {
+		// 	rifLogger.error(this.getClass(), "JRI R engine exception", rException);
+		// 	RIFServiceExceptionFactory rifServiceExceptionFactory = new RIFServiceExceptionFactory();
+		// 	throw rifServiceExceptionFactory.createREngineException(
+		// 			rifStartupOptions.getClassesDirectory());
+		// }
 	}
 
 	/*

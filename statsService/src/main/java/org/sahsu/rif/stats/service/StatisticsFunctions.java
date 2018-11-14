@@ -3,11 +3,8 @@ package org.sahsu.rif.stats.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.sahsu.rif.generic.util.RIFLogger;
-
-import com.sun.xml.internal.txw2.annotation.XmlElement;
 
 @XmlRootElement
 public class StatisticsFunctions {

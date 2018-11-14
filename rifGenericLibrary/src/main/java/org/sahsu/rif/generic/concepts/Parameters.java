@@ -1,6 +1,7 @@
 package org.sahsu.rif.generic.concepts;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -25,5 +26,10 @@ public class Parameters {
 	public Collection<Parameter> getParameters() {
 
 		return parameters;
+	}
+
+	public Stream<Parameter> stream() {
+
+		return getParameters().stream();
 	}
 }

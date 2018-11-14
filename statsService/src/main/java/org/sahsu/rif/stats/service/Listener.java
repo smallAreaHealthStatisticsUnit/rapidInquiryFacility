@@ -14,12 +14,12 @@ public class Listener implements ServletContextListener {
 
 	private static final RIFLogger logger = RIFLogger.getLogger();
 
-	private LinkToR link;
+	private ScriptService link;
 
 	@Override
 	public void contextInitialized(final ServletContextEvent servletContextEvent) {
 
-		link = LinkToR.instance();
+		link = ScriptService.instance();
 		link.start();
 		logger.info(getClass(), "Statistics Service Context initialised");
 	}
