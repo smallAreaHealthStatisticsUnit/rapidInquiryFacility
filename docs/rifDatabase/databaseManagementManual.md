@@ -1383,7 +1383,7 @@ The server was then restarted. Note that the path is in the old DOS format.
 
 * Create a remote server and grant access to RIF users:
 
-```sql
+  ```sql
   CREATE SERVER oradb FOREIGN DATA WRAPPER oracle_fdw
               OPTIONS (dbserver '//dbserver.mydomain.com:1521/ORADB');
   GRANT USAGE ON FOREIGN SERVER oradb TO rif_user, rif_manager;
@@ -1853,6 +1853,7 @@ The principal tuning changes are:
   [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
 
   Example parameter entries from *postgresql.conf*:
+  
 ```conf
 shared_buffers = 1024MB     # min 128kB; default 128 MB (9.6)
                             # (change requires restart)
@@ -1866,8 +1867,8 @@ log_temp_files = 5000		# log temporary files equal or larger [5MB]
 					# than the specified size in kilobytes;
 					# -1 disables [default], 0 logs all temp files
 
-# "Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting,
-# and 3/4 of memory is a more aggressive but still reasonable amount."
+# From "Tuning Your PostgreSQL Server": Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting,
+# and 3/4 of memory is a more aggressive but still reasonable amount.
 #effective_cache_size = 4GB
 effective_cache_size = 20GB
 ```
