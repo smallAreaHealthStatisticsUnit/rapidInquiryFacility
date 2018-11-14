@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -118,6 +120,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			= rifServiceResources.getSqlConnectionManager();
 
 		Connection connection = null;
+		ExecutorService exec = Executors.newSingleThreadExecutor();
 		try {
 
 			//Assign pooled connection
@@ -142,8 +145,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				rifServiceStartupOptions,
 				rifServiceResources);
 
-			Thread thread = new Thread(runStudyThread);
-			thread.start();
+			exec.execute(runStudyThread);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
@@ -154,6 +156,9 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				rifServiceException);
 		}
 		finally {
+
+			exec.shutdown();
+
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledReadConnection(
 				user,
@@ -635,6 +640,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		}
 
 		Connection connection = null;
+		ExecutorService exec = Executors.newSingleThreadExecutor();
 		try {
 
 			//Part II: Check for empty parameter values
@@ -686,8 +692,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				rifServiceStartupOptions,
 				rifServiceResources);
 
-			Thread thread = new Thread(runStudyThread);
-			thread.run();
+			exec.execute(runStudyThread);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -697,6 +702,9 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				rifServiceException);
 		}
 		finally {
+
+			exec.shutdown();
+
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				user,
