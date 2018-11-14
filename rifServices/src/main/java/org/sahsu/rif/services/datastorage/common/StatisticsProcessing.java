@@ -134,48 +134,48 @@ public class StatisticsProcessing extends CommonRService {
 
 			int exitValue = 0;
 
-		// 	try {
-		//
-		//
-		// 	} catch(Exception error) {
-		//
-		// 		rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error);
-		// 	} finally {
-		// 		try {
-		// 			loggingConsole.rFlushConsole(rengine);
-		// 		} catch(Exception error2) {
-		// 			rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error2);
-		// 		} finally {
-		// 			rifMemoryManager.printThreadMemory();
-		//
-		// 			try {
-		// 				rengine.end();
-		// 			}
-		// 			catch(Exception error3) {
-		// 				rifLogger.error(getClass(), "JRI rengine.end() ERROR", error3);
-		// 			}
-		// 			finally {
-		// 				rifLogger.info(getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
-		//
-		// 			}
-		// 		}
-		// // 	}
-		//
-		// 	if (exitValue != 0) {
-		//
-		// 		RIFServiceExceptionFactory rifServiceExceptionFactory =
-		// 				new RIFServiceExceptionFactory();
-		// 		throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
-		// 	}
-		// } catch (RIFServiceException rifServiceException) {
-		// 	rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
-		// 	throw rifServiceException;
-		// } catch(Exception rException) {
-		// 	rifLogger.error(this.getClass(), "JRI R engine exception", rException);
-		// 	RIFServiceExceptionFactory rifServiceExceptionFactory = new RIFServiceExceptionFactory();
-		// 	throw rifServiceExceptionFactory.createREngineException(
-		// 			rifStartupOptions.getClassesDirectory());
-		// }
+			try {
+
+
+			} catch(Exception error) {
+
+				rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error);
+			} finally {
+				try {
+					// loggingConsole.rFlushConsole(rengine);
+				} catch(Exception error2) {
+					rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error2);
+				} finally {
+					rifMemoryManager.printThreadMemory();
+
+					try {
+						// rengine.end();
+					}
+					catch(Exception error3) {
+						rifLogger.error(getClass(), "JRI rengine.end() ERROR", error3);
+					}
+					finally {
+						rifLogger.info(getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
+
+					}
+				}
+			}
+
+			if (exitValue != 0) {
+
+				RIFServiceExceptionFactory rifServiceExceptionFactory =
+						new RIFServiceExceptionFactory();
+				// throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
+			}
+		} catch (RIFServiceException rifServiceException) {
+			// rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
+			throw rifServiceException;
+		} catch(Exception rException) {
+			rifLogger.error(this.getClass(), "JRI R engine exception", rException);
+			RIFServiceExceptionFactory rifServiceExceptionFactory = new RIFServiceExceptionFactory();
+			throw rifServiceExceptionFactory.createREngineException(
+					rifStartupOptions.getClassesDirectory());
+		}
 	}
 
 	/*
