@@ -94,7 +94,7 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 
 1. Validate the RIF user; connect as user *postgres* on the database *postgres*:
 
-```SQL
+```sql
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF current_user != 'postgres' OR current_database() != 'postgres' THEN
@@ -102,12 +102,11 @@ BEGIN
 	END IF;
 END;
 $$;
-
-```
+```sql
 
 2. Create Login; connect as user *postgres* on the database *mydatabasename* (.e.g. sahsuland):
 
-```SQL
+```sql
 DO LANGUAGE plpgsql $$
 DECLARE
 	c2 CURSOR(l_usename VARCHAR) FOR
@@ -187,7 +186,7 @@ $$;
 
 3. Create user and grant roles:
 
-```SQL
+```
 DO LANGUAGE plpgsql $$
 DECLARE
 	sql_stmt VARCHAR;
@@ -1137,6 +1136,43 @@ GO
 ```
 
 To view all roles: ```SELECT name, type_desc FROM sys.database_principals;```
+
+## 3.5 Remote Database Access
+
+The RIF supports [SQL/MED SQL Management of External Data](https://wiki.postgresql.org/wiki/SQL/MED) 
+
+### 3.5.1 Postgres with a remote Oracle database
+
+The uses the [Oracle foreign data wrapper](https://github.com/laurenz/oracle_fdw) with downloads for Windows at: 
+(https://github.com/laurenz/oracle_fdw/releases/tag/ORACLE_FDW_2_1_0). Use the Oracle instant client 
+(https://www.oracle.com/technetwork/database/database-technologies/instant-client/overview/index.html). On Windows 
+you may get: *ERROR:  could not load library "C:/POSTGR~1/pg10/../pg10/lib/postgresql/oracle_fdw.dll": The specified module could not
+be found.*. There us a good article explaining what to do at: (https://github.com/laurenz/oracle_fdw/issues/160). The key 
+issue is the path: 
+
+* The Postgres bin directory: *C:\PostgreSQL\pg10\bin";
+* The extension folder: *C:\PostgreSQL\pg10\lib\postgresql";
+* The Oracle instant client directory (I choose: *C:\Program Files\Oracle Instant Client\instantclient_18_3*);
+
+The local postgres environment setup file *C:\PostgreSQL\pg10\pg10-env.bat* was changed from:
+
+```
+set PATH=C:\POSTGR~1\pg10\bin;%PATH%
+```
+
+To:
+
+```
+set PATH=C:\POSTGR~1\pg10\bin;C:\POSTGR~1\pg10\lib\postgresql;C:\PROGRA~1\ORACLE~1\INSTAN~1;%PATH%
+```
+
+Note that the path is in the old DOS format.
+
+### 3.5.2 SQL Server with a remote Oracle database
+
+### 3.5.3 Postgres with a remote SQL Server database 
+
+This requires [TDS foreign data wrapper](https://github.com/tds-fdw/tds_fdw) and is not currently compiled for Windows.
 
 # 4. Information Governance
 
