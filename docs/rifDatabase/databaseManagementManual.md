@@ -1405,6 +1405,11 @@ CREATE FOREIGN TABLE rif_data.oratab (
               floating  double precision  NOT NULL
            ) SERVER oradb OPTIONS (schema 'ORAUSER', table 'ORATAB');
 ```
+  
+* Test access:
+  ```sql
+  SELECT FROM rif_data.oratab LIMIT 20;
+  ```
 
 * **There is no need to grant access on the foreign table to specific users, the user mapping controls the access.**
 
@@ -1419,12 +1424,40 @@ CREATE FOREIGN TABLE rif_data.oratab (
   C:\Users\support\Downloads\ODAC122010Xcopy_x64>install.bat all c:\oracle odac
   ```
   This installs in *C:\oracle*.
-* The Oracle OLEDB provider is picked up in SQL Server manager:
+* Check the Oracle OLEDB provider is picked up in SQL Server manager:
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/docs/rifDatabase/DataLoaderData/Oracle_OLEDB_provider.PNG?raw=true?raw=true "Oracle OLEDB provider")
+  
+* Create a remote link to the Oracle database. A schema account will be required:
+  https://www.sqlshack.com/link-sql-server-oracle-database/
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/docs/rifDatabase/DataLoaderData/unknown.PNG?raw=true?raw=true "Oracle OLEDB setup")
+
+ 
+* Create a VIEW to the remote abject in the *rif_data* schema:
+  ```sql
+  CREATE VIEW rif_data.msqltab AS
+  SELECT * FROM {remote_db].[remote_schema].[remote_table_or_view];
+  ```  
+  
+* Grant access to local user:
+  ```sql
+  GRANT SELECT ON rif_data.msqltab TO peter;
+  ```
+  
+* Test access:
+  ```sql
+  SELECT TOP 20 FROM rif_data.msqltab;
+  ```
   
 ### Postgres with a remote SQL Server database 
 
 This requires [TDS foreign data wrapper](https://github.com/tds-fdw/tds_fdw) and is not currently compiled for Windows.
+
+### SQL Server with a remote Postgres database 
+
+This would require [PostgreSQL OLE DB Provider project](http://pgfoundry.org/projects/oledb/) and is no longer under active 
+development (last version 1.0.20 from April 2006. There is a commercial driver available [PGNP OLEDB Providers for PostgreSQL, Greenplum and Redshift](https://www.pgoledb.com/index.php/8-news/1-welcome-to-pgnp) 
+for $498. The PostgreSQL Global Development Group do not endorse or recommend any products listed, and cannot vouch for the 
+quality or reliability of any of them; and neither does SAHSU!
 
 # Information Governance
 
