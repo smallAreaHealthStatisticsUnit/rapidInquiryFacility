@@ -996,17 +996,17 @@ rif_studies            s5_map               peter      rif40      Grant       Up
 
 # Data Management
 
-## 3.1 Creating new schemas
+## Creating new schemas
 
 The RIF install scripts create all the schemas required by the RIF. SQL Server does not have a search path or SYNONYNs so all schemas are hard coded.
 
-### 3.1.1 Postgres
+### Postgres
 
 See: [CREATE SCHEMA](https://www.postgresql.org/docs/9.3/static/sql-createschema.html). Normally schema schema is owned by a role (e.g. *rif40*) and then
 access is granted as required to other roles. New schemas will needs to be added to the default search path either for the roles or possibly at the system level.
 Care needs to be taken **NOT* to break the RIF. The default search path for a RIF database isL:
 
-```
+```sql
 ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
 ```
 
@@ -1026,13 +1026,13 @@ sahsuland=> show search_path;
 
 **THEREFORE BEWARE OF CREATING OBJECTS WITH THE SAME NAME AS A RIF OBJECT** on Postgres. They will be used in preference to the *RIF40* schema object!
 
-### 3.1.2 SQL Server
+### SQL Server
 
-SQL Server does not have a search path or SYNONYNs so all schemas are hard coded and should **NOT** be changed.
+SQL Server does not have a search path or SYNONYNs so all schemas are hard coded and locations should **NOT** be changed.
 
-## 3.2 Tablespaces
+## Tablespaces
 
-### 3.2.1 Postgres
+### Postgres
 
 Tablespaces in PostgreSQL allow database administrators to define locations in the file system where the files representing database objects can be stored. Once created, a
 tablespace can be referred to by name when creating database objects.
@@ -1045,11 +1045,11 @@ can be placed on a very fast, highly available disk, such as an expensive solid 
 
 See: [Tablespaces](https://www.postgresql.org/docs/9.6/static/manage-ag-tablespaces.html)
 
-### 3.2.2 SQL Server
+### SQL Server
 
 SQL Server does not have the concept of tablespaces.
 
-## 3.3 Partitioning
+## Partitioning
 
 The SAHSU version 3.1 RIF was extensively partitioned; in particular the calculation tables and the result table *rif_results* needed to be partitioned on system that had run thousands of
 studies will many millions of result rows and billions of extract calculation rows. Hash partitioning was retro fitted to the RIF calculation and results tables and this gave a useful
@@ -1066,11 +1066,11 @@ The SAHSU Oracle database performance has benefited from:
 
 The RIF currently [deliberately] extracts data year by year and so explicit disables effective parallelisation in the extract.
 
-### 3.3.1 Postgres
+### Postgres
 
-Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. Postgres 10 has native support for partitioning, see:
-[Postgres 10 partitioning](https://www.postgresql.org/docs/10/static/ddl-partitioning. html). The implementation is still incomplete and the
-following limitations apply to partitioned tables:
+Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. 
+Postgres 10 has native support for partitioning, see: [Postgres 10 partitioning](https://www.postgresql.org/docs/10/static/ddl-partitioning). 
+The implementation is still incomplete and the following limitations apply to partitioned tables:
 
 * There is no facility available to create the matching indexes on all partitions automatically. Indexes must be added to each partition with separate commands. This also means that
   there is no way to create a primary key, unique constraint, or exclusion constraint spanning all partitions; it is only possible to constrain each leaf partition individually.
@@ -1102,19 +1102,203 @@ There is no support currently planned for:
 * "Splitting" or "merging" partitions using dedicated commands;
 * Automatic creation of partitions (e.g. for values not covered).
 
-### 3.3.2 SQL Server
+An example of Postgres 10 native partitioning:
+
+```sql
+--
+-- Create EWS2011_POPULATION denominator table
+--
+CREATE UNLOGGED TABLE rif_data.ews2011_population
+(
+	year 			INTEGER 		NOT NULL,
+	coa2011			VARCHAR(10)  	NOT NULL,
+	age_sex_group 	INTEGER 		NOT NULL, -- RIF age_sex_group 1 (21 bands),
+	population 		NUMERIC(5,1)	NULL,
+	cntry2011		VARCHAR(10)  	NOT NULL,
+	gor2011			VARCHAR(10)  	NOT NULL,
+	ladua2011		VARCHAR(10)  	NOT NULL,
+	msoa2011		VARCHAR(10)  	NOT NULL,
+	lsoa2011		VARCHAR(10)  	NOT NULL,
+	scntry2011		VARCHAR(10)  	NOT NULL
+) PARTITION BY LIST (year); 
+
+--
+-- Create partitions
+--
+DO LANGUAGE plpgsql $$
+DECLARE
+	sql_stmt VARCHAR;
+	i INTEGER;
+BEGIN
+
+	FOR i IN 1981  .. 2014 LOOP
+		sql_stmt:='CREATE TABLE rif_data.ews2011_population_y'||i||' PARTITION OF rif_data.ews2011_population
+    FOR VALUES IN ('||i||')';
+-- 
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	END LOOP;
+END;
+$$;
+	
+--
+-- Load data using \copy
+--
+\copy rif_data.ews2011_population FROM 'ews2011_population.csv' WITH CSV HEADER;
+
+DO LANGUAGE plpgsql $$
+DECLARE
+	sql_stmt VARCHAR;
+	i INTEGER;
+BEGIN
+	FOR i IN 1981  .. 2014 LOOP
+--
+-- Add constraints
+--
+		sql_stmt:='ALTER TABLE rif_data.ews2011_population_y'||i||' ADD CONSTRAINT ews2011_population_y'||i||'_pk'||
+			' PRIMARY KEY (coa2011, age_sex_group)'; 
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='ALTER TABLE rif_data.ews2011_population_y'||i||' ADD CONSTRAINT ews2011_population_y'||i||'_asg_ck'||
+			' CHECK (age_sex_group >= 100 AND age_sex_group <= 121 OR age_sex_group >= 200 AND age_sex_group <= 221)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	
+--
+-- Convert to index organised table
+--
+		sql_stmt:='CLUSTER rif_data.ews2011_population_y'||i||' USING ews2011_population_y'||i||'_pk';	
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		
+--
+-- Indexes
+--
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_age_sex_group'||
+			' ON rif_data.ews2011_population_y'||i||'(age_sex_group)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_scntry2011'||
+			' ON rif_data.ews2011_population_y'||i||'(scntry2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_cntry2011'||
+			' ON rif_data.ews2011_population_y'||i||'(cntry2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_gor2011'||
+			' ON rif_data.ews2011_population_y'||i||'(gor2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_ladua2011'||
+			' ON rif_data.ews2011_population_y'||i||'(ladua2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_msoa2011'||
+			' ON rif_data.ews2011_population_y'||i||'(msoa2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_lsoa2011'||
+			' ON rif_data.ews2011_population_y'||i||'(lsoa2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+--
+-- Analyze
+--
+		sql_stmt:='ANALYZE rif_data.ews2011_population_y'||i;
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	END LOOP;
+END;
+$$;
+```
+
+### SQL Server
 
 SQL Server supports table and index partitioning, see [Partitioned Tables and Indexes](https://docs.microsoft.com/en-us/sql/relational-databases/partitions/partitioned-tables-and-indexes?view=sql-server-2017)
 Beware of the [SQL Server partitioning and licensing conditions](https://download.microsoft.com/download/9/C/6/9C6EB70A-8D52-48F4-9F04-08970411B7A3/SQL_Server_2016_Licensing_Guide_EN_US.pdf);
 you may need a full enterprise license.
 
-## 3.4 Granting permission
+An example of SQL Server native partitioning:
+
+1. Create the partition function and scheme as an administrator:
+
+```sql
+CREATE PARTITION FUNCTION [pf_ews2011_population_year](SMALLINT) AS RANGE LEFT FOR VALUES (
+        1981,  1982,  1983,  1984,  1985,  1986,  1987,  1988,  1989,
+ 1990,  1991,  1992,  1993,  1994,  1995,  1996,  1997,  1998,  1999,
+ 2000,  2001,  2002,  2003,  2004,  2005,  2006,  2007,  2008,  2009, 
+ 2010,  2011,  2012,  2013,  2014); 
+GO
+ 
+CREATE PARTITION SCHEME [pf_ews2011_population_year] AS PARTITION [pf_ews2011_population_year] ALL TO ([PRIMARY])
+GO
+```
+
+2. Create the objects as the schema owner:
+
+```sql
+--
+-- Create EWS2011_POPULATION denominator table
+--
+CREATE TABLE rif_data.ews2011_population
+(
+	year 			SMALLINT 		NOT NULL,
+	coa2011			VARCHAR(10) 	NOT NULL,
+	age_sex_group 	INTEGER 		NOT NULL, -- RIF age_sex_group 1 (21 bands)
+	population 		NUMERIC(5,1),
+	cntry2011		VARCHAR(10)  	NOT NULL,
+	gor2011			VARCHAR(10) 	NOT NULL,
+	ladua2011		VARCHAR(10)  	NOT NULL,
+	lsoa2011		VARCHAR(10)  	NOT NULL,
+	msoa2011		VARCHAR(10)  	NOT NULL,
+	scntry2011		VARCHAR(2)  	NOT NULL,
+	CONSTRAINT ews2011_population_pk PRIMARY KEY (year, coa2011, age_sex_group)
+) ON pf_ews2011_population_year (year) WITH (DATA_COMPRESSION = PAGE);
+GO
+
+--
+-- Load data using BULK INSERT
+--
+BULK INSERT rif_data.ews2011_population
+FROM '$(pwd)\ews2011_population.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+WITH
+(
+	FIRSTROW = 2,
+	FORMATFILE = '$(pwd)\ews2011_population.fmt',		-- Use a format file
+	TABLOCK					-- Table lock
+);
+GO
+
+--
+-- Enable constraints
+--
+ALTER TABLE rif_data.ews2011_population ADD CONSTRAINT ews2011_population_asg_ck CHECK (age_sex_group >= 100 AND age_sex_group <= 121 OR age_sex_group >= 200 AND age_sex_group <= 221);
+GO
+
+--
+-- Partitioned Indexes
+--
+CREATE INDEX ews2011_population_age_sex_group ON rif_data.ews2011_population(age_sex_group) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_cntry2011 ON rif_data.ews2011_population (cntry2011) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_gor2011 ON rif_data.ews2011_population (gor2011) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_ladua2011 ON rif_data.ews2011_population (ladua2011) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_lsoa2011 ON rif_data.ews2011_population (lsoa2011) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_msoa2011 ON rif_data.ews2011_population (msoa2011) ON pf_ews2011_population_year (year);
+GO
+```
+## Granting permission
 
 Tables or views may be granted directly to the user or indirectly via a role. Good administration proactive is to grant via a role.
 
 To grant via a role, you must first create a role. for example create and GRANT seer_user role to a user *peter*:
 
-### 3.4.1 Postgres
+### Postgres
 
 Logon as the Postgres saperuser *postgres" or other role with the *superuser* privilege.
 
@@ -1137,7 +1321,7 @@ $$;
 
 To view all roles: ```SELECT * FROM pg_roles;```
 
-### 3.4.2 SQL Server
+### SQL Server
 
 ```sql
 sqlcmd -E
@@ -1150,11 +1334,11 @@ GO
 
 To view all roles: ```SELECT name, type_desc FROM sys.database_principals;```
 
-## 3.5 Remote Database Access
+## Remote Database Access
 
 The RIF supports [SQL/MED SQL Management of External Data](https://wiki.postgresql.org/wiki/SQL/MED) 
 
-### 3.5.1 Postgres with a remote Oracle database
+### Postgres with a remote Oracle database
 
 The uses the [Oracle foreign data wrapper](https://github.com/laurenz/oracle_fdw) with downloads for Windows at: 
 (https://github.com/laurenz/oracle_fdw/releases/tag/ORACLE_FDW_2_1_0). Use the Oracle instant client 
@@ -1181,13 +1365,13 @@ set PATH=C:\POSTGR~1\pg10\bin;C:\POSTGR~1\pg10\lib\postgresql;C:\PROGRA~1\ORACLE
 
 Note that the path is in the old DOS format.
 
-### 3.5.2 SQL Server with a remote Oracle database
+### SQL Server with a remote Oracle database
 
-### 3.5.3 Postgres with a remote SQL Server database 
+### Postgres with a remote SQL Server database 
 
 This requires [TDS foreign data wrapper](https://github.com/tds-fdw/tds_fdw) and is not currently compiled for Windows.
 
-# 4. Information Governance
+# Information Governance
 
 This currently covers:
 
