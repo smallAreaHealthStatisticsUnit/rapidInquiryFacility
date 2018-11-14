@@ -1369,42 +1369,42 @@ The server was then restarted. Note that the path is in the old DOS format.
 
 * Create the extension as Postgres in the production database:
 
-```CREATE EXTENSION oracle_fdw;```
+  ```CREATE EXTENSION oracle_fdw;```
 
 * Test extension. Note the Oracle instant client:
 
-```sql
-SELECT oracle_diag();
-                         oracle_diag
--------------------------------------------------------------
- oracle_fdw 2.1.0, PostgreSQL 10.5, Oracle client 18.3.0.0.0
-(1 row)
-```
+  ```sql
+  SELECT oracle_diag();
+                           oracle_diag
+  -------------------------------------------------------------
+   oracle_fdw 2.1.0, PostgreSQL 10.5, Oracle client 18.3.0.0.0
+  (1 row)
+  ```
 
 * Create a remote server and grant access to RIF users:
 
 ```sql
-CREATE SERVER oradb FOREIGN DATA WRAPPER oracle_fdw
+  CREATE SERVER oradb FOREIGN DATA WRAPPER oracle_fdw
               OPTIONS (dbserver '//dbserver.mydomain.com:1521/ORADB');
-GRANT USAGE ON FOREIGN SERVER oradb TO rif_user, rif_manager;
-```	
+  GRANT USAGE ON FOREIGN SERVER oradb TO rif_user, rif_manager;
+  ```	
 
 * Create a remote user. This will not normally be a schema owner:
 
-```sql
-CREATE USER MAPPING FOR peter SERVER oradb
+  ```sql
+  CREATE USER MAPPING FOR peter SERVER oradb
               OPTIONS (user 'orapeter', password 'oraretep');
-```
+  ```
 
 * Create a remote table link:
 
-```sql
-CREATE FOREIGN TABLE rif_data.oratab (
+  ```sql
+  CREATE FOREIGN TABLE rif_data.oratab (
               id        integer           OPTIONS (key 'true')  NOT NULL,
               text      character varying(30),
               floating  double precision  NOT NULL
            ) SERVER oradb OPTIONS (schema 'ORAUSER', table 'ORATAB');
-```
+  ```
   
 * Test access:
   ```sql
@@ -1465,9 +1465,9 @@ This currently covers:
 
 * Auditing
 
-## 4.1 Auditing
+## Auditing
 
-### 4.1.1 Postgres
+### Postgres
 
 Basic statement logging can be provided by the standard logging facility with the configuration parameter ```log_statement = all```.
 Postgres has an extension [pgAudit](https://github.com/pgaudit/pgaudit) which provides much more auditing, however the Enterprise DB installer does not include Postgres
@@ -1609,7 +1609,7 @@ The equivalent PostgreSQL Windows log entry entry is:
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry"){:width="100%"}
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry"){:width="100%"}
 
-### 4.1.2 SQL Server
+### SQL Server
 
 See:
 
@@ -1626,7 +1626,7 @@ To setup *(Common criteria compliance*:
 
 TO BE ADDED: auditing DDL and DML (without using triggers!)
 
-# 5. Backup and recovery
+# Backup and recovery
 
 As with all relational databases; cold backups are recommended as a baselines and should be carried out using your enterprise backup tools with the database down. Two further backup solutions are
 suggested:
@@ -1642,9 +1642,9 @@ object deletion incidents.
 Replication is invariably very complex and is beyond the scope of this manual. It is recommended for very large sites with Postgres because of Postgres' poor support for corruption
 detection and repair.
 
-## 5.1 Postgres
+## Postgres
 
-### 5.1.1 Logical Backups
+### Logical Backups
 
 Postgres logical backup and recovery uses *pg_dump* and *pg_restore*. pg_dump only dumps a single database. To backup global objects that are common to all databases in a cluster, such as roles and tablespaces,
 use *pg_dumpall*.
@@ -1671,7 +1671,7 @@ See:
 * [pd_dump](https://www.postgresql.org/docs/9.6/static/app-pgdump.html)
 * [pg_restore](https://www.postgresql.org/docs/9.6/static/app-pgrestore.html)
 
-### 5.1.2 Continuous Archiving and Point-in-Time Recovery
+### Continuous Archiving and Point-in-Time Recovery
 
 Postgres supports continuous archiving and point-in-time recovery (PITR).
 
@@ -1681,9 +1681,9 @@ See:
 * [Postgres Corruption WIKI](https://wiki.postgresql.org/wiki/Corruption)
 * [Postgres replication](https://www.postgresql.org/docs/9.6/static/different-replication-solutions.html)
 
-## 5.2 SQL Server
+## SQL Server
 
-### 5.2.1 Logical Backups
+### Logical Backups
 
 SQL Server logical backup and restore are SQL commands entered using ```sqlcmd```. See:
 
@@ -1720,7 +1720,7 @@ RESTORE DATABASE successfully processed 45662 pages in 5.130 seconds (69.538 MB/
 
 See the script *rif40_production_creation.sql* if you want to rename the database, its files or to move the files.
 
-### 5.2.2 Continuous Archiving and Point-in-Time Recovery
+### Continuous Archiving and Point-in-Time Recovery
 
 This requires a transaction log backup, i.e. not the copy only version created in the previous section. You will need to do a full backup, followed by differential backups:
 
@@ -1745,7 +1745,7 @@ Log backups require the database to be in the full recovery model, not the defau
 For restoration see:
 [Restore a SQL Server Database to a Point in Time (Full Recovery Model](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/restore-a-sql-server-database-to-a-point-in-time-full-recovery-model?view=sql-server-2017)
 
-# 6. Patching
+# Patching
 
 Alter scripts are numbered sequentially and have the same functionality in both ports, e.g. ```v4_0_alter_10.sql```. Scripts are safe to run more than once.
 
@@ -1753,13 +1753,14 @@ Pre-built databases are supplied patched up to date.
 
 Scripts must be applied as follows:
 
-| Date            | Script            | Description                         |
-|-----------------|-------------------|-------------------------------------|
-| 3rd August 2018 | v4_0_alter_10.sql | Risk analysis changes               |
+| Date             | Script            | Description                         |
+|------------------|-------------------|-------------------------------------|
+| 3rd August 2018  | v4_0_alter_10.sql | Risk analysis changes               |
+| 13th October 2018| v4_0_alter_11.sql | Risk analysis changes               |
 
 You will get messages on logon such as **alter_10.sql (post 3rd August 2018 changes for risk analysis) not run** to tell you to run the alter scripts.
 
-## 6.1 Postgres
+## Postgres
 
 E.g. for alter 10:
 
@@ -1799,7 +1800,7 @@ Scripts are in the standard bundle in the directory *Database alter scripts\Post
 psql -U rif40 -d <your database name> -w -e -P pager=off -v verbosity=terse -v debug_level=0 -v use_plr=N -v pghost=localhost -v echo=none -f alter_scripts/<alter script name>
 ```
 
-## 6.2 SQL Server
+## SQL Server
 
 Scripts are in the standard bundle in the directory *Database alter scripts\SQL Server* or in github in *rapidInquiryFacility\rifDatabase\SQLserver\sahsuland_dev\alter_scripts*
 
@@ -1813,7 +1814,7 @@ E.g. for alter 10:
 * Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i v4_0_alter_10.sql -v pwd="%cd%"```
 * Connect flags if required: -P <password> -S<myServerinstanceName>
 
-# 7. Tuning
+# Tuning
 
 The following aspects of tuning are covered:
 
@@ -1829,9 +1830,9 @@ In general RIF database performance will benefit from:
 
 See [3.3 Partitioning](#partitioning)
 
-## 7.1 Postgres
+## Postgres
 
-### 7.1.1 Server Memory Tuning
+### Server Memory Tuning
 
 The best source for Postgres tuning information is at the [Postgres Performance Optimization Wiki](https://wiki.postgresql.org/wiki/Performance_Optimization). This references
 [Tuning Your PostgreSQL Server](https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server)
@@ -1847,7 +1848,8 @@ The principal tuning changes are:
 * Temporary buffers: 1-4GB
 * Work memory: 1GB. The Maximum is 2047MB;
 * Effective_cache_size: 1/2 of total memory
-* On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed 21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint
+* On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed on 
+  21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint
   [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
 
   Example parameter entries from *postgresql.conf*:
@@ -1864,7 +1866,6 @@ log_temp_files = 5000		# log temporary files equal or larger [5MB]
 					# than the specified size in kilobytes;
 					# -1 disables [default], 0 logs all temp files
 
-# according to http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server,
 # "Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting,
 # and 3/4 of memory is a more aggressive but still reasonable amount."
 #effective_cache_size = 4GB
@@ -1884,6 +1885,7 @@ data loading (especially geospatial) will generally hit a few large tables often
 more OLTP like less so. There run these queries often under different loads.
 
 Firstly see how many buffers are in use by database:
+
 ```sql
 SELECT CASE
 			WHEN d.datname = current_database() THEN d.datname || ' (current)'
@@ -1903,10 +1905,12 @@ SELECT CASE
  sahsuland_dev (current) |                 99.988
 (1 row)
 ```
+
 This is across all databases. 100% is not unusual, much less than 100% probably means your *shared_buffers* are
 too large (unless the other databases are doing substantial work).
 
 Now see what is being used in the current database:
+
 ```sql
 SELECT n.nspname AS "schema",
 	   c.relname AS "table name",
@@ -2220,7 +2224,7 @@ In this cases, somewhat later on in the processing:
 
 These are both signs that the shared buffers needs to be increased for this workload.
 
-### 7.1.2 Query Tuning
+### Query Tuning
 
 On Postgres the extract queries all do an ```EXPLAIN PLAN VERBOSE``` to the log:
 ```
@@ -2387,7 +2391,7 @@ Insert on rif_studies.s416_extract  (cost=19943.90..21263.53 rows=52785 width=58
 +00038.28s  rif40_execute_insert_statement(): [56605] Study 416: Study extract insert 1995 (EXPLAIN) OK, took: 00:00:00.061771
 ```
 
-### 7.1.3 Database Space Management
+### Database Space Management
 
 Postrgres needs to be VACUUM to clear out dead tuples as it has no rollback segments. VACUUM reclaims storage occupied by dead tuples. In normal PostgreSQL operation,
 tuples that are deleted or obsoleted by an update are not physically removed from their table; they remain present until a VACUUM is done. Therefore it's necessary to do
@@ -2404,9 +2408,9 @@ track_counts = on
 Vaccuming can also be carried out using the [*vacuumdb*](https://www.postgresql.org/docs/9.6/static/app-vacuumdb.html) command or by using the SQL
 [*VACUUM*](https://www.postgresql.org/docs/9.6/static/sql-vacuum.html) command: ```VACCUM FULL VERBOSE ANALYZE``` will garbage-collect and analyze a database verbosely.
 
-## 7.2 SQL Server
+## SQL Server
 
-### 7.2.1 Server Memory Tuning
+### Server Memory Tuning
 
 SQL Server automatically allocates memory as needed by the server up to the limit of 2,147,483,647MB! In practice you may wish to reduce this figure to 40% of the available RAM.
 
@@ -2424,7 +2428,7 @@ To enable *largepages* you need to [Enable the Lock Pages in Memory Option](http
 This will have consequences for the automated tuning which unless limited in size will remove the ability of Windows to free up SQL Server memory for other applications (and Windows itself). You need to be on a
 big server and make sure your memory set-up is stable before enabling it.
 
-### 7.2.2 Query Tuning
+### Query Tuning
 
 The [SQL Server profiler](https://docs.microsoft.com/en-us/sql/tools/sql-server-profiler/sql-server-profiler?view=sql-server-2017) needs to be used to trace RIF application tuning.
 
@@ -2437,7 +2441,7 @@ Show execution plan in SQL Server management studio is also very effective (show
 However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server.
 When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
 
-### 7.2.3 Database Space Management
+### Database Space Management
 
 SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically:
 https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
@@ -2447,4 +2451,4 @@ https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-dat
 The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
 
 Peter Hambly
-May 2018
+November 2018
