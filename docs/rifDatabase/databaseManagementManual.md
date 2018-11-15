@@ -1621,7 +1621,7 @@ See:
 To setup *(Common criteria compliance*:
 
 * Use the SQL Server management studio server properties pane:
-  ![alt text]({{ base.url }}/rifDatabase/SQLserver/images/auditing.PNG "SQL Server auditing setup");
+  ![SQL Server auditing setup]({{ base.url }}/rifDatabase/SQLserver/images/auditing.PNG)
 * Also check audit failed and successful logins;
 * Restart SQL Server;
 
@@ -1842,7 +1842,7 @@ Parameters can be set in the *postgresql.conf* file or on the server command lin
 move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag:
 ```"C:\Program Files\PostgreSQL\9.6\bin\pg_ctl.exe" runservice -N "postgresql-x64-9.6" -D "E:\Postgres\data" -w```
 
-An example [postgresql.conf]({{ base.url }}/rifDatabase/Postgres/conf/postgresql.conf) is supplied.
+An example [postgresql.conf]({{ base.url }}/rifDatabase/Postgres/examples/postgresql.conf) is supplied.
 The principal tuning changes are:
 
 * Shared buffers: 1GB. Can be tuned higher if required (see below);
@@ -2438,7 +2438,7 @@ To use the profiler you will need to be a *sysadmin* or have the *ALTER TRACE* r
 
 Show execution plan in SQL Server management studio is also very effective (showing missing indexes) and allows analysis of running queries:
 
-![alt text]({{ base.url }}/rifDatabase/SQLserver/images/SSMS_execution_plan.PNG "SQL Server Management Studio Execution Plan"){:width="100%"}
+![SQL Server Management Studio Execution Plan]({{ base.url }}/rifDatabase/SQLserver/images/SSMS_execution_plan.PNG){:width="100%"}
 
 However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server.
 When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
@@ -2448,7 +2448,7 @@ When the query was split by geolevel_id it ran in two minutes as opposed to >245
 SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically:
 https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
 
-![alt text]({{ base.url }}/rifDatabase/SQLserver/images/shrink.PNG "SQL Server Shrink Database"){:width="100%"}
+![SQL Server Shrink Database]({{ base.url }}/rifDatabase/SQLserver/images/shrink.PNG){:width="100%"}
 
 The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
 
