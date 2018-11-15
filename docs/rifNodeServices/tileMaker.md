@@ -548,7 +548,7 @@ SELECT a.*, b.coa2011
 ```
 This SQL will then be inserted just after *insert_hierarchy.sql* and before the checks. The SQL should be in a CDATA block and should **NOT** have a terminating comma.
 
-### 1.2.10 SQL Server disk space and memory Issues
+### SQL Server disk space and memory Issues
 
 Large database post processing can easily fill up the database and exhaust the memory. SQL Server does not release memory willingly and database compaction (*shrinking*)
 has to be done manually.
@@ -635,7 +635,7 @@ info:    Forever stopped process:
 ```
 
 Finally, start the *tile maker* application in a browser [http://127.0.0.1:3000/tile-maker.html](http://127.0.0.1:3000/tile-maker.html)
-![alt text]({{ base.url }}/rifNodeServices/tile_maker_start.PNG?raw=true "Tile Maker Start Screen"){:width="100%"}
+![Tile Maker Start Screen]({{ site.baseurl }}/rifNodeServices/tile_maker_start.PNG){:width="100%"}
 
 The following browsers have been tested:
 

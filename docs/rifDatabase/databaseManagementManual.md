@@ -706,7 +706,7 @@ Set the RIF40 password to an impossible value:
 ```ALTER ROLE rif40 WITH PASSWORD 'md5ac4bbe016b8XXXXXXXXXX6981f240dcae';```
 
 Finally, optioanlly add the passwords to the
-[Pgpass]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#postgres-user-password-file)
+[Pgpass]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#postgres-user-password-file) file.
 
 I can then logon as rif40 using SSPI:
 
@@ -1655,7 +1655,7 @@ Two basic formats: 1) a SQL script to recreate the database using *psql* and 2) 
 1. SQL Script: ```pg_dump -U postgres -w -F plain -v -C sahsuland > sahsuland.sql```
 2. Binary dump file: ```pg_dump -U postgres -w -F custom -v sahsuland > sahsuland.dump```
 
-Where the database name is *sahsuland*
+Where the database name is *sahsuland*.
 
 Flags:
 
@@ -1665,18 +1665,14 @@ Flags:
 * *-v*: be verbose;
 
 To restore a custom or directory *pg_dump* file: ```pg_restore -d sahsuland -U postgres -v sahsuland.dump```. This is the method uses to create the example database *sahsuland*
-from the development database *sahsuland_dev*.
-
-See:
+from the development database *sahsuland_dev*. See:
 
 * [pd_dump](https://www.postgresql.org/docs/9.6/static/app-pgdump.html)
 * [pg_restore](https://www.postgresql.org/docs/9.6/static/app-pgrestore.html)
 
 ### Continuous Archiving and Point-in-Time Recovery
 
-Postgres supports continuous archiving and point-in-time recovery (PITR).
-
-See:
+Postgres supports continuous archiving and point-in-time recovery (PITR). See:
 
 * [Continuous Archiving and Point-in-Time Recovery](https://www.postgresql.org/docs/9.6/static/continuous-archiving.html)
 * [Postgres Corruption WIKI](https://wiki.postgresql.org/wiki/Corruption)
@@ -2453,5 +2449,4 @@ Note that the database will **NOT** shrink unless you back it up.
 
 The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
 
-Peter Hambly
-November 2018
+**Peter Hambly, November 2018**
