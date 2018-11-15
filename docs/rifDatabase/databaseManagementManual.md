@@ -1497,7 +1497,9 @@ If you are using CSV log files set:
 
 Create a Postgres event log custom view, create a [custom event view](https://technet.microsoft.com/en-us/library/gg131917.aspx) in the Event Viewer.
 
-[Postgres event log custom view]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_filter_setup.png){:width="100%"}
+![Postgres event log custom view]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_filter_setup.png){:width="100%"}
+
+<img src="{{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_filter_setup.png" alt="Postgres event log custom view" title="Postgres event log custom view" width="100%">
 
 An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_log_custom_view.xml) is also provided:
 ```xml
@@ -1606,8 +1608,8 @@ Formatted the CSV log entry is:
 
 The equivalent PostgreSQL Windows log entry entry is:
 
-[Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log.png){:width="100%"}
-[Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log2.png){:width="100%"}
+![Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log.png){:width="100%"}
+![Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log2.png){:width="100%"}
 
 ### SQL Server
 
