@@ -319,16 +319,16 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
   SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newdb);
   SET @first_char=SUBSTRING(@newdb, 1, 1);
   IF @invalid_chars IS NULL
-  	RAISERROR('New database name is null', 16, 1, @newdb);
+		RAISERROR('New database name is null', 16, 1, @newdb);
   ELSE IF @invalid_chars > 0
-	RAISERROR('New database name: %s contains invalid character(s) starting at position: %i.', 16, 1,
-		@newdb, @invalid_chars);
+		RAISERROR('New database name: %s contains invalid character(s) starting at position: %i.', 16, 1,
+			@newdb, @invalid_chars);
   ELSE IF (LEN(@newdb) > 30)
-	RAISERROR('New database name: %s is too long (30 characters max).', 16, 1, @newdb);
+		RAISERROR('New database name: %s is too long (30 characters max).', 16, 1, @newdb);
   ELSE IF ISNUMERIC(@first_char) = 1
-  	RAISERROR('First character in database name: %s is numeric: %s.', 16, 1, @newdb, @first_char);
+		RAISERROR('First character in database name: %s is numeric: %s.', 16, 1, @newdb, @first_char);
   ELSE
-	PRINT 'New database name: ' + @newdb + ' OK';
+		PRINT 'New database name: ' + @newdb + ' OK';
   GO
   ```
 
@@ -338,7 +338,7 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
   USE master;
   GO
   IF EXISTS(SELECT * FROM sys.sysdatabases where name='mydatabasename')
-  	DROP DATABASE mydatabasename;
+		DROP DATABASE mydatabasename;
   GO
   CREATE DATABASE mydatabasename;
   GO
@@ -426,122 +426,123 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 
 4. Create the schema owner (rif40)
 
-The RIF schema owner **MUST** be called *rif40* and will require BULK INSERT privilege to load data.
+  The RIF schema owner **MUST** be called *rif40* and will require BULK INSERT privilege to load data.
 
-Most users will need to ser the password to be able to load data.
-```sql
-USE master;
-GO
---
--- RIF40: Schema owner
---
-IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rif40') BEGIN
-	DECLARE @sql_stmt NVARCHAR(MAX);
-	DECLARE @stp VARCHAR(60)=CAST(GETDATE() AS VARCHAR);
-	SET @sql_stmt =	'CREATE LOGIN [rif40] WITH PASSWORD=''' + CONVERT(VARCHAR(32), HASHBYTES('MD5', @stp), 2) + /* PW changes every minute */
-		''', CHECK_POLICY = OFF';
-	PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
-	EXECUTE sp_executesql @sql_stmt;	;	-- Change this password if you want to logon!
-END;
-GO
+  Most users will need to ser the password to be able to load data.
+  ```sql
+	USE master;
+	GO
+	--
+	-- RIF40: Schema owner
+	--
+	IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rif40') BEGIN
+		DECLARE @sql_stmt NVARCHAR(MAX);
+		DECLARE @stp VARCHAR(60)=CAST(GETDATE() AS VARCHAR);
+		SET @sql_stmt =	'CREATE LOGIN [rif40] WITH PASSWORD=''' + CONVERT(VARCHAR(32), HASHBYTES('MD5', @stp), 2) + /* PW changes every minute */
+			''', CHECK_POLICY = OFF';
+		PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+		EXECUTE sp_executesql @sql_stmt;	;	-- Change this password if you want to logon!
+	END;
+	GO
+  ```
 
 5. Create database specific roles
-```sql
-USE mydatabasename;
-GO
+  ```sql
+	USE mydatabasename;
+	GO
 
---
--- Check database is NOT master
---
-DECLARE @database_name 	VARCHAR(30)=DB_NAME();
-IF (@database_name = 'master')
-	RAISERROR('rif40_database_roles.sql: Database is master: %s', 16, 1, @database_name);
-GO
+	--
+	-- Check database is NOT master
+	--
+	DECLARE @database_name 	VARCHAR(30)=DB_NAME();
+	IF (@database_name = 'master')
+		RAISERROR('rif40_database_roles.sql: Database is master: %s', 16, 1, @database_name);
+	GO
 
---
--- Create database users, roles and schemas for sahsuland/sahsuland_dev
---
+	--
+	-- Create database users, roles and schemas for sahsuland/sahsuland_dev
+	--
 
-IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'rif40')
-	CREATE USER [rif40] FOR LOGIN [rif40] WITH DEFAULT_SCHEMA=[dbo]
-	ELSE ALTER USER [rif40] WITH LOGIN=[rif40];
-GO
+	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'rif40')
+		CREATE USER [rif40] FOR LOGIN [rif40] WITH DEFAULT_SCHEMA=[dbo]
+		ELSE ALTER USER [rif40] WITH LOGIN=[rif40];
+	GO
 
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif40')
-EXEC('CREATE SCHEMA [rif40] AUTHORIZATION [rif40]');
-GO
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_data')
-EXEC('CREATE SCHEMA [rif_data] AUTHORIZATION [rif40]');
-GO
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_studies')
-EXEC('CREATE SCHEMA [rif_studies] AUTHORIZATION [rif40]');
-GO
+	IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif40')
+	EXEC('CREATE SCHEMA [rif40] AUTHORIZATION [rif40]');
+	GO
+	IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_data')
+	EXEC('CREATE SCHEMA [rif_data] AUTHORIZATION [rif40]');
+	GO
+	IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_studies')
+	EXEC('CREATE SCHEMA [rif_studies] AUTHORIZATION [rif40]');
+	GO
 
-ALTER USER [rif40] WITH DEFAULT_SCHEMA=[rif40];
-GO
+	ALTER USER [rif40] WITH DEFAULT_SCHEMA=[rif40];
+	GO
 
-ALTER LOGIN [rif40] WITH DEFAULT_DATABASE = [mydatabasename];
-GO
+	ALTER LOGIN [rif40] WITH DEFAULT_DATABASE = [mydatabasename];
+	GO
 
---
--- Default per databasxe (not server!) roles
---
-IF DATABASE_PRINCIPAL_ID('rif_manager') IS NULL
-	CREATE ROLE [rif_manager];
-GO
-IF DATABASE_PRINCIPAL_ID('rif_user') IS NULL
-	CREATE ROLE [rif_user];
-GO
-IF DATABASE_PRINCIPAL_ID('rif_student') IS NULL
-	CREATE ROLE [rif_student];
-GO
-IF DATABASE_PRINCIPAL_ID('rif_no_suppression') IS NULL
-	CREATE ROLE [rif_no_suppression];
-GO
-IF DATABASE_PRINCIPAL_ID('notarifuser') IS NULL
-	CREATE ROLE [notarifuser];
-GO
+	--
+	-- Default per databasxe (not server!) roles
+	--
+	IF DATABASE_PRINCIPAL_ID('rif_manager') IS NULL
+		CREATE ROLE [rif_manager];
+	GO
+	IF DATABASE_PRINCIPAL_ID('rif_user') IS NULL
+		CREATE ROLE [rif_user];
+	GO
+	IF DATABASE_PRINCIPAL_ID('rif_student') IS NULL
+		CREATE ROLE [rif_student];
+	GO
+	IF DATABASE_PRINCIPAL_ID('rif_no_suppression') IS NULL
+		CREATE ROLE [rif_no_suppression];
+	GO
+	IF DATABASE_PRINCIPAL_ID('notarifuser') IS NULL
+		CREATE ROLE [notarifuser];
+	GO
 
---
--- Object privilege grants
---
-GRANT CREATE FUNCTION TO [rif_manager];
-GO
-GRANT CREATE PROCEDURE TO [rif_manager];
-GO
-GRANT CREATE TABLE TO [rif_manager];
-GO
-GRANT CREATE VIEW TO [rif_manager];
-GO
-GRANT CREATE TABLE TO [rif_user];
-GO
-GRANT CREATE VIEW TO [rif_user];
-GO
+	--
+	-- Object privilege grants
+	--
+	GRANT CREATE FUNCTION TO [rif_manager];
+	GO
+	GRANT CREATE PROCEDURE TO [rif_manager];
+	GO
+	GRANT CREATE TABLE TO [rif_manager];
+	GO
+	GRANT CREATE VIEW TO [rif_manager];
+	GO
+	GRANT CREATE TABLE TO [rif_user];
+	GO
+	GRANT CREATE VIEW TO [rif_user];
+	GO
 
-GRANT CREATE FUNCTION TO [rif40];
-GO
-GRANT CREATE PROCEDURE TO [rif40];
-GO
-GRANT CREATE TABLE TO [rif40];
-GO
-GRANT CREATE VIEW TO [rif40];
-GO
-GRANT CREATE TYPE TO [rif40];
-GO
+	GRANT CREATE FUNCTION TO [rif40];
+	GO
+	GRANT CREATE PROCEDURE TO [rif40];
+	GO
+	GRANT CREATE TABLE TO [rif40];
+	GO
+	GRANT CREATE VIEW TO [rif40];
+	GO
+	GRANT CREATE TYPE TO [rif40];
+	GO
 
 
---
--- Grant USAGE on the rif_studies schema to RIF40. This implies control
---
-GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
-GO
+	--
+	-- Grant USAGE on the rif_studies schema to RIF40. This implies control
+	--
+	GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
+	GO
 
---
--- Allow rif40 BULK INSERT
---
-EXEC sp_addsrvrolemember @loginame = N'rif40', @rolename = N'bulkadmin';
-GO
-```
+	--
+	-- Allow rif40 BULK INSERT
+	--
+	EXEC sp_addsrvrolemember @loginame = N'rif40', @rolename = N'bulkadmin';
+	GO
+  ```
 
 ## Creating a New User
 
@@ -553,324 +554,324 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 
 1. Validate the RIF user
 
-```sql
-USE [master];
-GO
-DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
-DECLARE @invalid_chars INTEGER;
-DECLARE @first_char VARCHAR(1);
-SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newuser);
-SET @first_char=SUBSTRING(@newuser, 1, 1);
-IF @invalid_chars IS NULL
-	RAISERROR('New username is null', 16, 1, @newuser);
-ELSE IF @invalid_chars > 0
-	RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1,
-		@newuser, @invalid_chars);
-ELSE IF (LEN(@newuser) > 30)
-	RAISERROR('New username: %s is too long (30 characters max).', 16, 1, @newuser);
-ELSE IF ISNUMERIC(@first_char) = 1
-	RAISERROR('First character in username: %s is numeric: %s.', 16, 1, @newuser, @first_char);
-ELSE
-	PRINT 'New username: ' + @newuser + ' OK';
-GO
-```
+  ```sql
+	USE [master];
+	GO
+	DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
+	DECLARE @invalid_chars INTEGER;
+	DECLARE @first_char VARCHAR(1);
+	SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newuser);
+	SET @first_char=SUBSTRING(@newuser, 1, 1);
+	IF @invalid_chars IS NULL
+		RAISERROR('New username is null', 16, 1, @newuser);
+	ELSE IF @invalid_chars > 0
+		RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1,
+			@newuser, @invalid_chars);
+	ELSE IF (LEN(@newuser) > 30)
+		RAISERROR('New username: %s is too long (30 characters max).', 16, 1, @newuser);
+	ELSE IF ISNUMERIC(@first_char) = 1
+		RAISERROR('First character in username: %s is numeric: %s.', 16, 1, @newuser, @first_char);
+	ELSE
+		PRINT 'New username: ' + @newuser + ' OK';
+	GO
+  ```
 
 2. Create Login
 
-```sql
-USE [master];
-GO
-IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
-CREATE LOGIN [mydatabaseuser] WITH PASSWORD='mydatabasepassword', CHECK_POLICY = OFF;
-GO
+  ```sql
+	USE [master];
+	GO
+	IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
+	CREATE LOGIN [mydatabaseuser] WITH PASSWORD='mydatabasepassword', CHECK_POLICY = OFF;
+	GO
 
-ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
-GO
-```
+	ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
+	GO
+  ```
 
 3. Create user and grant roles
 
-```sql
-USE mydatabasename;
-GO
-BEGIN
-	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'mydatabaseuser')
-	CREATE USER [mydatabaseuser] FOR LOGIN [mydatabaseuser] WITH DEFAULT_SCHEMA=[dbo]
-	ELSE ALTER USER [mydatabaseuser] WITH LOGIN=[mydatabasepassword];
+  ```sql
+	USE mydatabasename;
+	GO
+	BEGIN
+		IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'mydatabaseuser')
+		CREATE USER [mydatabaseuser] FOR LOGIN [mydatabaseuser] WITH DEFAULT_SCHEMA=[dbo]
+		ELSE ALTER USER [mydatabaseuser] WITH LOGIN=[mydatabasepassword];
 
---
--- Object privilege grants
---
-	GRANT CREATE TABLE TO [mydatabaseuser];
-	GRANT CREATE VIEW TO [mydatabaseuser];
---
-	IF NOT EXISTS (SELECT name FROM sys.schemas WHERE name = N'mydatabaseuser')
-		EXEC('CREATE SCHEMA [mydatabaseuser] AUTHORIZATION [mydatabasepassword]');
-	ALTER USER [mydatabaseuser] WITH DEFAULT_SCHEMA=[mydatabaseuser];
-	ALTER ROLE rif_user ADD MEMBER [mydatabaseuser];
-	ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];
-END;
-GO
-```
+	--
+	-- Object privilege grants
+	--
+		GRANT CREATE TABLE TO [mydatabaseuser];
+		GRANT CREATE VIEW TO [mydatabaseuser];
+	--
+		IF NOT EXISTS (SELECT name FROM sys.schemas WHERE name = N'mydatabaseuser')
+			EXEC('CREATE SCHEMA [mydatabaseuser] AUTHORIZATION [mydatabasepassword]');
+		ALTER USER [mydatabaseuser] WITH DEFAULT_SCHEMA=[mydatabaseuser];
+		ALTER ROLE rif_user ADD MEMBER [mydatabaseuser];
+		ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];
+	END;
+	GO
+  ```
 * **Change the password**. The password is set to *mydatabasepassword*.
 
-4. Create user pecific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
+4. Create user specific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
    RIF data tables to which the user has been granted access permission.
 
-```sql
-USE mydatabasename;
-GO
---
--- RIF40 num_denom, rif40_num_denom_errors
---
--- needs functions:
---	rif40_is_object_resolvable
---	rif40_num_denom_validate
---	rif40_auto_indirect_checks
---
+  ```sql
+	USE mydatabasename;
+	GO
+	--
+	-- RIF40 num_denom, rif40_num_denom_errors
+	--
+	-- needs functions:
+	--	rif40_is_object_resolvable
+	--	rif40_num_denom_validate
+	--	rif40_auto_indirect_checks
+	--
 
-IF EXISTS (SELECT * FROM sys.objects
-WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom]') AND type in (N'V'))
-BEGIN
-	DROP VIEW [mydatabaseuser].[rif40_num_denom]
-END
-GO
+	IF EXISTS (SELECT * FROM sys.objects
+	WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom]') AND type in (N'V'))
+	BEGIN
+		DROP VIEW [mydatabaseuser].[rif40_num_denom]
+	END
+	GO
 
-CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS
- WITH n AS (
-         SELECT n1.geography,
-            n1.numerator_table,
-            n1.numerator_description,
-            n1.automatic,
-            n1.theme_description
-           FROM ( SELECT g.geography,
-                    n_1.table_name AS numerator_table,
-                    n_1.description AS numerator_description,
-                    n_1.automatic,
-                    t.description AS theme_description
-                   FROM [rif40].[rif40_geographies] g,
-                        [rif40].[rif40_tables] n_1,
-                        [rif40].[rif40_health_study_themes] t
-                  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1
-  				    AND [rif40].[rif40_is_object_resolvable](n_1.table_name) = 1
-					AND n_1.theme = t.theme) n1
-          WHERE [rif40].[rif40_num_denom_validate](n1.geography, n1.numerator_table) = 1
-        ), d AS (
-         SELECT d1.geography,
-            d1.denominator_table,
-            d1.denominator_description
-           FROM ( SELECT g.geography,
-                    d_1.table_name AS denominator_table,
-                    d_1.description AS denominator_description
-                   FROM [rif40].[rif40_geographies] g,
-                        [rif40].[rif40_tables] d_1
-                  WHERE d_1.isindirectdenominator = 1
-  				    AND d_1.automatic = 1
-					AND [rif40].[rif40_is_object_resolvable](d_1.table_name) = 1) d1
-          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1
-		    AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL
-        )
- SELECT n.geography,
-    n.numerator_table,
-    n.numerator_description,
-    n.theme_description,
-    d.denominator_table,
-    d.denominator_description,
-    n.automatic
-   FROM n,
-    d
-  WHERE n.geography = d.geography
-GO
+	CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS
+	 WITH n AS (
+			 SELECT n1.geography,
+				n1.numerator_table,
+				n1.numerator_description,
+				n1.automatic,
+				n1.theme_description
+			   FROM ( SELECT g.geography,
+						n_1.table_name AS numerator_table,
+						n_1.description AS numerator_description,
+						n_1.automatic,
+						t.description AS theme_description
+					   FROM [rif40].[rif40_geographies] g,
+							[rif40].[rif40_tables] n_1,
+							[rif40].[rif40_health_study_themes] t
+					  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1
+						AND [rif40].[rif40_is_object_resolvable](n_1.table_name) = 1
+						AND n_1.theme = t.theme) n1
+			  WHERE [rif40].[rif40_num_denom_validate](n1.geography, n1.numerator_table) = 1
+			), d AS (
+			 SELECT d1.geography,
+				d1.denominator_table,
+				d1.denominator_description
+			   FROM ( SELECT g.geography,
+						d_1.table_name AS denominator_table,
+						d_1.description AS denominator_description
+					   FROM [rif40].[rif40_geographies] g,
+							[rif40].[rif40_tables] d_1
+					  WHERE d_1.isindirectdenominator = 1
+						AND d_1.automatic = 1
+						AND [rif40].[rif40_is_object_resolvable](d_1.table_name) = 1) d1
+			  WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1
+				AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL
+			)
+	 SELECT n.geography,
+		n.numerator_table,
+		n.numerator_description,
+		n.theme_description,
+		d.denominator_table,
+		d.denominator_description,
+		n.automatic
+	   FROM n,
+		d
+	  WHERE n.geography = d.geography
+	GO
 
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.' ,
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Geography',
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
-	@level2type=N'COLUMN',@level2name=N'geography'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Numerator table',
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
-	@level2type=N'COLUMN',@level2name=N'numerator_table'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Numerator table description',
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
-	@level2type=N'COLUMN',@level2name=N'numerator_description'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Numerator table health study theme description',
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
-	@level2type=N'COLUMN',@level2name=N'theme_description'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Denominator table',
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
-	@level2type=N'COLUMN',@level2name=N'denominator_table'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Denominator table description',
-	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
-	@level2type=N'COLUMN',@level2name=N'denominator_description'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.' ,
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
-	@level2type=N'COLUMN',@level2name=N'automatic'
-GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.' ,
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Geography',
+		@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
+		@level2type=N'COLUMN',@level2name=N'geography'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Numerator table',
+		@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
+		@level2type=N'COLUMN',@level2name=N'numerator_table'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Numerator table description',
+		@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
+		@level2type=N'COLUMN',@level2name=N'numerator_description'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Numerator table health study theme description',
+		@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
+		@level2type=N'COLUMN',@level2name=N'theme_description'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Denominator table',
+		@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
+		@level2type=N'COLUMN',@level2name=N'denominator_table'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Denominator table description',
+		@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
+		@level2type=N'COLUMN',@level2name=N'denominator_description'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.' ,
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom',
+		@level2type=N'COLUMN',@level2name=N'automatic'
+	GO
 
-IF EXISTS (SELECT * FROM sys.objects
-WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom_errors]') AND type in (N'V'))
-BEGIN
-	DROP VIEW [mydatabaseuser].[rif40_num_denom_errors]
-END
-GO
+	IF EXISTS (SELECT * FROM sys.objects
+	WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom_errors]') AND type in (N'V'))
+	BEGIN
+		DROP VIEW [mydatabaseuser].[rif40_num_denom_errors]
+	END
+	GO
 
-CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS
- WITH n AS (
-         SELECT n1.geography,
-            n1.numerator_table,
-            n1.numerator_description,
-            n1.automatic,
-            n1.is_object_resolvable,
-            n1.n_num_denom_validated,
-            n1.numerator_owner
-           FROM ( SELECT g.geography,
-                    n_1.table_name AS numerator_table,
-                    n_1.description AS numerator_description,
-                    n_1.automatic,
-                    [rif40].[rif40_is_object_resolvable](n_1.table_name) AS is_object_resolvable,
-                    [rif40].[rif40_num_denom_validate](g.geography, n_1.table_name) AS n_num_denom_validated,
-                    [rif40].[rif40_object_resolve](n_1.table_name) AS numerator_owner
-                   FROM [rif40].[rif40_geographies] g,
-                    [rif40].[rif40_tables] n_1
-                  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1) n1
-        ), d AS (
-         SELECT d1.geography,
-            d1.denominator_table,
-            d1.denominator_description,
-            d1.is_object_resolvable,
-            d1.d_num_denom_validated,
-            d1.denominator_owner,
-            [rif40].[rif40_auto_indirect_checks](d1.denominator_table) AS auto_indirect_error
-           FROM ( SELECT g.geography,
-                    d_1.table_name AS denominator_table,
-                    d_1.description AS denominator_description,
-                    [rif40].[rif40_is_object_resolvable](d_1.table_name) AS is_object_resolvable,
-                    [rif40].[rif40_num_denom_validate](g.geography, d_1.table_name) AS d_num_denom_validated,
-                    [rif40].[rif40_object_resolve](d_1.table_name) AS denominator_owner
-                   FROM [rif40].[rif40_geographies] g,
-                    [rif40].[rif40_tables] d_1
-                  WHERE d_1.isindirectdenominator = 1 AND d_1.automatic = 1) d1
-        )
- SELECT n.geography,
-    n.numerator_owner,
-    n.numerator_table,
-    n.is_object_resolvable AS is_numerator_resolvable,
-    n.n_num_denom_validated,
-    n.numerator_description,
-    d.denominator_owner,
-    d.denominator_table,
-    d.is_object_resolvable AS is_denominator_resolvable,
-    d.d_num_denom_validated,
-    d.denominator_description,
-    n.automatic,
-        CASE
-            WHEN d.auto_indirect_error IS NULL THEN 0
-            ELSE 1
-        END AS auto_indirect_error_flag,
-    d.auto_indirect_error /*,
-    f.create_status AS n_fdw_create_status,
-    f.error_message AS n_fdw_error_message,
-    f.date_created AS n_fdw_date_created,
-    f.rowtest_passed AS n_fdw_rowtest_passed */
-   FROM d,
-    n
-  WHERE n.geography = d.geography;
-GO
+	CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS
+	 WITH n AS (
+			 SELECT n1.geography,
+				n1.numerator_table,
+				n1.numerator_description,
+				n1.automatic,
+				n1.is_object_resolvable,
+				n1.n_num_denom_validated,
+				n1.numerator_owner
+			   FROM ( SELECT g.geography,
+						n_1.table_name AS numerator_table,
+						n_1.description AS numerator_description,
+						n_1.automatic,
+						[rif40].[rif40_is_object_resolvable](n_1.table_name) AS is_object_resolvable,
+						[rif40].[rif40_num_denom_validate](g.geography, n_1.table_name) AS n_num_denom_validated,
+						[rif40].[rif40_object_resolve](n_1.table_name) AS numerator_owner
+					   FROM [rif40].[rif40_geographies] g,
+						[rif40].[rif40_tables] n_1
+					  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1) n1
+			), d AS (
+			 SELECT d1.geography,
+				d1.denominator_table,
+				d1.denominator_description,
+				d1.is_object_resolvable,
+				d1.d_num_denom_validated,
+				d1.denominator_owner,
+				[rif40].[rif40_auto_indirect_checks](d1.denominator_table) AS auto_indirect_error
+			   FROM ( SELECT g.geography,
+						d_1.table_name AS denominator_table,
+						d_1.description AS denominator_description,
+						[rif40].[rif40_is_object_resolvable](d_1.table_name) AS is_object_resolvable,
+						[rif40].[rif40_num_denom_validate](g.geography, d_1.table_name) AS d_num_denom_validated,
+						[rif40].[rif40_object_resolve](d_1.table_name) AS denominator_owner
+					   FROM [rif40].[rif40_geographies] g,
+						[rif40].[rif40_tables] d_1
+					  WHERE d_1.isindirectdenominator = 1 AND d_1.automatic = 1) d1
+			)
+	 SELECT n.geography,
+		n.numerator_owner,
+		n.numerator_table,
+		n.is_object_resolvable AS is_numerator_resolvable,
+		n.n_num_denom_validated,
+		n.numerator_description,
+		d.denominator_owner,
+		d.denominator_table,
+		d.is_object_resolvable AS is_denominator_resolvable,
+		d.d_num_denom_validated,
+		d.denominator_description,
+		n.automatic,
+			CASE
+				WHEN d.auto_indirect_error IS NULL THEN 0
+				ELSE 1
+			END AS auto_indirect_error_flag,
+		d.auto_indirect_error /*,
+		f.create_status AS n_fdw_create_status,
+		f.error_message AS n_fdw_error_message,
+		f.date_created AS n_fdw_date_created,
+		f.rowtest_passed AS n_fdw_rowtest_passed */
+	   FROM d,
+		n
+	  WHERE n.geography = d.geography;
+	GO
 
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' ,
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Geography',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'geography'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Numerator table owner' ,
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'numerator_owner'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Numerator table' ,
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'numerator_table'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Is the numerator table resolvable and accessible (0/1)' ,
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'is_numerator_resolvable'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Is the numerator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'n_num_denom_validated'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Numerator table description',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'numerator_description'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Denominator table owner',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'denominator_owner'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Denominator table',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'denominator_table'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Is the denominator table resolvable and accessible (0/1)',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'is_denominator_resolvable'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Is the denominator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'd_num_denom_validated'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Denominator table description',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'denominator_description'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'automatic'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Error flag 0/1. Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator.',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'auto_indirect_error_flag'
-GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description',
-	@value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.',
-	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
-	@level2type=N'COLUMN',@level2name=N'auto_indirect_error'
-GO
-```
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' ,
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Geography',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'geography'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Numerator table owner' ,
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'numerator_owner'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Numerator table' ,
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'numerator_table'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Is the numerator table resolvable and accessible (0/1)' ,
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'is_numerator_resolvable'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Is the numerator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'n_num_denom_validated'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Numerator table description',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'numerator_description'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Denominator table owner',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'denominator_owner'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Denominator table',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'denominator_table'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Is the denominator table resolvable and accessible (0/1)',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'is_denominator_resolvable'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Is the denominator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'd_num_denom_validated'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Denominator table description',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'denominator_description'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'automatic'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Error flag 0/1. Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator.',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'auto_indirect_error_flag'
+	GO
+	EXEC sys.sp_addextendedproperty @name=N'MS_Description',
+		@value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.',
+		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
+		@level2type=N'COLUMN',@level2name=N'auto_indirect_error'
+	GO
+  ```
 
 ## Testing The Database
 
-The best test of a correctly installed database is to logon as a test user and select from rif40_num_denom (numerator/denominator) pair view. The standard row
+The best test of a correctly installed database is to logon as a test user and select from *rif40_num_denom* (numerator/denominator) pair view. The standard row
 will only appear if you can find and select from both tables:
 
 ```sql
