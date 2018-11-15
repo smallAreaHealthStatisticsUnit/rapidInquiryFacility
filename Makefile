@@ -47,6 +47,8 @@
 
 OS?=Unknown
 GRIP=python -m grip
+WGET=wget
+MKDIR=mkdir
 ifeq ($(OS),Windows_NT)
 	MAVEN=mvn
 	COPY=cp
@@ -110,19 +112,16 @@ itgovernancetool:
 	cd rifITGovernanceTool && $(MAVEN) $(MAVEN_FLAGS) install
 #	$(COPY) rifITGovernanceTool\target\rifITGovernanceTool-jar-with-dependencies.jar rifITGovernanceTool-jar-with-dependencies.jar
 	
-# docs: requires grip (https://github.com/joeyespo/grip) to be installed
-doc: 
-	$(GRIP) rifWebApplication\Readme.md --export docs\RIF_Web_Application_Installation.html
-	$(GRIP) rifDatabase\Postgres\production\windows_install_from_pg_dump.md --export docs\RIF_Postgres_Install.html
-	$(GRIP) rifDatabase\SQLserver\production\INSTALL.md --export docs\RIF_SQLserver_Install.html
-	$(GRIP) rifDatabase\DataLoaderData\DataLoading.md --export docs\RIF_manual_data_loading.html
-	$(GRIP) rifDatabase\databaseManagementManual.md --export docs\databaseManagementManual.html
-	$(GRIP) rifNodeServices\tileMaker.md --export docs\tileMaker.html
-	$(COPY) "Documentation\RIF v4 0 Manual.pdf" "docs\RIF_v40_Manual.pdf"
-	$(COPY) "Documentation\RIF Data Loader Manual.pdf" "docs\RIF_Data_Loader_Manual.pdf"
-	$(GRIP) docs\README.md --export docs\index.html
-#	$(7ZIP) a -r docs.7z "docs\\*"
-#	$(7ZIP) l docs.7z
+# docs: requires wget https://eternallybored.org/misc/wget/
+$(TMP)\rapidInquiryFacility\docs: 
+	$(MKDIR) $(TMP)\rapidInquiryFacility
+	$(MKDIR) $(TMP)\rapidInquiryFacility\docs
+doc: $(TMP)\rapidInquiryFacility\docs
+	$(COPY) "docs\source-documents\RIF_v40_Manual.pdf" "$(TMP)\rapidInquiryFacility\docs\RIF_v40_Manual.pdf"
+	$(COPY) "docs\source-documents\RIF Data Loader Manual.pdf" "$(TMP)\rapidInquiryFacility\docs\RIF_Data_Loader_Manual.pdf"
+	$(WGET) --mirror --convert-links --page-requisites --no-parent -P $(TMP)\rapidInquiryFacility\docs https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/
+	(cd $(TMP)\rapidInquiryFacility; $(7ZIP) a -r docs.7z "docs\\*")
+	$(7ZIP) l (TMP)\rapidInquiryFacility\docs.7z
 	
 taxonomyservice:	
 	$(MAVEN) --version

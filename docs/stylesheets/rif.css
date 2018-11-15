@@ -35,6 +35,18 @@ blockquote {
     border-left: 0.25em solid #dfe2e5;
 } 
 */
+
+table, td, th {
+	border: 1px solid black;
+}
+th {
+    text-align: left;
+    background-color: #4CAF50;
+    color: white;
+}
+tr:nth-child(even){background-color: #f2f2f2}
+
+
 blockquote {
   background: #f9f9f9;
   border-left: 10px solid #ccc;
