@@ -63,10 +63,7 @@ Limitations in the current RIF
   back if required;
 * No support for ad-hoc SQL. This functionality will be partially re-implemented in future releases using user specified conditions
   (pre defined groups). The feature was removed as it cannot be implemented in a secure manner (i.e. it permits SQL injection attacks);
-* Numerators are currently limited to ICD 10 coding only. Support will be added for:
-
-  * ICD 9
-  * ICD 11 (subject to the release of the 11th Edition in June 2018)
+* Numerators are currently limited to ICD 9 and 10 coding only. Support will be added for ICD 11 (subject to the release of the 11th Edition in June 2018)
 
   In the longer term it is expected that support will be added for:
 
@@ -150,6 +147,8 @@ the production data (rif_pg_usa_2014.sql) needs to be loaded into the rif40 acco
 
 ## SQL Server
 
+### BCP Access Permissions
+
 SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the
 server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command. This also implies that a full file path is required and the file name must be accessible on the
 SQL Server server; it does **NOT** have to be accessible on the client.
@@ -174,6 +173,18 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
+### BCP Format Issues
+
+BULK LOAD and BCP cannot handle:
+
+* Text fields with a mixture of quote enclosing and no quote enclosing;
+* Exponential notation e.g. ```3.12E-5```
+* A database of *SQLDECIMAL* with no *PRECISION* and *SCALE* specified will convert the input to an **INTEGER** transparently! Make 
+  sure to use:
+  ```
+   <COLUMN SOURCE="4" NAME="population" xsi:type="SQLDECIMAL" PRECISION="7" SCALE="2" />```
+  ```
+  
 ## Data Structure
 
 All RIF data tables are located in the *rif_data* schema. They must be located in *rif_data* because SQL Server does not have the concept of a schema search
@@ -220,7 +231,7 @@ The *num_sahsuland_cancer* table is aggregated to the highest geographic resolut
 To add a numerator table to the RIF if must be added to:
 
 * *rif40_tables*:
-
+  
   |       column_name        |                                                                                                                                                                                                                                                                 description                                                                                                                                                                                                                                                                  |          data_type          |
   |--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------|
   | theme                    | Health Study theme. Link to RIF40_HEALTH_STUDY_THEMES. See: [Health theme](#health-themes);                                                                                                                                                                                                                                                                                                                   | varchar(30)                 |
@@ -239,6 +250,8 @@ To add a numerator table to the RIF if must be added to:
   | age_group_id             | Type of RIF age group in use. Link to RIF40_AGE_GROUP_NAMES. No default. See: [Age groups](#age-groups);                                                                                                                                                                                                                                                                                                       | smallint                    |
   | validation_date          | Date table contents were validated OK. Availabel for use by quality control programs                                                                                                                                                                                                                                                                                                                                                                                                                                                         | timestamp without time zone |
 
+  Example: 
+  
   |  theme  |      table_name      |      description       | year_start | year_stop | total_field | isindirectdenominator | isdirectdenominator | isnumerator | automatic | age_sex_group_field_name | age_group_id |
   |---------|----------------------|------------------------|------------|-----------|-------------|-----------------------|---------------------|-------------|-----------|--------------------------|--------------|
   | cancers | NUM_SAHSULAND_CANCER | cancer numerator       |       1989 |      2016 | TOTAL       |                     0 |                   0 |           1 |         1 | AGE_SEX_GROUP            |            1 |
@@ -444,9 +457,9 @@ one or more areas that fit exactly within the lower resolution. Users with the *
 * *avg_npoints_geom*, *avg_npoints_opt*, *file_geojson_len*, *leg_geom* and *leg_opt* are used as part of the administrative geography preprocessing (tile maker);
 * Normally *resolution*, *comparea* and *listing* are all set to "1". Setting to "0" restricts the RIF front end as follows:
 
-  - *resolution* - cannot use the map for selection at this resolution for either study or comparison area;                                                                                                                                                                                                                                                                                                         | smallint     |
-  - *comparea* - cannot be to be used as a comparison area;                                                                                                                                                                                                                                                                                                                  | smallint     |
-  - *listing* - cannot be in a list of areas when setting up a disease map study or comparison area.
+  - *resolution*: cannot use the map for selection at this resolution for either study or comparison area;                                                                                                                                                                                                                                                                                                         | smallint     |
+  - *comparea*:cannot be to be used as a comparison area;                                                                                                                                                                                                                                                                                                                  | smallint     |
+  - *listing*: cannot be in a list of areas when setting up a disease map study or comparison area.
 
 The supplied *SAHUSLAND* test database is set up as follows:
 
@@ -858,7 +871,7 @@ SQL Server pre-processing scripts have not been created due to the lack of an un
 to C# or the many GUI wizards available:
 
 * Use [bcp](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/import-and-export-bulk-data-by-using-the-bcp-utility-sql-server?view=sql-server-2017)
-* USe *sqlcmd* [SQL SERVER – Export Data AS CSV from Database Using SQLCMD](https://blog.sqlauthority.com/2013/11/25/sql-server-export-data-as-csv-from-database-using-sqlcmd/)
+* Use *sqlcmd* [SQL SERVER – Export Data AS CSV from Database Using SQLCMD](https://blog.sqlauthority.com/2013/11/25/sql-server-export-data-as-csv-from-database-using-sqlcmd/)
 
 Other useful references:
 
@@ -3423,10 +3436,8 @@ This is configured using the tables:
 
 ## ICD field Name
 
-Numerators are currently limited to ICD 10 coding only and a single ICD field. Support will be added for:
-
-* ICD 9;
-* ICD 11 (subject to the release of the 11th Edition in June 2018).
+Numerators are currently limited to ICD 9 and 10 coding only and a single ICD field. Support will be added for ICD 11 (subject to the 
+release of the 11th Edition in June 2018).
 
 In the longer term it is expected that support will be added for:
 
@@ -3549,5 +3560,4 @@ In this case the error is not an error as *n_num_denom_validated* and *d_num_den
 
 In both these case you need to check the grants on the tables: [Viewing your user setup]({{ site.baseurl }}/rifDatabase/databaseManagementManual#25-viewing-your-user-setup)
 
-Peter Hambly
-May 2018
+**Peter Hambly, May 2018**
