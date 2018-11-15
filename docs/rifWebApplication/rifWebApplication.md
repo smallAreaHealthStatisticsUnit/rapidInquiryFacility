@@ -116,7 +116,7 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web
   services will not work [The web services will fail to start on the first user logon if it is not set]; see:
-  [4.4.5 RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/#445-rif-services-crash-on-logon).
+  [4.4.5 RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/#rif-services-crash-on-logon).
 - If *CATALINA_HOME* is *C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.5* you have installed the 32 bit version of Java.
   Remove tomcat and Java and re-install a 64 bit Java (unless you are on a really old 32 bit only Machine...)
 
@@ -765,7 +765,7 @@ As with Java, do NOT use the 32 bit only version unless you have to. These instr
 bit version
 
 Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*. Not: **C:\Program Files\R\R-3.4.4\bin**
-or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifwebapplication/#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifwebapplication/#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 # Building Web Services using Maven
 
@@ -1490,11 +1490,11 @@ The downloaded binary packages are in
 	```
 
 	* **RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES**
-	* [You can now start the rif]({{ site.baseurl }}/rifWebApplication/#133-running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory
+	* [You can now start the rif]({{ site.baseurl }}/rifWebApplication/#running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory
 	  *%CATALINA_HOME%\bin* as an Administrator.). The web services will fail to start on the first user logon if the R environment not setup correctly]; see:
-  [4.4.5 RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/#445-rif-services-crash-on-logon).
+  [4.4.5 RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/#rif-services-crash-on-logon).
 	* Then you can logon. See section 5
-	  [Running the RIF]({{ site.baseurl }}/rifWebApplication/#5-running-the-rif)
+	  [Running the RIF]({{ site.baseurl }}/rifWebApplication/#running-the-rif)
 	  for logon instructions
 
 
@@ -2128,7 +2128,7 @@ See the database Management manual: [6 Patching](https://smallareahealthstatisti
 * Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices
   and taxonomyServices trees to .old;
 * Follow the instructions in
-  [section 3.1 for installing the web services]({{ site.baseurl }}/rifWebApplication/#311-rif-services).
+  [section 3.1 for installing the web services]({{ site.baseurl }}/rifWebApplication/#rif-services).
   i.e. copy replacement *taxonomy.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart tomcat;
@@ -2156,7 +2156,7 @@ This has not been tested ans it has not been required. Files to be saved/restore
 
 ## R
 
-If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in [Setup R]({{ site.baseurl }}/rifWebApplication/#43-setup-r).
+If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in [Setup R]({{ site.baseurl }}/rifWebApplication/#setup-r).
 Make absolutely sure the PATH and R_HOME are set correctly.
 
 Updating the packages can also be done (consult your statisticians first); on a private network you have two choices:
