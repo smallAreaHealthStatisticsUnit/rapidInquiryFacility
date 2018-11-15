@@ -16,4 +16,4 @@ The following are not documented:
 * Partitioning (rif40_partitions schema). This will be a separate series of WIKIs.
 * PL/pgsql code in rif40_&lt;code area/type, e.g. R, sql, sm - for statemachine, geo&gt;_pkgs. Again this will be documented separately.
 
-There is also a [Powerpoint] (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/RIF%20database.pptx?raw=true) presentation of the new RIF database design.
+There is also a [Powerpoint]({{ site.baseurl }}/development/RIF%20database.pptx) presentation of the new RIF database design.

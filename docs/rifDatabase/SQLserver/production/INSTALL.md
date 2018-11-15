@@ -426,9 +426,9 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 
 4. Create the schema owner (rif40)
 
-  The RIF schema owner **MUST** be called *rif40* and will require BULK INSERT privilege to load data.
+   The RIF schema owner **MUST** be called *rif40* and will require BULK INSERT privilege to load data.
 
-  Most users will need to set the password to be able to load data.
+   Most users will need to set the password to be able to load data.
   
 	```sql
 	USE master;

@@ -3086,3 +3086,7 @@ Further changes are needed to support risk analysis:
   - exposure_value: Exposure value (when bands selected by exposure values);
 * Create pull #112: Risk analysis fixes required enhancements: add support for intersection between risk analysis 
   shapes and for exposure covariates;
+* Patch wsrif, install and document remote Oracle database connectivity; 
+* Documentation;
+* Test R Risk analsysis scripts;
+
