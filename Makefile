@@ -53,6 +53,7 @@ ifeq ($(OS),Windows_NT)
 	MAVEN=mvn
 	COPY=cp
 	DELETE=rm -f
+	7ZIP="C:\Program Files\7-Zip\7z.exe"
 else
 #
 # Linux macos support []
@@ -111,17 +112,24 @@ itgovernancetool:
 	$(MAVEN) --version
 	cd rifITGovernanceTool && $(MAVEN) $(MAVEN_FLAGS) install
 #	$(COPY) rifITGovernanceTool\target\rifITGovernanceTool-jar-with-dependencies.jar rifITGovernanceTool-jar-with-dependencies.jar
+
+broken_links: "docs\broken_links.txt"
+
+"docs\broken_links.txt": 
+	-$(WGET) --spider -r -nd -nv -H -l 2 -w 2 -o "docs\broken_links.log" https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/
+	-grep -B1 'broken link!' "docs\broken_links.log" > "docs\broken_links.txt"
 	
 # docs: requires wget https://eternallybored.org/misc/wget/
-$(TMP)\rapidInquiryFacility\docs: 
-	$(MKDIR) $(TMP)\rapidInquiryFacility
-	$(MKDIR) $(TMP)\rapidInquiryFacility\docs
+"$(TMP)\rapidInquiryFacility\docs": 
+	$(MKDIR) "$(TMP)\rapidInquiryFacility"
+	$(MKDIR) "$(TMP)\rapidInquiryFacility\docs"
+	
 doc: $(TMP)\rapidInquiryFacility\docs
 	$(COPY) "docs\source-documents\RIF_v40_Manual.pdf" "$(TMP)\rapidInquiryFacility\docs\RIF_v40_Manual.pdf"
 	$(COPY) "docs\source-documents\RIF Data Loader Manual.pdf" "$(TMP)\rapidInquiryFacility\docs\RIF_Data_Loader_Manual.pdf"
-	$(WGET) --mirror --convert-links --page-requisites --no-parent -P $(TMP)\rapidInquiryFacility\docs https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/
-	(cd $(TMP)\rapidInquiryFacility; $(7ZIP) a -r docs.7z "docs\\*")
-	$(7ZIP) l (TMP)\rapidInquiryFacility\docs.7z
+	-$(WGET) --mirror --convert-links --page-requisites --no-parent -P "$(TMP)\rapidInquiryFacility\docs" https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/
+	(cd "$(TMP)\\rapidInquiryFacility\\docs\\smallareahealthstatisticsunit.github.io" && $(7ZIP) a -r "$(TMP)\\rapidInquiryFacility\\docs.7z" "rapidInquiryFacility\\*")
+	$(7ZIP) l "$(TMP)\\rapidInquiryFacility\\docs.7z"
 	
 taxonomyservice:	
 	$(MAVEN) --version

@@ -1,0 +1,34 @@
+2018-11-15 11:10:04 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/ [4411/4411] -> "index.html.tmp.tmp" [1]
+failed: Bad file descriptor.
+failed: Bad file descriptor.
+https://smallareahealthstatisticsunit.github.io/robots.txt:
+2018-11-15 11:10:10 ERROR 404: Not Found.
+2018-11-15 11:10:13 URL:https://www.gnu.org/robots.txt [355/355] -> "robots.txt.1" [1]
+2018-11-15 11:10:15 URL:https://github.com/robots.txt [31710/31710] -> "robots.txt.1" [1]
+2018-11-15 11:10:17 URL:https://pages.github.com/robots.txt [46/46] -> "robots.txt.1" [1]
+failed: Bad file descriptor.
+failed: Bad file descriptor.
+2018-11-15 11:10:23 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/assets/css/style.css?v= 200 OK
+unlink: No such file or directory
+2018-11-15 11:10:25 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/stylesheets/rif.css 200 OK
+unlink: No such file or directory
+2018-11-15 11:10:30 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/introduction/what-is-the-RIF [18398/18398] -> "what-is-the-RIF.tmp.tmp" [1]
+2018-11-15 11:10:34 URL:https://www.gnu.org/licenses/lgpl-3.0.en.html [20895] -> "lgpl-3.0.en.html.tmp.tmp" [1]
+2018-11-15 11:10:38 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/introduction/building-and-installation [6379/6379] -> "building-and-installation.tmp.tmp" [1]
+2018-11-15 11:10:41 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/standalone/RIF_v40_Manual.pdf 200 OK
+unlink: No such file or directory
+2018-11-15 11:10:43 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/standalone/RIF_Data_Loader_Manual.pdf 200 OK
+unlink: No such file or directory
+2018-11-15 11:10:47 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/ [273752/273752] -> "index.html.tmp.tmp" [1]
+2018-11-15 11:10:51 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/windows_install_from_pg_dump [38081/38081] -> "windows_install_from_pg_dump.tmp.tmp" [1]
+2018-11-15 11:10:55 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/production/INSTALL [45812/45812] -> "INSTALL.tmp.tmp" [1]
+2018-11-15 11:10:59 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/DataLoading [229528/229528] -> "DataLoading.tmp.tmp" [1]
+2018-11-15 11:11:03 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/tileMaker [147878/147878] -> "tileMaker.tmp.tmp" [1]
+2018-11-15 11:11:08 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual [319394/319394] -> "databaseManagementManual.tmp.tmp" [1]
+2018-11-15 11:11:12 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/ [6231/6231] -> "index.html.tmp.tmp" [1]
+2018-11-15 11:11:16 URL:https://pages.github.com/ [14712/14712] -> "index.html.tmp.tmp" [1]
+Found no broken links.
+
+FINISHED --2018-11-15 11:11:16--
+Total wall clock time: 1m 14s
+Downloaded: 15 files, 1.1M in 0.4s (2.53 MB/s)

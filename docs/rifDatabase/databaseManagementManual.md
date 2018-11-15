@@ -10,11 +10,11 @@ title: Database Management Manual
 
 This manual details how to manage RIF databases. See also the:
 
-* [Tile-maker manual]({{ base.url }}/rifNodeServices/tileMaker) for how to create
+* [Tile-maker manual]({{ site.baseurl }}/rifNodeServices/tileMaker) for how to create
   RIF administrative geographies.
-* [RIF Manual Data Loading manual]({{ base.url }}/rifDatabase\DataLoaderData\DataLoading)
+* [RIF Manual Data Loading manual]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading)
   for details on the manual process for the loading of data into the RIF.
-
+  
 # User Management
 
 ## Creating new users
@@ -669,8 +669,8 @@ The *map name* must be one of following mappable methods from *hba.conf* (i.e. t
 
 The Windows installer guide for Postgres has examples:
 
-* [Authentication Setup - hba.conf]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#authentication-setup-hbaconf)
-* [Proxy user setup - ident.conf]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#proxy-user-setup-identconf)
+* [Authentication Setup - hba.conf]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#-authentication-setup-hbaconf)
+* [Proxy user setup - ident.conf]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#-proxy-user-setup-identconf)
 
 So, if I setup SSPI as per the examples to use *SSPI* in *hba.conf*:
 
@@ -706,7 +706,7 @@ Set the RIF40 password to an impossible value:
 ```ALTER ROLE rif40 WITH PASSWORD 'md5ac4bbe016b8XXXXXXXXXX6981f240dcae';```
 
 Finally, optioanlly add the passwords to the
-[Pgpass]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#postgres-user-password-file)
+[Pgpass]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#postgres-user-password-file)
 
 I can then logon as rif40 using SSPI:
 
