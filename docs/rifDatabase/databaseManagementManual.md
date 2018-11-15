@@ -1429,7 +1429,7 @@ The server was then restarted. Note that the path is in the old DOS format.
   
 * Create a remote link to the Oracle database. A schema account will be required:
   https://www.sqlshack.com/link-sql-server-oracle-database/
-  ![Oracle OLEDB setup]({{ site.baseurl }}/rifDatabase/SQLserver/images/Oracle_OLEDB_setup.png)
+  ![Oracle OLEDB setup]({{ site.baseurl }}/rifDatabase/SQLserver/images/sqlserver_oracle_oledb_setup.png)
  
 * Create a VIEW to the remote abject in the *rif_data* schema:
   ```sql
@@ -1621,7 +1621,7 @@ See:
 To setup *(Common criteria compliance*:
 
 * Use the SQL Server management studio server properties pane:
-  ![SQL Server auditing setup]({{ base.url }}/rifDatabase/SQLserver/images/auditing.png)
+  ![SQL Server auditing setup]({{ base.url }}/rifDatabase/SQLserver/images/sqlserver_auditing.png)
 * Also check audit failed and successful logins;
 * Restart SQL Server;
 
@@ -2438,7 +2438,7 @@ To use the profiler you will need to be a *sysadmin* or have the *ALTER TRACE* r
 
 Show execution plan in SQL Server management studio is also very effective (showing missing indexes) and allows analysis of running queries:
 
-![SQL Server Management Studio Execution Plan]({{ base.url }}/rifDatabase/SQLserver/images/SSMS_execution_plan.png){:width="100%"}
+![SQL Server Management Studio Execution Plan]({{ base.url }}/rifDatabase/SQLserver/images/sqlserver_ssms_execution_plan.png){:width="100%"}
 
 However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server.
 When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
@@ -2448,7 +2448,7 @@ When the query was split by geolevel_id it ran in two minutes as opposed to >245
 SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically:
 https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
 
-![SQL Server Shrink Database]({{ base.url }}/rifDatabase/SQLserver/images/shrink.png){:width="100%"}
+![SQL Server Shrink Database]({{ base.url }}/rifDatabase/SQLserver/images/sqlserver_shrink.png){:width="100%"}
 
 The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
 
