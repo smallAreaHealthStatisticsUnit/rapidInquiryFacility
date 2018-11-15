@@ -1,0 +1,21 @@
+<ViewerConfig>
+	<QueryConfig>
+		<QueryParams>
+			<Simple>
+				<Channel>Application</Channel>
+				<RelativeTimeInfo>0</RelativeTimeInfo>
+				<Source>PostgreSQL</Source>
+				<BySource>True</BySource>
+			</Simple>
+		</QueryParams>
+		<QueryNode>
+			<Name>PostgreSQL</Name>
+			<Description>Postgres DB</Description>
+			<QueryList>
+				<Query Id="0" Path="Application">
+					<Select Path="Application">*[System[Provider[@Name='PostgreSQL']]]</Select>
+				</Query>
+			</QueryList>
+		</QueryNode>
+	</QueryConfig>
+</ViewerConfig>

@@ -1425,12 +1425,11 @@ The server was then restarted. Note that the path is in the old DOS format.
   ```
   This installs in *C:\oracle*.
 * Check the Oracle OLEDB provider is picked up in SQL Server manager:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/docs/rifDatabase/DataLoaderData/Oracle_OLEDB_provider.PNG?raw=true?raw=true "Oracle OLEDB provider")
+  ![Oracle OLEDB provider]({{ site.baseurl }}/rifDatabase/Postgres/images/Oracle_OLEDB_provider.PNG)
   
 * Create a remote link to the Oracle database. A schema account will be required:
   https://www.sqlshack.com/link-sql-server-oracle-database/
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/docs/rifDatabase/DataLoaderData/unknown.PNG?raw=true?raw=true "Oracle OLEDB setup")
-
+  ![Oracle OLEDB setup]({{ site.baseurl }}/rifDatabase/SQLserver/images/Oracle_OLEDB_setup.png)
  
 * Create a VIEW to the remote abject in the *rif_data* schema:
   ```sql
@@ -1497,11 +1496,11 @@ If you are using CSV log files set:
 
 Create a Postgres event log custom view, create a [custom event view](https://technet.microsoft.com/en-us/library/gg131917.aspx) in the Event Viewer.
 
-![Postgres event log custom view]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_filter_setup.png){:width="100%"}
+![Postgres event log custom view]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_filter_setup.png)
 
-<img src="{{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_filter_setup.png" alt="Postgres event log custom view" title="Postgres event log custom view" width="100%">
+An XML setup file [postgres_event_log_custom_view.xml]({{ site.baseurl }}/rifDatabase/Postgres/examples/postgres_event_log_custom_view.xml) 
+is also provided:
 
-An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_log_custom_view.xml) is also provided:
 ```xml
 <ViewerConfig>
 	<QueryConfig>
@@ -1608,21 +1607,21 @@ Formatted the CSV log entry is:
 
 The equivalent PostgreSQL Windows log entry entry is:
 
-![Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log.png){:width="100%"}
-![Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log2.png){:width="100%"}
+![Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log.png)
+![Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log2.png)
 
 ### SQL Server
 
 See:
 
-[Creating a successful auditing strategy for your SQL Server databases](https://www.sqlshack.com/creating-successful-auditing-strategy-sql-server-databases/)
-[SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-2017)
-[Create a Server Audit and Database Audit Specification](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-database-audit-specification?view=sql-server-2017)
+* [Creating a successful auditing strategy for your SQL Server databases](https://www.sqlshack.com/creating-successful-auditing-strategy-sql-server-databases/)
+* [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-2017)
+* [Create a Server Audit and Database Audit Specification](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-database-audit-specification?view=sql-server-2017)
 
 To setup *(Common criteria compliance*:
 
 * Use the SQL Server management studio server properties pane:
-  ![alt text]({{ base.url }}/rifDatabase/SQLserver/auditing.PNG?raw=true "SQL Server auditing setup");
+  ![alt text]({{ base.url }}/rifDatabase/SQLserver/images/auditing.PNG "SQL Server auditing setup");
 * Also check audit failed and successful logins;
 * Restart SQL Server;
 
@@ -2439,7 +2438,7 @@ To use the profiler you will need to be a *sysadmin* or have the *ALTER TRACE* r
 
 Show execution plan in SQL Server management studio is also very effective (showing missing indexes) and allows analysis of running queries:
 
-![alt text]({{ base.url }}/rifDatabase/SQLserver/SSMS_execution_plan.PNG?raw=true "SQL Server Management Studio Execution Plan"){:width="100%"}
+![alt text]({{ base.url }}/rifDatabase/SQLserver/images/SSMS_execution_plan.PNG "SQL Server Management Studio Execution Plan"){:width="100%"}
 
 However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server.
 When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
@@ -2449,7 +2448,7 @@ When the query was split by geolevel_id it ran in two minutes as opposed to >245
 SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically:
 https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
 
-![alt text]({{ base.url }}/rifDatabase/SQLserver/shrink.PNG?raw=true "SQL Server Shrink Database"){:width="100%"}
+![alt text]({{ base.url }}/rifDatabase/SQLserver/images/shrink.PNG "SQL Server Shrink Database"){:width="100%"}
 
 The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
 
