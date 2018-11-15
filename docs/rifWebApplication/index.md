@@ -3,8 +3,8 @@ layout: default
 title: RIF Web Application and Middleware Installation
 ---
 
-{:toc}
 # Contents
+{:toc}
 
 # Installation Prerequisites
 
