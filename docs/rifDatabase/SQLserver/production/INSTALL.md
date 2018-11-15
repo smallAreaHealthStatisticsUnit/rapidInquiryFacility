@@ -96,39 +96,39 @@ This script runs:
 	* User is a RIF manager.
 
 * Script output. Use control-C to abort the script before database (re-)creation.
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>rif40_database_install.bat
+  ```
+  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>rif40_database_install.bat
 
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>ECHO OFF
-Administrator PRIVILEGES Detected!
-Creating production RIF database
-New user [default peter]:  kevin
-New RIF40 db [default sahsuland]: rif40
-New user password [default kevin]:  garwood1901
-##########################################################################################
-#
-# WARNING! this script will the drop and create the RIF40 rif40 database.
-# Type control-C to abort.
-#
-# Test user: kevin; password: garwood1901
-#
-##########################################################################################
-Press any key to continue . . .
-```
+  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>ECHO OFF
+  Administrator PRIVILEGES Detected!
+  Creating production RIF database
+  New user [default peter]:  kevin
+  New RIF40 db [default sahsuland]: rif40
+  New user password [default kevin]:  garwood1901
+  ##########################################################################################
+  #
+  # WARNING! this script will the drop and create the RIF40 rif40 database.
+  # Type control-C to abort.
+  #
+  # Test user: kevin; password: garwood1901
+  #
+  ##########################################################################################
+  Press any key to continue . . .
+  ```
 
 * Typing ```<enter>``` produces a lot of output. Successful completion looks like:
 
-```
---
--- Eof (rif40_user_objects.sql)
+  ```
+  --
+  -- Eof (rif40_user_objects.sql)
 
---
--- Eof (rif40_production_user.sql)
+  --
+  -- Eof (rif40_production_user.sql)
 
-rif40_production_user.sql built OK 0; created RIF40 production database sahsuland with user: peter
+  rif40_production_user.sql built OK 0; created RIF40 production database sahsuland with user: peter
 
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>
-```
+  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>
+  ```
 
 ## Network connection errors
 
@@ -141,24 +141,26 @@ Named Pipes Provider: Could not open a connection to SQL Server [2].
 Microsoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 ```
+
   * You may need to specify the instance name: e.g. `-S PETER-PC\SAHSU`, e.g.
 	```
 	sqlcmd -E -S PETER-PC\SAHSU -d rif40 -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\" -v newdb="%NEWDB%"
 	```
+	
     If you set this it will need to be set in the environment as *SQLCMDSERVER*. This is usually caused by
     multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry
 	key is wrong. In Windows 10/SQL Server 2012 setting the instance name caused an error (i.e. PETER-PC worked but
 	PETER-PC\SAHSU did not).
-  * Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
-  * Check TCP access is enabled using SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
+  * Check if remote access is enabled (it should be) using SQL Server Management Studio as administrator: (https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx)
+  * Check TCP access is enabled using SQL Server Configuration Manager as administrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
   * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
-  * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
+  * The following is more helpful than the official Microsoft manuals: (https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/)
 
 Now test your can connect to the database.
 
 ## Logon errors
 
-Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXX
+Test for logon errors as using the command: ```sqlcmd -U peter -P XXXXXXXXXXXX```
 
 ### Wrong server authentication mode
 
@@ -171,15 +173,15 @@ Msg 18456, Level 14, State 1, Server PETER-PC\SQLEXPRESS, Line 1
 Login failed for user 'peter'.
 ```
 
-  In the Window "applications" event log:
+In the Window "applications" event log:
 ```
 Login failed for user 'peter'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
 ```
 
-  The node also show how to enable the sa (system administrator) account. As with all relational database administration accounts as strong (12+ character) password is recommended to defeat
-  attacks by dictionary or all possible passwords.
+The node also show how to enable the sa (system administrator) account. As with all relational database administration accounts as strong (12+ character) password is recommended to defeat
+attacks by dictionary or all possible passwords.
 
-  This is what a successful login looks like: `sqlcmd -U kevin -P XXXXXXXXXXXX`
+This is what a successful login looks like: `sqlcmd -U kevin -P XXXXXXXXXXXX`
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
@@ -262,7 +264,7 @@ The solution to this is to:
 # Create Additional Users
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using
-the -v newuser=<my new user>  and -v newpw=<my new password> parameters. Run as Administrator:
+the ```-v newuser=<my new user>``` and ```-v newpw=<my new password>``` parameters. Run as Administrator:
 
 ```
 sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXXXXXXXXXX
@@ -273,7 +275,7 @@ sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXX
 * Will fail to re-create a user if the user already has objects (tables, views etc);
 
 Test connection and object privileges:
-```
+```sql
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
 1> SELECT db_name() AS db_name INTO test_table;
 2> SELECT * FROM test_table;
@@ -307,7 +309,8 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 * Change "mybackuppath" to the path to the supplied backup file, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production*
 
 1. Validate the database name:
-```SQL
+
+```sql
 USE master;
 GO
 DECLARE @newdb VARCHAR(MAX)='mydatabasename';
@@ -330,7 +333,8 @@ GO
 ```
 
 2. Create the database
-```SQL
+
+```sql
 USE master;
 GO
 IF EXISTS(SELECT * FROM sys.sysdatabases where name='mydatabasename')
@@ -341,7 +345,7 @@ GO
 ```
 
 3. Import Database from supplied backup file
-```SQL
+```sql
 USE master;
 GO
 --
@@ -424,7 +428,7 @@ GO
 The RIF schema owner **MUST** be called *rif40* and will require BULK INSERT privilege to load data.
 
 Most users will need to ser the password to be able to load data.
-```SQL
+```sql
 USE master;
 GO
 --
@@ -441,7 +445,7 @@ END;
 GO
 
 5. Create database specific roles
-```SQL
+```sql
 USE mydatabasename;
 GO
 
@@ -540,7 +544,6 @@ GO
 
 ## Creating a New User
 
-
 These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD enviornment.
 
 * Change "mydatabasename" to the name of your database, e.g. *sahsuland*;
@@ -548,7 +551,8 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 * Change "mydatabasepassword" to the name of your users password;
 
 1. Validate the RIF user
-```SQL
+
+```sql
 USE [master];
 GO
 DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
@@ -571,7 +575,8 @@ GO
 ```
 
 2. Create Login
-```SQL
+
+```sql
 USE [master];
 GO
 IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
@@ -582,8 +587,9 @@ ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
 GO
 ```
 
-3. Creare user and grant roles
-```SQL
+3. Create user and grant roles
+
+```sql
 USE mydatabasename;
 GO
 BEGIN
@@ -610,7 +616,7 @@ GO
 4. Create user pecific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
    RIF data tables to which the user has been granted access permission.
 
-```SQL
+```sql
 USE mydatabasename;
 GO
 --
@@ -866,7 +872,7 @@ GO
 The best test of a correctly installed database is to logon as a test user and select from rif40_num_denom (numerator/denominator) pair view. The standard row
 will only appear if you can find and select from both tables:
 
-```SQL
+```sql
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>sqlcmd -U peter -P XXXXXXXXXXXXXXXXXXXXXXX -d sahsuland
 1> select * from rif40_num_denom;
 2> go
@@ -884,6 +890,3 @@ SAHSULAND                                          NUM_SAHSULAND_CANCER         
 1>
 ```
 
-# 5 Tuning
-
-To be added.
