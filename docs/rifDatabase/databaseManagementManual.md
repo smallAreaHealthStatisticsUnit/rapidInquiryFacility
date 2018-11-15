@@ -1498,6 +1498,7 @@ If you are using CSV log files set:
 Create a Postgres event log custom view, create a [custom event view](https://technet.microsoft.com/en-us/library/gg131917.aspx) in the Event Viewer.
 
 ![alt text](/rifDatabase/Postgres/docs/postgres_event_filter_setup.png?raw=true "Postgres event log custom view")
+<img src="https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_viewer_log2.png" alt="Equivalent PostgreSQL Windows log entry entry" title="Equivalent PostgreSQL Windows log entry entry" width="100%">
 
 An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_log_custom_view.xml) is also provided:
 ```xml
