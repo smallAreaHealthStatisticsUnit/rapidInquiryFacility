@@ -65,7 +65,7 @@ Microsoft SQL Server 2016 (SP1-GDR) (KB4019089) - 13.0.4206.0 (X64)
 
 A standalone script *rif40_database_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
 *...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by
-*rebuild_all.bat* see: [SQL Server Development Database Installation]({{ base.url }}/rifDatabase/SQLserver/installation/) or supplied by SAHSU.
+*rebuild_all.bat* see: [SQL Server Development Database Installation]({{ site.baseurl }}/rifDatabase/SQLserver/installation/) or supplied by SAHSU.
 If you use the pre-built version check that the dump *sahsuland_dev.bak* is unZipped.
 
 You will need to enter:
@@ -77,7 +77,7 @@ You will need to enter:
 The database name and user name should only contain lowercase letters, underscore (\_) and numbers and must start with a letter.
 The default password is the same as the username; change it on a production system connected to the internet!
 
-Before you run *rebuild_all.bat* check the [restore permissions]({{ base.url }}/rifDatabase/SQLserver/production/INSTALL.md#23-sql-server-restore)
+Before you run *rebuild_all.bat* check the [restore permissions]({{ site.baseurl }}/rifDatabase/SQLserver/production/INSTALL#sql-server-restore)
 
 **THESE SCRIPTS DO DROP ALL EXISTING TABLES AND DATA**.
 
@@ -310,118 +310,119 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 
 1. Validate the database name:
 
-```sql
-USE master;
-GO
-DECLARE @newdb VARCHAR(MAX)='mydatabasename';
-DECLARE @invalid_chars INTEGER;
-DECLARE @first_char VARCHAR(1);
-SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newdb);
-SET @first_char=SUBSTRING(@newdb, 1, 1);
-IF @invalid_chars IS NULL
-	RAISERROR('New database name is null', 16, 1, @newdb);
-ELSE IF @invalid_chars > 0
+  ```sql
+  USE master;
+  GO
+  DECLARE @newdb VARCHAR(MAX)='mydatabasename';
+  DECLARE @invalid_chars INTEGER;
+  DECLARE @first_char VARCHAR(1);
+  SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newdb);
+  SET @first_char=SUBSTRING(@newdb, 1, 1);
+  IF @invalid_chars IS NULL
+  	RAISERROR('New database name is null', 16, 1, @newdb);
+  ELSE IF @invalid_chars > 0
 	RAISERROR('New database name: %s contains invalid character(s) starting at position: %i.', 16, 1,
 		@newdb, @invalid_chars);
-ELSE IF (LEN(@newdb) > 30)
+  ELSE IF (LEN(@newdb) > 30)
 	RAISERROR('New database name: %s is too long (30 characters max).', 16, 1, @newdb);
-ELSE IF ISNUMERIC(@first_char) = 1
-	RAISERROR('First character in database name: %s is numeric: %s.', 16, 1, @newdb, @first_char);
-ELSE
+  ELSE IF ISNUMERIC(@first_char) = 1
+  	RAISERROR('First character in database name: %s is numeric: %s.', 16, 1, @newdb, @first_char);
+  ELSE
 	PRINT 'New database name: ' + @newdb + ' OK';
-GO
-```
+  GO
+  ```
 
 2. Create the database
 
-```sql
-USE master;
-GO
-IF EXISTS(SELECT * FROM sys.sysdatabases where name='mydatabasename')
-	DROP DATABASE mydatabasename;
-GO
-CREATE DATABASE mydatabasename;
-GO
-```
+  ```sql
+  USE master;
+  GO
+  IF EXISTS(SELECT * FROM sys.sysdatabases where name='mydatabasename')
+  	DROP DATABASE mydatabasename;
+  GO
+  CREATE DATABASE mydatabasename;
+  GO
+  ```
 
 3. Import Database from supplied backup file
-```sql
-USE master;
-GO
---
--- Find the actual database file names for the new mydatabasename DB
---
-SELECT DB_NAME(mf1.database_id) AS database_name,
-	   mf1.physical_name AS physical_db_filename,
-	   mf2.physical_name AS physical_log_filename
-  FROM sys.master_files mf1, sys.master_files mf2
- WHERE mf1.database_id = mf2.database_id
-   AND mf1.name        = 'mydatabasename'
-   AND mf2.name        = 'mydatabasename_log';
-GO
 
---
--- Import database from sahsuland_dev.bak
--- Grant local users read access to this directory
---
-DECLARE c1_db CURSOR FOR
+  ```sql
+	USE master;
+	GO
+	--
+	-- Find the actual database file names for the new mydatabasename DB
+	--
 	SELECT DB_NAME(mf1.database_id) AS database_name,
-	       mf1.physical_name AS physical_db_filename,
-	       mf2.physical_name AS physical_log_filename
+		   mf1.physical_name AS physical_db_filename,
+		   mf2.physical_name AS physical_log_filename
 	  FROM sys.master_files mf1, sys.master_files mf2
 	 WHERE mf1.database_id = mf2.database_id
 	   AND mf1.name        = 'mydatabasename'
 	   AND mf2.name        = 'mydatabasename_log';
-DECLARE @database_name 			VARCHAR(30);
-DECLARE @physical_db_filename 	VARCHAR(MAX);
-DECLARE @physical_log_filename 	VARCHAR(MAX);
-DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
+	GO
 
-OPEN c1_db;
-FETCH NEXT FROM c1_db INTO @database_name, @physical_db_filename, @physical_log_filename;
-CLOSE c1_db;
-DEALLOCATE c1_db;
+	--
+	-- Import database from sahsuland_dev.bak
+	-- Grant local users read access to this directory
+	--
+	DECLARE c1_db CURSOR FOR
+		SELECT DB_NAME(mf1.database_id) AS database_name,
+			   mf1.physical_name AS physical_db_filename,
+			   mf2.physical_name AS physical_log_filename
+		  FROM sys.master_files mf1, sys.master_files mf2
+		 WHERE mf1.database_id = mf2.database_id
+		   AND mf1.name        = 'mydatabasename'
+		   AND mf2.name        = 'mydatabasename_log';
+	DECLARE @database_name 			VARCHAR(30);
+	DECLARE @physical_db_filename 	VARCHAR(MAX);
+	DECLARE @physical_log_filename 	VARCHAR(MAX);
+	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
 
-/*
+	OPEN c1_db;
+	FETCH NEXT FROM c1_db INTO @database_name, @physical_db_filename, @physical_log_filename;
+	CLOSE c1_db;
+	DEALLOCATE c1_db;
 
-E.g.:
+	/*
 
-SQL[dbo]> RESTORE DATABASE [sahsuland]
-        FROM DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland_dev.bak'
-        WITH REPLACE,
-        MOVE 'sahsuland_dev' TO 'F:\SqlServer\sahsuland.mdf',
-        MOVE 'sahsuland_dev_log' TO 'F:\SqlServer\sahsuland_log.ldf';
-Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
-Processed 45648 pages for database 'sahsuland', file 'sahsuland_dev' on file 1.
-Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
-Processed 14 pages for database 'sahsuland', file 'sahsuland_dev_log' on file 1.
-Msg 3014, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
-RESTORE DATABASE successfully processed 45662 pages in 5.130 seconds (69.538 MB/sec).
-SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev, NEWNAME = sahsuland);
-Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
-The file name 'sahsuland' has been set.
-SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = sahsuland_log);
-Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
-The file name 'sahsuland_log' has been set.
+	E.g.:
 
- */
+	SQL[dbo]> RESTORE DATABASE [sahsuland]
+			FROM DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland_dev.bak'
+			WITH REPLACE,
+			MOVE 'sahsuland_dev' TO 'F:\SqlServer\sahsuland.mdf',
+			MOVE 'sahsuland_dev_log' TO 'F:\SqlServer\sahsuland_log.ldf';
+	Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+	Processed 45648 pages for database 'sahsuland', file 'sahsuland_dev' on file 1.
+	Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+	Processed 14 pages for database 'sahsuland', file 'sahsuland_dev_log' on file 1.
+	Msg 3014, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+	RESTORE DATABASE successfully processed 45662 pages in 5.130 seconds (69.538 MB/sec).
+	SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev, NEWNAME = sahsuland);
+	Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+	The file name 'sahsuland' has been set.
+	SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = sahsuland_log);
+	Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+	The file name 'sahsuland_log' has been set.
 
-DECLARE @sql_stmt NVARCHAR(MAX);
-SET @sql_stmt =	'RESTORE DATABASE [mydatabasename]' + @crlf +
-'        FROM DISK=''mybackuppath\sahsuland_dev.bak''' + @crlf +
-'        WITH REPLACE,' + @crlf +
-'        MOVE ''sahsuland_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
-'        MOVE ''sahsuland_dev_log'' TO ''' + @physical_log_filename + '''';
-PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
-EXECUTE sp_executesql @sql_stmt;
-SET @sql_stmt='ALTER DATABASE [mydatabasename] MODIFY FILE ( NAME = sahsuland_dev, NEWNAME = mydatabasename)';
-PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
-EXECUTE sp_executesql @sql_stmt;
-SET @sql_stmt='ALTER DATABASE [mydatabasename] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = mydatabasename_log)';
-PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
-EXECUTE sp_executesql @sql_stmt;
-GO
-```
+	 */
+
+	DECLARE @sql_stmt NVARCHAR(MAX);
+	SET @sql_stmt =	'RESTORE DATABASE [mydatabasename]' + @crlf +
+	'        FROM DISK=''mybackuppath\sahsuland_dev.bak''' + @crlf +
+	'        WITH REPLACE,' + @crlf +
+	'        MOVE ''sahsuland_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
+	'        MOVE ''sahsuland_dev_log'' TO ''' + @physical_log_filename + '''';
+	PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+	EXECUTE sp_executesql @sql_stmt;
+	SET @sql_stmt='ALTER DATABASE [mydatabasename] MODIFY FILE ( NAME = sahsuland_dev, NEWNAME = mydatabasename)';
+	PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+	EXECUTE sp_executesql @sql_stmt;
+	SET @sql_stmt='ALTER DATABASE [mydatabasename] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = mydatabasename_log)';
+	PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+	EXECUTE sp_executesql @sql_stmt;
+	GO
+  ```
 
 4. Create the schema owner (rif40)
 
