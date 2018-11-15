@@ -986,7 +986,7 @@ The following *mapshaper* options were used:
   Mapshaper's default simplification method uses Visvalingam simplification but weights the effective area of each point so that smaller-angle vertices are preferentially removed,
   resulting in a smoother appearance. Display summary statistics relating to the geometry of simplified paths;
 * [```-o <output shapefile or output directory>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-o-output): Output shapefile or output directory;
-  * ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg;
+  * ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a ```shapefile|geojson|topojson|json|dbf|csv|tsv|svg```;
   * ```name=<new name>```: Rename the layer (or layers) modified by a command;
 * [```-each <expression>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-each): Apply a JavaScript &lt;expression&gt; to each feature in a layer. Data properties are available as local variables. Additional feature-level properties
   are available as read-only properties of the this object.
@@ -2269,5 +2269,4 @@ TileMaker is currently working with some minor faults but needs to have in order
 10. Run the generated scripts in the Node.js server. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
     file handlers in Node.js.
 
-Peter Hambly
-June 2018
+**Peter Hambly, June 2018**
