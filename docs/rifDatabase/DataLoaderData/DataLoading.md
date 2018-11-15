@@ -457,9 +457,9 @@ one or more areas that fit exactly within the lower resolution. Users with the *
 * *avg_npoints_geom*, *avg_npoints_opt*, *file_geojson_len*, *leg_geom* and *leg_opt* are used as part of the administrative geography preprocessing (tile maker);
 * Normally *resolution*, *comparea* and *listing* are all set to "1". Setting to "0" restricts the RIF front end as follows:
 
-  - *resolution*: cannot use the map for selection at this resolution for either study or comparison area;                                                                                                                                                                                                                                                                                                         | smallint     |
-  - *comparea*:cannot be to be used as a comparison area;                                                                                                                                                                                                                                                                                                                  | smallint     |
-  - *listing*: cannot be in a list of areas when setting up a disease map study or comparison area.
+  * *resolution*: cannot use the map for selection at this resolution for either study or comparison area;                                                                                                                                                                                                                                                                                                         | smallint     |
+  * *comparea*:cannot be to be used as a comparison area;                                                                                                                                                                                                                                                                                                                  | smallint     |
+  * *listing*: cannot be in a list of areas when setting up a disease map study or comparison area.
 
 The supplied *SAHUSLAND* test database is set up as follows:
 
