@@ -310,43 +310,43 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 
 1. Validate the database name:
 
-  ```sql
-  USE master;
-  GO
-  DECLARE @newdb VARCHAR(MAX)='mydatabasename';
-  DECLARE @invalid_chars INTEGER;
-  DECLARE @first_char VARCHAR(1);
-  SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newdb);
-  SET @first_char=SUBSTRING(@newdb, 1, 1);
-  IF @invalid_chars IS NULL
+	```sql
+	USE master;
+	GO
+	DECLARE @newdb VARCHAR(MAX)='mydatabasename';
+	DECLARE @invalid_chars INTEGER;
+	DECLARE @first_char VARCHAR(1);
+	SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newdb);
+	SET @first_char=SUBSTRING(@newdb, 1, 1);
+	IF @invalid_chars IS NULL
 		RAISERROR('New database name is null', 16, 1, @newdb);
-  ELSE IF @invalid_chars > 0
+	ELSE IF @invalid_chars > 0
 		RAISERROR('New database name: %s contains invalid character(s) starting at position: %i.', 16, 1,
 			@newdb, @invalid_chars);
-  ELSE IF (LEN(@newdb) > 30)
+	ELSE IF (LEN(@newdb) > 30)
 		RAISERROR('New database name: %s is too long (30 characters max).', 16, 1, @newdb);
-  ELSE IF ISNUMERIC(@first_char) = 1
+	ELSE IF ISNUMERIC(@first_char) = 1
 		RAISERROR('First character in database name: %s is numeric: %s.', 16, 1, @newdb, @first_char);
-  ELSE
+	ELSE
 		PRINT 'New database name: ' + @newdb + ' OK';
-  GO
-  ```
+	GO
+	```
 
 2. Create the database
 
-  ```sql
-  USE master;
-  GO
-  IF EXISTS(SELECT * FROM sys.sysdatabases where name='mydatabasename')
+	```sql
+	USE master;
+	GO
+	IF EXISTS(SELECT * FROM sys.sysdatabases where name='mydatabasename')
 		DROP DATABASE mydatabasename;
-  GO
-  CREATE DATABASE mydatabasename;
-  GO
-  ```
+	GO
+	CREATE DATABASE mydatabasename;
+	GO
+	```
 
 3. Import Database from supplied backup file
 
-  ```sql
+	```sql
 	USE master;
 	GO
 	--
@@ -422,14 +422,15 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 	PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 	EXECUTE sp_executesql @sql_stmt;
 	GO
-  ```
+	```
 
 4. Create the schema owner (rif40)
 
   The RIF schema owner **MUST** be called *rif40* and will require BULK INSERT privilege to load data.
 
   Most users will need to ser the password to be able to load data.
-  ```sql
+  
+	```sql
 	USE master;
 	GO
 	--
@@ -444,10 +445,11 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 		EXECUTE sp_executesql @sql_stmt;	;	-- Change this password if you want to logon!
 	END;
 	GO
-  ```
+	```
 
 5. Create database specific roles
-  ```sql
+  
+	```sql
 	USE mydatabasename;
 	GO
 
@@ -530,7 +532,6 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 	GRANT CREATE TYPE TO [rif40];
 	GO
 
-
 	--
 	-- Grant USAGE on the rif_studies schema to RIF40. This implies control
 	--
@@ -542,7 +543,7 @@ These instructions are based on *rif40_production_creation.sql*. This uses *NEWU
 	--
 	EXEC sp_addsrvrolemember @loginame = N'rif40', @rolename = N'bulkadmin';
 	GO
-  ```
+	```
 
 ## Creating a New User
 
@@ -554,7 +555,7 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 
 1. Validate the RIF user
 
-  ```sql
+	```sql
 	USE [master];
 	GO
 	DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
@@ -574,11 +575,11 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 	ELSE
 		PRINT 'New username: ' + @newuser + ' OK';
 	GO
-  ```
+	```
 
 2. Create Login
 
-  ```sql
+	```sql
 	USE [master];
 	GO
 	IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
@@ -587,11 +588,11 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 
 	ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
 	GO
-  ```
+	```
 
 3. Create user and grant roles
 
-  ```sql
+	```sql
 	USE mydatabasename;
 	GO
 	BEGIN
@@ -612,13 +613,14 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 		ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];
 	END;
 	GO
-  ```
-* **Change the password**. The password is set to *mydatabasepassword*.
+	```
+	
+  * **Change the password**. The password is set to *mydatabasepassword*.
 
 4. Create user specific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
    RIF data tables to which the user has been granted access permission.
 
-  ```sql
+    ```sql
 	USE mydatabasename;
 	GO
 	--
@@ -867,7 +869,7 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 		@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors',
 		@level2type=N'COLUMN',@level2name=N'auto_indirect_error'
 	GO
-  ```
+    ```
 
 ## Testing The Database
 
