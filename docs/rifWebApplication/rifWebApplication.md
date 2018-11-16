@@ -766,7 +766,7 @@ As with Java, do NOT use the 32 bit only version unless you have to. These instr
 bit version
 
 Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*. Not: **C:\Program Files\R\R-3.4.4\bin**
-or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifwebapplication/rifwebapplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifWebApplication/rifWebApplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 # Building Web Services using Maven
 
@@ -1856,7 +1856,7 @@ Restarting the server using ```catalina.bat run``` and re-running the study resu
 
 See:
 
-* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifwebapplication/rifwebapplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifWebApplication/rifWebApplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 ### SQL Server ODBC Connection Errors
 
