@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,14 +18,12 @@ import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerFactory;
-import java.io.StringWriter;
-import java.io.StringReader;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.ws.rs.core.Response;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
@@ -33,6 +33,7 @@ import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FrontEndLogger;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.util.UrlFromServletRequest;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
@@ -1125,14 +1126,8 @@ public class WebService {
 		try {
 			Locale locale = servletRequest.getLocale();
 			User user = createUser(servletRequest, userID);
-			
-			String host=servletRequest.getLocalName();
-			if (host.equals("0:0:0:0:0:0:0:1")) { // Windows 7 stupidity
-				host="localhost";
-			}
-			String url = servletRequest.getScheme() + "://" +
-				host + ":" +
-				servletRequest.getLocalPort();
+
+			String url = new UrlFromServletRequest(servletRequest).get();
 				
 			RIFStudySubmissionAPI studySubmissionService
 			= getRIFStudySubmissionService();
@@ -1157,7 +1152,7 @@ public class WebService {
 				servletRequest,
 				result);
 	}
-	
+
 	protected Response getExtractStatus(
 			final HttpServletRequest servletRequest,
 			final String userID,
@@ -1225,14 +1220,8 @@ getParameter("p 1")     yes     c d
 				"; getLocalPort: " + servletRequest.getLocalPort() +
 				"; getServerName: " + servletRequest.getServerName() +
 				"; getServerPort: " + servletRequest.getServerPort());
-				
-			String host=servletRequest.getLocalName();
-			if (host.equals("0:0:0:0:0:0:0:1")) { // Windows 7 stupidity
-				host="localhost";
-			}
-			String url = servletRequest.getScheme() + "://" +
-				host + ":" +
-				servletRequest.getLocalPort();
+
+			String url = new UrlFromServletRequest(servletRequest).get();
 
 			RIFStudySubmissionAPI studySubmissionService
 			= getRIFStudySubmissionService();
@@ -1364,8 +1353,7 @@ getParameter("p 1")     yes     c d
 			if (StudySubmissionFormat.JSON.matchesFormat(tmpFormat)) {
 				rifLogger.info(this.getClass(), "ARWS-submitStudy122 JSON");
 				rifStudySubmission = getRIFSubmissionFromJSONSource(inputStream);
-			}
-			else {
+			} else {
 				rifLogger.info(this.getClass(), "ARWS-submitStudy122 ");
 				rifStudySubmission = RIFStudySubmission.newInstance(inputStream);
 			}
@@ -1376,20 +1364,13 @@ getParameter("p 1")     yes     c d
 			
 			rifStudySubmission.checkErrors(AbstractRIFConcept.ValidationPolicy.RELAXED);
 
-			RIFStudySubmissionAPI studySubmissionService
-				= getRIFStudySubmissionService();
-			studySubmissionService.submitStudy(
-				user,
-				rifStudySubmission,
-				null);
-		}
-		catch(Exception exception) {
+			RIFStudySubmissionAPI studySubmissionService = getRIFStudySubmissionService();
+			studySubmissionService.submitStudy(user, rifStudySubmission, null,
+			                                   new UrlFromServletRequest(servletRequest).get());
+		} catch(Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
 			                                 ".submitStudy error", exception);
-			result
-				= serialiseException(
-					servletRequest,
-					exception);
+			result = serialiseException(servletRequest, exception);
 		}
 		
 		

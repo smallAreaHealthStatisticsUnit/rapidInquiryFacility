@@ -24,7 +24,8 @@ public class RunStudyThread implements Runnable {
 	private User user;
 	private RIFStudySubmission studySubmission;
 	private String studyID;
-	
+	private String url;
+
 	private StudyStateMachine studyStateMachine;
 	
 	private StudyStateManager studyStateManager;
@@ -37,18 +38,16 @@ public class RunStudyThread implements Runnable {
 		studyStateMachine.initialiseState();
 	}
 	
-	public void initialise(
-		final Connection connection,
-		final User user,
-		final String password,		
-		final RIFStudySubmission studySubmission,
-		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final ServiceResources rifServiceResources) throws RIFServiceException {
+	public void initialise(final Connection connection, final User user, final String password,
+			final RIFStudySubmission studySubmission,
+			final RIFServiceStartupOptions rifServiceStartupOptions,
+			final ServiceResources rifServiceResources, final String url)
+			throws RIFServiceException {
 		
 		this.connection = connection;
 		this.user = user;				
 		this.studySubmission = studySubmission;
-		
+		this.url = url;
 		
 		RIFDatabaseProperties rifDatabaseProperties 
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
@@ -245,10 +244,7 @@ public class RunStudyThread implements Runnable {
 		throws RIFServiceException {
 
 		try {
-			statisticsProcessing.performStep(
-				connection,
-				studySubmission, 
-				studyID);
+			statisticsProcessing.performStep(connection, studySubmission, studyID, url);
 			String statusMessage
 				= RIFServiceMessages.getMessage(
 					"studyState.studyResultsComputed.description");

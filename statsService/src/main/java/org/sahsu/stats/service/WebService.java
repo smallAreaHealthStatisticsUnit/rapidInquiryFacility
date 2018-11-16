@@ -18,7 +18,7 @@ public class WebService extends Application {
 	public WebService() {
 
 		final RIFLogger logger = RIFLogger.getLogger();
-		logger.info(getClass(), "!!!!!!!!!!!!!!!!!!!!! Statistics WebService !!!!!!");
+		logger.info(getClass(), "!!!!!! Statistics WebService !!!!!!");
 	}
 
 	@Override

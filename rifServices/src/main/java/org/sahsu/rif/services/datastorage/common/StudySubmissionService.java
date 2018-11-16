@@ -112,7 +112,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		setServiceContactEmail(serviceContactEmail);
 	}
 
-	public void test(final User user)
+	public void test(final User user, String url)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -124,18 +124,14 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		try {
 
 			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledWriteConnection(user);
+			connection = sqlConnectionManager.assignPooledWriteConnection(user);
 			String password=sqlConnectionManager.getUserPassword(user);
 
-			SampleTestObjectGenerator testDataGenerator
-				= new SampleTestObjectGenerator();
-			RIFStudySubmission studySubmission
-				= testDataGenerator.createSampleRIFJobSubmission();
+			SampleTestObjectGenerator testDataGenerator = new SampleTestObjectGenerator();
+			RIFStudySubmission studySubmission = testDataGenerator.createSampleRIFJobSubmission();
 
 			//Delegate operation to a specialised manager class
-			RIFServiceStartupOptions rifServiceStartupOptions
-				= getRIFServiceStartupOptions();
+			RIFServiceStartupOptions rifServiceStartupOptions = getRIFServiceStartupOptions();
 			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
 				connection,
@@ -143,7 +139,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				password,
 				studySubmission,
 				rifServiceStartupOptions,
-				rifServiceResources);
+				rifServiceResources,
+				url);
 
 			exec.execute(runStudyThread);
 		}
@@ -617,10 +614,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	}
 
 
-	public String submitStudy(
-		final User _user,
-		final RIFStudySubmission rifStudySubmission,
-		final File _outputFile) throws RIFServiceException {
+	public String submitStudy(final User _user, final RIFStudySubmission rifStudySubmission,
+			final File _outputFile, final String url) throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -665,24 +660,21 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			if (outputFile != null) {
 				outputFileName = outputFile.getAbsolutePath();
 			}
+
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.submittingStudy",
 					user.getUserID(),
 					user.getIPAddress(),
 					rifStudySubmission.getDisplayName(),
 					outputFileName);
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
+			rifLogger.info(getClass(), auditTrailMessage);
 
 			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledWriteConnection(user);
+			connection = sqlConnectionManager.assignPooledWriteConnection(user);
 			String password=sqlConnectionManager.getUserPassword(user);
 
 			//Delegate operation to a specialised manager class
-			RIFServiceStartupOptions rifServiceStartupOptions
-				= getRIFServiceStartupOptions();
+			RIFServiceStartupOptions rifServiceStartupOptions = getRIFServiceStartupOptions();
 			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
 				connection,
@@ -690,7 +682,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				password,
 				rifStudySubmission,
 				rifServiceStartupOptions,
-				rifServiceResources);
+				rifServiceResources,
+				url);
 
 			exec.execute(runStudyThread);
 		}

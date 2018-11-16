@@ -213,14 +213,12 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @param user the user
 	 * @param rifStudySubmission the rif job submission
 	 * @param outputFile the output file
+	 * @param url the URL of the originating request
 	 * @return the studyID for the study that has just been submitted
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public String submitStudy(
-		final User user,
-		final RIFStudySubmission rifStudySubmission,
-		final File outputFile) 
-		throws RIFServiceException;	
+	String submitStudy(final User user, final RIFStudySubmission rifStudySubmission,
+			final File outputFile, final String url) throws RIFServiceException;
 	
 	public void createStudyExtract(
 		final User user,
@@ -251,7 +249,6 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	public String getFrontEndParameters(
 		final User user);
 	
-	public void test(final User user) 
-		throws RIFServiceException;
+	void test(final User user, final String url) throws RIFServiceException;
 	
 }

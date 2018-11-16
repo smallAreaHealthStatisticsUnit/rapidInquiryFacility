@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.system.Messages;
+import org.sahsu.rif.generic.util.UrlFromServletRequest;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
 import org.sahsu.rif.services.concepts.AgeGroup;
@@ -26,8 +27,6 @@ import org.sahsu.rif.services.concepts.AgeGroupSortingOption;
 import org.sahsu.rif.services.concepts.CalculationMethod;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
 import org.sahsu.rif.services.concepts.Geography;
-import org.sahsu.rif.services.concepts.HealthCode;
-import org.sahsu.rif.services.concepts.HealthCodeTaxonomy;
 import org.sahsu.rif.services.concepts.HealthTheme;
 import org.sahsu.rif.services.concepts.NumeratorDenominatorPair;
 import org.sahsu.rif.services.concepts.Project;
@@ -39,7 +38,7 @@ import com.sun.jersey.multipart.FormDataParam;
 
 /**
  * This class advertises API methods found in 
- * {@link rifServices.businessConceptLayer.RIFJobSubmissionAPI}
+ * rifServices.businessConceptLayer.RIFJobSubmissionAPI
  * as a web service.  
  * 
  * Two issues have dominated the design of this class:
@@ -502,24 +501,17 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			User user = createUser(servletRequest, userID);
 
 			//Call service API
-			RIFStudySubmissionAPI studySubmissionService
-					= getRIFStudySubmissionService();
-			studySubmissionService.test(user);
+			RIFStudySubmissionAPI studySubmissionService = getRIFStudySubmissionService();
+			studySubmissionService.test(user, new UrlFromServletRequest(servletRequest).get());
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 			//Convert exceptions to support JSON
-			result
-					= serialiseException(
-					servletRequest,
-					exception);
+			result = serialiseException(servletRequest, exception);
 		}
-		WebServiceResponseGenerator webServiceResponseGenerator
-				= getWebServiceResponseGenerator();
+		WebServiceResponseGenerator webServiceResponseGenerator = getWebServiceResponseGenerator();
 
-		return webServiceResponseGenerator.generateWebServiceResponse(
-				servletRequest,
-				result);
+		return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
 	}
 
 	@GET

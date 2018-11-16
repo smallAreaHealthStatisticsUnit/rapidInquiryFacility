@@ -83,7 +83,7 @@ public class StatisticsProcessing extends CommonRService {
 	}
 	
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
-			final String studyID) throws RIFServiceException {
+			final String studyID, final String url) throws RIFServiceException {
 
 		//KLG: For now it only works with the first study.  For some reason, newer extract
 		//tables cause the R program we use to generate an error.
