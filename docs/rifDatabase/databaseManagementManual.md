@@ -2443,7 +2443,7 @@ When the query was split by geolevel_id it ran in two minutes as opposed to >245
 ### Database Space Management
 
 SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as 
-space stays with tables once allocated; databases need to be shrunk periodically: (https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017). 
+space stays with tables once allocated; databases need to be shrunk periodically: [](https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017). 
 Note that the database will **NOT** shrink unless you back it up.
 
 ![SQL Server Shrink Database]({{ site.baseurl }}/rifDatabase/SQLserver/images/sqlserver_shrink.png)
