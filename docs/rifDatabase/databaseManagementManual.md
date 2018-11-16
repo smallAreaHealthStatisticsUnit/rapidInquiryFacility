@@ -669,8 +669,8 @@ The *map name* must be one of following mappable methods from *hba.conf* (i.e. t
 
 The Windows installer guide for Postgres has examples:
 
-* [Authentication Setup - hba.conf]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#-authentication-setup-hbaconf)
-* [Proxy user setup - ident.conf]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#-proxy-user-setup-identconf)
+* [Authentication Setup - hba.conf]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#authentication-setup-hbaconf)
+* [Proxy user setup - ident.conf]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#proxy-user-setup-identconf)
 
 So, if I setup SSPI as per the examples to use *SSPI* in *hba.conf*:
 
@@ -1825,7 +1825,7 @@ In general RIF database performance will benefit from:
 * Allowing the use of limited parallelisation in queries, inserts and index creation;
 * Use of index organised denominator and covariate tables. Note that by default all tables are index organised on SQL Server;
 
-See [3.3 Partitioning](#partitioning)
+See [Partitioning](#partitioning)
 
 ## Postgres
 

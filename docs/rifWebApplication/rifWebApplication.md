@@ -99,7 +99,7 @@ This makes tomcat Java upgrade proof; but this may have unintended effects if:
 
 This is suitable for laptops and developers with no access from other machines. Download and install tomcat; make sure your firewall blocks
 port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in 
-[Securing Tomcat]({{ site.baseurl }}/rifWebApplication/rifWebApplication#82-securing-tomcat).
+[Securing Tomcat]({{ site.baseurl }}/rifWebApplication/rifWebApplication#securing-tomcat).
 
 ### Apache Tomcat for internet use
 
@@ -766,7 +766,7 @@ As with Java, do NOT use the 32 bit only version unless you have to. These instr
 bit version
 
 Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*. Not: **C:\Program Files\R\R-3.4.4\bin**
-or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifwebapplication/#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifwebapplication/rifwebapplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 # Building Web Services using Maven
 
@@ -1890,7 +1890,7 @@ b) Check your firewall/other security software is permitting access to your serv
   If when you open SQL Server Configuration Manager in SQL Server you get the following error: "Cannot connect to WMI provider. You do not have permission or the server is unreachable"; see:
   (https://support.microsoft.com/en-us/help/956013/error-message-when-you-open-sql-server-configuration-manager-in-sql-se). Make sure you set number to the highest version present in the directory:
 
-  ```mofcomp "%programfiles(x86)%\Microsoft SQL Server\**&lt;number&gt;**\Shared\sqlmgmproviderxpsp2up.mof"```
+  *mofcomp "%programfiles(x86)%\Microsoft SQL Server\**&lt;number&gt;**\Shared\sqlmgmproviderxpsp2up.mof"*
   e.g.
   ```
 	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>mofcomp "%programfiles(x86)%\Microsoft SQL Server\140\Shared\sqlmgmprovid
@@ -2119,7 +2119,7 @@ The RIF web application may require you to patch the database. You will get mess
 ![alter_10.sql (post 3rd August 2018 changes for risk analysis) not run]({{ site.baseurl }}/rifWebApplication/alter_10.PNG)
 
 
-See the database Management manual: [6 Patching](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual.html#6-patching)
+See the database Management manual: [Patching](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual.html#patching)
 
 ## RIF Middleware
 

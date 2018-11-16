@@ -43,7 +43,7 @@ See: [Installing the RIF SQL Server database from a SAHSU supplied database expo
 
 ## Web Services
 
-See: [Building RIF web services from github and installing securely in Tomcat]({{ site.baseurl }}/rifWebApplication/rifWebApplication/)
+See: [Building RIF web services from github and installing securely in Tomcat]({{ site.baseurl }}/rifWebApplication/rifWebApplication)
 
 ### Taxonomy Services
 
