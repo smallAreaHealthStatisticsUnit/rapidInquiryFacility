@@ -2018,7 +2018,7 @@ Tile manufacturing steps:
 			   FROM a
 		 ORDER BY tile_id, areaid;
 	```
-	This GeoJSON is then converted to [TopoJSON](https://github.com/topojson/topojson-specification/blob/master/) and stored in the tiles table.
+	This GeoJSON is then converted to [TopoJSON](https://github.com/topojson/topojson-specification/) and stored in the tiles table.
 	Example TopoJSON fragment - truncated:
 	```JSON
 	{

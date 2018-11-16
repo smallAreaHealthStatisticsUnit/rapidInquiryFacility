@@ -98,7 +98,8 @@ This makes tomcat Java upgrade proof; but this may have unintended effects if:
 ### Apache Tomcat on a single host
 
 This is suitable for laptops and developers with no access from other machines. Download and install tomcat; make sure your firewall blocks
-port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in [Securing Tomcat]({{ site.baseurl }}/rifWebApplication/#82-securing-tomcat).
+port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in 
+[Securing Tomcat]({{ site.baseurl }}/rifWebApplication/rifWebApplication#82-securing-tomcat).
 
 ### Apache Tomcat for internet use
 
@@ -116,7 +117,7 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web
   services will not work [The web services will fail to start on the first user logon if it is not set]; see:
-  [RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/#rif-services-crash-on-logon).
+  [RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services-crash-on-logon).
 - If *CATALINA_HOME* is *C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.5* you have installed the 32 bit version of Java.
   Remove tomcat and Java and re-install a 64 bit Java (unless you are on a really old 32 bit only Machine...)
 
@@ -759,7 +760,7 @@ Debugging logging faults:
 
 Download and install R: (https://cran.ma.imperial.ac.uk/bin/windows/base)
 
-R is setup later in: [R setup]({{ site.baseurl }}/rifWebApplication/#setup-r)
+R is setup later in: [R setup]({{ site.baseurl }}/rifWebApplication/rifWebApplication#setup-r)
 
 As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64
 bit version
@@ -1047,7 +1048,7 @@ If you are running on a laptop and using Postgres you only need to copy the file
   * name (key database.databaseName) is *sahsuland*;
   * Port (key database.port) is *5432*;
   * host (key database.host) is *localhost* for Postgres. Normally tomcat is installed on the same server as the database; if this is not the case Postgres and the
-    firewalls will need to be setup correctly, see [Postgres Client Authentication](https://www.postgresql.org/docs/9.9/static/client-authentication.html).
+    firewalls will need to be setup correctly, see [Postgres Client Authentication](https://www.postgresql.org/docs/9.6/auth-methods.html).
 	This usually requires skilled database and network administrators. The SQL Server host will be the same as the SQLCMDSERVER variable;
 
     Do not set up the database not network access or open the firewall ports unless this is required; it is secure on *localhost*! The database
@@ -1326,7 +1327,7 @@ Create and test a system ODBC datasource
      ![SQL Server ODBC Setup 3]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup3.png).
 
 * If you cannot see a SQL Server database list (you will get an error when SQL server tries to build a list) or get SQL Server connection errors on test see:
-  [SQL Server ODBC Connection Errors]({{ site.baseurl }}/rifWebApplication/#sql-server-odbc-connection-errors)
+  [SQL Server ODBC Connection Errors]({{ site.baseurl }}/rifWebApplication/rifWebApplication#sql-server-odbc-connection-errors)
 
 * Make sure you test the ODBC connection using the RIF user username and password.!
 
@@ -1490,11 +1491,11 @@ The downloaded binary packages are in
 	```
 
 	* **RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES**
-	* [You can now start the rif]({{ site.baseurl }}/rifWebApplication/#running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory
+	* [You can now start the rif]({{ site.baseurl }}/rifWebApplication/rifWebApplication#running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory
 	  *%CATALINA_HOME%\bin* as an Administrator.). The web services will fail to start on the first user logon if the R environment not setup correctly]; see:
-  [RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/#rif-services-crash-on-logon).
+  [RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services-crash-on-logon).
 	* Then you can logon. See section 5
-	  [Running the RIF]({{ site.baseurl }}/rifWebApplication/#running-the-rif)
+	  [Running the RIF]({{ site.baseurl }}/rifWebApplication/rifWebApplication#running-the-rif)
 	  for logon instructions
 
 
@@ -1855,7 +1856,7 @@ Restarting the server using ```catalina.bat run``` and re-running the study resu
 
 See:
 
-* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/master/rifwebapplication/#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifwebapplication/rifwebapplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 ### SQL Server ODBC Connection Errors
 
@@ -1871,7 +1872,7 @@ Symptoms: when creating a SQL Server ODBC connection:
 
 * No items in database list is a symptom of no discovery services and is not an error. Type in your *hostname* manually.
 
-  ![SQL Server ODBC No connection List]({{ site.baseurl }}/master/rifWebApplication/sql_server_odbc_connection_no_list.png)
+  ![SQL Server ODBC No connection List]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_connection_no_list.png)
 
 **Tip:** type *hostname* for your TCP/IP hostname. This is not normally a fully qualified domain name (i.e. will only work locally)
 ```
@@ -2107,7 +2108,7 @@ instructions if it is updated say to *RIF41*.
 * Stop Tomcat;
 * Change directory to *%CATALINA_HOME%\webapps*; rename RIF40 to RIF40.old;
 * Follow the instructions in
-  [installing the RIF Web Application]({{ site.baseurl }}/rifWebApplication/#rif-web-application)
+  [installing the RIF Web Application]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-web-application)
   i.e. copy the replacement *RIF40.war* file into the *%CATALINA_HOME%\webapps\* directory;
 * Restore *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* if you have modified it;
 * When you are satisfied with the patch remove the RIF40.old directory in *%CATALINA_HOME%\webapps*.
@@ -2128,7 +2129,7 @@ See the database Management manual: [6 Patching](https://smallareahealthstatisti
 * Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices
   and taxonomyServices trees to .old;
 * Follow the instructions in
-  [installing the web services]({{ site.baseurl }}/rifWebApplication/#rif-services).
+  [installing the web services]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services).
   i.e. copy replacement *taxonomy.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart tomcat;
@@ -2156,7 +2157,8 @@ This has not been tested ans it has not been required. Files to be saved/restore
 
 ## R
 
-If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in [Setup R]({{ site.baseurl }}/rifWebApplication/#setup-r).
+If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in 
+[Setup R]({{ site.baseurl }}/rifWebApplication/rifWebApplication#setup-r).
 Make absolutely sure the PATH and R_HOME are set correctly.
 
 Updating the packages can also be done (consult your statisticians first); on a private network you have two choices:

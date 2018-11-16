@@ -1069,7 +1069,7 @@ The RIF currently [deliberately] extracts data year by year and so explicit disa
 ### Postgres
 
 Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. 
-Postgres 10 has native support for partitioning, see: [Postgres 10 partitioning](https://www.postgresql.org/docs/10/static/ddl-partitioning). 
+Postgres 10 has native support for partitioning, see: [Postgres 10 partitioning](https://www.postgresql.org/docs/10/ddl-partitioning). 
 The implementation is still incomplete and the following limitations apply to partitioned tables:
 
 * There is no facility available to create the matching indexes on all partitions automatically. Indexes must be added to each partition with separate commands. This also means that
@@ -1847,7 +1847,8 @@ The principal tuning changes are:
 * Effective_cache_size: 1/2 of total memory
 * On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed on 
   21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint
-  [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
+  [Physical and Virtual Memory in Windows 10 by Sushovon Sinha: translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) 
+  size. Query "*windows translation lookaside buffer*" in Google if Microsoft moves this link again!!
 
   Example parameter entries from *postgresql.conf*:
   
