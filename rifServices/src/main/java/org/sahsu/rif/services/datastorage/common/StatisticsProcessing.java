@@ -136,10 +136,10 @@ public class StatisticsProcessing extends CommonRService {
 
 		Parameters parameters = new Parameters(getParameters());
 
-		String uri = "/statistics/service/script";
+		String statsServiceUrl = url + "/statistics/service/script";
 
-		rifLogger.info(getClass(), "About to call statistics service on " + uri);
-		WebResource resource = Client.create().resource(uri);
+		rifLogger.info(getClass(), "About to call statistics service on " + statsServiceUrl);
+		WebResource resource = Client.create().resource(statsServiceUrl);
 		ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
 				                          .type(MediaType.APPLICATION_JSON)
 				                          .post(ClientResponse.class, parameters);
