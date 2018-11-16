@@ -6,7 +6,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>stats</artifactId>
+	<artifactId>statistics</artifactId>
 	<packaging>war</packaging>
 	
 	<name>RIF Statistics Service</name>
@@ -41,9 +41,51 @@
 			<artifactId>JRI</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>1.19.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-json</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-multipart</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-servlet</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
+
+		<resources>
+			<!-- Adding the R source directory so it gets copied to WEB-INF/classes. But  that
+				 overrides the default resources directory, so we have to include that here too. -->
+			<resource>
+				<directory>src/main/R</directory>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
 
 		<plugins>
 

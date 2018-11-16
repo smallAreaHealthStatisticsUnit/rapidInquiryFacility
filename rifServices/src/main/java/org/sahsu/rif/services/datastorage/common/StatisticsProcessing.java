@@ -1,7 +1,5 @@
 package org.sahsu.rif.services.datastorage.common;
 
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,15 +10,14 @@ import java.util.List;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import org.rosuda.JRI.REXP;
-import org.rosuda.JRI.Rengine;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
+
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.concepts.Parameters;
-import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.generic.util.RIFMemoryManager;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
@@ -28,6 +25,10 @@ import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 
 public class StatisticsProcessing extends CommonRService {
 
@@ -64,8 +65,6 @@ public class StatisticsProcessing extends CommonRService {
 				rifLogger.debug(this.getClass(), "Other java.util.logging.manager logger: " + name);
 			}
 		}
-		
-		rifLogger.printLoggers();
 	}
 
 	public void initialise(
@@ -86,95 +85,70 @@ public class StatisticsProcessing extends CommonRService {
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
 			final String studyID) throws RIFServiceException {
 
+		//KLG: For now it only works with the first study.  For some reason, newer extract
+		//tables cause the R program we use to generate an error.
+		addParameter("studyId", studyID);
+
+		//add a parameter for investigation name.  This will appear as a column in the extract
+		//table that the R program will need to know about.  Note that specifying a single
+		//investigation name assumes that eventually we will make a study have one investigation
+		//rather than multiple investigations.
+		Investigation firstInvestigation = studySubmission.getStudy().getInvestigations().get(0);
+
+		addParameter("investigationName",
+		             createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
+
+		String covariateName = getCovariateName(studySubmission);
+		addParameter("covariate_name", covariateName);
+
+		Integer investigationID;
 		try {
 
-			//KLG: For now it only works with the first study.  For some reason, newer extract
-			//tables cause the R program we use to generate an error.
-			addParameter("studyID", studyID);
+			investigationID = getInvestigationID(connection, studyID, firstInvestigation);
+		} catch (SQLException e) {
 
-			//add a parameter for investigation name.  This will appear as a column in the extract
-			//table that the R program will need to know about.  Note that specifying a single
-			//investigation name assumes that eventually we will make a study have one investigation
-			//rather than multiple investigations.
-			Investigation firstInvestigation = studySubmission.getStudy().getInvestigations().get(0);
+			throw new RIFServiceException("", e);
+		}
 
-			addParameter("investigationName",
-			             createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
+		String studyName=studySubmission.getStudy().getName();
+		addParameter("studyName", studyName);
 
-			String covariateName = getCovariateName(studySubmission);
-			addParameter("covariate_name", covariateName);
+		String studyDescription=studySubmission.getStudy().getDescription();
+		addParameter("studyDescription", studyDescription);
 
-			Integer investigationID = getInvestigationID(connection, studyID, firstInvestigation);
+		rifLogger.info(this.getClass(), "Study id: " + studyID +
+			"; Study name: " + studyName +
+			"; Study description: " + studyDescription +
+			"; Investigation name: " + firstInvestigation.getTitle() +
+			"; ID: "+ investigationID);
 
-			String studyName=studySubmission.getStudy().getName();
-			addParameter("studyName", studyName);
+		addParameter("investigationId", String.valueOf(investigationID));
 
-			String studyDescription=studySubmission.getStudy().getDescription();
-			addParameter("studyDescription", studyDescription);
+		if (studySubmission.getStudy().isRiskAnalysis()) {
+			addParameter("studyType", "riskAnalysis");
+		} else {
+			addParameter("studyType", "diseaseMapping");
+		}
 
-			rifLogger.info(this.getClass(), "Study id: " + studyID +
-				"; Study name: " + studyName +
-				"; Study description: " + studyDescription +
-				"; Investigation name: " + firstInvestigation.getTitle() +
-				"; ID: "+ investigationID);
+		setCalculationMethod(studySubmission.getCalculationMethods().get(0));
+		addParameter("working_dir", rifStartupOptions.getExtractDirectory());
+		addParameter("databaseType", rifStartupOptions.getRifDatabaseType().getShortName());
 
-			addParameter("investigationId", String.valueOf(investigationID));
+		Parameters parameters = new Parameters(getParameters());
 
-			if (studySubmission.getStudy().isRiskAnalysis()) {
-				addParameter("studyType", "riskAnalysis");
-			} else {
-				addParameter("studyType", "diseaseMapping");
-			}
+		String uri = "/statistics/service/script";
 
-			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
-			addParameter("working_dir", rifStartupOptions.getExtractDirectory());
-			addParameter("databaseType", rifStartupOptions.getRifDatabaseType().getShortName());
+		rifLogger.info(getClass(), "About to call statistics service on " + uri);
+		WebResource resource = Client.create().resource(uri);
+		ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+				                          .type(MediaType.APPLICATION_JSON)
+				                          .post(ClientResponse.class, parameters);
 
-			Parameters parameters = new Parameters(getParameters());
+		rifLogger.info(getClass(), "Statistics service called: " + response.toString());
+		if (response.getStatusInfo() != Status.OK) {
 
-			int exitValue = 0;
-
-			try {
-
-
-			} catch(Exception error) {
-
-				rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error);
-			} finally {
-				try {
-					// loggingConsole.rFlushConsole(rengine);
-				} catch(Exception error2) {
-					rifLogger.error(getClass(), "JRI rFlushConsole() ERROR", error2);
-				} finally {
-					rifMemoryManager.printThreadMemory();
-
-					try {
-						// rengine.end();
-					}
-					catch(Exception error3) {
-						rifLogger.error(getClass(), "JRI rengine.end() ERROR", error3);
-					}
-					finally {
-						rifLogger.info(getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
-
-					}
-				}
-			}
-
-			if (exitValue != 0) {
-
-				RIFServiceExceptionFactory rifServiceExceptionFactory =
-						new RIFServiceExceptionFactory();
-				// throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
-			}
-		} catch (RIFServiceException rifServiceException) {
-			// rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
-			throw rifServiceException;
-		} catch(Exception rException) {
-			rifLogger.error(this.getClass(), "JRI R engine exception", rException);
-			RIFServiceExceptionFactory rifServiceExceptionFactory = new RIFServiceExceptionFactory();
-			throw rifServiceExceptionFactory.createREngineException(
-					rifStartupOptions.getClassesDirectory());
+			String reason = response.toString();
+			throw new RIFServiceException(reason);
 		}
 	}
 

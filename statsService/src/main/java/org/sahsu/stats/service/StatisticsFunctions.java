@@ -1,4 +1,4 @@
-package org.sahsu.rif.stats.service;
+package org.sahsu.stats.service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +15,7 @@ public class StatisticsFunctions {
 	static final String STUDY_ID_URI = "/{" + STUDY_ID + "}";
 	static final String SMOOTHING_URI = "/smoothing";
 	static final String RISK_ANALYSIS_URI = "/riskanalysis";
+	static final String SCRIPT_URI = "/script";
 
 	private final String studyId;
 	private final Map<String, String> functions = new HashMap<>();

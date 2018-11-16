@@ -107,10 +107,6 @@ public final class RIFLogger {
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static Properties prop = null;
 	
-	// ==========================================
-	// Section Construction: log4j
-	// ==========================================
-	
 	private RIFLogger() {
 //		System.out.println("RIFLogger() INIT");
 		/* Get actual class name to be printed on */
@@ -143,23 +139,11 @@ public final class RIFLogger {
 			}			
 		}
 	}
-	
-	public void printLoggers() {
-		if (log == null) {	
-			System.out.println("INFO(no RIFLogger) [printLoggers]");
-			return;
-		}	
-	}
-	
+
 	public static RIFLogger getLogger() { // Return this static object
 		return rifLogger;
 	}	
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	// 
-	
+
 	/**
 	 * error() print error message and stack trace. Contains message, root cause message, throwable count,
 	 * All root cause stack traces.

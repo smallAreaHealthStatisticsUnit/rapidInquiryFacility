@@ -205,17 +205,6 @@
 	
 	<build>
 
-		<resources>
-			<!-- Adding the R source directory so it gets copied to WEB-INF/classes. But  that
-				 overrides the default resources directory, so we have to include that here too. -->
-			<resource>
-				<directory>src/main/R</directory>
-			</resource>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-		</resources>
-
 		<plugins>
 
 			<plugin>

@@ -22,7 +22,7 @@ public class TomcatFile implements AppFile {
 	private static final String WEBAPPS_DIRECTORY = "webapps";
 	private static final String RIF_SERVICES_DIRECTORY = "rifServices";
 	private static final String TAXONOMY_SERVICES_DIRECTORY = "taxonomies";
-	private static final String STATS_SERVICE_DIRECTORY = "stats";
+	private static final String STATS_SERVICE_DIRECTORY = "statistics";
 	private static final String WEB_INF_DIRECTORY = "WEB-INF";
 	private static final String CLASSES_DIRECTORY = "classes";
 	private static final String LIB_DIRECTORY = "lib";

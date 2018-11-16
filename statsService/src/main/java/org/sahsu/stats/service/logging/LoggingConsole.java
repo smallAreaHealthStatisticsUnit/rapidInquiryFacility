@@ -1,4 +1,4 @@
-package org.sahsu.rif.stats.service.logging;
+package org.sahsu.stats.service.logging;
 
 import java.time.Duration;
 import java.time.Instant;

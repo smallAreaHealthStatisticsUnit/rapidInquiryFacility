@@ -1,4 +1,4 @@
-package org.sahsu.rif.stats.service;
+package org.sahsu.stats.service;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -14,13 +14,14 @@ public class Listener implements ServletContextListener {
 
 	private static final RIFLogger logger = RIFLogger.getLogger();
 
-	private ScriptService link;
+	private ScriptService service;
 
 	@Override
 	public void contextInitialized(final ServletContextEvent servletContextEvent) {
 
-		link = ScriptService.instance();
-		link.start();
+		System.out.println("Statistics Service Listener starting");
+		service = ScriptService.instance();
+		service.start();
 		logger.info(getClass(), "Statistics Service Context initialised");
 	}
 
@@ -28,9 +29,9 @@ public class Listener implements ServletContextListener {
 	public void contextDestroyed(final ServletContextEvent servletContextEvent) {
 
 		logger.info(getClass(), "Statistics Service Context destroyed. Stopping R engine.");
-		if (link.isRunning()) {
+		if (service.isRunning()) {
 
-			link.stop();
+			service.stop();
 		}
 	}
 }

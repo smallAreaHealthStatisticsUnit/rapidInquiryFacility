@@ -1,4 +1,4 @@
-package org.sahsu.rif.stats.service;
+package org.sahsu.stats.service;
 
 import java.util.Arrays;
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="debug" monitorInterval="30" name="RIF Taxonomy services Default">
+<Configuration status="debug" monitorInterval="30" name="RIF Statistics services Default">
 <!--
   The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
   that rapidly addresses epidemiological and public health questions using 
@@ -67,14 +67,14 @@
   <Properties>
     <!-- Log file names -->
     <Property name="rif_middleware">RIF_middleware.log</Property>
-    <Property name="taxonomy">Taxonomy.log</Property>
+    <Property name="statistics">Statistics.log</Property>
     <Property name="rif_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level: %msg%n</Property> 
 										<!-- No logging source; always RIFLogger -->
-    <Property name="taxonomy_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}: %msg%n</Property>
+    <Property name="statistics_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}: %msg%n</Property>
   </Properties>
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT" direct="true">
-      <PatternLayout pattern="${taxonomy_log_pattern}"/>
+      <PatternLayout pattern="${statistics_log_pattern}"/>
     </Console>
 	<!-- File logs are in ${CATALINA_HOME}/log4j2 - %CATALINA_HOME/log4j2 -->
     <RollingFile name="RIF_middleware" 
@@ -86,10 +86,10 @@
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
-    <RollingFile name="Taxonomy"
-				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${taxonomy}-%d{yyyy-MM-dd}-%i.log"
+    <RollingFile name="Statistics"
+				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${statistics}-%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="false" bufferedIO="true" bufferSize="1024">
-      <PatternLayout pattern="${taxonomy_log_pattern}"/>
+      <PatternLayout pattern="${statistics_log_pattern}"/>
 	  <Policies>
 		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
@@ -103,10 +103,10 @@
       <!-- <AppenderRef ref="Console"/> -->
       <AppenderRef ref="RIF_middleware"/>
     </Logger>
-	<!-- Taxonomy logging -->
+	<!-- statistics logging -->
     <Root level="trace">
       <AppenderRef ref="Console"/>
-      <AppenderRef ref="Taxonomy"/>
+      <AppenderRef ref="Statistics"/>
     </Root>
   </Loggers>
 </Configuration>
