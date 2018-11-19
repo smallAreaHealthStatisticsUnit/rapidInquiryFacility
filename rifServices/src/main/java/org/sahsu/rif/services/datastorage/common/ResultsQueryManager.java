@@ -47,7 +47,6 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -61,21 +60,23 @@ import org.geotools.styling.Style;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.renderer.label.LabelCacheImpl;
 import org.geotools.renderer.GTRenderer;
-/*
+
+import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
-import org.geotools.coverage.processing.DefaultProcessor;
-import org.geotools.coverage.processing.AbstractProcessor;
+import org.geotools.coverage.processing.CoverageProcessor;
 import org.opengis.parameter.ParameterValueGroup;
- */
+ 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
+//import java.awt.image.BufferedImage;
 import java.awt.RenderingHints;
+import java.awt.image.RenderedImage;
+import java.awt.geom.AffineTransform;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1135,23 +1136,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 				bboxJson.getDouble(3) /* yMax: North */,
 				DefaultGeographicCRS.WGS84
 			);	
-		BufferedImage bufferedImage = new BufferedImage(w, h, 
-			BufferedImage.TYPE_INT_ARGB); // Allow transparency [will work for PNG as well!]
-		Graphics2D g2d = bufferedImage.createGraphics();
 
-		/*
-		GridCoverageFactory factory = new GridCoverageFactory();
-		GridCoverage2D coverage = factory.create("geotiff", bufferedImage, bounds);
-		AbstractProcessor processor = new DefaultProcessor(null);
-
-		ParameterValueGroup param = processor.getOperation("CoverageCrop").getParameters();
-
-		GeneralEnvelope crop = new GeneralEnvelope(bounds);
-		param.parameter("Source").setValue( coverage );
-		param.parameter("Envelope").setValue( crop );
-
-		GridCoverage2D cropped = (GridCoverage2D) processor.doOperation(param);
-		*/			
 		MapViewport mapViewport = mapContent.getViewport();
 //		mapViewport.setMatchingAspectRatio(true);
 		mapViewport.setScreenArea(new Rectangle(Math.round(w), Math.round(h)));
@@ -1162,10 +1147,30 @@ public class ResultsQueryManager extends BaseSQLManager {
 		Layer layer = new FeatureLayer(features, style);
 		mapContent.addLayer(layer);
 		
+		BufferedImage bufferedImage = new BufferedImage(w, h, 
+			BufferedImage.TYPE_INT_ARGB); // Allow transparency [will work for PNG as well!]
+		Graphics2D g2d = bufferedImage.createGraphics();
+		
+	/*	
+		GridCoverageFactory factory = new GridCoverageFactory();
+		GridCoverage2D coverage = factory.create("png", bufferedImage, bounds);
+		CoverageProcessor processor = new CoverageProcessor(null);
+
+		ParameterValueGroup param = processor.getOperation("CoverageCrop").getParameters();
+
+		GeneralEnvelope crop = new GeneralEnvelope(bounds);
+		param.parameter("Source").setValue(coverage);
+		param.parameter("Envelope").setValue(crop);
+
+		GridCoverage2D cropped = (GridCoverage2D) processor.doOperation(param);
+		RenderedImage raster = cropped.getRenderedImage();
+				
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+		AffineTransform at = AffineTransform.getTranslateInstance(0, 0);
+		g2d.drawRenderedImage(raster, at);
+			 */
+		
 		Rectangle outputArea = new Rectangle(0, 0, w, h);
-
 		GTRenderer renderer = new StreamingRenderer();
 		LabelCacheImpl labelCache = new LabelCacheImpl();
 		Map<Object, Object> hints = renderer.getRendererHints();
@@ -1175,7 +1180,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 		hints.put(StreamingRenderer.LABEL_CACHE_KEY, labelCache);
 		renderer.setRendererHints(hints);
 		renderer.setMapContent(mapContent);
-		renderer.paint(g2d, outputArea, bounds);
+		renderer.paint(g2d, outputArea, bounds); 
+		
 		ImageIO.write(bufferedImage, "png", os);
 
 		String result=Base64.getEncoder().encodeToString(os.toByteArray());
