@@ -1032,6 +1032,7 @@ public class WebService {
 		final String tileType) {
 		
 		String result;
+		boolean isAnError=false;
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
@@ -1057,6 +1058,7 @@ public class WebService {
 					tileType);
 		}
 		catch(Exception exception) {
+			isAnError=true;
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
 			                                ".getTileMakerTiles error", exception);
 			result
@@ -1066,12 +1068,12 @@ public class WebService {
 		}
 		
 		Response response;
-		if (tileType.equals("png")) {
+		if (!isAnError && tileType.equals("png")) { // PNG tile create
 			response = webServiceResponseGenerator.generateWebServicePdfResponse(
 					servletRequest,
 					result);
 		}
-		else {
+		else { // Usual JSON response
 			response = webServiceResponseGenerator.generateWebServiceResponse(
 					servletRequest,
 					result);			

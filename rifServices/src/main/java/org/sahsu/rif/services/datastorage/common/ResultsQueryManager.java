@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Calendar;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 
@@ -46,6 +47,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -53,12 +55,19 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
+import org.geotools.map.MapViewport;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.renderer.label.LabelCacheImpl;
 import org.geotools.renderer.GTRenderer;
-
+/*
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridCoverageFactory;
+import org.geotools.coverage.processing.DefaultProcessor;
+import org.geotools.coverage.processing.AbstractProcessor;
+import org.opengis.parameter.ParameterValueGroup;
+ */
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
@@ -969,8 +978,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 			getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
 			getMapTilesQueryFormatter.addWhereJoinCondition(myTileTable, "geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
 			getMapTilesQueryFormatter.addWhereParameter(
-					applySchemaPrefixIfNeeded("rif40_geolevels"),
-					"geolevel_name");
+				applySchemaPrefixIfNeeded("rif40_geolevels"),
+				"geolevel_name");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "zoomlevel");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "x");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "y");
@@ -1051,6 +1060,12 @@ public class ResultsQueryManager extends BaseSQLManager {
 							ioException.getMessage() + "; in: topojson[0-300]=" + result.substring(1, 300));
 					}
 				}
+				else if (tileType.equals("png") && result != null && result.length() > 0 && 
+					result.equals("{\"type\": \"FeatureCollection\",\"features\":[]}") /* Null tile */) {
+						throw new RIFServiceException(
+							RIFServiceError.GRAPHICS_IO_ERROR,
+							"Null tile not yet supported");
+				}
 				else {
 					return result;
 				}
@@ -1109,9 +1124,6 @@ public class ResultsQueryManager extends BaseSQLManager {
 		// Style 
 		MapContent mapContent = new MapContent();
 		mapContent.setTitle(geoLevel + "/" + zoomlevel + "/" + x + "/" + y + ".png");
-		Style style = SLD.createSimpleStyle(features.getSchema());
-		Layer layer = new FeatureLayer(features, style);
-		mapContent.addLayer(layer);
 	
 		int w = 256;
 		int h = 256;
@@ -1127,13 +1139,32 @@ public class ResultsQueryManager extends BaseSQLManager {
 			BufferedImage.TYPE_INT_ARGB); // Allow transparency [will work for PNG as well!]
 		Graphics2D g2d = bufferedImage.createGraphics();
 
-		mapContent.getViewport().setMatchingAspectRatio(true);
-		mapContent.getViewport().setScreenArea(new Rectangle(Math.round(w), Math.round(h)));
-		mapContent.getViewport().setBounds(bounds);
+		/*
+		GridCoverageFactory factory = new GridCoverageFactory();
+		GridCoverage2D coverage = factory.create("geotiff", bufferedImage, bounds);
+		AbstractProcessor processor = new DefaultProcessor(null);
 
+		ParameterValueGroup param = processor.getOperation("CoverageCrop").getParameters();
+
+		GeneralEnvelope crop = new GeneralEnvelope(bounds);
+		param.parameter("Source").setValue( coverage );
+		param.parameter("Envelope").setValue( crop );
+
+		GridCoverage2D cropped = (GridCoverage2D) processor.doOperation(param);
+		*/			
+		MapViewport mapViewport = mapContent.getViewport();
+//		mapViewport.setMatchingAspectRatio(true);
+		mapViewport.setScreenArea(new Rectangle(Math.round(w), Math.round(h)));
+		mapViewport.setBounds(bounds);
+		mapContent.setViewport(mapViewport);
+		
+		Style style = SLD.createSimpleStyle(features.getSchema());
+		Layer layer = new FeatureLayer(features, style);
+		mapContent.addLayer(layer);
+		
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		Rectangle outputArea = new Rectangle(w, h);
+		Rectangle outputArea = new Rectangle(0, 0, w, h);
 
 		GTRenderer renderer = new StreamingRenderer();
 		LabelCacheImpl labelCache = new LabelCacheImpl();
@@ -1182,7 +1213,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 		final String geoLevel, 
 		final Integer x, 
 		final Integer y)
-			throws SQLException, JSONException
+			throws SQLException, JSONException, RIFServiceException
 	{
 		/*
 		{
@@ -1243,6 +1274,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 					
 					GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 					GeometryJSON geoJSONWriter = new GeometryJSON();
+					ArrayList<String> areaIdList = new ArrayList<String>();
 					for (int i=0; i<geometries.length(); i++) {
 						JSONObject jsonGeometry=geometries.getJSONObject(i);
 						JSONObject properties=jsonGeometry.optJSONObject("properties");
@@ -1251,6 +1283,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 							geoJsonFeature.put("type", "Feature");
 							geoJsonFeature.put("properties", properties);	
 							String areaId = properties.getString("area_id");
+							areaIdList.add(areaId);
 							
 							SelectQueryFormatter getMapTilesQueryFormatter
 									= new MSSQLSelectQueryFormatter();
@@ -1274,10 +1307,11 @@ public class ResultsQueryManager extends BaseSQLManager {
 							getMapTilesQueryFormatter.addSelectField(myGeometryTable, "wkt");
 							getMapTilesQueryFormatter.addFromTable(myGeometryTable);
 							getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
-							getMapTilesQueryFormatter.addWhereJoinCondition(myGeometryTable, "geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
+							getMapTilesQueryFormatter.addWhereJoinCondition(myGeometryTable, 
+								"geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
 							getMapTilesQueryFormatter.addWhereParameter(
-									applySchemaPrefixIfNeeded("rif40_geolevels"),
-									"geolevel_name");
+								applySchemaPrefixIfNeeded("rif40_geolevels"),
+								"geolevel_name");
 							getMapTilesQueryFormatter.addWhereParameter(myGeometryTable, "zoomlevel");
 							getMapTilesQueryFormatter.addWhereParameter(myGeometryTable, "areaid");
 
@@ -1296,7 +1330,12 @@ public class ResultsQueryManager extends BaseSQLManager {
 							resultSet = statement.executeQuery();
 							resultSet.next();
 							
-							String wkt=resultSet.getString(1);		
+							String wkt=resultSet.getString(1);						
+											
+							//Cleanup database resources
+							SQLQueryUtility.close(statement);
+							SQLQueryUtility.close(resultSet);
+			
 							Geometry geometry = null;
 							if (wkt != null) {
 								try {
@@ -1327,6 +1366,9 @@ public class ResultsQueryManager extends BaseSQLManager {
 							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + jsonGeometryText);
 						}
 					}
+					
+					rifLogger.info(getClass(), "Processed: " + geometries.length() + " geometries; " +
+						" areaIds (" + areaIdList.size() + "): " + String.join(", ", areaIdList));
 				}
 				else {
 					throw new JSONException("TopoJSON Array[\"geometries\"] not found");
