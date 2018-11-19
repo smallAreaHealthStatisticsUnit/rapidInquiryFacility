@@ -1449,7 +1449,8 @@ public class CommonUserService implements UserService {
 			final GeoLevelSelect _geoLevelSelect,
 			final Integer zoomlevel,
 			final Integer x,
-			final Integer y)
+			final Integer y,
+			final String tileType)
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -1542,7 +1543,8 @@ public class CommonUserService implements UserService {
 					geoLevelSelect,
 					zoomlevel,
 					x,
-					y);
+					y,
+					tileType);
 		} 
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation

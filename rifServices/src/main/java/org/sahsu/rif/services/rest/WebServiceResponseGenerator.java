@@ -7,6 +7,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import java.util.Base64;
+import java.util.Base64.Decoder;
+
 import org.sahsu.rif.generic.util.RIFLogger;
 
 //TOUR_WEB_SERVICES-7
@@ -236,6 +239,21 @@ final public class WebServiceResponseGenerator {
 			}
 		}
 
+		public Response generateWebServicePdfResponse(
+			final HttpServletRequest servletRequest,
+			final String data) {
+			
+			byte[] bytes = Base64.getDecoder().decode(data);
+			ResponseBuilder responseBuilder 
+				= Response.ok(
+					bytes, 
+					MediaType.WILDCARD_TYPE);
+			responseBuilder.header("Cache-Control", "max-age=2592000"); //30days (60sec * 60min * 24hours * 30days)
+
+			responseBuilder.type("image/png");
+	  
+			return responseBuilder.build();				
+		}
 		
 	public Response generateWebServiceResponse( // streaming version
 			final HttpServletRequest servletRequest,

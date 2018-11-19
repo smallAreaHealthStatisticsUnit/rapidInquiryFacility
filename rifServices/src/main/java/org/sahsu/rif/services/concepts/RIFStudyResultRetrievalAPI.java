@@ -54,7 +54,8 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final GeoLevelSelect geoLevelSelect,
 			final Integer zoomlevel,
 			final Integer x,
-			final Integer y)
+			final Integer y,
+			final String tileType)
 					throws RIFServiceException;
 
 	String getTileMakerAttributes(

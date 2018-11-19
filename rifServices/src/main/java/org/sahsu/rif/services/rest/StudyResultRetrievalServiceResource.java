@@ -434,8 +434,9 @@ public class StudyResultRetrievalServiceResource extends WebService {
 			@QueryParam("geoLevelSelectName") String geoLevelSelectName, //LEVEL2
 			@QueryParam("zoomlevel") Integer zoomlevel,	//3
 			@QueryParam("x") Integer x, //3
-			@QueryParam("y") Integer y) { //2
-
+			@QueryParam("y") Integer y, //2 
+			@QueryParam("tileType") String tileType /* null (topojson), topojson, geojson or png */) 
+				{
 		return super.getTileMakerTiles(
 				servletRequest,
 				userID,
@@ -443,7 +444,8 @@ public class StudyResultRetrievalServiceResource extends WebService {
 				geoLevelSelectName,
 				zoomlevel,
 				x,
-				y);
+				y,
+				tileType);
 	}
 
 	@GET

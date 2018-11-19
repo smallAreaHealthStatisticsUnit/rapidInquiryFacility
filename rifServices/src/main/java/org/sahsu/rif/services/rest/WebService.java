@@ -1028,7 +1028,8 @@ public class WebService {
 		final String geoLevelSelectName,
 		final Integer zoomlevel,
 		final Integer x,
-		final Integer y) {
+		final Integer y,
+		final String tileType) {
 		
 		String result;
 		
@@ -1037,6 +1038,10 @@ public class WebService {
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect = GeoLevelSelect.newInstance(geoLevelSelectName);
+			
+			if (tileType != null && !tileType.equals("geojson") && !tileType.equals("topojson") && !tileType.equals("png")) {
+				throw new Exception("Invalid tileType: " + tileType);
+			}
 			
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
@@ -1048,7 +1053,8 @@ public class WebService {
 					geoLevelSelect,
 					zoomlevel,
 					x,
-					y);
+					y,
+					tileType);
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
@@ -1059,10 +1065,19 @@ public class WebService {
 					exception);
 		}
 		
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-				servletRequest,
-				result);
+		Response response;
+		if (tileType.equals("png")) {
+			response = webServiceResponseGenerator.generateWebServicePdfResponse(
+					servletRequest,
+					result);
+		}
+		else {
+			response = webServiceResponseGenerator.generateWebServiceResponse(
+					servletRequest,
+					result);			
+		}
+				
+		return response;
 	}
 	
 	Response getStudySubmission(

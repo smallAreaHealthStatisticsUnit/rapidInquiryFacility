@@ -117,7 +117,8 @@ public interface UserService {
 			GeoLevelSelect _geoLevelSelect,
 			Integer zoomlevel,
 			Integer x,
-			Integer y)
+			Integer y,
+			String tileType)
 								throws RIFServiceException;
 									
 	String getTileMakerAttributes(

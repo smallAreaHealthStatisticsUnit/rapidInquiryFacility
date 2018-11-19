@@ -212,10 +212,13 @@ angular.module("RIF")
                 };
                 //get the map tiles from Tile-Maker
                 //returns a string not a promise, is resolved in Leaflet GridLayer
-                self.getTileMakerTiles = function (username, geography, geoLevel) {
+                self.getTileMakerTiles = function (username, geography, geoLevel, tileType) {
+					if (tileType && tileType != "geojson" && tileType != "topojson" && tileType != "png") {
+						throw new Error("Invalid tileType: " + tileType);
+					}
                     //'http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}';
                     return (servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
-                            '&zoomlevel={z}&x={x}&y={y}');
+                            '&zoomlevel={z}&x={x}&y={y}&tileType=' + (tileType || 'topojson')); // String 
                 };
                 //get 'global' geography for attribute table (DO NOT USE THE TILE DATA AT HIGH RESOLUTIONS; SMALL AREAS WILL HAVE BEEN OPTIMISED OUT
 				// self.getTileMakerAttributes is a replacement
@@ -223,7 +226,7 @@ angular.module("RIF")
                 self.getTileMakerTilesAttributes = function (username, geography, geoLevel) {
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + 
 							'&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
-                            '&zoomlevel=1&x=0&y=0', config);
+                            '&zoomlevel=1&x=0&y=0&tileType=topojson', config);
                 };
                 //get 'global' geography attribute table
 				/* Instead of the topoJSON tile returned by getTileMakerTiles... it returns:
