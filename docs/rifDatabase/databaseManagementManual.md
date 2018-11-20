@@ -6,23 +6,23 @@ title: Database Management Manual
 1. Contents
 {:toc}
 
-# 1. Overview
+# Overview
 
 This manual details how to manage RIF databases. See also the:
 
-* [Tile-maker manual]({{ base.url }}/rifNodeServices/tileMaker) for how to create
+* [Tile-maker manual]({{ site.baseurl }}/rifNodeServices/tileMaker) for how to create
   RIF administrative geographies.
-* [RIF Manual Data Loading manual]({{ base.url }}/rifDatabase\DataLoaderData\DataLoading)
+* [RIF Manual Data Loading manual]({{ site.baseurl }}/rifDatabase/DataLoaderData/DataLoading)
   for details on the manual process for the loading of data into the RIF.
+  
+# User Management
 
-# 2. User Management
-
-## 2.1 Creating new users
+## Creating new users
 
 New users must be created in lower case, start with a letter, and only contain the characters: ```[a-z][0-9]_```. **Do not use mixed case, upper case, dashes, space or non
 ASCII e.g. UTF8) characters**. Beware; the database stores user names internally in upper case. This is because of the RIF's Oracle heritage.
 
-### 2.1.1 Postgres
+### Postgres
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment.
 This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as a normal user or an
@@ -37,6 +37,7 @@ psql  -U postgres -d postgres -w -e -f rif40_production_user.sql -v newuser=kevi
 * Will fail to re-create a user if the user already has objects (tables, views etc);
 
 Test connection and object privileges, access to RIF numerators and denominators:
+
 ```
 C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>psql -U kevin
 Password for user kevin:
@@ -84,7 +85,7 @@ sahsuland=> \q
 C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>
 ```
 
-#### 2.1.1.1 Manually creating a new user
+#### Manually creating a new user
 
 These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD environment.
 
@@ -93,7 +94,8 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 * Change "mydatabasepassword" to the name of your users password;
 
 1. Validate the RIF user; connect as user *postgres* on the database *postgres*:
-```SQL
+
+```sql
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF current_user != 'postgres' OR current_database() != 'postgres' THEN
@@ -101,11 +103,11 @@ BEGIN
 	END IF;
 END;
 $$;
-
 ```
 
 2. Create Login; connect as user *postgres* on the database *mydatabasename* (.e.g. sahsuland):
-```SQL
+
+```sql
 DO LANGUAGE plpgsql $$
 DECLARE
 	c2 CURSOR(l_usename VARCHAR) FOR
@@ -183,8 +185,9 @@ END;
 $$;
 ```
 
-3. Create user and grant roles
-```SQL
+3. Create user and grant roles:
+
+```sql
 DO LANGUAGE plpgsql $$
 DECLARE
 	sql_stmt VARCHAR;
@@ -211,12 +214,13 @@ BEGIN
 END;
 $$;
 ```
+
 * **Change the password**. The password is set to *mydatabasepassword*.
 
 The user specific object views: *rif40_num_denom*, *rif40_num_denom_errors* are automatically created. These must be created as the user so they run with the users
 privileges and therefore only return RIF data tables to which the user has been granted access permission.
 
-### 2.1.2 SQL Server
+### SQL Server
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment.
 This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as *Administrator*:
@@ -230,7 +234,8 @@ sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXX
 * Will fail to re-create a user if the user already has objects (tables, views etc);
 
 Test connection and object privileges, access to RIF numerators and denominators:
-```
+
+```sql
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
 1> SELECT db_name() AS db_name INTO test_table;
 2> SELECT * FROM test_table;
@@ -254,7 +259,7 @@ SAHSULAND                                          NUM_SAHSULAND_CANCER         
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
 
-#### 2.1.2.1 Manually creating a new user
+#### Manually creating a new user
 
 These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD environment.
 
@@ -263,7 +268,8 @@ These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER*
 * Change "mydatabasepassword" to the name of your users password;
 
 1. Validate the RIF user
-```SQL
+
+```sql
 USE [master];
 GO
 DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
@@ -286,7 +292,8 @@ GO
 ```
 
 2. Create Login
-```SQL
+
+```sql
 USE [master];
 GO
 IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
@@ -298,7 +305,8 @@ GO
 ```
 
 3. Creare user and grant roles
-```SQL
+
+```sql
 USE mydatabasename;
 GO
 BEGIN
@@ -320,12 +328,13 @@ BEGIN
 END;
 GO
 ```
+
 * **Change the password**. The password is set to *mydatabasepassword*.
 
 4. Create user specific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
    RIF data tables to which the user has been granted access permission.
 
-```SQL
+```sql
 USE mydatabasename;
 GO
 --
@@ -576,13 +585,13 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description',
 GO
 ```
 
-## 2.2 Changing passwords
+## Changing passwords
 
 Valid characters for passwords have been tested as: ```[A-Z][a-z][0-9]!@$^~_-```. Passwords must be up to 30 characters long; longer passwords may be supported. The following are definitely **NOT**
 valid: [SQL Server/ODBC special characters](http://msdn.microsoft.com/en-us/library/windows/desktop/ms715433%28v=vs.85%29.aspx): ```[]{}(),;?*=!@```.
 Use of special characters]: ```\/&%``` is not advised as command line users will need to use an escaping URI to connect.
 
-### 2.2.1 Postgres
+### Postgres
 
 The file .pgpass in a user's home directory or the file referenced by PGPASSFILE can contain passwords to be used if the connection requires a password
 (and no password has been specified otherwise). On Microsoft Windows the file is named %APPDATA%\postgresql\pgpass.conf (where %APPDATA% refers to the
@@ -613,19 +622,20 @@ Notes:
 * No passwords are set in the normal user *&lt;pgpass&gt;* file;
 
 To change a Postgres password:
-```SQL
+
+```sql
 ALTER ROLE rif40 WITH PASSWORD 'XXXXXXXX';
 ```
 
-### 2.2.2 SQL Server
+### SQL Server
 
 To change a SQL server password:
-```SQL
+```sql
 ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
 GO
 ```
 
-## 2.3 Proxy accounts
+## Proxy accounts
 
 Proxy accounts are of use to the RIF as it can allow a normal user to login as a schema owner. Good practice is not the set the schema owner passwords (e.g. *rif40*) as these tend to be known by
 several people and tend to get written down as these accounts are infrequently used. Proxy accounts allow for privilege minimisation. Importantly the use proxy accounts is fully audited, in
@@ -638,7 +648,7 @@ The RIF front end application and middleware use user name and passwords to auth
 a [GSSAPI](https://en.wikipedia.org/wiki/Generic_Security_Services_Application_Program_Interface) implementation in the middleware. Invariably substantial browser and server key
 set-up is required and this is very difficult to set up (some years ago the SAHSU private network used this for five years; the experiment was not repeated).
 
-### 2.3.1 Postgres
+### Postgres
 
 If you need to integrate into you Active Directory or authentication services you are advised to use [LDAP](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol).
 This permits user name and password authentication; *ldap* does not support proxying. Login to the database using the command lines can then use *SSPI* and this can then be proxied
@@ -659,10 +669,11 @@ The *map name* must be one of following mappable methods from *hba.conf* (i.e. t
 
 The Windows installer guide for Postgres has examples:
 
-* [Authentication Setup - hba.conf]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#authentication-setup-hbaconf)
-* [Proxy user setup - ident.conf]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#proxy-user-setup-identconf)
+* [Authentication Setup - hba.conf]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#authentication-setup-hbaconf)
+* [Proxy user setup - ident.conf]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#proxy-user-setup-identconf)
 
 So, if I setup SSPI as per the examples to use *SSPI* in *hba.conf*:
+
 ```
 #
 # Active directory GSSAPI connections with pg_ident.conf maps for schema accounts
@@ -674,6 +685,7 @@ hostssl	sahsuland_dev	all	 	::1/128 		sspi 	map=sahsuland_dev
 ```
 
 With the maps *sahsuland* and *sahsuland_dev* defined in ident.conf:
+
 ```
 # MAPNAME       SYSTEM-USERNAME         PG-USERNAME
 #
@@ -694,7 +706,7 @@ Set the RIF40 password to an impossible value:
 ```ALTER ROLE rif40 WITH PASSWORD 'md5ac4bbe016b8XXXXXXXXXX6981f240dcae';```
 
 Finally, optioanlly add the passwords to the
-[Pgpass]({{ base.url }}/rifDatabase/Postgres/production/windows_install_from_pg_dump#postgres-user-password-file)
+[Pgpass]({{ site.baseurl }}/rifDatabase/Postgres/docs/windows_install_from_pg_dump#postgres-user-password-file) file.
 
 I can then logon as rif40 using SSPI:
 
@@ -721,14 +733,14 @@ Type "help" for help.
 sahsuland=>
 ```
 
-### 2.3.2 SQL Server
+### SQL Server
 
 This needs to be investigated as it is not certain SQL Server has the correct functionality and the setup would need to be trialled. See:
 
 * [Create a SQL Server Agent Proxy](https://docs.microsoft.com/en-us/sql/ssms/agent/create-a-sql-server-agent-proxy?view=sql-server-2017);
 * [Creating an LDAP user authentication environment (MSSQL)](http://dcx.sap.com/sa160/en/dbusage/ug-ldap-setup-sql.html)
 
-## 2.4 Granting permission
+## Granting permission
 
 The RIF is setup so that three roles control access to the application:
 
@@ -746,20 +758,22 @@ Access to data is controlled by the permissions granted to that data and not by 
 * In the *SAHSULAND* example database data access is granted to *rif_user*, *rif_manager* and *rif_student*.
 * In the *SEER* dataset data access is granted to *seer_user*.
 
-### 2.4.1 Postgres
+### Postgres
 
 To create the SEER_USER role and grant it to a user (peter) logon as the administrator (postgres):
-```
+
+```sql
 psql -U postgres -d postgres
 CREATE ROLE seer_user;
 GRANT seer_user TO peter;
 ```
 
-### 2.4.2 SQL Server
+### SQL Server
 
 To create the SEER_USER role and grant it to a user (peter) logon as the administrator in an Administrator
 *cmd* window:
-```
+
+```sql
 sqlcmd -E
 USE sahsuland;
 IF DATABASE_PRINCIPAL_ID('seer_user') IS NULL
@@ -769,13 +783,13 @@ ALTER ROLE [seer_user] ADD MEMBER [peter];
 GO
 ```
 
-## 2.5 Viewing your user setup
+## Viewing your user setup
 
-### 2.5.1 Postgres
+### Postgres
 
 To view roles, privileges and role membership:
 
-```
+```sql
 C:\Users\phamb\OneDrive\SEER Data>psql -U postgres -d sahsuland
 You are connected to database "sahsuland" as user "postgres" on host "localhost" at port "5432".
 psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.12s  rif40_startup(): disabled - user postgres is not or has rif_user or rif_manager role
@@ -835,11 +849,11 @@ Where the access privileges (*+* is a line continuation character) are:
 * c: CONNECT
 * T: TEMPORARY
 
-### 2.5.2 SQL Server
+### SQL Server
 
 To view roles, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```SQL
+```sql
 SELECT name, type_desc, default_schema_name, authentication_type_desc
   FROM sys.database_principals;
 GO
@@ -871,9 +885,10 @@ db_denydatawriter                                                               
 
 (22 rows affected)
 ```
+
 To view server roles, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```SQL
+```sql
 SELECT sys.server_role_members.role_principal_id, role.name AS RoleName,
     sys.server_role_members.member_principal_id, member.name AS MemberName
 FROM sys.server_role_members
@@ -899,7 +914,7 @@ role_principal_id RoleName      member_principal_id MemberName
 
 To view role membership, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```SQL
+```sql
 SELECT DP1.name AS DatabaseRoleName, isnull (DP2.name, 'No members') AS DatabaseUserName
   FROM sys.database_role_members AS DRM
 		RIGHT OUTER JOIN sys.database_principals AS DP1
@@ -978,19 +993,20 @@ rif_studies            s5_map               peter      rif40      Grant       Up
 
 (36 rows affected)
 ```
-# 3. Data Management
 
-## 3.1 Creating new schemas
+# Data Management
+
+## Creating new schemas
 
 The RIF install scripts create all the schemas required by the RIF. SQL Server does not have a search path or SYNONYNs so all schemas are hard coded.
 
-### 3.1.1 Postgres
+### Postgres
 
 See: [CREATE SCHEMA](https://www.postgresql.org/docs/9.3/static/sql-createschema.html). Normally schema schema is owned by a role (e.g. *rif40*) and then
 access is granted as required to other roles. New schemas will needs to be added to the default search path either for the roles or possibly at the system level.
 Care needs to be taken **NOT* to break the RIF. The default search path for a RIF database isL:
 
-```
+```sql
 ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
 ```
 
@@ -1010,13 +1026,13 @@ sahsuland=> show search_path;
 
 **THEREFORE BEWARE OF CREATING OBJECTS WITH THE SAME NAME AS A RIF OBJECT** on Postgres. They will be used in preference to the *RIF40* schema object!
 
-### 3.1.2 SQL Server
+### SQL Server
 
-SQL Server does not have a search path or SYNONYNs so all schemas are hard coded and should **NOT** be changed.
+SQL Server does not have a search path or SYNONYNs so all schemas are hard coded and locations should **NOT** be changed.
 
-## 3.2 Tablespaces
+## Tablespaces
 
-### 3.2.1 Postgres
+### Postgres
 
 Tablespaces in PostgreSQL allow database administrators to define locations in the file system where the files representing database objects can be stored. Once created, a
 tablespace can be referred to by name when creating database objects.
@@ -1029,11 +1045,11 @@ can be placed on a very fast, highly available disk, such as an expensive solid 
 
 See: [Tablespaces](https://www.postgresql.org/docs/9.6/static/manage-ag-tablespaces.html)
 
-### 3.2.2 SQL Server
+### SQL Server
 
 SQL Server does not have the concept of tablespaces.
 
-## 3.3 Partitioning
+## Partitioning
 
 The SAHSU version 3.1 RIF was extensively partitioned; in particular the calculation tables and the result table *rif_results* needed to be partitioned on system that had run thousands of
 studies will many millions of result rows and billions of extract calculation rows. Hash partitioning was retro fitted to the RIF calculation and results tables and this gave a useful
@@ -1050,11 +1066,11 @@ The SAHSU Oracle database performance has benefited from:
 
 The RIF currently [deliberately] extracts data year by year and so explicit disables effective parallelisation in the extract.
 
-### 3.3.1 Postgres
+### Postgres
 
-Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. Postgres 10 has native support for partitioning, see:
-[Postgres 10 partitioning](https://www.postgresql.org/docs/10/static/ddl-partitioning. html). The implementation is still incomplete and the
-following limitations apply to partitioned tables:
+Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. 
+Postgres 10 has native support for partitioning, see: [Postgres 10 partitioning](https://www.postgresql.org/docs/10/ddl-partitioning). 
+The implementation is still incomplete and the following limitations apply to partitioned tables:
 
 * There is no facility available to create the matching indexes on all partitions automatically. Indexes must be added to each partition with separate commands. This also means that
   there is no way to create a primary key, unique constraint, or exclusion constraint spanning all partitions; it is only possible to constrain each leaf partition individually.
@@ -1086,30 +1102,214 @@ There is no support currently planned for:
 * "Splitting" or "merging" partitions using dedicated commands;
 * Automatic creation of partitions (e.g. for values not covered).
 
-### 3.3.2 SQL Server
+An example of Postgres 10 native partitioning. With Postgres each partition has to be created manually:
+
+```sql
+--
+-- Create EWS2011_POPULATION denominator table
+--
+CREATE UNLOGGED TABLE rif_data.ews2011_population
+(
+	year 			INTEGER 		NOT NULL,
+	coa2011			VARCHAR(10)  	NOT NULL,
+	age_sex_group 	INTEGER 		NOT NULL, -- RIF age_sex_group 1 (21 bands),
+	population 		NUMERIC(5,1)	NULL,
+	cntry2011		VARCHAR(10)  	NOT NULL,
+	gor2011			VARCHAR(10)  	NOT NULL,
+	ladua2011		VARCHAR(10)  	NOT NULL,
+	msoa2011		VARCHAR(10)  	NOT NULL,
+	lsoa2011		VARCHAR(10)  	NOT NULL,
+	scntry2011		VARCHAR(10)  	NOT NULL
+) PARTITION BY LIST (year); 
+
+--
+-- Create partitions
+--
+DO LANGUAGE plpgsql $$
+DECLARE
+	sql_stmt VARCHAR;
+	i INTEGER;
+BEGIN
+
+	FOR i IN 1981  .. 2014 LOOP
+		sql_stmt:='CREATE TABLE rif_data.ews2011_population_y'||i||' PARTITION OF rif_data.ews2011_population
+    FOR VALUES IN ('||i||')';
+-- 
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	END LOOP;
+END;
+$$;
+	
+--
+-- Load data using \copy
+--
+\copy rif_data.ews2011_population FROM 'ews2011_population.csv' WITH CSV HEADER;
+
+DO LANGUAGE plpgsql $$
+DECLARE
+	sql_stmt VARCHAR;
+	i INTEGER;
+BEGIN
+	FOR i IN 1981  .. 2014 LOOP
+--
+-- Add constraints
+--
+		sql_stmt:='ALTER TABLE rif_data.ews2011_population_y'||i||' ADD CONSTRAINT ews2011_population_y'||i||'_pk'||
+			' PRIMARY KEY (coa2011, age_sex_group)'; 
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='ALTER TABLE rif_data.ews2011_population_y'||i||' ADD CONSTRAINT ews2011_population_y'||i||'_asg_ck'||
+			' CHECK (age_sex_group >= 100 AND age_sex_group <= 121 OR age_sex_group >= 200 AND age_sex_group <= 221)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	
+--
+-- Convert to index organised table
+--
+		sql_stmt:='CLUSTER rif_data.ews2011_population_y'||i||' USING ews2011_population_y'||i||'_pk';	
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		
+--
+-- Indexes
+--
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_age_sex_group'||
+			' ON rif_data.ews2011_population_y'||i||'(age_sex_group)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_scntry2011'||
+			' ON rif_data.ews2011_population_y'||i||'(scntry2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_cntry2011'||
+			' ON rif_data.ews2011_population_y'||i||'(cntry2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_gor2011'||
+			' ON rif_data.ews2011_population_y'||i||'(gor2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_ladua2011'||
+			' ON rif_data.ews2011_population_y'||i||'(ladua2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_msoa2011'||
+			' ON rif_data.ews2011_population_y'||i||'(msoa2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='CREATE INDEX ews2011_population_y'||i||'_lsoa2011'||
+			' ON rif_data.ews2011_population_y'||i||'(lsoa2011)';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+--
+-- Analyze
+--
+		sql_stmt:='ANALYZE rif_data.ews2011_population_y'||i;
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	END LOOP;
+END;
+$$;
+```
+
+### SQL Server
 
 SQL Server supports table and index partitioning, see [Partitioned Tables and Indexes](https://docs.microsoft.com/en-us/sql/relational-databases/partitions/partitioned-tables-and-indexes?view=sql-server-2017)
 Beware of the [SQL Server partitioning and licensing conditions](https://download.microsoft.com/download/9/C/6/9C6EB70A-8D52-48F4-9F04-08970411B7A3/SQL_Server_2016_Licensing_Guide_EN_US.pdf);
 you may need a full enterprise license.
 
-## 3.4 Granting permission
+An example of SQL Server native partitioning:
+
+* Create the partition function and scheme as an administrator:
+
+```sql
+CREATE PARTITION FUNCTION [pf_ews2011_population_year](SMALLINT) AS RANGE LEFT FOR VALUES (
+        1981,  1982,  1983,  1984,  1985,  1986,  1987,  1988,  1989,
+ 1990,  1991,  1992,  1993,  1994,  1995,  1996,  1997,  1998,  1999,
+ 2000,  2001,  2002,  2003,  2004,  2005,  2006,  2007,  2008,  2009, 
+ 2010,  2011,  2012,  2013,  2014); 
+GO
+ 
+CREATE PARTITION SCHEME [pf_ews2011_population_year] AS PARTITION [pf_ews2011_population_year] ALL TO ([PRIMARY])
+GO
+```
+
+* Create the objects as the schema owner:
+
+```sql
+--
+-- Create EWS2011_POPULATION denominator table
+--
+CREATE TABLE rif_data.ews2011_population
+(
+	year 			SMALLINT 		NOT NULL,
+	coa2011			VARCHAR(10) 	NOT NULL,
+	age_sex_group 	INTEGER 		NOT NULL, -- RIF age_sex_group 1 (21 bands)
+	population 		NUMERIC(5,1),
+	cntry2011		VARCHAR(10)  	NOT NULL,
+	gor2011			VARCHAR(10) 	NOT NULL,
+	ladua2011		VARCHAR(10)  	NOT NULL,
+	lsoa2011		VARCHAR(10)  	NOT NULL,
+	msoa2011		VARCHAR(10)  	NOT NULL,
+	scntry2011		VARCHAR(2)  	NOT NULL,
+	CONSTRAINT ews2011_population_pk PRIMARY KEY (year, coa2011, age_sex_group)
+) ON pf_ews2011_population_year (year) WITH (DATA_COMPRESSION = PAGE);
+GO
+
+--
+-- Load data using BULK INSERT
+--
+BULK INSERT rif_data.ews2011_population
+FROM '$(pwd)\ews2011_population.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+WITH
+(
+	FIRSTROW = 2,
+	FORMATFILE = '$(pwd)\ews2011_population.fmt',		-- Use a format file
+	TABLOCK					-- Table lock
+);
+GO
+
+--
+-- Enable constraints
+--
+ALTER TABLE rif_data.ews2011_population ADD CONSTRAINT ews2011_population_asg_ck CHECK (age_sex_group >= 100 AND age_sex_group <= 121 OR age_sex_group >= 200 AND age_sex_group <= 221);
+GO
+
+--
+-- Partitioned Indexes
+--
+CREATE INDEX ews2011_population_age_sex_group ON rif_data.ews2011_population(age_sex_group) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_cntry2011 ON rif_data.ews2011_population (cntry2011) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_gor2011 ON rif_data.ews2011_population (gor2011) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_ladua2011 ON rif_data.ews2011_population (ladua2011) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_lsoa2011 ON rif_data.ews2011_population (lsoa2011) ON pf_ews2011_population_year (year);
+GO
+CREATE INDEX ews2011_population_ews2011_msoa2011 ON rif_data.ews2011_population (msoa2011) ON pf_ews2011_population_year (year);
+GO
+```
+## Granting permission
 
 Tables or views may be granted directly to the user or indirectly via a role. Good administration proactive is to grant via a role.
 
 To grant via a role, you must first create a role. for example create and GRANT seer_user role to a user *peter*:
 
-### 3.4.1 Postgres
+### Postgres
 
 Logon as the Postgres saperuser *postgres" or other role with the *superuser* privilege.
 
-```SQL
+```sql
 psql -U postgres -d postgres
 CREATE ROLE seer_user;
 GRANT seer_user TO peter;
 ```
 
 There is no *CREATE ROLE IF NOT EXIST*.
-```SQL
+```sql
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'seer_user') THEN
@@ -1121,9 +1321,9 @@ $$;
 
 To view all roles: ```SELECT * FROM pg_roles;```
 
-### 3.4.2 SQL Server
+### SQL Server
 
-```SQL
+```sql
 sqlcmd -E
 USE sahsuland;
 IF DATABASE_PRINCIPAL_ID('seer_user') IS NULL
@@ -1134,15 +1334,139 @@ GO
 
 To view all roles: ```SELECT name, type_desc FROM sys.database_principals;```
 
-# 4. Information Governance
+## Remote Database Access
+
+The RIF supports [SQL/MED SQL Management of External Data](https://wiki.postgresql.org/wiki/SQL/MED) 
+
+### Postgres with a remote Oracle database
+
+The uses the [Oracle foreign data wrapper](https://github.com/laurenz/oracle_fdw) with downloads for Windows at: 
+(https://github.com/laurenz/oracle_fdw/releases/tag/ORACLE_FDW_2_1_0). 
+
+* Use the [Oracle instant client](https://www.oracle.com/technetwork/database/database-technologies/instant-client/overview/index.html). 
+
+On Windows you may get: *ERROR:  could not load library "C:/POSTGR~1/pg10/../pg10/lib/postgresql/oracle_fdw.dll": The specified module could not
+be found*. There us a good article explaining what to do at: [Cannot load oracle_fdw.dll under Windows Server 2012 R2 #160](https://github.com/laurenz/oracle_fdw/issues/160). The key 
+issue is the path: 
+
+* The Postgres bin directory: *C:\PostgreSQL\pg10\bin";
+* The extension folder: *C:\PostgreSQL\pg10\lib\postgresql";
+* The Oracle instant client directory (I choose: *C:\Program Files\Oracle Instant Client\instantclient_18_3*);
+
+The local Postgres environment setup file *C:\PostgreSQL\pg10\pg10-env.bat* was changed from:
+
+```
+set PATH=C:\POSTGR~1\pg10\bin;%PATH%
+```
+
+To:
+
+```
+set PATH=C:\POSTGR~1\pg10\bin;C:\POSTGR~1\pg10\lib\postgresql;C:\PROGRA~1\ORACLE~1\INSTAN~1;%PATH%
+```
+
+The server was then restarted. Note that the path is in the old DOS format.
+
+* Create the extension as Postgres in the production database:
+
+  ```CREATE EXTENSION oracle_fdw;```
+
+* Test extension. Note the Oracle instant client:
+
+  ```sql
+  SELECT oracle_diag();
+                           oracle_diag
+  -------------------------------------------------------------
+   oracle_fdw 2.1.0, PostgreSQL 10.5, Oracle client 18.3.0.0.0
+  (1 row)
+  ```
+
+* Create a remote server and grant access to RIF users:
+
+  ```sql
+  CREATE SERVER oradb FOREIGN DATA WRAPPER oracle_fdw
+              OPTIONS (dbserver '//dbserver.mydomain.com:1521/ORADB');
+  GRANT USAGE ON FOREIGN SERVER oradb TO rif_user, rif_manager;
+  ```	
+
+* Create a remote user. This will not normally be a schema owner:
+
+  ```sql
+  CREATE USER MAPPING FOR peter SERVER oradb
+              OPTIONS (user 'orapeter', password 'oraretep');
+  ```
+
+* Create a remote table link:
+
+  ```sql
+  CREATE FOREIGN TABLE rif_data.oratab (
+              id        integer           OPTIONS (key 'true')  NOT NULL,
+              text      character varying(30),
+              floating  double precision  NOT NULL
+           ) SERVER oradb OPTIONS (schema 'ORAUSER', table 'ORATAB');
+  ```
+  
+* Test access:
+  ```sql
+  SELECT FROM rif_data.oratab LIMIT 20;
+  ```
+
+* **There is no need to grant access on the foreign table to specific users, the user mapping controls the access.**
+
+### SQL Server with a remote Oracle database
+
+* Requires the Oracle instant client (see Postgres);
+* Download [64-bit Oracle Data Access Components (ODAC)](https://www.oracle.com/technetwork/database/windows/downloads/index-090165.html)
+* Unzip the download and CD into its base, run ```install.bat all c:\oracle odac```
+  ```
+  C:\>cd C:\Users\support\Downloads\ODAC122010Xcopy_x64
+
+  C:\Users\support\Downloads\ODAC122010Xcopy_x64>install.bat all c:\oracle odac
+  ```
+  This installs in *C:\oracle*.
+* Check the Oracle OLEDB provider is picked up in SQL Server manager:
+  ![Oracle OLEDB provider]({{ site.baseurl }}/rifDatabase/SQLserver/images/sqlserver_oracle_oledb_provider.png)
+  
+* Create a remote link to the Oracle database. A schema account will be required:
+  https://www.sqlshack.com/link-sql-server-oracle-database/
+  ![Oracle OLEDB setup]({{ site.baseurl }}/rifDatabase/SQLserver/images/sqlserver_oracle_oledb_setup.png)
+ 
+* Create a VIEW to the remote abject in the *rif_data* schema:
+  ```sql
+  CREATE VIEW rif_data.msqltab AS
+  SELECT * FROM {remote_db].[remote_schema].[remote_table_or_view];
+  ```  
+  
+* Grant access to local user:
+  ```sql
+  GRANT SELECT ON rif_data.msqltab TO peter;
+  ```
+  
+* Test access:
+  ```sql
+  SELECT TOP 20 FROM rif_data.msqltab;
+  ```
+  
+### Postgres with a remote SQL Server database 
+
+This requires [TDS foreign data wrapper](https://github.com/tds-fdw/tds_fdw) and is not currently compiled for Windows.
+
+### SQL Server with a remote Postgres database 
+
+This would require [PostgreSQL OLE DB Provider project](http://pgfoundry.org/projects/oledb/) and is no longer under active 
+development (last version 1.0.20 from April 2006. There is a commercial driver available [PGNP OLEDB Providers for PostgreSQL, Greenplum and Redshift](https://www.pgoledb.com/index.php/8-news/1-welcome-to-pgnp) 
+for $498. The PostgreSQL Global Development Group do not endorse or recommend any products listed, and cannot vouch for the 
+quality or reliability of any of them; and neither does SAHSU!
+
+# Information Governance
 
 This currently covers:
 
 * Auditing
 
-## 4.1 Auditing
+## Auditing
 
-### 4.1.1 Postgres
+### Postgres
 
 Basic statement logging can be provided by the standard logging facility with the configuration parameter ```log_statement = all```.
 Postgres has an extension [pgAudit](https://github.com/pgaudit/pgaudit) which provides much more auditing, however the Enterprise DB installer does not include Postgres
@@ -1172,9 +1496,11 @@ If you are using CSV log files set:
 
 Create a Postgres event log custom view, create a [custom event view](https://technet.microsoft.com/en-us/library/gg131917.aspx) in the Event Viewer.
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_filter_setup.png?raw=true "Postgres event log custom view")
+![Postgres event log custom view]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_filter_setup.png)
 
-An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_log_custom_view.xml) is also provided:
+An XML setup file [postgres_event_log_custom_view.xml]({{ site.baseurl }}/rifDatabase/Postgres/examples/postgres_event_log_custom_view.xml) 
+is also provided:
+
 ```xml
 <ViewerConfig>
 	<QueryConfig>
@@ -1281,27 +1607,27 @@ Formatted the CSV log entry is:
 
 The equivalent PostgreSQL Windows log entry entry is:
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry"){:width="100%"}
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry"){:width="100%"}
+![Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log.png)
+![Equivalent PostgreSQL Windows log entry]({{ site.baseurl }}/rifDatabase/Postgres/images/postgres_event_viewer_log2.png)
 
-### 4.1.2 SQL Server
+### SQL Server
 
 See:
 
-[Creating a successful auditing strategy for your SQL Server databases](https://www.sqlshack.com/creating-successful-auditing-strategy-sql-server-databases/)
-[SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-2017)
-[Create a Server Audit and Database Audit Specification](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-database-audit-specification?view=sql-server-2017)
+* [Creating a successful auditing strategy for your SQL Server databases](https://www.sqlshack.com/creating-successful-auditing-strategy-sql-server-databases/)
+* [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-2017)
+* [Create a Server Audit and Database Audit Specification](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-database-audit-specification?view=sql-server-2017)
 
 To setup *(Common criteria compliance*:
 
 * Use the SQL Server management studio server properties pane:
-  ![alt text]({{ base.url }}/rifDatabase/SQLserver/auditing.PNG?raw=true "SQL Server auditing setup");
+  ![SQL Server auditing setup]({{ site.baseurl }}/rifDatabase/SQLserver/images/sqlserver_auditing.png)
 * Also check audit failed and successful logins;
 * Restart SQL Server;
 
 TO BE ADDED: auditing DDL and DML (without using triggers!)
 
-# 5. Backup and recovery
+# Backup and recovery
 
 As with all relational databases; cold backups are recommended as a baselines and should be carried out using your enterprise backup tools with the database down. Two further backup solutions are
 suggested:
@@ -1317,9 +1643,9 @@ object deletion incidents.
 Replication is invariably very complex and is beyond the scope of this manual. It is recommended for very large sites with Postgres because of Postgres' poor support for corruption
 detection and repair.
 
-## 5.1 Postgres
+## Postgres
 
-### 5.1.1 Logical Backups
+### Logical Backups
 
 Postgres logical backup and recovery uses *pg_dump* and *pg_restore*. pg_dump only dumps a single database. To backup global objects that are common to all databases in a cluster, such as roles and tablespaces,
 use *pg_dumpall*.
@@ -1329,7 +1655,7 @@ Two basic formats: 1) a SQL script to recreate the database using *psql* and 2) 
 1. SQL Script: ```pg_dump -U postgres -w -F plain -v -C sahsuland > sahsuland.sql```
 2. Binary dump file: ```pg_dump -U postgres -w -F custom -v sahsuland > sahsuland.dump```
 
-Where the database name is *sahsuland*
+Where the database name is *sahsuland*.
 
 Flags:
 
@@ -1339,26 +1665,22 @@ Flags:
 * *-v*: be verbose;
 
 To restore a custom or directory *pg_dump* file: ```pg_restore -d sahsuland -U postgres -v sahsuland.dump```. This is the method uses to create the example database *sahsuland*
-from the development database *sahsuland_dev*.
-
-See:
+from the development database *sahsuland_dev*. See:
 
 * [pd_dump](https://www.postgresql.org/docs/9.6/static/app-pgdump.html)
 * [pg_restore](https://www.postgresql.org/docs/9.6/static/app-pgrestore.html)
 
-### 5.1.2 Continuous Archiving and Point-in-Time Recovery
+### Continuous Archiving and Point-in-Time Recovery
 
-Postgres supports continuous archiving and point-in-time recovery (PITR).
-
-See:
+Postgres supports continuous archiving and point-in-time recovery (PITR). See:
 
 * [Continuous Archiving and Point-in-Time Recovery](https://www.postgresql.org/docs/9.6/static/continuous-archiving.html)
 * [Postgres Corruption WIKI](https://wiki.postgresql.org/wiki/Corruption)
 * [Postgres replication](https://www.postgresql.org/docs/9.6/static/different-replication-solutions.html)
 
-## 5.2 SQL Server
+## SQL Server
 
-### 5.2.1 Logical Backups
+### Logical Backups
 
 SQL Server logical backup and restore are SQL commands entered using ```sqlcmd```. See:
 
@@ -1395,7 +1717,7 @@ RESTORE DATABASE successfully processed 45662 pages in 5.130 seconds (69.538 MB/
 
 See the script *rif40_production_creation.sql* if you want to rename the database, its files or to move the files.
 
-### 5.2.2 Continuous Archiving and Point-in-Time Recovery
+### Continuous Archiving and Point-in-Time Recovery
 
 This requires a transaction log backup, i.e. not the copy only version created in the previous section. You will need to do a full backup, followed by differential backups:
 
@@ -1420,7 +1742,7 @@ Log backups require the database to be in the full recovery model, not the defau
 For restoration see:
 [Restore a SQL Server Database to a Point in Time (Full Recovery Model](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/restore-a-sql-server-database-to-a-point-in-time-full-recovery-model?view=sql-server-2017)
 
-# 6. Patching
+# Patching
 
 Alter scripts are numbered sequentially and have the same functionality in both ports, e.g. ```v4_0_alter_10.sql```. Scripts are safe to run more than once.
 
@@ -1428,13 +1750,14 @@ Pre-built databases are supplied patched up to date.
 
 Scripts must be applied as follows:
 
-| Date            | Script            | Description                         |
-|-----------------|-------------------|-------------------------------------|
-| 3rd August 2018 | v4_0_alter_10.sql | Risk analysis changes               |
+| Date             | Script            | Description                         |
+|------------------|-------------------|-------------------------------------|
+| 3rd August 2018  | v4_0_alter_10.sql | Risk analysis changes               |
+| 13th October 2018| v4_0_alter_11.sql | Risk analysis changes               |
 
 You will get messages on logon such as **alter_10.sql (post 3rd August 2018 changes for risk analysis) not run** to tell you to run the alter scripts.
 
-## 6.1 Postgres
+## Postgres
 
 E.g. for alter 10:
 
@@ -1474,7 +1797,7 @@ Scripts are in the standard bundle in the directory *Database alter scripts\Post
 psql -U rif40 -d <your database name> -w -e -P pager=off -v verbosity=terse -v debug_level=0 -v use_plr=N -v pghost=localhost -v echo=none -f alter_scripts/<alter script name>
 ```
 
-## 6.2 SQL Server
+## SQL Server
 
 Scripts are in the standard bundle in the directory *Database alter scripts\SQL Server* or in github in *rapidInquiryFacility\rifDatabase\SQLserver\sahsuland_dev\alter_scripts*
 
@@ -1488,7 +1811,7 @@ E.g. for alter 10:
 * Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i v4_0_alter_10.sql -v pwd="%cd%"```
 * Connect flags if required: -P <password> -S<myServerinstanceName>
 
-# 7. Tuning
+# Tuning
 
 The following aspects of tuning are covered:
 
@@ -1502,11 +1825,11 @@ In general RIF database performance will benefit from:
 * Allowing the use of limited parallelisation in queries, inserts and index creation;
 * Use of index organised denominator and covariate tables. Note that by default all tables are index organised on SQL Server;
 
-See [3.3 Partitioning](#partitioning)
+See [Partitioning](#partitioning)
 
-## 7.1 Postgres
+## Postgres
 
-### 7.1.1 Server Memory Tuning
+### Server Memory Tuning
 
 The best source for Postgres tuning information is at the [Postgres Performance Optimization Wiki](https://wiki.postgresql.org/wiki/Performance_Optimization). This references
 [Tuning Your PostgreSQL Server](https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server)
@@ -1515,17 +1838,20 @@ Parameters can be set in the *postgresql.conf* file or on the server command lin
 move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag:
 ```"C:\Program Files\PostgreSQL\9.6\bin\pg_ctl.exe" runservice -N "postgresql-x64-9.6" -D "E:\Postgres\data" -w```
 
-An example [postgresql.conf]({{ base.url }}/rifDatabase/Postgres/conf/postgresql.conf) is supplied.
+An example [postgresql.conf]({{ site.baseurl }}/rifDatabase/Postgres/examples/postgresql.conf) is supplied.
 The principal tuning changes are:
 
 * Shared buffers: 1GB. Can be tuned higher if required (see below);
 * Temporary buffers: 1-4GB
 * Work memory: 1GB. The Maximum is 2047MB;
 * Effective_cache_size: 1/2 of total memory
-* On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed 21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint
-  [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
+* On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed on 
+  21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint
+  [Physical and Virtual Memory in Windows 10 by Sushovon Sinha: translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) 
+  size. Query "*windows translation lookaside buffer*" in Google if Microsoft moves this link again!!
 
   Example parameter entries from *postgresql.conf*:
+  
 ```conf
 shared_buffers = 1024MB     # min 128kB; default 128 MB (9.6)
                             # (change requires restart)
@@ -1539,9 +1865,8 @@ log_temp_files = 5000		# log temporary files equal or larger [5MB]
 					# than the specified size in kilobytes;
 					# -1 disables [default], 0 logs all temp files
 
-# according to http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server,
-# "Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting,
-# and 3/4 of memory is a more aggressive but still reasonable amount."
+# From "Tuning Your PostgreSQL Server": Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting,
+# and 3/4 of memory is a more aggressive but still reasonable amount.
 #effective_cache_size = 4GB
 effective_cache_size = 20GB
 ```
@@ -1559,7 +1884,8 @@ data loading (especially geospatial) will generally hit a few large tables often
 more OLTP like less so. There run these queries often under different loads.
 
 Firstly see how many buffers are in use by database:
-```SQL
+
+```sql
 SELECT CASE
 			WHEN d.datname = current_database() THEN d.datname || ' (current)'
 			ELSE d.datname
@@ -1578,11 +1904,13 @@ SELECT CASE
  sahsuland_dev (current) |                 99.988
 (1 row)
 ```
+
 This is across all databases. 100% is not unusual, much less than 100% probably means your *shared_buffers* are
 too large (unless the other databases are doing substantial work).
 
 Now see what is being used in the current database:
-```SQL
+
+```sql
 SELECT n.nspname AS "schema",
 	   c.relname AS "table name",
 	   c2.relname AS "toast table",
@@ -1666,7 +1994,7 @@ TOAST (The Oversized-Attribute Storage Technique) is used to store large field v
 for instance the geometry databases on *cntry2011* as in this example.
 
 Now it is possible to determine an **ideal** value for *shared_buffers*:
-```SQL
+```sql
 SELECT CASE
 			WHEN d.datname = current_database() THEN d.datname || ' (current)'
 			ELSE d.datname
@@ -1713,7 +2041,7 @@ You will need to run this many times under different loads to determine a suitab
 
 The problem with just looking at the buffer cache is it does not tell you what effect cache misses are having on performance.
 
-```SQL
+```sql
 WITH all_tables AS (
 	SELECT *
 		 FROM (
@@ -1895,7 +2223,7 @@ In this cases, somewhat later on in the processing:
 
 These are both signs that the shared buffers needs to be increased for this workload.
 
-### 7.1.2 Query Tuning
+### Query Tuning
 
 On Postgres the extract queries all do an ```EXPLAIN PLAN VERBOSE``` to the log:
 ```
@@ -2062,7 +2390,7 @@ Insert on rif_studies.s416_extract  (cost=19943.90..21263.53 rows=52785 width=58
 +00038.28s  rif40_execute_insert_statement(): [56605] Study 416: Study extract insert 1995 (EXPLAIN) OK, took: 00:00:00.061771
 ```
 
-### 7.1.3 Database Space Management
+### Database Space Management
 
 Postrgres needs to be VACUUM to clear out dead tuples as it has no rollback segments. VACUUM reclaims storage occupied by dead tuples. In normal PostgreSQL operation,
 tuples that are deleted or obsoleted by an update are not physically removed from their table; they remain present until a VACUUM is done. Therefore it's necessary to do
@@ -2079,15 +2407,15 @@ track_counts = on
 Vaccuming can also be carried out using the [*vacuumdb*](https://www.postgresql.org/docs/9.6/static/app-vacuumdb.html) command or by using the SQL
 [*VACUUM*](https://www.postgresql.org/docs/9.6/static/sql-vacuum.html) command: ```VACCUM FULL VERBOSE ANALYZE``` will garbage-collect and analyze a database verbosely.
 
-## 7.2 SQL Server
+## SQL Server
 
-### 7.2.1 Server Memory Tuning
+### Server Memory Tuning
 
 SQL Server automatically allocates memory as needed by the server up to the limit of 2,147,483,647MB! In practice you may wish to reduce this figure to 40% of the available RAM.
 
 By default SQL Server is not using *largepages* (the names for *huge_pages* in SQL Server):
 
-```SQL
+```sql
 1> SELECT large_page_allocations_kb FROM sys.dm_os_process_memory;
 2> go
 large_page_allocations_kb
@@ -2099,7 +2427,7 @@ To enable *largepages* you need to [Enable the Lock Pages in Memory Option](http
 This will have consequences for the automated tuning which unless limited in size will remove the ability of Windows to free up SQL Server memory for other applications (and Windows itself). You need to be on a
 big server and make sure your memory set-up is stable before enabling it.
 
-### 7.2.2 Query Tuning
+### Query Tuning
 
 The [SQL Server profiler](https://docs.microsoft.com/en-us/sql/tools/sql-server-profiler/sql-server-profiler?view=sql-server-2017) needs to be used to trace RIF application tuning.
 
@@ -2107,19 +2435,19 @@ To use the profiler you will need to be a *sysadmin* or have the *ALTER TRACE* r
 
 Show execution plan in SQL Server management studio is also very effective (showing missing indexes) and allows analysis of running queries:
 
-![alt text]({{ base.url }}/rifDatabase/SQLserver/SSMS_execution_plan.PNG?raw=true "SQL Server Management Studio Execution Plan"){:width="100%"}
+![SQL Server Management Studio Execution Plan]({{ site.baseurl }}/rifDatabase/SQLserver/images/sqlserver_ssms_execution_plan.png)
 
 However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server.
 When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
 
-### 7.2.3 Database Space Management
+### Database Space Management
 
-SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically:
-https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
+SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as 
+space stays with tables once allocated; databases need to be shrunk periodically: [](https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017). 
+Note that the database will **NOT** shrink unless you back it up.
 
-![alt text]({{ base.url }}/rifDatabase/SQLserver/shrink.PNG?raw=true "SQL Server Shrink Database"){:width="100%"}
+![SQL Server Shrink Database]({{ site.baseurl }}/rifDatabase/SQLserver/images/sqlserver_shrink.png)
 
 The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
 
-Peter Hambly
-May 2018
+**Peter Hambly, November 2018**

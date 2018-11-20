@@ -6,16 +6,16 @@ title: Windows Postgres Install using pg_dump and scripts
 * Contents
 {:toc}
 
-# 1 Installation Prerequisites
+# Installation Prerequisites
 ## Postgres
 
 * Uses *pg_dump* and Powershell
 * Does **NOT** need *make* or *Node.js*
 
-Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload.
+Postgres is best downloaded from Enterprise DB: (http://www.enterprisedb.com/products-services-training/pgdownload).
 This is standard PostGres as packaged by Enterprise DB and not their own Postgres based product EDB Postgres
 Enterprise/Standard/Developer. An installation guide is at:
-http://get.enterprisedb.com/docs/PostgreSQL_Installation_Guide_v9.6.pdf
+(http://get.enterprisedb.com/docs/PostgreSQL_Installation_Guide_v9.6.pdf)
 
 WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. It has *NOT* yet been tested on Postgres 10.
 
@@ -30,7 +30,7 @@ Postgres is usually setup in one of four ways:
 
 The front and and middleware require username and password authentications; so method 4 must not be used.
 
-Postgres also can proxy users (see ident.conf examples are in [Configuration File Examples](#configuration-file-examples)
+Postgres also can proxy users (see *ident.conf* examples are in [Configuration File Examples](#configuration-file-examples)
 
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
@@ -724,6 +724,4 @@ sahsuland_dev	pch			postgres
 # Eof
 ```
 
-# Tuning
 
-To be added.

@@ -277,15 +277,12 @@ title: RIF To-do List
 
    Data is extracted SQL server in 35s and R INLA in 40s.
 
-   ![SEER Lung Cancer Disease Mapping](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/US_SEER_2.PNG)
-
-
 # Security Testing  [Done: PH 24/11/2017]
 
 205 unique URLs were tested using OWASP ZAP (https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project) Ajax Spider
 
-The report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Testing/owasp_zap_test1.md and the URL list
-tested is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Testing/url_list2.txt.
+The report is at: ({{ site.baseurl }}/development/owasp_zap_test1.md) and the URL list
+tested is at: ({{ site.baseurl }}/development/url_list2.txt).
 
 One medium and three low medium isses were highlighted for fixing.
 

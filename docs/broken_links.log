@@ -1,0 +1,519 @@
+2018-11-16 07:49:36 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/ [4428/4428] -> "index.html.tmp.tmp" [1]
+failed: Bad file descriptor.
+failed: Bad file descriptor.
+https://smallareahealthstatisticsunit.github.io/robots.txt:
+2018-11-16 07:49:42 ERROR 404: Not Found.
+2018-11-16 07:49:44 URL:https://www.gnu.org/robots.txt [355/355] -> "robots.txt.1" [1]
+2018-11-16 07:49:46 URL:https://github.com/robots.txt [31710/31710] -> "robots.txt.1" [1]
+2018-11-16 07:49:48 URL:https://pages.github.com/robots.txt [46/46] -> "robots.txt.1" [1]
+failed: Bad file descriptor.
+failed: Bad file descriptor.
+2018-11-16 07:49:55 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/assets/css/style.css?v= 200 OK
+style.css@v=.tmp: No such file or directory
+unlink: No such file or directory
+2018-11-16 07:49:57 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/stylesheets/rif.css 200 OK
+rif.css.tmp: No such file or directory
+unlink: No such file or directory
+2018-11-16 07:50:01 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/introduction/what-is-the-RIF [18398/18398] -> "what-is-the-RIF.tmp.tmp" [1]
+wget: unable to resolve host address 'www.sahsu.org'
+http://www.envhealthatlas.co.uk/robots.txt:
+2018-11-16 07:50:07 ERROR 404: Not Found.
+2018-11-16 07:50:09 URL:http://www.imperial.ac.uk/robots.txt [109/109] -> "robots.txt.1" [1]
+2018-11-16 07:50:11 URL:http://www.environment-health.ac.uk/robots.txt [2189/2189] -> "robots.txt.1" [1]
+http://www.euroheis.org/robots.txt:
+2018-11-16 07:50:14 ERROR 404: Not Found.
+2018-11-16 07:50:16 URL:https://www.cdc.gov/robots.txt [1964/1964] -> "robots.txt.1" [1]
+2018-11-16 07:50:18 URL:https://www.nihr.ac.uk/robots.txt [52/52] -> "robots.txt.1" [1]
+2018-11-16 07:50:20 URL:http://hieh.hpru.nihr.ac.uk/robots.txt [2189/2189] -> "robots.txt.1" [1]
+2018-11-16 07:50:22 URL:https://ec.europa.eu/robots.txt [8355/8355] -> "robots.txt.1" [1]
+2018-11-16 07:50:25 URL:https://www.gov.uk/robots.txt [845/845] -> "robots.txt.1" [1]
+2018-11-16 07:50:29 URL:https://www.gnu.org/licenses/lgpl-3.0.en.html [22936] -> "lgpl-3.0.en.html.tmp.tmp" [1]
+2018-11-16 07:50:32 URL:https://my.fsf.org/robots.txt [2189/2189] -> "robots.txt.1" [1]
+2018-11-16 07:50:36 URL:https://www.fsf.org/robots.txt [117/117] -> "robots.txt.1" [1]
+2018-11-16 07:50:38 URL:https://www.fsf.org/robots.txt [117/117] -> "robots.txt.1" [1]
+https://directory.fsf.org/robots.txt:
+2018-11-16 07:50:41 ERROR 404: Not Found.
+2018-11-16 07:50:43 URL:https://h-node.org/robots.txt [19386] -> "robots.txt.1" [1]
+2018-11-16 07:50:46 URL:https://shop.fsf.org/robots.txt [2189/2189] -> "robots.txt.1" [1]
+https://my.fsf.org/donate/robots.txt:
+2018-11-16 07:50:51 ERROR 404: Not Found.
+2018-11-16 07:50:55 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/introduction/building-and-installation [6379/6379] -> "building-and-installation.tmp.tmp" [1]
+2018-11-16 07:50:58 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/standalone/RIF_v40_Manual.pdf 200 OK
+unlink: No such file or directory
+2018-11-16 07:51:00 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/standalone/RIF_Data_Loader_Manual.pdf 200 OK
+unlink: No such file or directory
+2018-11-16 07:51:04 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/rifWebApplication [275073/275073] -> "rifWebApplication.1.tmp.tmp" [1]
+2018-11-16 07:51:07 URL:https://technet.microsoft.com/robots.txt [7710/7710] -> "robots.txt.1" [1]
+2018-11-16 07:51:09 URL:https://www.owasp.org/robots.txt [30/30] -> "robots.txt.1" [1]
+2018-11-16 07:51:11 URL:https://www.postgresql.org/robots.txt [215/215] -> "robots.txt.1" [1]
+2018-11-16 07:51:14 URL:http://tomcat.apache.org/robots.txt [60/60] -> "robots.txt.1" [1]
+2018-11-16 07:51:16 URL:https://docs.microsoft.com/robots.txt [125/125] -> "robots.txt.1" [1]
+2018-11-16 07:51:20 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/windows_install_from_pg_dump [37970/37970] -> "windows_install_from_pg_dump.tmp.tmp" [1]
+2018-11-16 07:51:25 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/production/INSTALL [124535/124535] -> "INSTALL.tmp.tmp" [1]
+2018-11-16 07:51:27 URL:https://www.microsoft.com/robots.txt [4937/4937] -> "robots.txt.1" [1]
+https://my.visualstudio.com/robots.txt:
+2018-11-16 07:51:29 ERROR 404: Not Found.
+2018-11-16 07:51:34 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/DataLoading [505981/505981] -> "DataLoading.tmp.tmp" [1]
+2018-11-16 07:51:36 URL:https://blog.sqlauthority.com/robots.txt [30/30] -> "robots.txt.1" [1]
+2018-11-16 07:51:38 URL:http://www.sqlservercentral.com/robots.txt [107/107] -> "robots.txt.1" [1]
+2018-11-16 07:51:43 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/tileMaker [204770/204770] -> "tileMaker.tmp.tmp" [1]
+https://leafletjs.com/robots.txt:
+2018-11-16 07:51:45 ERROR 404: Not Found.
+2018-11-16 07:51:47 URL:https://wiki.openstreetmap.org/robots.txt [448/448] -> "robots.txt.1" [1]
+2018-11-16 07:51:49 URL:https://en.wikipedia.org/robots.txt [27191/27191] -> "robots.txt.1" [1]
+2018-11-16 07:51:51 URL:http://a.tile.openstreetmap.org/robots.txt [195/195] -> "robots.txt.1" [1]
+2018-11-16 07:51:54 URL:https://nodejs.org/robots.txt [112] -> "robots.txt.1" [1]
+2018-11-16 07:51:56 URL:https://www.python.org/robots.txt [539/539] -> "robots.txt.1" [1]
+2018-11-16 07:51:59 URL:http://www.mingw.org/robots.txt [1521/1521] -> "robots.txt.1" [1]
+2018-11-16 07:52:01 URL:http://geojson.org/robots.txt [44/44] -> "robots.txt.1" [1]
+2018-11-16 07:52:05 URL:https://visualstudio.microsoft.com/robots.txt [140/140] -> "robots.txt.1" [1]
+2018-11-16 07:52:08 URL:https://www.npmjs.com/robots.txt [832/832] -> "robots.txt.1" [1]
+failed: Bad file descriptor.
+2018-11-16 07:52:13 URL:https://hydra.hull.ac.uk/robots.txt [204/204] -> "robots.txt.1" [1]
+https://bost.ocks.org/robots.txt:
+2018-11-16 07:52:15 ERROR 404: Not Found.
+https://mapshaper.org/robots.txt:
+2018-11-16 07:52:19 ERROR 404: Not Found.
+https://qgis.org/robots.txt:
+2018-11-16 07:52:22 ERROR 404: Not Found.
+2018-11-16 07:52:24 URL:https://www.arcgis.com/robots.txt [71/71] -> "robots.txt.1" [1]
+No data received.
+http://wiki.geojson.org/Robots.txt:
+2018-11-16 07:52:30 ERROR 404: Not Found.
+2018-11-16 07:52:34 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual [319492/319492] -> "databaseManagementManual.tmp.tmp" [1]
+2018-11-16 07:52:38 URL:https://msdn.microsoft.com/robots.txt [6716/6716] -> "robots.txt.1" [1]
+2018-11-16 07:52:41 URL:https://wiki.postgresql.org/robots.txt [55/55] -> "robots.txt.1" [1]
+2018-11-16 07:52:43 URL:http://dcx.sap.com/robots.txt [2278] -> "robots.txt.1" [1]
+2018-11-16 07:52:50 URL:https://www.microsoft.com/en-us/download [87866/87866] -> "robots.txt.1" [1]
+2018-11-16 07:52:52 URL:https://www.oracle.com/robots.txt [9225/9225] -> "robots.txt.1" [1]
+2018-11-16 07:52:54 URL:http://pgfoundry.org/robots.txt [452/452] -> "robots.txt.1" [1]
+https://www.pgoledb.com/robots.txt:
+2018-11-16 07:52:57 ERROR 404: Not Found.
+2018-11-16 07:52:59 URL:http://www.cplusplus.com/robots.txt [30/30] -> "robots.txt.1" [1]
+2018-11-16 07:53:01 URL:https://www.sqlshack.com/robots.txt [176/176] -> "robots.txt.1" [1]
+2018-11-16 07:53:03 URL:https://answers.microsoft.com/robots.txt [2904/2904] -> "robots.txt.1" [1]
+2018-11-16 07:53:06 URL:https://www.keithf4.com/robots.txt [67/67] -> "robots.txt.1" [1]
+2018-11-16 07:53:10 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/ [6231/6231] -> "index.html.tmp.tmp" [1]
+http://rapidinquiryfacility.sourceforge.net/robots.txt:
+2018-11-16 07:53:13 ERROR 404: Not Found.
+2018-11-16 07:53:17 URL:https://pages.github.com/ [14712/14712] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:53:19 URL:https://help.github.com/robots.txt [1598/1598] -> "robots.txt.1" [1]
+2018-11-16 07:53:21 URL:https://www.youtube.com/robots.txt [633] -> "robots.txt.1" [1]
+https://desktop.github.com/robots.txt:
+2018-11-16 07:53:24 ERROR 404: Not Found.
+2018-11-16 07:53:26 URL:https://jekyllrb.com/robots.txt [42/42] -> "robots.txt.1" [1]
+https://status.github.com/robots.txt:
+2018-11-16 07:53:28 ERROR 404: Not Found.
+2018-11-16 07:53:31 URL:https://developer.github.com/robots.txt [37/37] -> "robots.txt.1" [1]
+2018-11-16 07:53:35 URL:https://services.github.com/robots.txt [49/49] -> "robots.txt.1" [1]
+2018-11-16 07:53:40 URL:https://github.myshopify.com/robots.txt [1008] -> "robots.txt.1" [1]
+wget: unable to resolve host address 'www.sahsu.org'
+wget: unable to resolve host address 'www.sahsu.org'
+2018-11-16 07:53:48 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Screenshots/RIF_login.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:53:50 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Screenshots/RIF_studyarea.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:53:53 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Screenshots/RIF_investigation.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:53:55 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Screenshots/RIF_statistical_methods.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:53:57 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Screenshots/RIF_submission.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:53:59 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Screenshots/RIF_viewer.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:54:03 URL:http://www.envhealthatlas.co.uk/homepage/ [7556/7556] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:54:07 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Screenshots/RIF_mapping.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:54:09 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Screenshots/RIF_export.png 200 OK
+unlink: No such file or directory
+wget: unable to resolve host address 'www.sahsu.org'
+2018-11-16 07:54:17 URL:http://www.imperial.ac.uk/ [76649/76649] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:54:22 URL:http://www.environment-health.ac.uk/ [30960] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:54:26 URL:http://www.euroheis.org/ [5162/5162] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:54:31 URL:https://www.cdc.gov/nceh/tracking/ [37431/37431] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:54:37 URL:https://www.nihr.ac.uk/ [85331/85331] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:54:45 URL:http://hieh.hpru.nihr.ac.uk/our-research/research-themes/theme-1-project-3-cluster-guidelinesrapid-inquiry-facility/ [36803/36803] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:54:49 URL:https://www.cdc.gov/ [181136] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:54:53 URL:https://ec.europa.eu/commission/index_en/ [67200] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:55:00 URL:https://www.gov.uk/government/organisations/public-health-england [83961/83961] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:55:02 URL: https://www.gnu.org/graphics/gnu-head-mini.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:55:04 URL: https://www.gnu.org/reset.css 200 OK
+unlink: No such file or directory
+2018-11-16 07:55:06 URL: https://www.gnu.org/mini.css 200 OK
+unlink: No such file or directory
+2018-11-16 07:55:08 URL: https://www.gnu.org/layout.min.css 200 OK
+unlink: No such file or directory
+2018-11-16 07:55:10 URL: https://www.gnu.org/print.min.css 200 OK
+unlink: No such file or directory
+2018-11-16 07:55:12 URL: https://www.gnu.org/licenses/lgpl-3.0.rdf 200 OK
+unlink: No such file or directory
+2018-11-16 07:55:17 URL:https://www.gnu.org/licenses/lgpl-3.0.html [22933] -> "lgpl-3.0.html.tmp.tmp" [1]
+2018-11-16 07:55:21 URL:https://www.gnu.org/licenses/lgpl-3.0.ca.html [23471] -> "lgpl-3.0.ca.html.tmp.tmp" [1]
+2018-11-16 07:55:25 URL:https://www.gnu.org/licenses/lgpl-3.0.de.html [25165] -> "lgpl-3.0.de.html.tmp.tmp" [1]
+2018-11-16 07:55:30 URL:https://www.gnu.org/licenses/lgpl-3.0.fr.html [23835] -> "lgpl-3.0.fr.html.tmp.tmp" [1]
+2018-11-16 07:55:34 URL:https://www.gnu.org/licenses/lgpl-3.0.ja.html [23784] -> "lgpl-3.0.ja.html.tmp.tmp" [1]
+2018-11-16 07:55:38 URL:https://www.gnu.org/licenses/lgpl-3.0.nl.html [23440] -> "lgpl-3.0.nl.html.tmp.tmp" [1]
+2018-11-16 07:55:43 URL:https://www.gnu.org/licenses/lgpl-3.0.pt-br.html [24251] -> "lgpl-3.0.pt-br.html.tmp.tmp" [1]
+2018-11-16 07:55:47 URL:https://www.gnu.org/licenses/lgpl-3.0.ru.html [26033] -> "lgpl-3.0.ru.html.tmp.tmp" [1]
+2018-11-16 07:55:51 URL:https://www.gnu.org/licenses/lgpl-3.0.uk.html [25650] -> "lgpl-3.0.uk.html.tmp.tmp" [1]
+2018-11-16 07:55:53 URL: https://www.gnu.org/server/staging/fundraiser/1-departure-md-banner.jpg 200 OK
+unlink: No such file or directory
+2018-11-16 07:55:58 URL:https://www.gnu.org/ [30176] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:56:00 URL: https://www.gnu.org/server/staging/fundraiser/heckert_gnu.transp-white.small.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:56:06 URL:https://my.fsf.org/join?pk_campaign=fall18&pk_kwd=ban [145809] -> "join@pk_campaign=fall18&pk_kwd=ban.tmp.tmp" [1]
+2018-11-16 07:56:11 URL:https://www.gnu.org/gnu/gnu.html [19842] -> "gnu.html.tmp.tmp" [1]
+2018-11-16 07:56:15 URL:https://www.gnu.org/philosophy/philosophy.html [20317] -> "philosophy.html.tmp.tmp" [1]
+2018-11-16 07:56:19 URL:https://www.gnu.org/licenses/licenses.html [33104] -> "licenses.html.tmp.tmp" [1]
+2018-11-16 07:56:24 URL:https://www.gnu.org/education/education.html [18933] -> "education.html.tmp.tmp" [1]
+2018-11-16 07:56:28 URL:https://www.gnu.org/software/software.html [41764] -> "software.html.tmp.tmp" [1]
+2018-11-16 07:56:32 URL:https://www.gnu.org/doc/doc.html [15569] -> "doc.html.tmp.tmp" [1]
+2018-11-16 07:56:37 URL:https://www.gnu.org/help/help.html [25337] -> "help.html.tmp.tmp" [1]
+2018-11-16 07:56:39 URL: https://www.gnu.org/graphics/lgplv3-147x51.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:56:43 URL:https://www.gnu.org/licenses/why-not-lgpl.html [19394] -> "why-not-lgpl.html.tmp.tmp" [1]
+2018-11-16 07:56:48 URL:https://www.gnu.org/licenses/gpl-faq.html [194127] -> "gpl-faq.html.tmp.tmp" [1]
+2018-11-16 07:56:52 URL:https://www.gnu.org/licenses/gpl-howto.html [24793] -> "gpl-howto.html.tmp.tmp" [1]
+2018-11-16 07:56:56 URL:https://www.gnu.org/licenses/translations.html [29029] -> "translations.html.tmp.tmp" [1]
+2018-11-16 07:56:58 URL: https://www.gnu.org/licenses/lgpl-3.0.txt 200 OK
+unlink: No such file or directory
+2018-11-16 07:57:03 URL:https://www.gnu.org/licenses/lgpl-3.0.dbk [10914/10914] -> "lgpl-3.0.dbk.tmp.tmp" [1]
+2018-11-16 07:57:07 URL:https://www.gnu.org/licenses/lgpl-3.0-standalone.html [8756] -> "lgpl-3.0-standalone.html.tmp.tmp" [1]
+2018-11-16 07:57:09 URL: https://www.gnu.org/licenses/lgpl-3.0.tex 200 OK
+unlink: No such file or directory
+2018-11-16 07:57:11 URL: https://www.gnu.org/licenses/lgpl-3.0.texi 200 OK
+unlink: No such file or directory
+2018-11-16 07:57:15 URL:https://www.gnu.org/licenses/lgpl-3.0.md [7642/7642] -> "lgpl-3.0.md.tmp.tmp" [1]
+2018-11-16 07:57:17 URL: https://www.gnu.org/licenses//lgpl-3.0.odt 200 OK
+unlink: No such file or directory
+2018-11-16 07:57:19 URL: https://www.gnu.org/licenses//lgpl-3.0.rtf 200 OK
+unlink: No such file or directory
+2018-11-16 07:57:24 URL:https://www.gnu.org/graphics/license-logos.html [16448] -> "license-logos.html.tmp.tmp" [1]
+2018-11-16 07:57:28 URL:https://www.gnu.org/licenses/old-licenses/old-licenses.html [14729] -> "old-licenses.html.tmp.tmp" [1]
+2018-11-16 07:57:32 URL:https://www.gnu.org/licenses/gpl-violation.html [18869] -> "gpl-violation.html.tmp.tmp" [1]
+2018-11-16 07:57:37 URL:https://www.gnu.org/licenses/gpl-3.0.html [51634] -> "gpl-3.0.html.tmp.tmp" [1]
+2018-11-16 07:57:44 URL:https://www.fsf.org/ [38364/38364] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:57:48 URL:https://www.fsf.org/ [38364/38364] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:57:59 URL:https://directory.fsf.org/wiki/Main_Page [45721] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:58:04 URL:https://h-node.org/ [19386] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:58:09 URL:https://www.gnu.org/graphics/graphics.html [45377] -> "graphics.html.tmp.tmp" [1]
+2018-11-16 07:58:13 URL:https://www.gnu.org/people/people.html [86292] -> "people.html.tmp.tmp" [1]
+2018-11-16 07:58:18 URL:https://www.gnu.org/server/sitemap.html [107631] -> "sitemap.html.tmp.tmp" [1]
+2018-11-16 07:58:20 URL: https://www.gnu.org/graphics/fsf-logo-notext-small.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:58:25 URL:https://shop.fsf.org/ [40910] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:58:30 URL:https://my.fsf.org/associate/support_freedom?referrer=4052 [142893] -> "support_freedom@referrer=4052.tmp.tmp" [1]
+2018-11-16 07:58:38 URL:https://my.fsf.org/donate/ [127486] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:58:43 URL:https://www.gnu.org/contact/ [18199] -> "index.html.tmp.tmp" [1]
+2018-11-16 07:58:47 URL:https://www.gnu.org/server/standards/README.translations.html [38931] -> "README.translations.html.tmp.tmp" [1]
+2018-11-16 07:58:52 URL:https://www.fsf.org/about/dmca-notice [39237/39237] -> "dmca-notice.tmp.tmp" [1]
+2018-11-16 07:58:56 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/windows [3668/3668] -> "windows.tmp.tmp" [1]
+2018-11-16 07:59:00 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/linux_repo [2683/2683] -> "linux_repo.tmp.tmp" [1]
+2018-11-16 07:59:04 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/macos_repo [2437/2437] -> "macos_repo.tmp.tmp" [1]
+2018-11-16 07:59:09 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/linux_source [2379/2379] -> "linux_source.tmp.tmp" [1]
+2018-11-16 07:59:13 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/BUILD [59090/59090] -> "BUILD.tmp.tmp" [1]
+2018-11-16 07:59:17 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/Extra_Postgres_config [3286/3286] -> "Extra_Postgres_config.tmp.tmp" [1]
+2018-11-16 07:59:21 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/installation/ [33995/33995] -> "index.html.tmp.tmp" [1]
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/:
+Remote file does not exist -- broken link!!!
+2018-11-16 07:59:27 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/taxonomyServices/Taxonomy-Services [18588/18588] -> "Taxonomy-Services.tmp.tmp" [1]
+2018-11-16 07:59:36 URL:https://docs.microsoft.com/en-us/previous-versions/tn-archive/dd277411(v=technet.10) [94161] -> "dd277411.aspx.tmp.tmp" [1]
+2018-11-16 07:59:38 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/tomcat8_configuration_3.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 07:59:43 URL:https://www.owasp.org/index.php/Securing_tomcat [44137] -> "Securing_tomcat.tmp.tmp" [1]
+2018-11-16 07:59:45 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/windows_defender_message.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:59:48 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/setting_runas_administrator.png 200 OK
+unlink: No such file or directory
+2018-11-16 07:59:50 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/tomcat_console_properties.png 200 OK
+unlink: No such file or directory
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifwebapplication/:
+Remote file does not exist -- broken link!!!
+https://www.postgresql.org/docs/9.9/client-authentication.html:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:00:01 URL:https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening [34164] -> "OWASP_Backend_Security_Project_PostgreSQL_Hardening.tmp.tmp" [1]
+2018-11-16 08:00:06 URL:https://www.owasp.org/index.php/OWASP_Backend_Security_Project_SQLServer_Hardening [63014] -> "OWASP_Backend_Security_Project_SQLServer_Hardening.tmp.tmp" [1]
+2018-11-16 08:00:08 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/insecure_connection_warning.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:12 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/R_setup_on_Mac [10158/10158] -> "R_setup_on_Mac.tmp.tmp" [1]
+2018-11-16 08:00:14 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/sql_server_odbc_sqlserver.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:16 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/sql_server_odbc_setup.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:18 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/sql_server_odbc_setup2.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:20 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/sql_server_odbc_setup3.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:22 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/caching_error.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:24 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/taxonomy_sevice_error.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:27 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/sqlserver-change-port.png 200 OK
+unlink: No such file or directory
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/master/rifwebapplication/:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:00:31 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/sql_server_odbc_connection_no_databases.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:33 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/sql_server_odbc_connection_error.png 200 OK
+unlink: No such file or directory
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/master/rifWebApplication/sql_server_odbc_connection_no_list.png:
+Remote file does not exist -- broken link!!!
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rif_logon.png:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:00:39 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/rif_after_logon.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:41 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/alter_10.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:45 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual.html [319492/319492] -> "databaseManagementManual.html.tmp.tmp" [1]
+2018-11-16 08:00:50 URL:http://tomcat.apache.org/tomcat-8.0-doc/windows-service-howto.html [23100/23100] -> "windows-service-howto.html.tmp.tmp" [1]
+2018-11-16 08:00:52 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/tomcat8_configuration_1.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:54 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/tomcat8_configuration_2.PNG? 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:56 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/Jconsole.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:00:58 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/study-status.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:01:00 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/R-trace.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:01:05 URL:https://docs.microsoft.com/en-gb/sysinternals/downloads/process-explorer [21825/21825] -> "process-explorer.tmp.tmp" [1]
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/process-explorer-1.png:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:01:09 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/process-explorer-2.png 200 OK
+unlink: No such file or directory
+https://www.microsoft.com/en-gb/download/details.aspx?id=43351:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:01:16 URL:https://www.microsoft.com/en-GB/evalcenter/evaluate-sql-server-2016 [1020/1020] -> "evaluate-sql-server-2016.tmp.tmp" [1]
+Username/Password Authentication Failed.
+2018-11-16 08:01:22 URL:https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017 [34046/34046] -> "download-sql-server-management-studio-ssms@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:01:24 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/source-documents/RIF%20Data%20Loader%20Manual.pdf 200 OK
+unlink: No such file or directory
+2018-11-16 08:01:29 URL:https://docs.microsoft.com/en-us/sql/relational-databases/import-export/use-a-format-file-to-bulk-import-data-sql-server?view=sql-server-2017 [36982/36982] -> "use-a-format-file-to-bulk-import-data-sql-server@view=sql-server-2017.tmp.tmp" [1]
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/icd-field-name:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:01:36 URL:https://docs.microsoft.com/en-us/sql/relational-databases/import-export/import-and-export-bulk-data-by-using-the-bcp-utility-sql-server?view=sql-server-2017 [24961/24961] -> "import-and-export-bulk-data-by-using-the-bcp-utility-sql-server@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:01:42 URL:https://blog.sqlauthority.com/2013/11/25/sql-server-export-data-as-csv-from-database-using-sqlcmd/ [458374] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:01:47 URL:https://docs.microsoft.com/en-us/sql/relational-databases/import-export/bulk-import-and-export-of-data-sql-server?view=sql-server-2017 [28978/28978] -> "bulk-import-and-export-of-data-sql-server@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:01:51 URL:http://www.sqlservercentral.com/articles/Export/147145/ [52247/52247] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:01:55 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/Example_postgres_load [58699/58699] -> "Example_postgres_load.tmp.tmp" [1]
+2018-11-16 08:02:02 URL:https://www.postgresql.org/docs/9.6/functions-srf.html [19851] -> "functions-srf.html.tmp.tmp" [1]
+2018-11-16 08:02:06 URL:https://leafletjs.com/ [15399/15399] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:02:53 URL:https://wiki.openstreetmap.org/wiki/Zoom_levels [66726] -> "Zoom_levels.tmp.tmp" [1]
+2018-11-16 08:03:41 URL:https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames [223806] -> "Slippy_map_tilenames.tmp.tmp" [1]
+http://a.tile.openstreetmap.org/8/125/82.png:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:03:47 URL:https://leafletjs.com/reference-1.3.0.html [786814/786814] -> "reference-1.3.0.html.tmp.tmp" [1]
+2018-11-16 08:03:52 URL:https://nodejs.org/en/ [8752] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:03:56 URL:https://www.python.org/downloads/release/python-2714/ [37422/37422] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:04:01 URL:http://www.mingw.org/wiki/Getting_Started [66652] -> "Getting_Started.tmp.tmp" [1]
+2018-11-16 08:04:05 URL:http://geojson.org/ [3170/3170] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:04:12 URL:https://visualstudio.microsoft.com/downloads/ [223254] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:04:14 URL:https://visualstudio.microsoft.com/robots.txt [140/140] -> "robots.txt.1" [1]
+2018-11-16 08:04:19 URL:https://www.npmjs.com/package/mssql [443167/443167] -> "mssql.tmp.tmp" [1]
+2018-11-16 08:04:22 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/cardiff_COA_issue.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:04:24 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/cardiff_COA_issue2.png 200 OK
+unlink: No such file or directory
+failed: Bad file descriptor.
+2018-11-16 08:04:29 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/tile_maker_start.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:04:31 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/sahsuland_setup.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:04:33 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/USA_county_setup.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:04:40 URL:https://hull-repository.worktribe.com/output/459275 [30708] -> "hull%3A8338.tmp.tmp" [1]
+2018-11-16 08:04:42 URL:https://hull-repository.worktribe.com/robots.txt [56/56] -> "robots.txt.1" [1]
+2018-11-16 08:04:47 URL:https://bost.ocks.org/mike/simplify/ [9563] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:04:49 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/tile_maker_processing.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:04:53 URL:https://smallareahealthstatisticsunit.github.io/rifNodeServices/tile_maker_log [135736/135736] -> "tile_maker_log.tmp.tmp" [1]
+2018-11-16 08:04:55 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/tile_maker_map.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:04:58 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/zip_file_structure_1.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:00 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/zip_file_structure_2.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:02 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/EWS2011_COA_unsimplified.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:05 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/EWS2011_COA_50pct_simplified.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:07 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/EWS2011_COA_80pct_simplified.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:09 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/EWS2011_COA_90pct_simplified.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:14 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/EWS2011_COA_99_999pct_simplified.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:20 URL:https://mapshaper.org/ [10759/10759] -> "index.html.tmp.tmp" [1]
+https://mapshaper.org/robots.txt:
+2018-11-16 08:05:22 ERROR 404: Not Found.
+2018-11-16 08:05:26 URL:https://qgis.org/en/site/ [31395] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:05:33 URL:https://www.arcgis.com/index.html [10965/10965] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:05:35 URL: https://smallareahealthstatisticsunit.github.io/rifNodeServices/tileMaker.md 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:37 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/gor2011_map.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:40 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/cntry2011_map.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:05:44 URL:https://smallareahealthstatisticsunit.github.io/rifNodeServices/postgres_data_processing [474759/474759] -> "postgres_data_processing.tmp.tmp" [1]
+2018-11-16 08:05:48 URL:https://smallareahealthstatisticsunit.github.io/rifNodeServices/sql_server_data_processing [509796/509796] -> "sql_server_data_processing.tmp.tmp" [1]
+2018-11-16 08:05:52 URL:https://smallareahealthstatisticsunit.github.io/rifNodeServices/postgres_tile_manufacture [125377/125377] -> "postgres_tile_manufacture.tmp.tmp" [1]
+2018-11-16 08:05:56 URL:https://smallareahealthstatisticsunit.github.io/rifNodeServices/sql_server_tile_manufacture [125551/125551] -> "sql_server_tile_manufacture.tmp.tmp" [1]
+No data received.
+2018-11-16 08:06:03 URL:http://wiki.geojson.org/GeoJSON_draft_version_6 [33388] -> "GeoJSON_draft_version_6.tmp.tmp" [2]
+2018-11-16 08:06:07 URL:https://smallareahealthstatisticsunit.github.io/rifNodeServices/postgres_load [135682/135682] -> "postgres_load.tmp.tmp" [1]
+2018-11-16 08:06:11 URL:https://smallareahealthstatisticsunit.github.io/rifNodeServices/sql_server_load [166451/166451] -> "sql_server_load.tmp.tmp" [1]
+2018-11-16 08:06:13 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/TileViewer_example.PNG 200 OK
+unlink: No such file or directory
+2018-11-16 08:06:22 URL:https://docs.microsoft.com/en-us/sql/odbc/reference/syntax/sqldriverconnect-function?view=sql-server-2017 [59575] -> "ms715433(v=vs.85).aspx.tmp.tmp" [1]
+2018-11-16 08:06:29 URL:https://www.postgresql.org/docs/9.6/auth-methods.html [46879] -> "auth-methods.html.tmp.tmp" [1]
+2018-11-16 08:06:34 URL:https://wiki.postgresql.org/wiki/LDAP_Authentication_against_AD [17958/17958] -> "LDAP_Authentication_against_AD.tmp.tmp" [1]
+2018-11-16 08:06:40 URL:https://www.postgresql.org/docs/9.6/client-authentication.html [16414] -> "client-authentication.html.tmp.tmp" [1]
+2018-11-16 08:06:45 URL:https://docs.microsoft.com/en-us/sql/ssms/agent/create-a-sql-server-agent-proxy?view=sql-server-2017 [24592/24592] -> "create-a-sql-server-agent-proxy@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:06:49 URL:http://dcx.sap.com/sa160/en/dbusage/ug-ldap-setup-sql.html [21391] -> "ug-ldap-setup-sql.html.tmp.tmp" [1]
+2018-11-16 08:06:56 URL:https://www.postgresql.org/docs/9.3/sql-createschema.html [18423] -> "sql-createschema.html.tmp.tmp" [1]
+2018-11-16 08:07:02 URL:https://www.postgresql.org/docs/9.6/manage-ag-tablespaces.html [19536] -> "manage-ag-tablespaces.html.tmp.tmp" [1]
+https://www.postgresql.org/docs/10/static/ddl-partitioning/:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:07:11 URL:https://docs.microsoft.com/en-us/sql/relational-databases/partitions/partitioned-tables-and-indexes?view=sql-server-2017 [35361/35361] -> "partitioned-tables-and-indexes@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:07:14 URL: https://download.microsoft.com/download/9/C/6/9C6EB70A-8D52-48F4-9F04-08970411B7A3/SQL_Server_2016_Licensing_Guide_EN_US.pdf 200 OK
+unlink: No such file or directory
+2018-11-16 08:07:19 URL:https://wiki.postgresql.org/wiki/SQL/MED [54559/54559] -> "MED.tmp.tmp" [1]
+2018-11-16 08:07:23 URL:https://www.oracle.com/technetwork/database/database-technologies/instant-client/overview/index.html [88009] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:07:27 URL:https://www.oracle.com/technetwork/database/windows/downloads/index-090165.html [207809] -> "index-090165.html.tmp.tmp" [1]
+2018-11-16 08:07:30 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/images/sqlserver_oracle_oledb_provider.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:07:32 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/images/sqlserver_oracle_oledb_setup.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:07:44 URL:http://pgfoundry.org/projects/oledb/ [20095] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:07:49 URL:https://www.pgoledb.com/index.php/8-news/1-welcome-to-pgnp [17522] -> "1-welcome-to-pgnp.tmp.tmp" [1]
+2018-11-16 08:07:56 URL:https://www.postgresql.org/docs/9.6/runtime-config-logging.html [55863] -> "runtime-config-logging.html.tmp.tmp" [1]
+2018-11-16 08:08:00 URL:http://www.cplusplus.com/reference/ctime/strftime/ [24621] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:08:08 URL:https://docs.microsoft.com/en-us/previous-versions/technet-magazine/gg131917(v=msdn.10) [17854/17854] -> "gg131917.aspx.tmp.tmp" [1]
+2018-11-16 08:08:10 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/images/postgres_event_filter_setup.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:08:12 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/examples/postgres_event_log_custom_view.xml 200 OK
+unlink: No such file or directory
+2018-11-16 08:08:14 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/images/postgres_event_viewer_log.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:08:16 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/images/postgres_event_viewer_log2.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:08:21 URL:https://www.sqlshack.com/creating-successful-auditing-strategy-sql-server-databases/ [173019/173019] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:08:25 URL:https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-2017 [43455/43455] -> "sql-server-audit-database-engine@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:08:30 URL:https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-database-audit-specification?view=sql-server-2017 [25865/25865] -> "create-a-server-audit-and-database-audit-specification@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:08:32 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/images/sqlserver_auditing.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:08:39 URL:https://www.postgresql.org/docs/9.6/app-pgdump.html [56886] -> "app-pgdump.html.tmp.tmp" [1]
+2018-11-16 08:08:45 URL:https://www.postgresql.org/docs/9.6/app-pgrestore.html [40768] -> "app-pgrestore.html.tmp.tmp" [1]
+2018-11-16 08:08:51 URL:https://www.postgresql.org/docs/9.6/continuous-archiving.html [63876] -> "continuous-archiving.html.tmp.tmp" [1]
+2018-11-16 08:08:56 URL:https://wiki.postgresql.org/wiki/Corruption [16580/16580] -> "Corruption.tmp.tmp" [1]
+2018-11-16 08:09:03 URL:https://www.postgresql.org/docs/9.6/different-replication-solutions.html [23097] -> "different-replication-solutions.html.tmp.tmp" [1]
+2018-11-16 08:09:07 URL:https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/back-up-and-restore-of-sql-server-databases?view=sql-server-2017 [43919/43919] -> "back-up-and-restore-of-sql-server-databases@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:09:12 URL:https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/create-a-full-database-backup-sql-server?view=sql-server-2017 [50537] -> "create-a-full-database-backup-sql-server@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:09:17 URL:https://docs.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql?view=sql-server-2017 [127329] -> "backup-transact-sql@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:09:21 URL:https://docs.microsoft.com/en-us/sql/t-sql/statements/restore-statements-transact-sql?view=sql-server-2017 [88380] -> "restore-statements-transact-sql@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:09:25 URL:https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/back-up-a-transaction-log-sql-server?view=sql-server-2017 [32725/32725] -> "back-up-a-transaction-log-sql-server@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:09:30 URL:https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/restore-a-sql-server-database-to-a-point-in-time-full-recovery-model?view=sql-server-2017 [33212/33212] -> "restore-a-sql-server-database-to-a-point-in-time-full-recovery-model@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:09:35 URL:https://wiki.postgresql.org/wiki/Performance_Optimization [19982/19982] -> "Performance_Optimization.tmp.tmp" [1]
+2018-11-16 08:09:39 URL:https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server [40850/40850] -> "Tuning_Your_PostgreSQL_Server.tmp.tmp" [1]
+2018-11-16 08:09:41 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/examples/postgresql.conf 200 OK
+unlink: No such file or directory
+https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:09:49 URL:https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/ [95307] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:09:55 URL:https://www.postgresql.org/docs/9.6/storage-toast.html [27264] -> "storage-toast.html.tmp.tmp" [1]
+2018-11-16 08:10:02 URL:https://www.postgresql.org/docs/9.6/app-vacuumdb.html [23347] -> "app-vacuumdb.html.tmp.tmp" [1]
+2018-11-16 08:10:08 URL:https://www.postgresql.org/docs/9.6/sql-vacuum.html [21365] -> "sql-vacuum.html.tmp.tmp" [1]
+2018-11-16 08:10:13 URL:https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-the-lock-pages-in-memory-option-windows?view=sql-server-2017 [20266/20266] -> "enable-the-lock-pages-in-memory-option-windows@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:10:18 URL:https://docs.microsoft.com/en-us/sql/tools/sql-server-profiler/sql-server-profiler?view=sql-server-2017 [40885/40885] -> "sql-server-profiler@view=sql-server-2017.tmp.tmp" [1]
+2018-11-16 08:10:20 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/images/sqlserver_ssms_execution_plan.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:10:22 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/images/sqlserver_shrink.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:10:24 URL: https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/RIF_architecture.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:10:28 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/coding-standards [3749/3749] -> "coding-standards.tmp.tmp" [1]
+2018-11-16 08:10:33 URL:http://rapidinquiryfacility.sourceforge.net/index.html [4661/4661] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:10:37 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/Database-design [3708/3708] -> "Database-design.tmp.tmp" [1]
+2018-11-16 08:10:41 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/TestHarness/db_test_harness/README [62817/62817] -> "README.tmp.tmp" [1]
+2018-11-16 08:10:45 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/General-RIF-Installation-Notes-for-the-Middleware-and-the-Data-Loader-Tool [10156/10156] -> "General-RIF-Installation-Notes-for-the-Middleware-and-the-Data-Loader-Tool.tmp.tmp" [1]
+2018-11-16 08:10:49 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/Opening-the-RIF-front-end-in-NetBeans8-for-editing---debugging [2958/2958] -> "Opening-the-RIF-front-end-in-NetBeans8-for-editing---debugging.tmp.tmp" [1]
+2018-11-16 08:10:53 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/Opening-the-RIF-repository-in-Eclipse-for-editing [2486/2486] -> "Opening-the-RIF-repository-in-Eclipse-for-editing.tmp.tmp" [1]
+2018-11-16 08:10:58 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/Setting-up-JRI-in-Eclipse [2912/2912] -> "Setting-up-JRI-in-Eclipse.tmp.tmp" [1]
+2018-11-16 08:11:02 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/RIF-front-end-description [20418/20418] -> "RIF-front-end-description.tmp.tmp" [1]
+2018-11-16 08:11:06 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/Creating-a-new-restful-web-service [74245/74245] -> "Creating-a-new-restful-web-service.tmp.tmp" [1]
+2018-11-16 08:11:10 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/consolidated-to-do-list [19543/19543] -> "consolidated-to-do-list.tmp.tmp" [1]
+2018-11-16 08:11:14 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/TODO [42231/42231] -> "TODO.tmp.tmp" [1]
+2018-11-16 08:11:18 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/TODO [10730/10730] -> "TODO.tmp.tmp" [1]
+2018-11-16 08:11:22 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/The-RIF-re-development [5320/5320] -> "The-RIF-re-development.tmp.tmp" [1]
+2018-11-16 08:11:27 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/Kevs-Suggested-Road-Map-with-the-Middleware [9299/9299] -> "Kevs-Suggested-Road-Map-with-the-Middleware.tmp.tmp" [1]
+2018-11-16 08:11:31 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/Kev-Code-Road-Map [18255/18255] -> "Kev-Code-Road-Map.tmp.tmp" [1]
+2018-11-16 08:11:35 URL:https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/Kev-Handover-Notes [10569/10569] -> "Kev-Handover-Notes.tmp.tmp" [1]
+2018-11-16 08:11:37 URL: https://pages.github.com/favicon.ico 200 OK
+unlink: No such file or directory
+2018-11-16 08:11:39 URL: https://pages.github.com/css/pages.css 200 OK
+unlink: No such file or directory
+2018-11-16 08:11:41 URL: https://pages.github.com/images/logo.svg 200 OK
+unlink: No such file or directory
+2018-11-16 08:11:45 URL:https://help.github.com/pages/ [404/404] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:11:47 URL: https://pages.github.com/images/slideshow/bootstrap.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:11:52 URL:https://www.youtube.com/embed/2MsN8gpT6jY?showinfo=0 [33148] -> "2MsN8gpT6jY@showinfo=0.tmp.tmp" [1]
+2018-11-16 08:11:56 URL:https://desktop.github.com/ [10577/10577] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:11:58 URL: https://pages.github.com/images/dashboard@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:00 URL: https://pages.github.com/images/desktop-demo@2x.gif 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:03 URL: https://pages.github.com/images/repo-settings@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:05 URL: https://pages.github.com/images/launch-theme-chooser@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:07 URL: https://pages.github.com/images/theme-chooser@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:09 URL: https://pages.github.com/images/code-editor@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:11 URL: https://pages.github.com/images/commit-edits@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:13 URL: https://pages.github.com/images/new-create-file@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:16 URL: https://pages.github.com/images/new-index-html@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:18 URL: https://pages.github.com/images/new-commit-file@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:20 URL: https://pages.github.com/images/source-setting@2x.png 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:28 URL:https://help.github.com/articles/using-jekyll-with-pages/ [548/548] -> "using-jekyll-with-pages.tmp.tmp" [1]
+2018-11-16 08:12:32 URL:https://jekyllrb.com/ [11465/11465] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:12:37 URL:https://jekyllrb.com/docs/ [20124/20124] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:12:45 URL:https://help.github.com/articles/setting-up-a-custom-domain-with-pages/ [476/476] -> "setting-up-a-custom-domain-with-pages.tmp.tmp" [1]
+2018-11-16 08:12:53 URL:https://help.github.com/categories/20/articles/ [404/404] -> "articles.tmp.tmp" [1]
+2018-11-16 08:12:56 URL: https://pages.github.com/js/jquery.js 200 OK
+unlink: No such file or directory
+2018-11-16 08:12:58 URL: https://pages.github.com/js/application.js 200 OK
+unlink: No such file or directory
+https://status.github.com/:
+Remote file does not exist -- broken link!!!
+2018-11-16 08:13:04 URL:https://developer.github.com/ [21266/21266] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:13:11 URL:https://services.github.com/ [130731/130731] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:13:13 URL:https://services.github.com/robots.txt [49/49] -> "robots.txt.1" [1]
+2018-11-16 08:13:20 URL:https://github.myshopify.com/ [52088] -> "index.html.tmp.tmp" [1]
+2018-11-16 08:13:22 URL:https://github.myshopify.com/robots.txt [1008] -> "robots.txt.1" [1]
+Found 13 broken links.
+
+https://www.postgresql.org/docs/9.9/client-authentication.html
+http://a.tile.openstreetmap.org/8/125/82.png
+https://www.microsoft.com/en-gb/download/details.aspx?id=43351
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifwebapplication/
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/icd-field-name
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/master/rifWebApplication/sql_server_odbc_connection_no_list.png
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/master/rifwebapplication/
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/process-explorer-1.png
+https://status.github.com/
+https://www.postgresql.org/docs/10/static/ddl-partitioning/
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifWebApplication/
+https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938
+https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rif_logon.png
+
+FINISHED --2018-11-16 08:13:22--
+Total wall clock time: 23m 49s
+Downloaded: 233 files, 11M in 13s (870 KB/s)

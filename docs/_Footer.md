@@ -1,1 +1,1 @@
-![](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebPlatform/web/docs/screenshots/frontSubmission.png?raw=true)
+![]({{ site.baseurl }}/Screenshots/RIF_submission.png)

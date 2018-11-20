@@ -3,33 +3,11 @@ layout: default
 title: RIF40 Postgres database build from Github
 ---
 
-# Contents
-- [1. Postgres Requirements](#1-postgres-requirements)
-  - [1.1 Memory Requirements](#11-memory-requirements)
-- [2. Postgres Setup](#2-postgres-setup)
-  - [2.1 Database Development Environment](#21-database-development-environment)
-  - [2.2 Tool Chain](#22-tool-chain)
-    - [2.2.1 Windows](#221-windows)
-    - [2.2.1.1 Fixing Windows Code page errors](#2211-fixing-windows-code-page-errors)
-    - [2.2.2 Unixen](#222-unixen)
-  - [2.3 Building the Database](#23-building-the-database)
-    - [2.3.1 Pre build Tests](#231-pre-build-tests)
-      - [2.3.1.1 Configuring make](#2311-configuring-make)
-    - [2.3.2 Build control using make](#232-build-control-using-make)
-      - [2.3.2.1 Setup](#2321-setup)
-        - [2.3.2.1.1 User setup](#23211-user-setup)
-        - [2.2.2.1.2 Makefile.local settings](#23212-makefilelocal-settings)
-        - [2.3.2.1.3 Principal build target](#23213-principal-build-target)
-        - [2.3.2.1.4 Issues with the build](#23214-issues-with-the-build)
-        - [2.3.2.1.5 Other Build targets](#23214-other-build-targets)
-      - [2.3.2.2 Porting limitations](#2322-porting-limitations)
-      - [2.3.2.3 Help](#2323-help)
-      - [2.3.2.4 Configuration File Examples](#2324-configuration-file-examples)
-        - [2.3.2.4.1 Postgres user password file](#23241-postgres-user-password-file)
-        - [2.3.2.4.2 Authentication Setup (hba.conf)](#23242-authentication-setup-hbaconf)
-        - [2.3.2.4.3 Proxy User Setup (ident.conf)](#23243-proxy-user-setup-identconf)
 
-# 1. Postgres Requirements
+1. Contents
+{:toc}
+
+# Postgres Requirements
 
 The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database backend.
 
@@ -45,7 +23,7 @@ See: [Windows Postgres Install using pg_dump and scripts](windows_install_from_p
 
 The database build creates the production database dump file ```sahsuland.dump``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production* used to create production databases.
 
-## 1.1 Memory Requirements
+## 1Memory Requirements
 
 Approximately:
 
@@ -57,23 +35,23 @@ Approximately:
 
 16GB recommended. If you process large geographies using the Node.js tilemaker 48-64GB is recommended.
 
-# 2. Postgres Setup
+# Postgres Setup
 
 Postgres is usually setup in one of four ways:
 
-* 1 Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
-* 2 Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
-* 3 Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS
-    connectivity) for psql and secure LDAP for Java connectivity.
-* 4 Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for
-    psql and secure LDAP for Java connectivity.
+1. Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
+2. Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
+3. Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS
+   connectivity) for psql and secure LDAP for Java connectivity.
+4. Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for
+   psql and secure LDAP for Java connectivity.
 
 The front and and middleware require username and password authentications; so method 4 must not be used.
 
 Postgres also can proxy users (see ident.conf examples in the bottom of the build notes.
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
-## 2.1 Database Development Environment
+## Database Development Environment
 
 Currently three databases are used: *sahsuland*, *sahsuland_dev* and *sahusland_empty*. The installer database *sahsuland* is kept stable for long periods,
 *sahsuland_dev* is the working database. The development database *sahusland_dev* is built from psql scripts which create and
@@ -113,9 +91,9 @@ These duretories are shared with the SQL Serer port.
 
 The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using make and Node.js.
 
-## 2.2 Tool Chain
+## Tool Chain
 
-### 2.2.1 Windows
+### Windows
 
 * Install [MinGW](https://sourceforge.net/projects/mingw/files/latest/download?source=files) with the full development environment and add *c:\MinGW\msys\1.0\bin* to path
 * Install [Python 2.7](https://www.python.org/downloads/) **not Python 3.n**
@@ -134,7 +112,7 @@ The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using
   below as PL/pgsql GET STACKED DIAGNOSTICS is used; PostGIS before 2.1.3 has bugs that will cause
   shapefile simplification to fail (both the original PostGIS version and the newer TileMaker Node.js version).
 
-  * Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload.
+  * Postgres is best downloaded from Enterprise DB: (http://www.enterprisedb.com/products-services-training/pgdownload).
   * Install Postgres
   * The Postgres installer then runs stack builder to download and install the additional packages. The following additional packages need to be installed:
 
@@ -147,7 +125,7 @@ The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using
     * pgAgent (batch engine)
     * pgBouncer (load balancer; for use if you have a synchronous or near synchronous replica database)
 
-#### 2.2.1.1 Fixing Windows Code page errors
+#### Fixing Windows Code page errors
 
 See [notes for windows users](https://www.postgresql.org/docs/9.6/static/app-psql.html):
 
@@ -166,7 +144,7 @@ cmd.exe /c chcp 1252
 ```
 * Or: modify the cmd shortcut to run *cmd.exe /k chcp 1252*
 
-### 2.2.2 Unixen
+### Unixen
 
 Unix builds are not currently supported. For more information see:
 
@@ -175,9 +153,9 @@ Unix builds are not currently supported. For more information see:
 * [Linux install from source notes](linux_source.md)
 
 
-## 2.3 Building the Database
+## Building the Database
 
-### 2.3.1 Pre Build Tests
+### Pre Build Tests
 
 Run up a shell/command tool, *not* in the Postgres build directory (psql_scripts). The Window sizing needs to be at least
 132 columns wide and 50 rows high; preferably with a multi thousand line buffer. Otherwiser psql scripts may require <ENTER>
@@ -191,7 +169,7 @@ make: *** No targets specified and no makefile found.  Stop.
 
 If you type make in the *rapidInquiryFacility* directory make will build the middleware. This may not be what you want!
 
-#### 2.3.1.1 Configuring make
+#### Configuring make
 
 **Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may lose
 your changes.** Instead, in the GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts build directory,
@@ -210,14 +188,14 @@ If you enable PL/R then the directories R_library (in $PGDATA/R_Library) and $R_
   The requirement for Node will be removed.
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
 
-### 2.3.2 Build control using make
+### Build control using make
 
 The RIF database is built using GNU make for ease of portability. The RIF is built from the directory
 *GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts*.
 
-#### 2.3.2.1 Setup
+#### Setup
 
-##### 2.3.2.1.1 User setup
+##### User setup
 
 Make **MUST NOT** be run as an administrator but a normal user (completely the oppposite of the SQL Server port!). Beware: you must *NOT* have power user privilege.
 
@@ -331,7 +309,7 @@ file is setup correctly.
 
 **See next section for Makefile.local example**
 
-##### 2.3.2.1.2 Makefile.local settings
+##### Makefile.local settings
 
 Typical example (Makefile.local.example):
 ```
@@ -480,7 +458,7 @@ Parameters:
 * DEFAULT_USE_PLR
 * DEFAULT_CREATE_SAHSULAND_ONLY
 
-##### 2.3.2.1.3 Principal build target
+##### Principal build target
 
 **DO NOT RUN AS AN ADMINISTRATOR**
 
@@ -609,7 +587,7 @@ make: [db_setup] Error 2 (ignored)
 SAHSULAND and SAHSULAND_DEV setup completed OK
 ```
 
-##### 2.3.2.1.4 Issues with the build
+##### Issues with the build
 
 * 1. Cannot ccpy psqlrc to Postgres etc directory
 
@@ -633,7 +611,7 @@ psql:db_create.sql:147: ERROR:  db_create.sql() postgres encrypted password set 
 CONTEXT:  PL/pgSQL function inline_code_block line 53 at RAISE
 ```
 
-##### 2.3.2.1.5 Other build targets
+##### Other build targets
 
 * To build or rebuild the sahsuland_dev development database. This is normally used for regression testing:
 ```
@@ -663,14 +641,14 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
    **Patching will be improved so that scripts are only run once; at present all patch scripts are run and
      designed to be run multiple times**
 
-#### 2.3.2.2 Porting limitations
+#### Porting limitations
 
 Makefiles have the following limitations:
 
 * Full dependency tracking for SQL scripts has not yet been implemented; you are advised to do a *make clean*
   or *make devclean* before building as in the below examples or nothing much may happen.
 
-#### 2.3.2.3 Help
+#### Help
 
 The Makefile has [help](Make%20Help):
 
@@ -765,11 +743,11 @@ findstr "#-" Makefile
 #-
 ```
 
-#### 2.3.2.4 Configuration File Examples
+#### Configuration File Examples
 
 If you are running locally only (e.g. on a laptop) you do *NOT* need to edit the configuration files.
 
-##### 2.3.2.4.1 Postgres user password file
+##### Postgres user password file
 
 Postgres user password files are located in:
 
@@ -791,7 +769,7 @@ wpea-rif1:5432:*:postgres: XXXXXXX
 wpea-rif1:5432:*:pch: XXXXXXX
 ```
 
-##### 2.3.2.4.2 Authentication Setup (hba.conf)
+##### Authentication Setup (hba.conf)
 
 You **MUST** read the Postgres manuals before editing this file.
 
@@ -959,7 +937,7 @@ hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
 #host    replication     postgres        ::1/128                 md5
 ```
 
-##### 2.3.2.4.3 Proxy User Setup (ident.conf)
+##### Proxy User Setup (ident.conf)
 
 You **MUST** read the Postgres manuals before editing this file.
 

@@ -63,10 +63,7 @@ Limitations in the current RIF
   back if required;
 * No support for ad-hoc SQL. This functionality will be partially re-implemented in future releases using user specified conditions
   (pre defined groups). The feature was removed as it cannot be implemented in a secure manner (i.e. it permits SQL injection attacks);
-* Numerators are currently limited to ICD 10 coding only. Support will be added for:
-
-  * ICD 9
-  * ICD 11 (subject to the release of the 11th Edition in June 2018)
+* Numerators are currently limited to ICD 9 and 10 coding only. Support will be added for ICD 11 (subject to the release of the 11th Edition in June 2018)
 
   In the longer term it is expected that support will be added for:
 
@@ -150,6 +147,8 @@ the production data (rif_pg_usa_2014.sql) needs to be loaded into the rif40 acco
 
 ## SQL Server
 
+### BCP Access Permissions
+
 SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the
 server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command. This also implies that a full file path is required and the file name must be accessible on the
 SQL Server server; it does **NOT** have to be accessible on the client.
@@ -174,6 +173,18 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
+### BCP Format Issues
+
+BULK LOAD and BCP cannot handle:
+
+* Text fields with a mixture of quote enclosing and no quote enclosing;
+* Exponential notation e.g. ```3.12E-5```
+* A database of *SQLDECIMAL* with no *PRECISION* and *SCALE* specified will convert the input to an **INTEGER** transparently! Make 
+  sure to use:
+  ```
+   <COLUMN SOURCE="4" NAME="population" xsi:type="SQLDECIMAL" PRECISION="7" SCALE="2" />```
+  ```
+  
 ## Data Structure
 
 All RIF data tables are located in the *rif_data* schema. They must be located in *rif_data* because SQL Server does not have the concept of a schema search
@@ -220,7 +231,7 @@ The *num_sahsuland_cancer* table is aggregated to the highest geographic resolut
 To add a numerator table to the RIF if must be added to:
 
 * *rif40_tables*:
-
+  
   |       column_name        |                                                                                                                                                                                                                                                                 description                                                                                                                                                                                                                                                                  |          data_type          |
   |--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------|
   | theme                    | Health Study theme. Link to RIF40_HEALTH_STUDY_THEMES. See: [Health theme](#health-themes);                                                                                                                                                                                                                                                                                                                   | varchar(30)                 |
@@ -239,6 +250,8 @@ To add a numerator table to the RIF if must be added to:
   | age_group_id             | Type of RIF age group in use. Link to RIF40_AGE_GROUP_NAMES. No default. See: [Age groups](#age-groups);                                                                                                                                                                                                                                                                                                       | smallint                    |
   | validation_date          | Date table contents were validated OK. Availabel for use by quality control programs                                                                                                                                                                                                                                                                                                                                                                                                                                                         | timestamp without time zone |
 
+  Example: 
+  
   |  theme  |      table_name      |      description       | year_start | year_stop | total_field | isindirectdenominator | isdirectdenominator | isnumerator | automatic | age_sex_group_field_name | age_group_id |
   |---------|----------------------|------------------------|------------|-----------|-------------|-----------------------|---------------------|-------------|-----------|--------------------------|--------------|
   | cancers | NUM_SAHSULAND_CANCER | cancer numerator       |       1989 |      2016 | TOTAL       |                     0 |                   0 |           1 |         1 | AGE_SEX_GROUP            |            1 |
@@ -444,9 +457,9 @@ one or more areas that fit exactly within the lower resolution. Users with the *
 * *avg_npoints_geom*, *avg_npoints_opt*, *file_geojson_len*, *leg_geom* and *leg_opt* are used as part of the administrative geography preprocessing (tile maker);
 * Normally *resolution*, *comparea* and *listing* are all set to "1". Setting to "0" restricts the RIF front end as follows:
 
-  - *resolution* - cannot use the map for selection at this resolution for either study or comparison area;                                                                                                                                                                                                                                                                                                         | smallint     |
-  - *comparea* - cannot be to be used as a comparison area;                                                                                                                                                                                                                                                                                                                  | smallint     |
-  - *listing* - cannot be in a list of areas when setting up a disease map study or comparison area.
+  * *resolution*: cannot use the map for selection at this resolution for either study or comparison area;                                                                                                                                                                                                                                                             
+  * *comparea*:cannot be to be used as a comparison area;                                                                                                                                                                                                                                                                                                              
+  * *listing*: cannot be in a list of areas when setting up a disease map study or comparison area.
 
 The supplied *SAHUSLAND* test database is set up as follows:
 
@@ -587,7 +600,7 @@ Tiles tables must contain the following fields (*t_tiles_sahsuland* example):
 
 Example view SQL for *SAHSULAND*:
 
-```SQL
+```sql
 CREATE OR REPLACE VIEW rif_data.tiles_sahsuland
 AS
 WITH a AS (
@@ -858,7 +871,7 @@ SQL Server pre-processing scripts have not been created due to the lack of an un
 to C# or the many GUI wizards available:
 
 * Use [bcp](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/import-and-export-bulk-data-by-using-the-bcp-utility-sql-server?view=sql-server-2017)
-* USe *sqlcmd* [SQL SERVER – Export Data AS CSV from Database Using SQLCMD](https://blog.sqlauthority.com/2013/11/25/sql-server-export-data-as-csv-from-database-using-sqlcmd/)
+* Use *sqlcmd* [SQL SERVER – Export Data AS CSV from Database Using SQLCMD](https://blog.sqlauthority.com/2013/11/25/sql-server-export-data-as-csv-from-database-using-sqlcmd/)
 
 Other useful references:
 
@@ -900,7 +913,7 @@ To run a script:
   By default on SQL server the*rif40* password is set to random characters, to change the SQL server *rif40*
   password:
 
-  ```SQL
+  ```sql
   ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
   GO
   ```
@@ -945,7 +958,7 @@ If your data does not appear; see [Numerator Denominator Pair Errors](#numerator
 The ```generate_series``` function is used in the RIF *rif_data.tiles_sahsuland* VIEW to add back tiles for which there is no data (i.e. outside of the extent of the geography so the tiles
 cover the entire world. It is also very useful for converting non annual covariates to the annual form required by the RIF; e.g:
 
-```SQL
+```sql
 SELECT generate_series(2011, 2018);
  generate_series
 -----------------
@@ -961,7 +974,7 @@ SELECT generate_series(2011, 2018);
 ```
 
 Using *rif_data.covar_sahsuland_covariates3* year 2000 data only (i.e pretend it is not annualised!)
-```SQL
+```sql
 WITH a AS (
 	SELECT generate_series(2011, 2018) AS year
 )
@@ -998,7 +1011,7 @@ See [Postgres set returning functions](https://www.postgresql.org/docs/9.6/stati
 
 The ```generate_series``` function is **NOT** part of SQL Server; however the following code provides this functionality. It is installed as a table valued function in the *rif40* schema.
 
-```SQL
+```sql
 /*
  * SQL statement name: 	generate_series.sql
  * Type:				MS SQL Server SQL statement
@@ -1086,18 +1099,18 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 * Create numerator load tables to load data from CSV or Text files. Fixed length (mainframe) record files have to be loaded as a single string
   and then chopped converted into the relevant fields in stage four:
   - Postgres:
-    ```SQL
+    ```sql
 	CREATE TABLE seer9_yr1973_2013_fixed_length (
 		record_value VARCHAR(358)
 	);
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Load numerator tables from CSV or Text files:
   - Postgres:
-    ```SQL
+    ```sql
 	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\BREAST.TXT' WITH CSV;
 	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\COLRECT.TXT' WITH CSV;
 	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\DIGOTHR.TXT' WITH CSV;
@@ -1178,12 +1191,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\URINARY.TXT' WITH CSV;
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Check all numerator table data has been loaded:
   - Postgres:
-    ```SQL
+    ```sql
 	--
 	-- Check rowcount
 	--
@@ -1208,12 +1221,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	$$;
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Convert numerator fixed length string into new numerator load table with the correct columns and datatypes:
   - Postgres:
-    ```SQL
+    ```sql
 	--
 	-- Convert datatypes
 	--
@@ -1237,12 +1250,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	  FROM seer9_yr1973_2013_fixed_length;
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Create numerator table from load table:
   - Postgres:
-    ```SQL
+    ```sql
 	/* Cancer registry codes:
 
 	Code			Description (first year of data)
@@ -1311,12 +1324,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	 ORDER BY a.pubcsnum, a.seq_num;
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Comment numerator load table:
   - Postgres:
-    ```SQL
+    ```sql
 	COMMENT ON TABLE seer_cancer IS 'SEER Cancer data 1973-2013. 9 States in total';
 	COMMENT ON COLUMN seer_cancer.year IS 'Year';
 	COMMENT ON COLUMN seer_cancer.cb_2014_us_nation_5m IS 'United States to county level including territories';
@@ -1335,12 +1348,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	COMMENT ON COLUMN seer_cancer.reg IS 'SEER registry (minus 1500 so same as population file)';
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Check rowcount:
   - Postgres:
-    ```SQL
+    ```sql
 	SELECT COUNT(*) AS total FROM seer_cancer;
 	DO LANGUAGE plpgsql $$
 	DECLARE
@@ -1362,12 +1375,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	$$;
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Add constraints:
   - Postgres:
-    ```SQL
+    ```sql
 	ALTER TABLE seer_cancer ALTER COLUMN year SET NOT NULL;
 	ALTER TABLE seer_cancer ALTER COLUMN cb_2014_us_state_500k SET NOT NULL;
 	ALTER TABLE seer_cancer ALTER COLUMN cb_2014_us_county_500k SET NOT NULL;
@@ -1378,12 +1391,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	ALTER TABLE seer_cancer ALTER COLUMN age_sex_group SET NOT NULL;
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Add indexes:
   - Postgres:
-    ```SQL
+    ```sql
 	ALTER TABLE seer_cancer ADD CONSTRAINT seer_cancer_pk
 		PRIMARY KEY (pubcsnum, seq_num);
 	CREATE INDEX seer_cancer_year ON seer_cancer (year);
@@ -1395,16 +1408,16 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	CREATE INDEX seer_cancer_reg ON seer_cancer(reg);
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 * Unload table:
   - Postgres:
-    ```SQL
+    ```sql
 	\copy seer_cancer TO 'seer_cancer.csv' WITH CSV HEADER
 	```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
 	```
 
@@ -1412,7 +1425,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 
 * Remove numerator setup data, views and tables;
   - Postgres:
-    ```SQL
+    ```sql
 	DROP TABLE IF EXISTS rif_data.t_seer_cancer;
 	DROP VIEW IF EXISTS rif_data.seer_cancer;
 
@@ -1423,7 +1436,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	 WHERE table_name='SEER_CANCER';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	IF OBJECT_ID('rif_data.t_seer_cancer', 'U') IS NOT NULL BEGIN
 		DROP TABLE rif_data.t_seer_cancer;
 		DROP VIEW rif_data.seer_cancer;
@@ -1452,7 +1465,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
 * Create numerator table;
   - Postgres:
-    ```SQL
+    ```sql
 	CREATE TABLE rif_data.t_seer_cancer
 	(
 	  year integer NOT NULL, -- Year
@@ -1479,7 +1492,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	);
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	CREATE TABLE rif_data.t_seer_cancer
 	(
 	  year integer NOT NULL, /* Year */
@@ -1507,7 +1520,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	GO
     ```
 * Create numerator views:
-  ```SQL
+  ```sql
   --
   -- Create a test view
   --
@@ -1516,11 +1529,11 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
   ```
 * Load CSV data into numerator table;
   - Postgres:
-    ```SQL
+    ```sql
 	\copy rif_data.t_seer_cancer FROM 'seer_cancer.csv' WITH CSV HEADER;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	BULK INSERT rif_data.t_seer_cancer
 	FROM '$(pwd)/seer_cancer.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 	WITH
@@ -1533,7 +1546,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
     ```
 * Check all numerator table data has been loaded;
   - Postgres:
-    ```SQL
+    ```sql
 	SELECT COUNT(*) AS total FROM t_seer_cancer;
 	DO LANGUAGE plpgsql $$
 	DECLARE
@@ -1555,7 +1568,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	$$;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	SELECT COUNT(*) AS total FROM rif_data.t_seer_cancer;
 	DECLARE c1 CURSOR FOR
 		SELECT COUNT(*) AS total FROM rif_data.t_seer_cancer;
@@ -1571,7 +1584,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	GO
     ```
 * Add indexes to numerator table:
-  ```SQL
+  ```sql
 	CREATE INDEX seer_cancer_age_sex_group
 	  ON rif_data.t_seer_cancer
 	  (age_sex_group);
@@ -1602,7 +1615,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
   ```
 * Comment numerator table and columns;
   - Postgres:
-    ```SQL
+    ```sql
 	COMMENT ON TABLE rif_data.t_seer_cancer
 	  IS 'SEER Cancer data 1973-2013. 9 States in total';
 	COMMENT ON COLUMN rif_data.t_seer_cancer.year IS 'Year';
@@ -1640,7 +1653,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	COMMENT ON COLUMN rif_data.seer_cancer.reg IS 'SEER registry (minus 1500 so same as population file)';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',
 		@value = N'SEER Cancer data 1973-2013. 9 States in total',
@@ -1868,11 +1881,11 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	GO
     ```
 * Grant grant access on numerator tables and views to an appropriate role;
-    ```SQL
+    ```sql
     GRANT SELECT ON rif_data.seer_cancer TO seer_user;
     ```
 * Setup numerator tables and views:
-  ```SQL
+  ```sql
   INSERT INTO rif40.rif40_tables (
 	   theme,
 	   table_name,
@@ -1936,7 +1949,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 
 * Create denominator load tables:
   - Postgres:
-    ```SQL
+    ```sql
 	DROP TABLE IF EXISTS :USER.seer_wbo_single_ages_fixed_length;
 	DROP TABLE IF EXISTS :USER.seer_wbo_single_ages;
 
@@ -1948,24 +1961,24 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	);
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Load singleages.txt as a fixed length record:
   - Postgres:
-    ```SQL
+    ```sql
 	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\white_black_other\yr1973_2013.seer9\singleages.txt' WITH CSV;
 	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\expanded.race.by.hispanic\yr1992_2013.seer9.plus.sj_la_rg_ak\singleages.txt' WITH CSV;
 	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\expanded.race.by.hispanic\yr2000_2013.ca_ky_lo_nj_ga\singleages.txt' WITH CSV;
 	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\expanded.race.by.hispanic\yr2005.lo_2nd_half\singleages.txt' WITH CSV;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Check all denominator table data has been loaded:
   - Postgres:
-    ```SQL
+    ```sql
 	SELECT COUNT(*) AS total FROM seer_wbo_single_ages_fixed_length;
 	DO LANGUAGE plpgsql $$
 	DECLARE
@@ -1987,12 +2000,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	$$;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Convert denominator fixed length string into new numerator load table with the correct columns and datatypes:
   - Postgres:
-    ```SQL
+    ```sql
 	CREATE TABLE seer_wbo_single_ages
 	AS
 	SELECT SUBSTRING(record_value FROM 1 FOR 4)::INTEGER AS year,
@@ -2030,12 +2043,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	 */
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Create denominator table from load table:
   - Postgres:
-    ```SQL
+    ```sql
 	--
 	-- Extract population
 	-- * Convert age, sex to RIF age_sex_group 1
@@ -2062,12 +2075,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	 ORDER BY 1,2,3,4,5;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Comment numerator load table:
   - Postgres:
-    ```SQL
+    ```sql
 	COMMENT ON TABLE seer_population IS 'SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total';
 	COMMENT ON COLUMN seer_population.year IS 'Year';
 	COMMENT ON COLUMN seer_population.cb_2014_us_nation_5m IS 'United States to county level including territories';
@@ -2077,12 +2090,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	COMMENT ON COLUMN seer_population.population IS 'Population';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Check rowcount:
   - Postgres:
-    ```SQL
+    ```sql
 	SELECT COUNT(*) AS total FROM seer_population;
 	DO LANGUAGE plpgsql $$
 	DECLARE
@@ -2104,24 +2117,24 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	$$;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Add constraints:
   - Postgres:
-    ```SQL
+    ```sql
 	ALTER TABLE seer_population ADD CONSTRAINT seer_population_pk
 		PRIMARY KEY (year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group);
 	ALTER TABLE seer_population ADD CONSTRAINT seer_population_asg_ck
 		CHECK (age_sex_group BETWEEN 100 AND 121 OR age_sex_group BETWEEN 200 AND 221);
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Add indexes:
   - Postgres:
-    ```SQL
+    ```sql
 	CLUSTER seer_population USING seer_population_pk;
 	CREATE INDEX seer_population_year ON seer_population (year);
 	CREATE INDEX seer_population_cb_2014_us_nation_5m ON seer_population(cb_2014_us_nation_5m);
@@ -2130,16 +2143,16 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	CREATE INDEX seer_population_age_sex_group ON seer_population(age_sex_group);
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Unload table:
   - Postgres:
-    ```SQL
+    ```sql
 	\copy seer_population TO 'seer_population.csv' WITH CSV HEADER;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 
@@ -2147,14 +2160,14 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 
 * Remove denominator setup data and tables;
   - Postgres:
-    ```SQL
+    ```sql
 	DROP TABLE IF EXISTS rif_data.seer_population;
 
 	DELETE FROM rif40.rif40_tables
 	WHERE table_name='SEER_POPULATION';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	IF OBJECT_ID('rif_data.seer_population', 'U') IS NOT NULL BEGIN
 		DROP TABLE rif_data.seer_population;
 		DELETE FROM rif40.rif40_tables
@@ -2169,7 +2182,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
 * Create denominator table;
   - Postgres:
-    ```SQL
+    ```sql
 	CREATE TABLE rif_data.seer_population
 	(
 	  year integer NOT NULL, -- Year
@@ -2183,7 +2196,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	);
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	CREATE TABLE rif_data.seer_population
 	(
 	  year integer NOT NULL, -- Year
@@ -2200,11 +2213,11 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
     ```
 * Load CSV data into denominator table;
   - Postgres:
-    ```SQL
+    ```sql
 	\copy rif_data.seer_population FROM 'seer_population.csv' WITH CSV HEADER;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	BULK INSERT rif_data.seer_population
 	FROM '$(pwd)/seer_population.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 	WITH
@@ -2217,7 +2230,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
     ```
 * Check all denominator table data has been loaded;
   - Postgres:
-    ```SQL
+    ```sql
 		SELECT COUNT(*) AS total FROM seer_population;
 	DO LANGUAGE plpgsql $$
 	DECLARE
@@ -2239,7 +2252,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	$$;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	SELECT COUNT(*) AS total FROM rif_data.seer_population;
 	DECLARE c1 CURSOR FOR
 		SELECT COUNT(*) AS total FROM rif_data.seer_population;
@@ -2256,12 +2269,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
     ```
 * Convert denominator table to index organised table;
   - Postgres:
-    ```SQL
+    ```sql
 	CLUSTER rif_data.seer_population USING seer_population_pk;
     ```
   - SQL Server: not needed; automatically created as an index organised table
 * Add additional indexes to denominator table:
-  ```SQL
+  ```sql
   CREATE INDEX seer_population_age_sex_group
 	  ON rif_data.seer_population
 	  (age_sex_group);
@@ -2284,7 +2297,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
   ```
 * Comment denominator table and columns;
   - Postgres:
-    ```SQL
+    ```sql
 	COMMENT ON TABLE rif_data.seer_population
 	  IS 'SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total';
 	COMMENT ON COLUMN rif_data.seer_population.year IS 'Year';
@@ -2295,7 +2308,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	COMMENT ON COLUMN rif_data.seer_population.population IS 'Population';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',
 		@value = N'SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total',
@@ -2340,11 +2353,11 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	GO
     ```
 * Grant grant access on denominator tables and views to an appropriate role;
-  ```SQL
+  ```sql
   GRANT SELECT ON rif_data.seer_population TO seer_user;
   ```
 * Setup denominator tables and views:
-  ```SQL
+  ```sql
   INSERT INTO rif40.rif40_tables (
 	   theme,
 	   table_name,
@@ -2384,7 +2397,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 
 * Create covariate load tables:
   - Postgres:
-    ```SQL
+    ```sql
 	DROP TABLE IF EXISTS :USER.saipe_state_county_yr1989_2015_fixed_length;
 	DROP TABLE IF EXISTS :USER.saipe_state_county_yr1989_2015;
 
@@ -2394,12 +2407,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	);
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Load US_census_county_poverty_estimates/est&lt;year&gt;ALL.txt as a fixed length record:
   - Postgres:
-    ```SQL
+    ```sql
 	/*
 	wc -l US_census_county_poverty_estimates/est*.txt
 		3192 US_census_county_poverty_estimates/est00ALL.txt
@@ -2475,12 +2488,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1989 WHERE year IS NULL;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Check all covariate table data has been loaded:
   - Postgres:
-    ```SQL
+    ```sql
 	SELECT COUNT(*) AS total FROM saipe_state_county_yr1989_2015_fixed_length;
 	DO LANGUAGE plpgsql $$
 	DECLARE
@@ -2502,12 +2515,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	$$;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Convert covariate fixed length string into new covariate load table with the correct columns and datatypes:
   - Postgres:
-    ```SQL
+    ```sql
 	CREATE TABLE saipe_state_county_yr1989_2015
 	AS
 	SELECT LPAD(LTRIM(SUBSTRING(record_value FROM 1 FOR 2)), 2, '0')::Text AS state_fips_code,	 	/* State FIPS code (00 for US record) */
@@ -2541,12 +2554,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	  FROM saipe_state_county_yr1989_2015_fixed_length;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Create covariate table from load table:
   - Postgres:
-    ```SQL
+    ```sql
 	DROP TABLE IF EXISTS :USER.saipe_state_poverty_1989_2015;
 	CREATE TABLE saipe_state_poverty_1989_2015
 	AS
@@ -2590,12 +2603,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	 ORDER BY 1,2,3;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Comment covariate load table:
   - Postgres:
-    ```SQL
+    ```sql
 	COMMENT ON TABLE saipe_state_poverty_1989_2015 IS 'US Census Small Area Income and Poverty Estimates 1989-2015 by county';
 	COMMENT ON COLUMN saipe_state_poverty_1989_2015.year IS 'Year';
 	COMMENT ON COLUMN saipe_state_poverty_1989_2015.cb_2014_us_nation_5m IS 'United States to county level including territories';
@@ -2611,12 +2624,12 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	COMMENT ON COLUMN saipe_state_poverty_1989_2015.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Check rowcount:
   - Postgres:
-    ```SQL
+    ```sql
 	SELECT COUNT(*) AS total FROM saipe_state_poverty_1989_2015;
 	DO LANGUAGE plpgsql $$
 	DECLARE
@@ -2643,7 +2656,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
   - No county/state level 90-92 data; use 89 data
   E.g.:
   - Postgres:
-    ```SQL
+    ```sql
 	INSERT INTO saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
 		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income,
 		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
@@ -2681,22 +2694,22 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	  FROM saipe_state_poverty_1989_2015 WHERE year = 1989;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Add constraints:
   - Postgres:
-    ```SQL
+    ```sql
 	ALTER TABLE saipe_state_poverty_1989_2015 ADD CONSTRAINT saipe_state_poverty_1989_2015_pk
 		PRIMARY KEY (year, cb_2014_us_state_500k);
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Add indexes:
   - Postgres:
-    ```SQL
+    ```sql
 	CREATE INDEX saipe_state_poverty_1989_2015_year ON saipe_state_poverty_1989_2015 (year);
 	CREATE INDEX saipe_state_poverty_1989_2015_cb_2014_us_nation_5m ON saipe_state_poverty_1989_2015(cb_2014_us_nation_5m);
 	CREATE INDEX saipe_state_poverty_1989_2015_cb_2014_us_state_500k ON saipe_state_poverty_1989_2015(cb_2014_us_state_500k);
@@ -2704,17 +2717,17 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	CLUSTER saipe_state_poverty_1989_2015 USING saipe_state_poverty_1989_2015_pk;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Unload table:
   - Postgres:
-    ```SQL
+    ```sql
 
 	\copy saipe_state_poverty_1989_2015 TO 'saipe_state_poverty_1989_2015.csv' WITH CSV HEADER;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 
@@ -2733,7 +2746,7 @@ E.g:
 
 * Create production covariate table from covariate tables:
   - Postgres:
-    ```SQL
+    ```sql
 	DROP TABLE IF EXISTS :USER.cov_cb_2014_us_county_500k;
 
 	CREATE TABLE cov_cb_2014_us_county_500k
@@ -2802,12 +2815,12 @@ E.g:
 	 ORDER BY 1, 2;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Check rowcount:
   - Postgres:
-    ```SQL
+    ```sql
 	SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
 	  FROM cov_cb_2014_us_county_500k
 	 GROUP BY year
@@ -2833,12 +2846,12 @@ E.g:
 	$$;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Comment covariate table:
   - Postgres:
-    ```SQL
+    ```sql
 	COMMENT ON TABLE cov_cb_2014_us_county_500k
 	  IS 'Example covariate table for: The County at a scale of 1:500,000';
 	COMMENT ON COLUMN cov_cb_2014_us_county_500k.year IS 'Year';
@@ -2857,12 +2870,12 @@ E.g:
 	COMMENT ON COLUMN cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Add indexes:
   - Postgres:
-    ```SQL
+    ```sql
 
 	--
 	-- Convert to index organised table
@@ -2870,16 +2883,16 @@ E.g:
 	CLUSTER cov_cb_2014_us_county_500k USING cov_cb_2014_us_county_500k_pkey;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 * Unload table:
   - Postgres:
-    ```SQL
+    ```sql
 	\copy cov_cb_2014_us_county_500k TO 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	TO BE ADDED
     ```
 
@@ -2887,7 +2900,7 @@ E.g:
 
 * Remove covariate setup data and tables;
   - Postgres:
-    ```SQL
+    ```sql
     DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_county_500k;
     DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_state_500k;
 
@@ -2895,7 +2908,7 @@ E.g:
      WHERE geography = 'USA_2014';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	IF OBJECT_ID('rif_data.cov_cb_2014_us_county_500k', 'U') IS NOT NULL BEGIN
 		DROP TABLE rif_data.cov_cb_2014_us_county_500k;
 		DELETE FROM rif40_covariates
@@ -2909,7 +2922,7 @@ E.g:
 	```
 * Create covariate table;
   - Postgres:
-    ```SQL
+    ```sql
     CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
 		year								INTEGER NOT NULL, -- Year
 		cb_2014_us_county_500k 							CHARACTER VARYING(30) NOT NULL, -- Geolevel name
@@ -2944,7 +2957,7 @@ E.g:
 	);
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
 	  year								INTEGER NOT NULL,
 	  cb_2014_us_county_500k 							VARCHAR(30) NOT NULL,
@@ -2983,12 +2996,12 @@ E.g:
 
 * Load CSV data into covariate table;
   - Postgres:
-    ```SQL
+    ```sql
     \copy cov_cb_2014_us_county_500k FROM 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
 	\copy cov_cb_2014_us_state_500k FROM 'cov_cb_2014_us_state_500k.csv' WITH CSV HEADER;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	BULK INSERT rif_data.cov_cb_2014_us_county_500k
 	FROM '$(pwd)/cov_cb_2014_us_county_500k.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 	WITH
@@ -3010,7 +3023,7 @@ E.g:
 	```
 * Check all covariate table data has been loaded;
   - Postgres:
-    ```SQL
+    ```sql
     --
     -- Check rowcount
     --
@@ -3057,7 +3070,7 @@ E.g:
 	$$;
     ```
   - SQL Server:
-    ```SQL
+    ```sql
     --
     -- Check rowcount
     --
@@ -3094,7 +3107,7 @@ E.g:
 
 * Convert covariate table to index organised table;
   - Postgres:
-    ```SQL
+    ```sql
 	--
 	-- Convert to index organised table
 	--
@@ -3105,7 +3118,7 @@ E.g:
 
 * Comment covariate table and columns;
   - Postgres:
-    ```SQL
+    ```sql
     COMMENT ON TABLE rif_data.cov_cb_2014_us_county_500k
 		IS 'Example covariate table for: The County at a scale of 1:500,000';
     COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.year IS 'Year';
@@ -3138,7 +3151,7 @@ E.g:
 	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
     ```
   - SQL Server:
-    ```SQL
+    ```sql
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',
 		@value = N'Example covariate table for: The County at a scale of 1:500,000',
@@ -3339,7 +3352,7 @@ E.g:
 	```
 
 * Grant grant access on covariate tables and views to an appropriate role:
-  ```SQL
+  ```sql
   --
   -- Grant
   -- * The role SEER_USER needs to be created by an administrator (```CREATE ROLE seer_user;```):
@@ -3423,10 +3436,8 @@ This is configured using the tables:
 
 ## ICD field Name
 
-Numerators are currently limited to ICD 10 coding only and a single ICD field. Support will be added for:
-
-* ICD 9;
-* ICD 11 (subject to the release of the 11th Edition in June 2018).
+Numerators are currently limited to ICD 9 and 10 coding only and a single ICD field. Support will be added for ICD 11 (subject to the 
+release of the 11th Edition in June 2018).
 
 In the longer term it is expected that support will be added for:
 
@@ -3496,7 +3507,7 @@ by extract or R scripts. Traps will be added for:
 ## Numerator Denominator Pair Errors
 
 The normal cases if for valid numerator and denominator pairs to appear in the view *rif40_num_denom*.
-```SQL
+```sql
 sahsuland=> select * from rif40_num_denom;
  geography |   numerator_table    | numerator_description |         theme_description         | denominator_table | denominator_description | automatic
 -----------+----------------------+-----------------------+-----------------------------------+-------------------+-------------------------+-----------
@@ -3528,7 +3539,7 @@ numerator and denominator pair. A further view *rif40_num_denom_errors* is provi
 | n_fdw_date_created        | timestamp without time zone | RIF numerator foreign data wrappers table date FDW table created (or attempted to be).                                                                                                                                                                             |
 | n_fdw_rowtest_passed      | smallint                    | RIF numerator foreign data wrappers table SELECT rowtest passed (0/1).                                                                                                                                                                                             |
 
-```SQL
+```sql
 sahsuland=> select * from rif40_num_denom_errors;
 - geography | numerator_owner |   numerator_table    | is_numerator_resolvable | n_num_denom_validated | numerator_description | denominator_owner | denominator_table | is_denominator_resolvable | d_num_denom_validated | denominator_description | automatic | auto_indirect_error_flag | auto_indirect_error | n_fdw_create_status | n_fdw_error_message | n_fdw_date_created | n_fdw_rowtest_passed
 -----------+-----------------+----------------------+-------------------------+-----------------------+-----------------------+-------------------+-------------------+---------------------------+-----------------------+-------------------------+-----------+--------------------------+---------------------+---------------------+---------------------+--------------------+----------------------
@@ -3549,5 +3560,4 @@ In this case the error is not an error as *n_num_denom_validated* and *d_num_den
 
 In both these case you need to check the grants on the tables: [Viewing your user setup]({{ site.baseurl }}/rifDatabase/databaseManagementManual#25-viewing-your-user-setup)
 
-Peter Hambly
-May 2018
+**Peter Hambly, May 2018**
