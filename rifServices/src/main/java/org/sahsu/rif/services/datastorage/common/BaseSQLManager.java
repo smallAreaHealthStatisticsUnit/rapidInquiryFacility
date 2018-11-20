@@ -1159,12 +1159,12 @@ public class BaseSQLManager implements SQLManager {
 
 	}
 
-	String applySchemaPrefixIfNeeded(String dbItemName) {
+	public String applySchemaPrefixIfNeeded(String dbItemName) {
 
 		return (prefixSchemaName ? SCHEMA_PREFIX : "") + dbItemName;
 	}
 
-	String applySchemaDataPrefixIfNeeded(String dbItemName) {
+	public String applySchemaDataPrefixIfNeeded(String dbItemName) {
 
 		return (prefixSchemaName ? SCHEMA_DATA_PREFIX : "") + dbItemName;
 	}
