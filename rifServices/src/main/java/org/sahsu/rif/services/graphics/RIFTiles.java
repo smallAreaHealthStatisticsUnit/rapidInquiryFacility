@@ -81,6 +81,7 @@ public class RIFTiles {
 	private static String lineSeparator = System.getProperty("line.separator");
 	 
 	private static BaseSQLManager baseSQLManager = null;
+	private boolean addBoundingBoxToTile=true;
 	
 	public RIFTiles(final RIFServiceStartupOptions options) {
 		if (baseSQLManager == null) {
@@ -175,10 +176,60 @@ public class RIFTiles {
 		return result;
 	}
 	
+	// Add bounding box as geoJSON feature so we can see the boundary of the tile
+	private JSONObject createGeoJSpnBboxFeature(
+		final JSONArray bboxJson,
+		final JSONObject properties) {
+		JSONObject geoJsonFeature = new JSONObject();
+		
+		properties.put("gid", 0);
+		properties.put("name", "BBOX");
+		properties.put("area_id", "BBOX");
+		
+		geoJsonFeature.put("type", "Feature");
+		geoJsonFeature.put("properties", properties);
+		
+		JSONObject geometry = new JSONObject();
+		geometry.put("type", "MultiPolygon");
+		
+		// bboxJson is: [minX, minY, maxX, maxY] 
+		// coordinates are(SW, NW, NE, SE, SW): [[[[minX, minY],[minX, maxY],[maxX, maxY],[maxX, minY],[minX, minY]]]]
+		
+		JSONArray sw = new JSONArray(); // [minX, minY]
+		sw.put(bboxJson.getDouble(0));
+		sw.put(bboxJson.getDouble(1));
+		JSONArray nw = new JSONArray(); // [minX, maxY]
+		nw.put(bboxJson.getDouble(0));
+		nw.put(bboxJson.getDouble(3));
+		JSONArray ne = new JSONArray(); // [maxX, maxY]
+		ne.put(bboxJson.getDouble(2));
+		ne.put(bboxJson.getDouble(3));
+		JSONArray se = new JSONArray(); // [maxX, minY]
+		se.put(bboxJson.getDouble(2));
+		se.put(bboxJson.getDouble(1));
+		
+		JSONArray coordinates = new JSONArray();
+		JSONArray coordinates2 = new JSONArray();
+		JSONArray coordinates3 = new JSONArray();
+		coordinates.put(sw);
+		coordinates.put(nw);
+		coordinates.put(ne);
+		coordinates.put(se);
+		coordinates.put(sw);
+		coordinates2.put(coordinates);
+		coordinates3.put(coordinates2);
+		geometry.put("coordinates", coordinates3);
+		
+		geoJsonFeature.put("geometry", geometry);
+		
+		rifLogger.info(getClass(), "Processed bbox: " + bboxJson.toString() + " into feature: " + geoJsonFeature.toString(2));
+		return geoJsonFeature;
+	}
+					
 	/*
 	 * Function: 		topoJson2geoJson()
 	 * Description: 	Convert TopoJSON to GeoJSON
-	 * 					Store result in <myTileTable>.optimised_geojson is the column exists and is NOT NULL
+	 * 					[Store result in <myTileTable>.optimised_geojson is the column exists and is NOT NULL] - Maybe
 	 *					As there is no Java way of converting TopoJSON to GeoJSON like topojson.feature(topology, object)
 	 *					https://github.com/topojson/topojson-client/blob/master/README.md#feature
 	 *					Various Java libraries are immature, unmaintained and undocumented.
@@ -194,6 +245,7 @@ public class RIFTiles {
 	public JSONObject topoJson2geoJson(
 		final Connection connection,
 		final JSONObject tileTopoJson, 
+		final JSONArray bboxJson, 
 		final String tileType,
 		final String myTileTable, 
 		final String myGeometryTable, 
@@ -264,9 +316,17 @@ public class RIFTiles {
 					GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 					GeometryJSON geoJSONWriter = new GeometryJSON();
 					ArrayList<String> areaIdList = new ArrayList<String>();
+					JSONObject bboxJsonProperties = null;
+					
 					for (int i=0; i<geometries.length(); i++) {
+
 						JSONObject jsonGeometry=geometries.getJSONObject(i);
-						JSONObject properties=jsonGeometry.optJSONObject("properties");
+						JSONObject properties=jsonGeometry.optJSONObject("properties");		
+						if (i == 0) {
+							bboxJsonProperties=jsonGeometry.optJSONObject("properties");
+						}
+						// Add bounding box as geoJSON feature so we can see the boundary of the tile	
+					
 						if (properties != null) {			
 							JSONObject geoJsonFeature = new JSONObject();
 							geoJsonFeature.put("type", "Feature");
@@ -354,8 +414,11 @@ public class RIFTiles {
 							String jsonGeometryText = String.join(", ", jsonGeometryList);
 							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + jsonGeometryText);
 						}
+					} // End of for loop
+					if (addBoundingBoxToTile && bboxJsonProperties != null) {
+						geoJsonFeatures.put(createGeoJSpnBboxFeature(bboxJson, bboxJsonProperties));
 					}
-					
+						
 					rifLogger.info(getClass(), "Processed: " + geometries.length() + " geometries; " +
 						" areaIds (" + areaIdList.size() + "): " + String.join(", ", areaIdList));
 				}

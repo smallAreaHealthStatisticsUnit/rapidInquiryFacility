@@ -979,7 +979,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 						else if (bboxJson.length() != 4) {
 							throw new JSONException("TopoJSON Array[\"bbox\"] is not of length 4: " + bboxJson.toString());
 						}
-						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, tileTopoJson, tileType, myTileTable, myGeometryTable, 
+						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, tileTopoJson, bboxJson, tileType, myTileTable, myGeometryTable, 
 							geography.getName().toUpperCase(),
 							zoomlevel, geoLevelSelect.getName().toUpperCase(), x, y);
 						
