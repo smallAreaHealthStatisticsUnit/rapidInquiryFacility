@@ -22,7 +22,12 @@ public class Listener implements ServletContextListener {
 		System.out.println("Statistics Service Listener starting");
 		service = ScriptService.instance();
 		service.start();
-		logger.info(getClass(), "Statistics Service Context initialised");
+		String serverDetails =
+				String.format("Context name: %s; context path: %s; server info: %s",
+				              servletContextEvent.getServletContext().getServletContextName(),
+				              servletContextEvent.getServletContext().getContextPath(),
+				              servletContextEvent.getServletContext().getServerInfo());
+		logger.info(getClass(), "Statistics Service Context initialised. " + serverDetails);
 	}
 
 	@Override

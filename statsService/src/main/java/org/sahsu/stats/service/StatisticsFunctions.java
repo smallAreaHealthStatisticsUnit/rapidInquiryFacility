@@ -13,16 +13,15 @@ public class StatisticsFunctions {
 	private static final String RISK_ANALYSIS_KEY = "risk";
 	static final String STUDY_ID = "studyId";
 	static final String STUDY_ID_URI = "/{" + STUDY_ID + "}";
-	static final String SMOOTHING_URI = "/smoothing";
-	static final String RISK_ANALYSIS_URI = "/riskanalysis";
+	private static final String SMOOTHING_URI = "/smoothing";
+	private static final String RISK_ANALYSIS_URI = "/riskanalysis";
 	static final String SCRIPT_URI = "/script";
 
-	private final String studyId;
 	private final Map<String, String> functions = new HashMap<>();
 
 	private static Map<String, StatisticsFunctions> instances = new HashMap<>();
 
-	public static StatisticsFunctions getInstance(String studyId) {
+	static StatisticsFunctions getInstance(String studyId) {
 
 		if (!instances.containsKey(studyId)) {
 
@@ -33,20 +32,26 @@ public class StatisticsFunctions {
 
 	private StatisticsFunctions(final String studyId) {
 
-		this.studyId = studyId;
-
 		functions.put(SMOOTHING_KEY, SMOOTHING_URI + "/" + studyId);
 		functions.put(RISK_ANALYSIS_KEY, RISK_ANALYSIS_URI + "/" + studyId);
 	}
 
+	@SuppressWarnings("unused")
+	private StatisticsFunctions() {
+		// Needed for JAXB
+	}
+
+
 	@XmlElement
-	public String smoothingFunction() {
+	@SuppressWarnings("unused")
+	public String getSmoothingFunction() {
 
 		return functions.get(SMOOTHING_KEY);
 	}
 
 	@XmlElement
-	public String riskAnalysisFunction() {
+	@SuppressWarnings("unused")
+	public String getRiskAnalysisFunction() {
 
 		return functions.get(RISK_ANALYSIS_KEY);
 	}

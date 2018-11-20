@@ -102,15 +102,15 @@ public enum StudyState {
 		"S",
 		"studyState.studyResultsComputed.name",		
 		"studyState.studyResultsComputed.description"),
-		STUDY_RESULTS_RFAILURE(
-			"F",
-			"studyState.studyResultsRFailure.name",		
-			"studyState.studyResultsRFailure.description"),
-		STUDY_RESULTS_RWARNING(
-			"W",
-			"studyState.studyResultsRWarning.name",		
-			"studyState.studyResultsRWarning.description"),
-		
+	STUDY_RESULTS_RFAILURE(
+		"F",
+		"studyState.studyResultsRFailure.name",
+		"studyState.studyResultsRFailure.description"),
+	STUDY_RESULTS_RWARNING(
+		"W",
+		"studyState.studyResultsRWarning.name",
+		"studyState.studyResultsRWarning.description"),
+
 	// Not used in the database
 	STUDY_STATE_UNKNOWN(
 		"U", 

@@ -41,7 +41,10 @@ public class LoggingConsole implements RMainLoopCallbacks {
 	}
 
 	public void rBusy(Rengine re, int which) {
-		addMessage(lineSeparator + "rBusy[" + Integer.toString(which) + "]" + lineSeparator);
+
+		String msg = lineSeparator + "R Engine " + (which == 1 ? "entered" : "left")
+		             + " the busy state" + lineSeparator;
+		addMessage(msg);
 	}
 
 	public void rShowMessage(Rengine re, String message) {

@@ -13,6 +13,11 @@ public class Parameters {
 
 	private Collection<Parameter> parameters;
 
+	@SuppressWarnings("unused")
+	private Parameters() {
+		// Needed for JAXB
+	}
+
 	public Parameters(final Collection<Parameter> parameters) {
 
 		this.parameters = parameters;
@@ -26,6 +31,12 @@ public class Parameters {
 	public Collection<Parameter> getParameters() {
 
 		return parameters;
+	}
+
+	// Needed for JAXB.
+	public void setParameters(Collection<Parameter> parameters) {
+
+		this.parameters = parameters;
 	}
 
 	public Stream<Parameter> stream() {

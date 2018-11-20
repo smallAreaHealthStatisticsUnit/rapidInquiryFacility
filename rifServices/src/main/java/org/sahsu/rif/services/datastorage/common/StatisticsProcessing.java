@@ -8,10 +8,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response;
 
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.concepts.Parameters;
@@ -19,7 +18,6 @@ import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.generic.util.RIFMemoryManager;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.Investigation;
@@ -29,15 +27,15 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.json.JSONConfiguration;
 
 public class StatisticsProcessing extends CommonRService {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static final RIFMemoryManager rifMemoryManager = RIFMemoryManager.getMemoryManager();
 	private static String lineSeparator = System.getProperty("line.separator");
 
-	private Logger log;	// Not used - uses RIFLogger
-	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
 
 	StatisticsProcessing() {
@@ -48,28 +46,26 @@ public class StatisticsProcessing extends CommonRService {
 			rifLogger.info(this.getClass(), "Set java.util.logging.manager=" +
 				System.getProperty("java.util.logging.manager"));
 		}
-		// Logging for JRI
+
 		final LogManager logManager = LogManager.getLogManager();
-		log=Logger.getLogger("rifGenericLibrary.util.RIFLogger");
-		loggingConsole=new LoggingConsole(log);
 		Enumeration<String> loggerNames = logManager.getLoggerNames();
+
 		if (!loggerNames.hasMoreElements()) {
 			rifLogger.warning(this.getClass(), "java.util.logging.manager has no loggers");
 		}
+
 		while (loggerNames.hasMoreElements()) {
+
 			String name = loggerNames.nextElement();
 			if (name.equals("rifGenericLibrary.util.RIFLogger")) {
 				rifLogger.info(this.getClass(), "Found java.util.logging.manager logger: " + name);
-			}
-			else {
+			} else {
 				rifLogger.debug(this.getClass(), "Other java.util.logging.manager logger: " + name);
 			}
 		}
 	}
 
-	public void initialise(
-			final String userID,
-			final String password,
+	public void initialise(final String userID, final String password,
 			final RIFServiceStartupOptions rifStartupOptions) throws RIFServiceException {
 
 		this.rifStartupOptions = rifStartupOptions;
@@ -87,7 +83,7 @@ public class StatisticsProcessing extends CommonRService {
 
 		//KLG: For now it only works with the first study.  For some reason, newer extract
 		//tables cause the R program we use to generate an error.
-		addParameter("studyId", studyID);
+		addParameter("studyID", studyID);
 
 		//add a parameter for investigation name.  This will appear as a column in the extract
 		//table that the R program will need to know about.  Note that specifying a single
@@ -139,15 +135,27 @@ public class StatisticsProcessing extends CommonRService {
 		String statsServiceUrl = url + "/statistics/service/script";
 
 		rifLogger.info(getClass(), "About to call statistics service on " + statsServiceUrl);
-		WebResource resource = Client.create().resource(statsServiceUrl);
+
+		// Make sure Jersey converts our native bean-style object to JSON.
+		ClientConfig clientConfig = new DefaultClientConfig();
+		clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
+		Client client = Client.create(clientConfig);
+		WebResource resource = client.resource(statsServiceUrl);
 		ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
 				                          .type(MediaType.APPLICATION_JSON)
 				                          .post(ClientResponse.class, parameters);
 
 		rifLogger.info(getClass(), "Statistics service called: " + response.toString());
-		if (response.getStatusInfo() != Status.OK) {
+		if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
 
-			String reason = response.toString();
+			String baseMsg = "Received a failure response from the Statistics Service. "
+			                 + "Response as a string is \n\n\t%s\n\n"
+			                 + "The Entity from the Response is \n\n\t%s\n\n\n"
+			                 + "----------------- End of Statistics failure details "
+			                 + "-------------------\n\n";
+			String reason = String.format(baseMsg, response.toString(),
+			                              response.getEntity(String.class));
+			rifLogger.error(getClass(), reason);
 			throw new RIFServiceException(reason);
 		}
 	}

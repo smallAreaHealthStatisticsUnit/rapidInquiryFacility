@@ -209,9 +209,9 @@ saveDataFrameToDatabaseTable <- function(data) {
 					replace(x, is.infinite(x), NA) # Replace INF will NA for SQL Server
 				}))
 				
-				cat(paste0("Replace NAN will NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
+				cat(paste0("Replace NAN with NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
 				data<-do.call(data.frame, lapply(data, function(x) {
-					replace(x, is.nan(x), NA) # Replace NaN will NA for SQL Server
+					replace(x, is.nan(x), NA) # Replace NaN with NA for SQL Server
 				}))
 
 				cat(paste0("Replace \"\" will NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")

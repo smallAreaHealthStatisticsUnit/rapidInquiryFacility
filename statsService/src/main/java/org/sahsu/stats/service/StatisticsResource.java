@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import org.sahsu.rif.generic.concepts.Parameters;
 import org.sahsu.rif.generic.util.RIFLogger;
 
+@Path("")
 public class StatisticsResource {
 
 	private static RIFLogger logger = RIFLogger.getLogger();
@@ -23,7 +24,10 @@ public class StatisticsResource {
 
 		logger.info(getClass(), "In runScript, serving /statistics"
 		                        + StatisticsFunctions.SCRIPT_URI);
-		return new Script().run(parameters);
+		logger.info(getClass(), "Parameters object is "
+		                        + (parameters == null ? "null" : "not null"));
+		ScriptService r = ScriptService.instance();
+		return r.runScript(parameters);
 	}
 
 	@GET
@@ -34,6 +38,14 @@ public class StatisticsResource {
 
 		logger.info(getClass(), "Getting functions");
 		return StatisticsFunctions.getInstance(studyId);
+	}
+
+	@GET
+	@Path("/test")
+	@Produces(MediaType.APPLICATION_JSON)
+	public StatisticsFunctions test() {
+
+		return StatisticsFunctions.getInstance("123");
 	}
 
 	// @POST

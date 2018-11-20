@@ -231,7 +231,7 @@ public class RunStudyThread implements Runnable {
 			// because this is a database procedure that failed the transaction must be rolled back
 			rollbackStudy();
 
-			StudyState errorStudyState = studyStateMachine.ExtractFailure();
+			StudyState errorStudyState = studyStateMachine.extractFailure();
 			String statusMessage
 				= RIFServiceMessages.getMessage(
 					"studyState.studyExtractFailure.description");
@@ -251,7 +251,7 @@ public class RunStudyThread implements Runnable {
 			updateStudyStatusState(statusMessage);
 		}	
 		catch (RIFServiceException rifServiceException) {
-			StudyState errorStudyState = studyStateMachine.RFailure();
+			StudyState errorStudyState = studyStateMachine.rFailure();
 			String statusMessage
 				= RIFServiceMessages.getMessage(
 					"studyState.studyResultsRFailure.description");

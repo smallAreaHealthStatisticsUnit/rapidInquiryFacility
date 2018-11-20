@@ -20,6 +20,7 @@ import org.sahsu.stats.service.logging.LoggingConsole;
 
 /**
  * Provides the link to R functions for the Rapid Inquiry Facility's Statistics Service.
+ * A singleton because, using JRI, we can only have one instance of the R engine running per JVM.
  */
 final class ScriptService {
 
@@ -126,11 +127,15 @@ final class ScriptService {
 			engine.eval("returnValues <- runRSmoothingFunctions()");
 		}
 
-		String rErrorTrace = "No R error tracer (see Tomcat log)";
-		ResponseBuilder builder;
+		ResponseBuilder builder = handleResponse();
+
+		return builder.build();
+	}
+
+	private ResponseBuilder handleResponse() {
 
 		// If the exit value is null, that's an error in itself. Zero is OK, any other number
-		// is also an error.
+		// is an error.
 		int exitValue;
 		REXP exitValueFromR = engine.eval("as.integer(returnValues$exitValue)");
 		if (exitValueFromR != null) {
@@ -144,12 +149,11 @@ final class ScriptService {
 			exitValue = 1;
 		}
 
-		// Similarly, if the misnamed errorTrace is null, we consider it an error -- or at least
-		// worthy of a warning.
-		REXP errorTraceFromR = engine.eval("returnValues$errorTrace");
-		if (errorTraceFromR != null) {
+		REXP outputFromR = engine.eval("returnValues$errorTrace");
+		String formattedOutputFromR = "";
+		if (outputFromR != null) {
 
-			String[] strArr = errorTraceFromR.asStringArray();
+			String[] strArr = outputFromR.asStringArray();
 			StringBuilder strBuilder = new StringBuilder();
 
 			for (final String aStrArr : strArr) {
@@ -158,23 +162,25 @@ final class ScriptService {
 			}
 
 			// Replace ' with " to reduce JSON parsing errors
-			rErrorTrace = strBuilder.toString().replaceAll("'", "\"");
-			exitValue = 1;
+			formattedOutputFromR = strBuilder.toString().replaceAll("'", "\"");
 		} else {
 
+			// Similarly, if the misnamed errorTrace is null, we consider it worthy of a warning.
 			logger.warning(getClass(),
-			                  "JRI R ERROR: errorTraceFromR (returnValues$errorTrace) is NULL");
+			                  "JRI R WARNING: outputFromR (returnValues$errorTrace) is NULL");
 		}
 
+		ResponseBuilder builder;
 		if (exitValue > 0) {
 
-			builder = Response.serverError().entity(rErrorTrace).type(MediaType.APPLICATION_JSON);
+			builder = Response.serverError();
 		} else {
 
 			builder = Response.ok();
 		}
 
-		return builder.build();
+		builder.entity(formattedOutputFromR).type(MediaType.APPLICATION_JSON);
+		return builder;
 	}
 
 	private void performEngineChecks() {
@@ -205,7 +211,7 @@ final class ScriptService {
 	private void loadRScript(String script) {
 
 		Path pathToScript = scriptPath.resolve(script);
-		String scriptString = pathToScript.toString();;
+		String scriptString = pathToScript.toString();
 		logger.info(getClass(), "Loading R script " + scriptString);
 		if (pathToScript.toFile().exists()) {
 
