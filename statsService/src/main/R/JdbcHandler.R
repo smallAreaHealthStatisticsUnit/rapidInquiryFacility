@@ -320,8 +320,8 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 		"lower95=b.lower95,",
 		"upper95=b.upper95,",
 		"relative_risk=b.relative_risk,",
-		"smoothed_relative_risk=b.smoothed_relative_risk,",
-		"posterior_probability=", nullProtect("b.posterior_probability"),
+		"smoothed_relative_risk=", nullProtect("b.smoothed_relative_risk"),
+		", posterior_probability=", nullProtect("b.posterior_probability"),
 		", posterior_probability_upper95=", nullProtect("b.posterior_probability_upper95"),
 		", posterior_probability_lower95=", nullProtect("b.posterior_probability_lower95"),
 		", residual_relative_risk=", nullProtect("b.residual_relative_risk"),
@@ -458,4 +458,84 @@ dropTemporaryTable <- function() {
 		exitValue <<- 1
 	})
 }
+
+
+##================================================================================
+##FUNCTION: insertHomogeneityResults
+##DESCRIPTION
+##Writes the results of the homogeneity tests to the t_rif40_homogeneity table
+## Will insert results - needs to check if results have already been written first??
+##================================================================================
+insertHomogeneityResults <- function(homogData) {
+  
+  ##================================================================================
+  ##
+  ## R reads the area_id and auto casts into to a integer. This causes the UPDATE to
+  ## do not rows which in turn raises a Could not SQLEXecDirect error
+  ##
+  ## We need to detect if the frame area_id is an integer and then add a cast
+  ##
+  ##================================================================================
+  homogData = data.frame(homogData)
+  
+  
+  
+  #
+  # Save data frame to csv file for debugging
+  #
+  if (dumpFramesToCsv == TRUE) {
+    cat(paste0("Saving data frame to: ", temporaryHomogFileName, "\n"), sep="")
+    write.csv(homogData, file=temporaryHomogFileName)
+  }
+  
+  
+  #Insert 3 rows, M,F,Both
+  for (i in 1:3)
+  {
+     selHomog <- paste0("select * FROM rif40.t_rif40_homogeneity WHERE inv_id =", homogData$inv_id[i]," AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj), " and genders = ", homogData$gender[i], sep="")
+     homogExists <- tryCatch(doQuery(selHomog),
+     warning=function(w) {
+       cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
+       exitValue <<- 1
+     },
+     error=function(e) {
+       cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
+       exitValue <<- 1
+     })
+     numberOfRows <- nrow(homogExists)
+
+     if (numberOfRows == 0) {
+     
+      insertStmt <- paste("INSERT INTO rif40.t_rif40_homogeneity(inv_id, study_id, adjusted, genders) VALUES (",
+                                     homogData$inv_id[i],",",homogData$study_id[i],",",as.integer(adj),",",homogData$gender[i],");")
+      res <- tryCatch({
+                withErrorTracing({ dbSendUpdate(connection, insertStmt) })
+             },warning=function(w) {
+                cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
+                exitValue <<- 1
+              },
+            error=function(e) {
+              cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
+              exitValue <<- 1
+            })
+    }
+    
+    # Finally update the record which should now exist
+    updateStmt <- paste("UPDATE rif40.t_rif40_homogeneity SET username=\'" , userID,"\', homogeneity_dof=", homogData$df[i],
+                        ", homogeneity_chi2=", homogData$chisqHomog[i], ", homogeneity_p=", homogData$pValHomog[i], ", explt5=",homogData$bandsLT5[i],
+                        " WHERE inv_id =", homogData$inv_id[i], " AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj), 
+                        " and genders = ", homogData$gender[i], ";\n", sep="") 
+            res <- tryCatch({
+              withErrorTracing({ dbSendUpdate(connection, updateStmt) })
+            },warning=function(w) {
+              cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
+              exitValue <<- 1
+            },
+            error=function(e) {
+              cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
+              exitValue <<- 1
+            })
+  }
+  return(exitValue);
+} # End of updateMapTableFromSmoothedResultsTable()
 

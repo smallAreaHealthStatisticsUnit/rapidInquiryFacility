@@ -64,7 +64,8 @@ runRSmoothingFunctions <- function() {
 
 	establishTableNames(studyID)
 	cat("Table names established\n")
-
+	
+	riskAnal <<- "0"
 	#
 	# Install scripts required to re-run study
 	#
@@ -246,7 +247,8 @@ runRRiskAnalFunctions <- function() {
 
 	establishTableNames(studyID)
 	cat("Table names established\n")
-	
+
+	riskAnal <<- "1"
 	#
 	# Install scripts required to re-run study
 	#
@@ -296,13 +298,14 @@ runRRiskAnalFunctions <- function() {
 					#
 					cat(paste0("About to calculate band data", "\n"))
 					resultBands <- performBandAnal(data)
-					
-					#
+					resultBands = data.frame(resultBands)
+
+										#
 					# Call: performHomogAnal()
 					# This runs the test for homogeneity and linearity using the band results from the performBandAnal function 
 					cat(paste0("About to run homogeneity tests", "\n"))
 					resultHomog <- performHomogAnal(resultBands)
-					
+					resultHomog = data.frame(resultHomog)
 					
 				})
 			},
@@ -321,22 +324,28 @@ runRRiskAnalFunctions <- function() {
 				if (exitValue == 0) {
 					cat(paste("callRiskAnal() OK: ", exitValue, "\n"), sep="")
  
+				  # Cast area_id to char. This is ignored by sqlSave!
+				  area_id_is_integer <- FALSE
+
 					cat("About to save to table\n")
-					#lerrorTrace <<- saveDataFrameToDatabaseTable(result)	# may set exitValue
 					#Save the band data
-					lerrorTrace <<- saveDataFrameToDatabaseTable(resultBands)	# may set exitValue
-					if (!is.na(lerrorTrace) && !is.null(lerrorTrace) && length(lerrorTrace)-1 > 0) {
-						cat(lerrorTrace, sep="\n")
+					errorTrace <<- saveDataFrameToDatabaseTable(resultBands)	# may set exitValue
+					if (!is.na(errorTrace) && !is.null(errorTrace) && length(errorTrace)-1 > 0) {
+						cat(errorTrace, sep="\n")
 					}
 					if (exitValue == 0) {
-						lerrorTrace2 <<- updateMapTableFromSmoothedResultsTable(FALSE) # may set exitValue
-						if (!is.na(lerrorTrace2) && !is.null(lerrorTrace2) && length(lerrorTrac2e)-1 > 0) {
-							cat(lerrorTrace2, sep="\n")
+						errorTrace <<- updateMapTableFromSmoothedResultsTable(area_id_is_integer, studyType) # may set exitValue
+						if (!is.na(errorTrace) && !is.null(errorTrace) && length(errorTrace)-1 > 0) {
+							cat(errorTrace, sep="\n")
 						}
 					}
 
 					#save the Homogenity test results to the data base (in rif40_homogenity table?)
-									 
+					errorTrace <<- insertHomogeneityResults(resultHomog)
+					if (!is.na(errorTrace) && !is.null(errorTrace) && length(errorTrace)-1 > 0) {
+					  cat(errorTrace, sep="\n")
+					}
+					
 				}
 			}) # End of tryCatch
 		})
