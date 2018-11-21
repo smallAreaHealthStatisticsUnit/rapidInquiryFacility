@@ -176,6 +176,7 @@ public class RIFTiles {
 		
 		ImageIO.write(bufferedImage, "png", os);
 
+		cachePngTile(os, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y);
 		String result=Base64.getEncoder().encodeToString(os.toByteArray());
 		
 		mapContent.dispose();
@@ -418,6 +419,8 @@ public class RIFTiles {
 		JSONObject tileGeoJson = new JSONObject();
 		tileGeoJson.put("type", "FeatureCollection");
 		tileGeoJson.put("features", geoJsonFeatures);
+		
+		cacheGeoJsonTile(tileGeoJson, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y);
 		return tileGeoJson;
 	}
 	
@@ -502,6 +505,61 @@ public class RIFTiles {
 		return result;
 	}
 
+	private void cacheGeoJsonTile(
+		final JSONObject tileGeoJson,
+		final String geography,
+		final Integer zoomlevel, 
+		final String geoLevel, 
+		final Integer x, 
+		final Integer y) {
+			
+		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "json");
+	}
+	private void cachePngTile(
+		ByteArrayOutputStream pngTileStream,
+		final String geography,
+		final Integer zoomlevel, 
+		final String geoLevel, 
+		final Integer x, 
+		final Integer y) {
+			
+		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png");
+	}	
+	public String getCachedGeoJsonTile(
+		final String geography,
+		final Integer zoomlevel, 
+		final String geoLevel, 
+		final Integer x, 
+		final Integer y) {
+			
+		JSONObject tileGeoJson = new JSONObject();
+		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "json");
+		
+		return null;
+	}
+	public String getCachedPngTile(
+		final String geography,
+		final Integer zoomlevel, 
+		final String geoLevel, 
+		final Integer x, 
+		final Integer y) {
+			
+		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png");
+		
+		return null;
+	}
+		
+		
+	private File getCachedTileFile(
+		final String geography,
+		final Integer zoomlevel, 
+		final String geoLevel, 
+		final Integer x, 
+		final Integer y,
+		String fileExtension) {
+		return null;
+	}
+			
 	// Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
 	
 	/* 

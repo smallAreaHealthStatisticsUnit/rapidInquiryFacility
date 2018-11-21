@@ -863,6 +863,21 @@ public class ResultsQueryManager extends BaseSQLManager {
 			final Integer x,
 			final Integer y,
 			final String tileType) throws RIFServiceException {
+		
+		String result = null;
+		RIFTiles rifTiles = new RIFTiles(options);
+		if (tileType.equals("geojson")) {
+			result=rifTiles.getCachedGeoJsonTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
+			if (result != null) {
+				return result;
+			}
+		}
+ 		else if (tileType.equals("png")) {	
+			result=rifTiles.getCachedPngTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
+			if (result != null) {
+				return result; // In base64
+			}
+		}
 
 		//STEP 1: get the tile table name
 		/*
@@ -950,7 +965,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 			resultSet2 = statement2.executeQuery();
 			resultSet2.next();
-			String result = resultSet2.getString(1);
+			result = resultSet2.getString(1);
 
 			connection.commit();
 			
@@ -969,7 +984,6 @@ public class ResultsQueryManager extends BaseSQLManager {
 				if (result != null && result.length() > 0 && 
 					!result.equals("{\"type\": \"FeatureCollection\",\"features\":[]}") /* Null tile */) {
 					try {
-						RIFTiles rifTiles = new RIFTiles(options);
 						
 						JSONObject tileTopoJson = new JSONObject(result);
 // This is the bounding box of the GeoJSON, not the tile!
