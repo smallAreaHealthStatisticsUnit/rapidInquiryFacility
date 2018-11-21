@@ -1,6 +1,9 @@
 package org.sahsu.stats.service;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +14,13 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.rosuda.JRI.REXP;
+import org.rosuda.JRI.RMainLoopCallbacks;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.concepts.Parameters;
 import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.stats.service.loading.CustomClassLoader;
 import org.sahsu.stats.service.logging.LoggingConsole;
 
 /**
@@ -41,6 +46,7 @@ final class ScriptService {
 	private boolean running;
 	private Rengine engine;
 	private Path scriptPath;
+	private static ClassLoader loader;
 
 	static ScriptService instance() {
 
@@ -64,12 +70,7 @@ final class ScriptService {
 
 			try {
 
-				engine = Rengine.getMainEngine();
-				if (engine == null) {
-
-					String[] rArgs = { "--vanilla" };
-					engine = new Rengine(rArgs, false, new LoggingConsole());
-				}
+				loadEngineReflectively();
 
 				if (!engine.waitForR()) {
 
@@ -97,6 +98,14 @@ final class ScriptService {
 		logger.info(getClass(), "Shutdown requested for Statistics Service");
 		engine.end();
 		engine = null;
+		loader = null;
+		try {
+
+			// Give things a chance end before calling garbage collection.
+			Thread.sleep(200);
+		} catch (InterruptedException ignore) {}
+
+		System.gc();
 	}
 
 	boolean isRunning() {
@@ -284,5 +293,41 @@ final class ScriptService {
 
 		logger.info(getClass(), "R parameters: " + lineSeparator
 		                        + logMsg.toString());
+	}
+
+	/**
+	 * The idea here is that we load the Rengine using a custom classloader. That way, when we
+	 * shut down we can null the classloader and call garbage collection. _If_ that worked, and
+	 * the custom classloader unloaded, then the JRI native library (loaded by the Rengine class)
+	 * _should_ be unloaded.
+	 *
+	 * At the time of writing (2018-11-21) I'm parking this, because it doesn't work as described.
+	 *
+	 */
+	private void loadEngineReflectively() throws ClassNotFoundException, NoSuchMethodException,
+	                                             IllegalAccessException, InvocationTargetException,
+	                                             InstantiationException {
+
+		loader = new CustomClassLoader();
+		Class<?> engineClass = loader.loadClass("org.rosuda.JRI.Rengine");
+		Method getMain = engineClass.getMethod("getMainEngine");
+		Object engineObject = getMain.invoke(null);
+
+		if (!(engineObject instanceof Rengine)) {
+
+			Constructor<?> engineConstructor = engineClass.getConstructor(
+					String[].class, boolean.class, RMainLoopCallbacks.class);
+			String[] rArgs = { "--vanilla" };
+			engineObject = engineConstructor.newInstance(
+					rArgs, false, new LoggingConsole());
+		}
+
+		if (engineObject instanceof Rengine) {
+
+			engine = (Rengine)engineObject;
+		} else {
+
+			throw new IllegalStateException("Couldn't start Rengine");
+		}
 	}
 }
