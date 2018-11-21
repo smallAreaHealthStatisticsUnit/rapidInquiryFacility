@@ -11,6 +11,8 @@ import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.Iterator;
 
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -177,7 +179,7 @@ public class RIFTiles {
 	}
 	
 	// Add bounding box as geoJSON feature so we can see the boundary of the tile
-	private JSONObject createGeoJSpnBboxFeature(
+	private JSONObject createGeoJsonBboxFeature(
 		final JSONArray bboxJson,
 		final JSONObject properties) {
 		JSONObject geoJsonFeature = new JSONObject();
@@ -299,9 +301,6 @@ public class RIFTiles {
 							
 		Null tile: {"type": "FeatureCollection","features":[]}					
 		 */
-		 
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
 		
 		JSONArray geoJsonFeatures = new JSONArray();	 
 		JSONArray geometries;
@@ -317,6 +316,7 @@ public class RIFTiles {
 					GeometryJSON geoJSONWriter = new GeometryJSON();
 					ArrayList<String> areaIdList = new ArrayList<String>();
 					JSONObject bboxJsonProperties = null;
+					HashMap<String, JSONObject> propertiesHash = new HashMap<String, JSONObject>();
 					
 					for (int i=0; i<geometries.length(); i++) {
 
@@ -328,63 +328,34 @@ public class RIFTiles {
 						// Add bounding box as geoJSON feature so we can see the boundary of the tile	
 					
 						if (properties != null) {			
-							JSONObject geoJsonFeature = new JSONObject();
-							geoJsonFeature.put("type", "Feature");
-							geoJsonFeature.put("properties", properties);	
 							String areaId = properties.getString("area_id");
 							areaIdList.add(areaId);
+							propertiesHash.put(areaId, properties);	
+						}
+						else {
+							List<String> jsonGeometryList = IteratorUtils.toList(jsonGeometry.keys());
+							String jsonGeometryText = String.join(", ", jsonGeometryList);
+							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + jsonGeometryText);
+						}
+					} // End of for loop
+					
+					HashMap<String, String> wktHash = getWKT(connection, zoomlevel, geoLevel, myGeometryTable.toLowerCase(), areaIdList);
+					if (wktHash != null) {
+						
+						if (wktHash.size() != areaIdList.size()) {
+							throw new SQLException("Error in getWKT; expecting: " + areaIdList.size() + "; got: " + wktHash.size());
+						}
+						Set set = wktHash.entrySet();
+						Iterator iterator = set.iterator();
+						while(iterator.hasNext()) {
+							Map.Entry mentry = (Map.Entry)iterator.next();
+							String areaIdKey=(String)mentry.getKey();
+							String wkt=(String)mentry.getValue();
 							
-							SelectQueryFormatter getMapTilesQueryFormatter
-									= new MSSQLSelectQueryFormatter();
-
-							//STEP 2: get the tiles
-							/*
-								SELECT
-								   ST_AsGeoJson(GEOMETRY_SAHSULAND.optimised_topojson) AS geojson
-								FROM
-								   GEOMETRY_SAHSULAND,
-								   rif40_geolevels
-								WHERE
-								   GEOMETRY_SAHSULAND.geolevel_id = rif40_geolevels.geolevel_id AND
-								   rif40_geolevels.geolevel_name='SAHSU_GRD_LEVEL2' AND
-								   GEOMETRY_SAHSULAND.zoomlevel=10 AND
-								   GEOMETRY_SAHSULAND.areaid='01.012' 
-								   
-								   wkt?
-							*/
-
-							getMapTilesQueryFormatter.addSelectField(myGeometryTable, "wkt");
-							getMapTilesQueryFormatter.addFromTable(myGeometryTable);
-							getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
-							getMapTilesQueryFormatter.addWhereJoinCondition(myGeometryTable, 
-								"geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
-							getMapTilesQueryFormatter.addWhereParameter(
-								baseSQLManager.applySchemaPrefixIfNeeded("rif40_geolevels"),
-								"geolevel_name");
-							getMapTilesQueryFormatter.addWhereParameter(myGeometryTable, "zoomlevel");
-							getMapTilesQueryFormatter.addWhereParameter(myGeometryTable, "areaid");
-
-							baseSQLManager.logSQLQuery(
-									"topoJson2geoJson",
-									getMapTilesQueryFormatter,
-									geoLevel,
-									zoomlevel.toString(),
-									areaId);
-
-							statement = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());
-							statement.setString(1, geoLevel);
-							statement.setInt(2, zoomlevel);
-							statement.setString(3, areaId);
-
-							resultSet = statement.executeQuery();
-							resultSet.next();
-							
-							String wkt=resultSet.getString(1);						
-											
-							//Cleanup database resources
-							SQLQueryUtility.close(statement);
-							SQLQueryUtility.close(resultSet);
-			
+							JSONObject geoJsonFeature = new JSONObject();
+							geoJsonFeature.put("type", "Feature");
+							geoJsonFeature.put("properties", propertiesHash.get(areaIdKey));	
+										
 							Geometry geometry = null;
 							if (wkt != null) {
 								try {
@@ -396,31 +367,31 @@ public class RIFTiles {
 									throw new JSONException("wktParseException: " + wktParseException.getMessage() + 
 										" for geoLevel: " + geoLevel +
 										"; zoomlevel: " + zoomlevel +
-										"; areaId: " + areaId);
+										"; areaId: " + areaIdKey);
 								}
 							}			
 							else {
 								throw new JSONException("Null wkt for geoLevel: " + geoLevel +
 									"; zoomlevel: " + zoomlevel +
-									"; areaId: " + areaId);
+									"; areaId: " + areaIdKey);
 							}
-							JSONObject njsonGeometry = new JSONObject(geoJSONWriter.toString(geometry));
+							JSONObject njsonGeometry = new JSONObject(geoJSONWriter.toString(geometry)); // Covert to GeoJSON
 							geoJsonFeature.put("geometry", njsonGeometry);
 							geoJsonFeatures.put(geoJsonFeature);
-			
-						}
-						else {
-							List<String> jsonGeometryList = IteratorUtils.toList(jsonGeometry.keys());
-							String jsonGeometryText = String.join(", ", jsonGeometryList);
-							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + jsonGeometryText);
-						}
-					} // End of for loop
+						} // End of while loop
+					}
+					else {
+						throw new JSONException("Null wktHash for geoLevel: " + geoLevel +
+							"; zoomlevel: " + zoomlevel);
+					}
+					
 					if (addBoundingBoxToTile && bboxJsonProperties != null) {
-						geoJsonFeatures.put(createGeoJSpnBboxFeature(bboxJson, bboxJsonProperties));
+						geoJsonFeatures.put(createGeoJsonBboxFeature(bboxJson, bboxJsonProperties));
 					}
 						
-					rifLogger.info(getClass(), "Processed: " + geometries.length() + " geometries; " +
-						" areaIds (" + areaIdList.size() + "): " + String.join(", ", areaIdList));
+					rifLogger.info(getClass(), "Processed: " + geometries.length() + " geometries" +
+						"; wkt: " + wktHash.size() +
+						"; areaIds (" + areaIdList.size() + "): " + String.join(", ", areaIdList));
 				}
 				else {
 					throw new JSONException("TopoJSON Array[\"geometries\"] not found");
@@ -444,4 +415,79 @@ public class RIFTiles {
 		return tileGeoJson;
 	}
 	
+	private HashMap<String, String> getWKT(
+		final Connection connection,
+		final Integer zoomlevel,
+		final String geoLevel,
+		final String myGeometryTable,
+		final ArrayList<String> areaIdList
+		) throws SQLException, RIFServiceException {
+			
+		HashMap<String, String> result = new HashMap<String, String>();
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		SelectQueryFormatter getMapTilesQueryFormatter
+				= new MSSQLSelectQueryFormatter();
+
+		//STEP 2: get the tiles
+		/*
+			SELECT
+			   ST_AsGeoJson(GEOMETRY_SAHSULAND.optimised_topojson) AS geojson
+			FROM
+			   GEOMETRY_SAHSULAND,
+			   rif40_geolevels
+			WHERE
+			   GEOMETRY_SAHSULAND.geolevel_id = rif40_geolevels.geolevel_id AND
+			   rif40_geolevels.geolevel_name='SAHSU_GRD_LEVEL2' AND
+			   GEOMETRY_SAHSULAND.zoomlevel=10 AND
+			   GEOMETRY_SAHSULAND.areaid='01.012' 
+			   
+			   wkt?
+		*/
+
+		getMapTilesQueryFormatter.addSelectField(myGeometryTable, "wkt");
+		getMapTilesQueryFormatter.addSelectField(myGeometryTable, "areaid");
+		getMapTilesQueryFormatter.addFromTable(myGeometryTable);
+		getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
+		getMapTilesQueryFormatter.addWhereJoinCondition(myGeometryTable, 
+			"geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
+		getMapTilesQueryFormatter.addWhereParameter(
+			baseSQLManager.applySchemaPrefixIfNeeded("rif40_geolevels"),
+			"geolevel_name");
+		getMapTilesQueryFormatter.addWhereParameter(myGeometryTable, "zoomlevel");
+		getMapTilesQueryFormatter.addWhereIn(myGeometryTable, "areaid", areaIdList);
+
+		baseSQLManager.logSQLQuery(
+				"topoJson2geoJson",
+				getMapTilesQueryFormatter,
+				geoLevel,
+				zoomlevel.toString());
+
+		statement = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());
+		statement.setString(1, geoLevel);
+		statement.setInt(2, zoomlevel);
+
+		try {
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+
+				String wkt=resultSet.getString(1);
+				String areaId=resultSet.getString(2);	
+				result.put(areaId, wkt);
+			}		
+			if (result.size() != areaIdList.size()) {
+				throw new SQLException("Error in WKT fetch; expecting: " + areaIdList.size() + "; got: " + result.size());
+			}
+		}
+		finally {
+			//Cleanup database resources
+			connection.commit();
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			
+		}
+		return result;
+	}
 }
