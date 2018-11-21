@@ -91,7 +91,12 @@ public class RIFTiles {
 		}
 	}
 
-		// https://gis.stackexchange.com/questions/245875/convert-geojson-to-png
+	/*
+	 * Function:	geoJson2png()
+	 * Description: Convert geoJSON to transparent PNG tile, cropped to BBOX
+					https://gis.stackexchange.com/questions/245875/convert-geojson-to-png
+	 * Returns:		PNG coded in base64
+	 */
 	public String geoJson2png(
 		final JSONObject tileGeoJson, 
 		final JSONArray bboxJson, 
@@ -138,8 +143,9 @@ public class RIFTiles {
 		Graphics2D g2d = bufferedImage.createGraphics();
 		
 	/*	
+	// geotiff code
 		GridCoverageFactory factory = new GridCoverageFactory();
-		GridCoverage2D coverage = factory.create("png", bufferedImage, bounds);
+		GridCoverage2D coverage = factory.create("geotiff", bufferedImage, bounds);
 		CoverageProcessor processor = new CoverageProcessor(null);
 
 		ParameterValueGroup param = processor.getOperation("CoverageCrop").getParameters();
@@ -415,6 +421,11 @@ public class RIFTiles {
 		return tileGeoJson;
 	}
 	
+	/* 
+	 * Function:	getWKT()
+	 * Description:	Get well Known Text from RIF database <myGeometryTable> for geoLevel, zoomlevel and list of areaIds in tile
+	 * Returns:		HashMap<String, String>
+	 */
 	private HashMap<String, String> getWKT(
 		final Connection connection,
 		final Integer zoomlevel,
@@ -489,5 +500,43 @@ public class RIFTiles {
 			
 		}
 		return result;
+	}
+
+	// Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
+	
+	/* 
+	 * Function:	tile2boundingBox()
+	 * Description:	Get bounding box for tile
+	 * Returns:		JSONArray bboxJson is: [minX, minY, maxX, maxY] 
+	 */	
+	public JSONArray tile2boundingBox(
+		final int x, 
+		final int y, 
+		final int zoomlevel) {
+		JSONArray bboxJson = new JSONArray();
+		bboxJson.put(tile2lon(x, zoomlevel));		// Wast: minX
+		bboxJson.put(tile2lat(y + 1, zoomlevel));	// South: minY
+		bboxJson.put(tile2lon(x + 1, zoomlevel));	// East: maxX
+		bboxJson.put(tile2lat(y, zoomlevel));		// North: maxY
+		return bboxJson;
+	}
+
+	/* 
+	 * Function:	tile2lon()
+	 * Description:	Get Longitude for tile
+	 * Returns:		Longitude (X) in 4326 
+	 */	
+	private double tile2lon(int x, int zoomlevel) {
+		return x / Math.pow(2.0, zoomlevel) * 360.0 - 180;
+	}
+	
+	/* 
+	 * Function:	tile2lat()
+	 * Description:	Get Latitude for tile
+	 * Returns:		Latitude (Y) in 4326 
+	 */	
+	private double tile2lat(int y, int zoomlevel) {
+		double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, zoomlevel);
+		return Math.toDegrees(Math.atan(Math.sinh(n)));
 	}
 }

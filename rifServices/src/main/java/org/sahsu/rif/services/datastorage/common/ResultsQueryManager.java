@@ -972,13 +972,15 @@ public class ResultsQueryManager extends BaseSQLManager {
 						RIFTiles rifTiles = new RIFTiles(options);
 						
 						JSONObject tileTopoJson = new JSONObject(result);
-						JSONArray bboxJson = tileTopoJson.optJSONArray("bbox");
-						if (bboxJson == null) {
-							throw new JSONException("TopoJSON Array[\"bbox\"] not found");
-						}
-						else if (bboxJson.length() != 4) {
-							throw new JSONException("TopoJSON Array[\"bbox\"] is not of length 4: " + bboxJson.toString());
-						}
+// This is the bounding box of the GeoJSON, not the tile!
+//						JSONArray bboxJson = tileTopoJson.optJSONArray("bbox");
+//						if (bboxJson == null) {
+//							throw new JSONException("TopoJSON Array[\"bbox\"] not found");
+//						}
+//						else if (bboxJson.length() != 4) {
+//							throw new JSONException("TopoJSON Array[\"bbox\"] is not of length 4: " + bboxJson.toString());
+//						}
+						JSONArray bboxJson = rifTiles.tile2boundingBox(x, y, zoomlevel);
 						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, tileTopoJson, bboxJson, tileType, myTileTable, myGeometryTable, 
 							geography.getName().toUpperCase(),
 							zoomlevel, geoLevelSelect.getName().toUpperCase(), x, y);
