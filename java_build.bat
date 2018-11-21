@@ -77,7 +77,11 @@ if %errorlevel% neq 0  (
 	cd %PWD%	
 	exit /b 1
 )
-
+COPY statsService\target\statistics.war statistics.war
+if %errorlevel% neq 0  (	
+	cd %PWD%	
+	exit /b 1
+)
 
 REM
 REM Eof
