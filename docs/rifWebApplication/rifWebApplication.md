@@ -98,7 +98,7 @@ This makes tomcat Java upgrade proof; but this may have unintended effects if:
 ### Apache Tomcat on a single host
 
 This is suitable for laptops and developers with no access from other machines. Download and install tomcat; make sure your firewall blocks
-port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in 
+port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in
 [Securing Tomcat]({{ site.baseurl }}/rifWebApplication/rifWebApplication#securing-tomcat).
 
 ### Apache Tomcat for internet use
@@ -772,13 +772,14 @@ or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/r
 
 Normally users will be supplied with pre built files in the *tomcat webapps* folder:
 
-* RIF middleware: rifServices.war
-* Taxonomy service (ICD9, ICD10, possibly others): taxonomy.war
-* Front end: RIF40.war
+* RIF middleware: `rifServices.war`
+* Statistics service: `statistics.war`
+* Taxonomy service (ICD9, ICD10, possibly others): `taxonomy.war`
+* Front end: `RIF40.war`
 
 ## Building Using Make
 
-If you have installed make (i.e. you are building the Postgres port from Scratch), run make from the
+If you have installed make (i.e. you are building the Postgres port from Scratch), run `make` from the
 root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
 
 The following make targets are provided:
@@ -985,6 +986,18 @@ For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy se
 
 See the: [Taxonomy Services]({{ site.baseurl }}/taxonomyServices/Taxonomy-Services)
 manual.
+
+### The Statistics Service
+
+This runs in the background providing R language services. It should not change often or need much attention.
+
+Copy `statistics.war` from `rapidInquiryFacility/statsService/target` to `CATALINA_HOME/webapps`. For example, in Windows:
+
+```
+copy C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifServices\target C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps
+```
+
+Note that if you _do_ have to redeploy this WAR file, you will have to stop and restart the Tomcat server. It cannot be hot deployed because of the way it connects to the R native library.
 
 ## RIF Web Application
 
@@ -1264,7 +1277,7 @@ Set the password correctly; as used above. Do **NOT** use a password of *changei
 This will generate a self signed certificate; this will cause browsers to complain:
 
   ![Insecure TLS warning]({{ site.baseurl }}/rifWebApplication/insecure_connection_warning.png)
-  
+
 To sign the certificates, follow the instructions in: (https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html#SSL_and_Tomcat)
 
 **Do not sign certificates if your server will be on an air gapped network such as the SAHSU private network**. The clients will be unable to verify the server certificate
@@ -2157,7 +2170,7 @@ This has not been tested ans it has not been required. Files to be saved/restore
 
 ## R
 
-If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in 
+If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in
 [Setup R]({{ site.baseurl }}/rifWebApplication/rifWebApplication#setup-r).
 Make absolutely sure the PATH and R_HOME are set correctly.
 
