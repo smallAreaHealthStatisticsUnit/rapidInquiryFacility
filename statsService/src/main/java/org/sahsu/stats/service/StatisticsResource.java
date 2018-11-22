@@ -10,12 +10,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.sahsu.rif.generic.concepts.Parameters;
-import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.util.StatisticsLogger;
 
 @Path("")
 public class StatisticsResource {
 
-	private static RIFLogger logger = RIFLogger.getLogger();
+	private static StatisticsLogger logger = StatisticsLogger.getLogger();
 
 	@POST
 	@Path(StatisticsFunctions.SCRIPT_URI)

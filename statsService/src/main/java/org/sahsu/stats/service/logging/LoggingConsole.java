@@ -5,14 +5,14 @@ import java.time.Instant;
 
 import org.rosuda.JRI.RMainLoopCallbacks;
 import org.rosuda.JRI.Rengine;
-import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.util.StatisticsLogger;
 
 /*
- * Logging R console output to RIFLogger
+ * Logging R console output to StatisticsLogger
  */
 public class LoggingConsole implements RMainLoopCallbacks {
 
-	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static final StatisticsLogger logger = StatisticsLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static int logCalls=0;
 	private static int rFlushCount=0;
@@ -64,7 +64,7 @@ public class LoggingConsole implements RMainLoopCallbacks {
 		final Instant end = Instant.now();
 
 		rFlushCount++;
-		rifLogger.info(this.getClass(),
+		logger.info(this.getClass(),
 		               "rFlushConsole[" + Integer.toString(rFlushCount) + "] calls: " + Integer.toString(logCalls) +
 		               ", length: " + Integer.toString(message.length()) +
 		               ", time period: " + Duration.between(start, end).toString() +

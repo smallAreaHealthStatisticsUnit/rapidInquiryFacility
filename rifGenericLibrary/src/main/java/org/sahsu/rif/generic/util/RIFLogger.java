@@ -72,7 +72,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Properties;
 
-public final class RIFLogger {
+public class RIFLogger {
 
 	// ==========================================
 	// Section Constants
@@ -107,7 +107,7 @@ public final class RIFLogger {
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static Properties prop = null;
 	
-	private RIFLogger() {
+	protected RIFLogger() {
 //		System.out.println("RIFLogger() INIT");
 		/* Get actual class name to be printed on */
 		String message = "Created RIFLogger: " + RIFLogger.class.getName();
@@ -140,6 +140,9 @@ public final class RIFLogger {
 		}
 	}
 
+	protected void setLog(Logger log) { // Return this static object
+		this.log = log;
+	}		
 	public static RIFLogger getLogger() { // Return this static object
 		return rifLogger;
 	}	

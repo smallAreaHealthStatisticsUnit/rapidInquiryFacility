@@ -6,7 +6,7 @@ import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.util.StatisticsLogger;
 
 /**
  * The root of the Statistics Service web service. The root path, statistics,
@@ -17,7 +17,7 @@ public class WebService extends Application {
 
 	public WebService() {
 
-		final RIFLogger logger = RIFLogger.getLogger();
+		final StatisticsLogger logger = StatisticsLogger.getLogger();
 		logger.info(getClass(), "!!!!!! Statistics WebService !!!!!!");
 	}
 

@@ -16,7 +16,7 @@ import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.concepts.Parameters;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.fileformats.AppFile;
-import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.util.StatisticsLogger;
 import org.sahsu.stats.service.logging.LoggingConsole;
 
 /**
@@ -27,7 +27,7 @@ final class ScriptService {
 
 	// Singleton because there can only be one R engine running in a JVM.
 	private static final ScriptService THE_INSTANCE = new ScriptService();
-	private final RIFLogger logger = RIFLogger.getLogger();
+	private final StatisticsLogger logger = StatisticsLogger.getLogger();
 	private static final List<String> R_STARTUP_SCRIPTS = new ArrayList<>();
 	static {
 
