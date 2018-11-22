@@ -321,12 +321,14 @@ public class RIFTiles {
 					
 					GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 					GeometryJSON geoJSONWriter = new GeometryJSON();
+					
 					ArrayList<String> areaIdList = new ArrayList<String>();
 					JSONObject bboxJsonProperties = null;
 					HashMap<String, JSONObject> propertiesHash = new HashMap<String, JSONObject>();
+					int processedCount=0;
 					
 					for (int i=0; i<geometries.length(); i++) {
-
+						
 						JSONObject jsonGeometry=geometries.getJSONObject(i);
 						JSONObject properties=jsonGeometry.optJSONObject("properties");		
 						if (i == 0) {
@@ -344,61 +346,35 @@ public class RIFTiles {
 							String jsonGeometryText = String.join(", ", jsonGeometryList);
 							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + jsonGeometryText);
 						}
+
+						if (i % 1000 == 0) { // Process in blocks of 1000
+							processedCount+=processGeoJsonArrayList(connection, zoomlevel, geoLevel, myGeometryTable, 
+								areaIdList, geoJsonFeatures, propertiesHash, geometryFactory, geoJSONWriter);
+							
+							areaIdList.clear();
+							propertiesHash.clear();
+						}
+						
 					} // End of for loop
 					
-					HashMap<String, String> wktHash = getWKT(connection, zoomlevel, geoLevel, myGeometryTable.toLowerCase(), areaIdList);
-					if (wktHash != null) {
-						
-						if (wktHash.size() != areaIdList.size()) {
-							throw new SQLException("Error in getWKT; expecting: " + areaIdList.size() + "; got: " + wktHash.size());
-						}
-						Set set = wktHash.entrySet();
-						Iterator iterator = set.iterator();
-						while(iterator.hasNext()) {
-							Map.Entry mentry = (Map.Entry)iterator.next();
-							String areaIdKey=(String)mentry.getKey();
-							String wkt=(String)mentry.getValue();
-							
-							JSONObject geoJsonFeature = new JSONObject();
-							geoJsonFeature.put("type", "Feature");
-							geoJsonFeature.put("properties", propertiesHash.get(areaIdKey));	
-										
-							Geometry geometry = null;
-							if (wkt != null) {
-								try {
-									WKTReader reader = new WKTReader(geometryFactory);
-									geometry = reader.read(wkt); // Geotools JTS
-								}
-								catch (ParseException wktParseException) {
-									rifLogger.warning(getClass(), "wktParseException: " + wkt);
-									throw new JSONException("wktParseException: " + wktParseException.getMessage() + 
-										" for geoLevel: " + geoLevel +
-										"; zoomlevel: " + zoomlevel +
-										"; areaId: " + areaIdKey);
-								}
-							}			
-							else {
-								throw new JSONException("Null wkt for geoLevel: " + geoLevel +
-									"; zoomlevel: " + zoomlevel +
-									"; areaId: " + areaIdKey);
-							}
-							JSONObject njsonGeometry = new JSONObject(geoJSONWriter.toString(geometry)); // Covert to GeoJSON
-							geoJsonFeature.put("geometry", njsonGeometry);
-							geoJsonFeatures.put(geoJsonFeature);
-						} // End of while loop
+					processedCount+=processGeoJsonArrayList(connection, zoomlevel, geoLevel, myGeometryTable, areaIdList, 
+						geoJsonFeatures, propertiesHash, geometryFactory, geoJSONWriter);
+					if (processedCount != geoJsonFeatures.length()) {
+						throw new JSONException("Error processing GoeJSON features; expecting: " + geoJsonFeatures.length() + "; got: " + processedCount);
+					}
+					else if (processedCount != geometries.length()) {
+						throw new JSONException("Error processing geometries; expecting: " + geometries.length() + "; got: " + processedCount);
 					}
 					else {
-						throw new JSONException("Null wktHash for geoLevel: " + geoLevel +
-							"; zoomlevel: " + zoomlevel);
+						rifLogger.info(getClass(), "Processed: " + geometries.length() + " geometries" +
+							"; geoJsonFeatures: " + geoJsonFeatures.length() +
+							"; areaIds:" + processedCount);
 					}
 					
 					if (addBoundingBoxToTile && bboxJsonProperties != null) {
 						geoJsonFeatures.put(createGeoJsonBboxFeature(bboxJson, bboxJsonProperties));
 					}
 						
-					rifLogger.info(getClass(), "Processed: " + geometries.length() + " geometries" +
-						"; wkt: " + wktHash.size() +
-						"; areaIds (" + areaIdList.size() + "): " + String.join(", ", areaIdList));
 				}
 				else {
 					throw new JSONException("TopoJSON Array[\"geometries\"] not found");
@@ -423,7 +399,83 @@ public class RIFTiles {
 		cacheGeoJsonTile(tileGeoJson, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y);
 		return tileGeoJson;
 	}
-	
+
+	/* 
+	 * Function:	processGeoJsonArrayList()
+	 * Description:	Process array list into GeoJSON features
+	 * Returns:		Number processed
+	 */
+	private int processGeoJsonArrayList(
+		final Connection connection,
+		final Integer zoomlevel,
+		final String geoLevel,
+		final String myGeometryTable,
+		final ArrayList<String> areaIdList,
+		final JSONArray geoJsonFeatures,
+		final HashMap<String, JSONObject> propertiesHash,
+		final GeometryFactory geometryFactory,
+		final GeometryJSON geoJSONWriter) 
+			throws SQLException, RIFServiceException {
+		
+		int processedCount=0;
+		HashMap<String, String> wktHash = getWKT(connection, zoomlevel, geoLevel, myGeometryTable.toLowerCase(), areaIdList);
+		if (wktHash != null) {
+			
+			if (wktHash.size() != areaIdList.size()) {
+				throw new SQLException("Error in getWKT; expecting: " + areaIdList.size() + "; got: " + wktHash.size());
+			}
+			Set set = wktHash.entrySet();
+			Iterator iterator = set.iterator();
+			while(iterator.hasNext()) {
+				processedCount++;
+				Map.Entry mentry = (Map.Entry)iterator.next();
+				String areaIdKey=(String)mentry.getKey();
+				String wkt=(String)mentry.getValue();
+				
+				JSONObject geoJsonFeature = new JSONObject();
+				geoJsonFeature.put("type", "Feature");
+				geoJsonFeature.put("properties", propertiesHash.get(areaIdKey));	
+							
+				Geometry geometry = null;
+				if (wkt != null) {
+					try {
+						WKTReader reader = new WKTReader(geometryFactory);
+						geometry = reader.read(wkt); // Geotools JTS
+					}
+					catch (ParseException wktParseException) {
+						rifLogger.warning(getClass(), "wktParseException: " + wkt);
+						throw new JSONException("wktParseException: " + wktParseException.getMessage() + 
+							" for geoLevel: " + geoLevel +
+							"; zoomlevel: " + zoomlevel +
+							"; areaId: " + areaIdKey);
+					}
+				}			
+				else {
+					throw new JSONException("Null wkt for geoLevel: " + geoLevel +
+						"; zoomlevel: " + zoomlevel +
+						"; areaId: " + areaIdKey);
+				}
+				JSONObject njsonGeometry = new JSONObject(geoJSONWriter.toString(geometry)); // Covert to GeoJSON
+				geoJsonFeature.put("geometry", njsonGeometry);
+				geoJsonFeatures.put(geoJsonFeature);
+			} // End of while loop
+		}
+		else {
+			throw new JSONException("Null wktHash for geoLevel: " + geoLevel +
+				"; zoomlevel: " + zoomlevel);
+		}	
+
+		if (processedCount != areaIdList.size()) {
+			throw new SQLException("Error processing GoeJSON features; expecting: " + areaIdList.size() + "; got: " + processedCount);
+		}	
+		else {		
+			rifLogger.info(getClass(), "Processing: " + processedCount + " areaIds" +
+				"; total geoJsonFeatures: " + geoJsonFeatures.length());
+		}
+							
+		return processedCount;
+	}
+					
 	/* 
 	 * Function:	getWKT()
 	 * Description:	Get well Known Text from RIF database <myGeometryTable> for geoLevel, zoomlevel and list of areaIds in tile
