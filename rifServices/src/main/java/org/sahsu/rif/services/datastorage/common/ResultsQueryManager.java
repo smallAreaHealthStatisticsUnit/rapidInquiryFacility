@@ -995,9 +995,15 @@ public class ResultsQueryManager extends BaseSQLManager {
 //							throw new JSONException("TopoJSON Array[\"bbox\"] is not of length 4: " + bboxJson.toString());
 //						}
 						JSONArray bboxJson = rifTiles.tile2boundingBox(x, y, zoomlevel);
-						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, tileTopoJson, bboxJson, tileType, myTileTable, myGeometryTable, 
+						
+						boolean addBoundingBoxToTile=false;
+						if (tileType.equals("geojson")) {
+							addBoundingBoxToTile=true;
+						}
+						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, 
+							tileTopoJson, bboxJson, tileType, myTileTable, myGeometryTable, 
 							geography.getName().toUpperCase(),
-							zoomlevel, geoLevelSelect.getName().toUpperCase(), x, y);
+							zoomlevel, geoLevelSelect.getName().toUpperCase(), x, y, addBoundingBoxToTile);
 						
 						if (tileType.equals("png")) {	
 							result = rifTiles.geoJson2png(tileGeoJson, bboxJson, geography.getName().toUpperCase(), zoomlevel, 

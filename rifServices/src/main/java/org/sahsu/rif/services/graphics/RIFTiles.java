@@ -22,6 +22,8 @@ import org.apache.commons.collections.IteratorUtils;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
+import org.sahsu.rif.services.system.RIFServiceError;
+import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 import org.json.JSONObject;
@@ -73,21 +75,34 @@ import java.io.OutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.io.FileOutputStream;
 
 import java.io.IOException;
+import java.io.FileNotFoundException;
 
 public class RIFTiles {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
+	private static String EXTRACT_DIRECTORY;
 	 
 	private static BaseSQLManager baseSQLManager = null;
-	private boolean addBoundingBoxToTile=true;
 	
 	public RIFTiles(final RIFServiceStartupOptions options) {
-		if (baseSQLManager == null) {
-			baseSQLManager = new BaseSQLManager(options);
+		try {
+			EXTRACT_DIRECTORY = options.getExtractDirectory();
+			if (baseSQLManager == null) {
+				baseSQLManager = new BaseSQLManager(options);
+			}			
+		}
+		catch(Exception exception) {
+			rifLogger.warning(this.getClass(), 
+				"Error in RIFTiles() constructor");
+			throw new NullPointerException();
 		}
 	}
 
@@ -104,7 +119,7 @@ public class RIFTiles {
 		final Integer zoomlevel, 
 		final String geoLevel, 
 		final Integer x, 
-		final Integer y) throws IOException, JSONException {
+		final Integer y) throws IOException, JSONException, RIFServiceException {
 			
 		FeatureJSON featureJSON = new FeatureJSON();
 		InputStream is = new ByteArrayInputStream(tileGeoJson.toString().getBytes());
@@ -262,7 +277,8 @@ public class RIFTiles {
 		final Integer zoomlevel, 
 		final String geoLevel, 
 		final Integer x, 
-		final Integer y)
+		final Integer y,
+		final boolean addBoundingBoxToTile)
 			throws SQLException, JSONException, RIFServiceException
 	{
 		/*
@@ -557,61 +573,225 @@ public class RIFTiles {
 		return result;
 	}
 
+	/*
+	 * Function: 	cacheGeoJsonTile()
+	 * Description: Cache GeoJSON tile. Write to .json.tmp and then rename to ensure atomic
+	 * Returns:     Write GeoJSON ByteArrayOutputStream to tile: 
+	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.json
+	 */	
 	private void cacheGeoJsonTile(
 		final JSONObject tileGeoJson,
 		final String geography,
 		final Integer zoomlevel, 
 		final String geoLevel, 
 		final Integer x, 
-		final Integer y) {
+		final Integer y) 
+			throws RIFServiceException {
 			
+		File tmpFile=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "json.tmp");
 		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "json");
+		if (!file.exists() && !tmpFile.exists()) {
+			FileOutputStream stream = null;
+			try {
+				stream = new FileOutputStream(tmpFile);
+				stream.write(tileGeoJson.toString().getBytes(StandardCharsets.UTF_8));
+			} 
+			catch (IOException ioException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+					"Error writing " + tmpFile.toString() + ": " + ioException.getMessage());
+			}
+			finally {
+				try {
+					stream.close();
+				} 
+				catch (IOException ioException) {
+					throw new RIFServiceException(
+						RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+						"Error writing " + tmpFile.toString() + ": " + ioException.getMessage());
+				}
+			}
+			if (!file.exists()) {
+				rifLogger.info(getClass(), "Cache GeoJSON tile(" + file.length() + " bytes): " + file.getAbsolutePath());
+				tmpFile.renameTo(file);
+			}
+		}
 	}
+	
+	/*
+	 * Function: 	cachePngTile()
+	 * Description: Cache PNG tile. Write to .png.tmp and then rename to ensure atomic
+	 * Returns:     Write PNG ByteArrayOutputStream to tile: 
+	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.png
+	 */	
 	private void cachePngTile(
 		ByteArrayOutputStream pngTileStream,
 		final String geography,
 		final Integer zoomlevel, 
 		final String geoLevel, 
 		final Integer x, 
-		final Integer y) {
+		final Integer y) 
+			throws RIFServiceException {
 			
+		File tmpFile=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png.tmp"); // Use atomic rename
 		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png");
+		if (!file.exists() && !tmpFile.exists()) {
+			FileOutputStream stream = null;
+			try {
+				stream = new FileOutputStream(tmpFile);
+				stream.write(pngTileStream.toByteArray());
+			} 
+			catch (IOException ioException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+					"Error writing " + tmpFile.toString() + ": " + ioException.getMessage());
+			}
+			finally {
+				try {
+					stream.close();
+				} 
+				catch (IOException ioException) {
+					throw new RIFServiceException(
+						RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+						"Error writing " + tmpFile.toString() + ": " + ioException.getMessage());
+				}
+			}
+			if (!file.exists()) {
+				rifLogger.info(getClass(), "Cache PNG tile(" + file.length() + " bytes): " + file.getAbsolutePath());
+				tmpFile.renameTo(file);
+			}
+		}
 	}	
+	
+	/*
+	 * Function: 	getCachedGeoJsonTile()
+	 * Description:	Get GeoJSON tile
+	 * Returns:     NULL or GeoJSON file as string read from the tile cache directory: 
+	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.json
+	 */		
 	public String getCachedGeoJsonTile(
 		final String geography,
 		final Integer zoomlevel, 
 		final String geoLevel, 
 		final Integer x, 
-		final Integer y) {
+		final Integer y) 
+			throws RIFServiceException {
 			
 		JSONObject tileGeoJson = new JSONObject();
 		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "json");
+		if (file.exists()) {
+			rifLogger.info(getClass(), "DeoJSON tile (" + file.length() + " bytes) cache hit: " + file.getAbsolutePath());
+			byte[] bytes = null;
+			try {
+				bytes = Files.readAllBytes(file.toPath());
+			}
+			catch (IOException ioException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_CACHE_FILE_READ_ERROR,
+					"Error reading " + file.toString() + ": " + ioException.getMessage());
+			}
+			String result = new String(bytes, StandardCharsets.UTF_8);
+			return result;
+		}
 		
 		return null;
 	}
+
+	/*
+	 * Function: 	getCachedPngTile()
+	 * Description:	Get PNG tile
+	 * Returns:     NULL or PNG file as Base64 encoded string read from the tile cache directory: 
+	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.png
+	 */		
 	public String getCachedPngTile(
 		final String geography,
 		final Integer zoomlevel, 
 		final String geoLevel, 
 		final Integer x, 
-		final Integer y) {
+		final Integer y) 
+			throws RIFServiceException {
 			
-		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png");
-		
+		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png");	
+		if (file.exists()) {
+			rifLogger.info(getClass(), "PNG tile (" + file.length() + " bytes) cache hit: " + file.getAbsolutePath());
+			byte[] bytes = null;
+			try {
+				bytes = Files.readAllBytes(file.toPath());
+			}
+			catch (IOException ioException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_CACHE_FILE_READ_ERROR,
+					"Error reading " + file.toString() + ": " + ioException.getMessage());
+			}
+			String result=Base64.getEncoder().encodeToString(bytes);
+			return result;
+		}
 		return null;
 	}
 		
-		
+	/*
+	 * Function: 	getCachedTileFile()
+	 * Description:	Create File object for file in tile cache directory. File does NOT need to exist
+	 * Returns:     File object for file in tile cache directory: 
+	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.<fileExtension>
+	 */		
 	private File getCachedTileFile(
 		final String geography,
 		final Integer zoomlevel, 
 		final String geoLevel, 
 		final Integer x, 
 		final Integer y,
-		String fileExtension) {
-		return null;
-	}
+		String fileExtension) 
+			throws RIFServiceException {
 			
+		Path path = createTileDirectoryPath(geography, zoomlevel, geoLevel, x);
+		return new File(path.toString() + File.separator + y.toString() + "." + fileExtension);
+	}
+	
+	/*
+	 * Function: 	createTileDirectoryPath()
+	 * Description:	Create path to tile cache directory. Will create directory if required
+	 * Returns:     Path to tile cache directory: EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x> 
+	 */
+	private Path createTileDirectoryPath(
+		final String geography,
+		final Integer zoomlevel, 
+		final String geoLevel, 
+		final Integer x) 
+			throws RIFServiceException {
+
+		if (geography == null) { 
+			throw new RIFServiceException(
+					RIFServiceError.INVALID_PARAMETER,
+					"NULL geography specified, unable to create tile cache path");
+		}
+		if (geoLevel == null) { 
+			throw new RIFServiceException(
+					RIFServiceError.INVALID_PARAMETER,
+					"NULL geoLevel specified, unable to create tile cache path");
+		}
+		if (zoomlevel == null) { 
+			throw new RIFServiceException(
+					RIFServiceError.INVALID_PARAMETER,
+					"NULL zoomlevel specified, unable to create tile cache path");
+		}	
+		if (x == null) { 
+			throw new RIFServiceException(
+					RIFServiceError.INVALID_PARAMETER,
+					"NULL x specified, unable to create tile cache path");
+		}		
+
+		Path path = FileSystems.getDefault().getPath(EXTRACT_DIRECTORY, "scratchspace").
+						resolve("tiles").resolve(geography).resolve(geoLevel).resolve(zoomlevel.toString()).resolve(x.toString());
+	
+		if (!path.toFile().exists()) {
+			rifLogger.info(getClass(), "Creating tile cache directory: " + path.toString());
+			path.toFile().mkdirs();
+		}
+				
+		return path;
+	}		
+	
 	// Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
 	
 	/* 
