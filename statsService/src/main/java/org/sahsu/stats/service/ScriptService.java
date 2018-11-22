@@ -14,6 +14,7 @@ import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.concepts.Parameters;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.stats.service.logging.LoggingConsole;
@@ -30,8 +31,6 @@ final class ScriptService {
 	private static final List<String> R_STARTUP_SCRIPTS = new ArrayList<>();
 	static {
 
-		R_STARTUP_SCRIPTS.add("OdbcHandler.R");
-		R_STARTUP_SCRIPTS.add("JdbcHandler.R");
 		R_STARTUP_SCRIPTS.add("Statistics_Common.R");
 		R_STARTUP_SCRIPTS.add("CreateWindowsScript.R");
 	}
@@ -113,6 +112,15 @@ final class ScriptService {
 		// This one can't be loaded on startup because it needs some of the parameters we've
 		// just set
 		loadRScript("Statistics_JRI.R");
+
+		// Load appropriate script according to the database type
+		if (dbIsPostgres(parameters)) {
+
+			loadRScript("JdbcHandler.R");
+		} else {
+
+			loadRScript("OdbcHandler.R");
+		}
 
 		// We do either Risk Analysis or Smoothing
 		if (isRiskAnalysis(parameters)) {
@@ -253,6 +261,14 @@ final class ScriptService {
 				p -> p.getName().equals("studyType"))
 				       .anyMatch(
 				       		p -> p.getValue().equals("riskAnalysis"));
+	}
+
+	private boolean dbIsPostgres(Parameters parameters) {
+
+		return parameters.stream().filter(
+				p -> p.getName().equals("databaseType"))
+				       .anyMatch(
+						       p -> p.getValue().equals(DatabaseType.POSTGRESQL.getShortName()));
 	}
 
 	private void assignParametersToR(final Parameters parameters) {
