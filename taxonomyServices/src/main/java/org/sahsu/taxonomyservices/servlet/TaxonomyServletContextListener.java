@@ -7,6 +7,7 @@ import javax.servlet.annotation.WebListener;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 import org.sahsu.taxonomyservices.StartService;
 
+@SuppressWarnings("unused")
 @WebListener
 public class TaxonomyServletContextListener implements ServletContextListener {
 
@@ -15,9 +16,8 @@ public class TaxonomyServletContextListener implements ServletContextListener {
 	@Override
 	public void contextInitialized(final ServletContextEvent servletContextEvent) {
 
-		logger.info(getClass(), "Taxonomy Services Context "
-		                        + "initialised");
 		StartService.instance().start();
+		logger.info(getClass(), "Taxonomy Services Context initialised");
 	}
 
 	@Override

@@ -78,6 +78,8 @@ all:
 	$(COPY) rifServices/target/rifServices.war .
 	$(COPY) rifWebApplication/target/RIF40.war .
 	$(COPY) rifDataLoaderTool\target\rifDataLoaderTool-jar-with-dependencies.jar rifDataLoaderTool-jar-with-dependencies.jar
+	$(COPY) statsService/target/statistics.war .
+
 #	$(COPY) rifITGovernanceTool\target\rifITGovernanceTool-jar-with-dependencies.jar rifITGovernanceTool-jar-with-dependencies.jar
 
 #
@@ -94,17 +96,25 @@ RIF40:
 	cd rifWebApplication && $(MAVEN) $(MAVEN_FLAGS) install
 	$(COPY) rifWebApplication/target/RIF40.war .
 	
+statistics: 
+	$(MAVEN) --version
+	cd statsService && $(MAVEN) $(MAVEN_FLAGS) install
+	$(COPY) statsService/target/statistics.war .
+
 RIF40install: RIF40
 	$(COPY) RIF40.war "$(CATALINA_HOME)/webapps"
 	
 rifserviceinstall: rifservice
 	$(COPY) rifServices.war "$(CATALINA_HOME)/webapps"
 	
+statsServiceInstall: statistics
+	$(COPY) statistics.war "$(CATALINA_HOME)/webapps"
+	
 dataloader: 
 	$(MAVEN) --version
 	cd rifDataLoaderTool && $(MAVEN) $(MAVEN_FLAGS) install
 	$(COPY) rifDataLoaderTool\target\rifDataLoaderTool-jar-with-dependencies.jar rifDataLoaderTool-jar-with-dependencies.jar
-
+	
 #
 # Not built yet
 #	
@@ -150,7 +160,8 @@ install: clean all
 	$(COPY) RIF40.war "$(CATALINA_HOME)/webapps"
 	$(COPY) rifServices.war "$(CATALINA_HOME)/webapps"
 	$(COPY) taxonomies.war "$(CATALINA_HOME)/webapps"
-
+	$(COPY) statistics.war "$(CATALINA_HOME)/webapps"
+	
 clean: 
 	$(MAVEN) --version
 	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) clean

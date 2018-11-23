@@ -33,8 +33,9 @@ getScratchSpace <- function(studyID) {
 ##==========================================================================
 establishTableNames <- function(vstudyID) {
 
-  #only set scratchSpace if it hasn't already been 
-  if (exists("scratchSpace") == FALSE) scratchSpace <<- getScratchSpace(studyID)
+	# Always set scratchSpace (we used to do it otherwise, but it caused problems on repeated runs).
+	scratchSpace <<- ""
+	scratchSpace <<- getScratchSpace(studyID)
   
 	scratchStr = as.character(scratchSpace)
 	cat("In establishTableNames; scratchSpace is ", scratchStr, "\n")
@@ -71,7 +72,7 @@ establishTableNames <- function(vstudyID) {
 	temporarySmoothedResultsFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_map.csv"))
 	temporaryExtractFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_extract.csv"))
 	adjacencyMatrixFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_adjacency_matrix.csv"))
-  temporaryHomogFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_Homog.csv"))
+	temporaryHomogFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_Homog.csv"))
 	#The name of the temporary table that this script uses to hold the data frame
 	#containing smoothed results.  It should have a 1:1 correspondence between
 	#its fields and fields that appear in the map table skeleton.

@@ -28,6 +28,7 @@ createWindowsScript <- function(script_name) {
 			paste0("SET INVESTIGATIONID=", investigationId),
 			paste0("SET MODEL=", model),
 			paste0("SET COVARIATENAME=", paste0(names.adj)),
+			paste0("SET SCRIPT_NAME=", paste0(script_name)),
 			paste0("SET RISKANAL=", paste0(riskAnal)),
 			sep="\n");
 
@@ -51,7 +52,7 @@ createWindowsScript <- function(script_name) {
 
 copy_file <- function(script_name) {
 
-	source <- file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", script_name)
+	source <- file.path(catalina_home, "webapps", "statistics", "WEB-INF", "classes", script_name)
 	target <- file.path(scratchSpace, script_name)
 	if (!file.exists(target)) {
 		cat(paste("Copy: ", source, " to: ", target, "\n"), sep="")

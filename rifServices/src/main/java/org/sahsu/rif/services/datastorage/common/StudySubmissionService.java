@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -110,7 +112,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		setServiceContactEmail(serviceContactEmail);
 	}
 
-	public void test(final User user)
+	public void test(final User user, String url)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -118,21 +120,18 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			= rifServiceResources.getSqlConnectionManager();
 
 		Connection connection = null;
+		ExecutorService exec = Executors.newSingleThreadExecutor();
 		try {
 
 			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledWriteConnection(user);
+			connection = sqlConnectionManager.assignPooledWriteConnection(user);
 			String password=sqlConnectionManager.getUserPassword(user);
 
-			SampleTestObjectGenerator testDataGenerator
-				= new SampleTestObjectGenerator();
-			RIFStudySubmission studySubmission
-				= testDataGenerator.createSampleRIFJobSubmission();
+			SampleTestObjectGenerator testDataGenerator = new SampleTestObjectGenerator();
+			RIFStudySubmission studySubmission = testDataGenerator.createSampleRIFJobSubmission();
 
 			//Delegate operation to a specialised manager class
-			RIFServiceStartupOptions rifServiceStartupOptions
-				= getRIFServiceStartupOptions();
+			RIFServiceStartupOptions rifServiceStartupOptions = getRIFServiceStartupOptions();
 			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
 				connection,
@@ -140,10 +139,10 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				password,
 				studySubmission,
 				rifServiceStartupOptions,
-				rifServiceResources);
+				rifServiceResources,
+				url);
 
-			Thread thread = new Thread(runStudyThread);
-			thread.start();
+			exec.execute(runStudyThread);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
@@ -154,6 +153,9 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				rifServiceException);
 		}
 		finally {
+
+			exec.shutdown();
+
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledReadConnection(
 				user,
@@ -612,10 +614,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	}
 
 
-	public String submitStudy(
-		final User _user,
-		final RIFStudySubmission rifStudySubmission,
-		final File _outputFile) throws RIFServiceException {
+	public String submitStudy(final User _user, final RIFStudySubmission rifStudySubmission,
+			final File _outputFile, final String url) throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -635,6 +635,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		}
 
 		Connection connection = null;
+		ExecutorService exec = Executors.newSingleThreadExecutor();
 		try {
 
 			//Part II: Check for empty parameter values
@@ -659,24 +660,21 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			if (outputFile != null) {
 				outputFileName = outputFile.getAbsolutePath();
 			}
+
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.submittingStudy",
 					user.getUserID(),
 					user.getIPAddress(),
 					rifStudySubmission.getDisplayName(),
 					outputFileName);
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
+			rifLogger.info(getClass(), auditTrailMessage);
 
 			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledWriteConnection(user);
+			connection = sqlConnectionManager.assignPooledWriteConnection(user);
 			String password=sqlConnectionManager.getUserPassword(user);
 
 			//Delegate operation to a specialised manager class
-			RIFServiceStartupOptions rifServiceStartupOptions
-				= getRIFServiceStartupOptions();
+			RIFServiceStartupOptions rifServiceStartupOptions = getRIFServiceStartupOptions();
 			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
 				connection,
@@ -684,10 +682,10 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				password,
 				rifStudySubmission,
 				rifServiceStartupOptions,
-				rifServiceResources);
+				rifServiceResources,
+				url);
 
-			Thread thread = new Thread(runStudyThread);
-			thread.run();
+			exec.execute(runStudyThread);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -697,6 +695,9 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				rifServiceException);
 		}
 		finally {
+
+			exec.shutdown();
+
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				user,

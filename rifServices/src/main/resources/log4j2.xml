@@ -119,6 +119,15 @@
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
+    <RollingFile name="STATISTICSLOGGER" 
+				 filePattern="${logdir}/StatisticsLogger.%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>
     <RollingFile name="OTHER" 
 				 filePattern="${logdir}/Other.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
@@ -181,6 +190,12 @@
 		level="info" additivity="false"> <!-- Change to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="TAXONOMYLOGGER"/>
+    </Logger>
+      <!-- RIF FRont End logger: org.sahsu.rif.generic.util.StatisticsLogger -->
+    <Logger name="org.sahsu.rif.generic.util.StatisticsLogger"
+		level="info" additivity="false"> <!-- Change to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="STATISTICSLOGGER"/>
     </Logger>			
   </Loggers>
 </Configuration>
