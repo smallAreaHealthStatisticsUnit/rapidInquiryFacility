@@ -3090,3 +3090,10 @@ Further changes are needed to support risk analysis:
 * Documentation;
 * Test R Risk analsysis scripts;
 
+#### 18th to 23rd November
+
+* TopoJSON tile caching: GeoJSON support;
+* RIF meetings; sort move of wsrif to private network, COMARE extract for RIFl
+* TopoJSON tile caching: PNG support;
+* TopoJSON tile caching. Test pull #114;
+* Add separate abstracted  logging to #114, tile generator thread 
