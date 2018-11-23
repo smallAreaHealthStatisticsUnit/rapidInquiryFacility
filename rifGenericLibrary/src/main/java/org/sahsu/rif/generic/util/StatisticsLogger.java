@@ -9,18 +9,17 @@ package org.sahsu.rif.generic.util;
  * to SLF4J until the transitive dependencies problems can be addressed.
  * 
  * <hr>
+ * Peter Hambly
+ * @author phambly
+ *
  * Kevin Garwood
  * @author kgarwood
  */
 
-import java.util.Arrays;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.util.CommonLogger;
 
-public final class StatisticsLogger extends RIFLogger {
+public final class StatisticsLogger extends CommonLogger {
 
 	//TOUR_CONCURRENCY
 	/*
@@ -43,38 +42,15 @@ public final class StatisticsLogger extends RIFLogger {
 	 * it won't report exceptions should StatisticsLogger fail to instantiate.
 	 */
 	private static final StatisticsLogger StatisticsLogger = new StatisticsLogger();
-	private static String lineSeparator = System.getProperty("line.separator");
 				
-	private StatisticsLogger() {
-
-		/* Get actual class name to be printed on */
-		String message = "Created StatisticsLogger: " + StatisticsLogger.class.getName();
-		boolean setManager=false;
-		
-		String logManagerName=System.getProperty("java.util.logging.manager");
-		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
-			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
-			setManager=true;
-		}
-		
-		Logger log = null;
+	private StatisticsLogger() {		
 		try {	
-			log = LogManager.getLogger(StatisticsLogger.class.getName());
-			setLog(log);	
+			CreateLogger(StatisticsLogger.class.getName());	
+			info(this.getClass(), "Created StatisticsLogger.");
 		} catch(Exception e) {
 			System.out.println("StatisticsLogger() LogManager.getLogger: Caught exception: "
 			                   + e.getMessage());
-		} finally {
-			if (log != null) {
-				log.info("[StatisticsLogger]: " + message);
-				if (setManager) {
-					log.info("[StatisticsLogger]: Set java.util.logging.manager=" +
-						System.getProperty("java.util.logging.manager"));
-				}
-			} else {
-				System.out.println("INFO(no StatisticsLogger) " + message);
-			}			
-		}
+		} 
 	}
 
 	public static StatisticsLogger getLogger() { // Return this static object
