@@ -22,6 +22,7 @@ public class TomcatFile implements AppFile {
 	private static final String WEBAPPS_DIRECTORY = "webapps";
 	private static final String RIF_SERVICES_DIRECTORY = "rifServices";
 	private static final String TAXONOMY_SERVICES_DIRECTORY = "taxonomies";
+	private static final String STATS_SERVICE_DIRECTORY = "statistics";
 	private static final String WEB_INF_DIRECTORY = "WEB-INF";
 	private static final String CLASSES_DIRECTORY = "classes";
 	private static final String LIB_DIRECTORY = "lib";
@@ -32,22 +33,36 @@ public class TomcatFile implements AppFile {
 	private Properties props;
 	private BufferedReader reader;
 
-	public TomcatFile(final TomcatBase base, final String fileName, final boolean taxonomy) {
+	public enum ServiceType {
 
-		this(base.resolve(), fileName, taxonomy);
+		RIF,
+		TAXONOMY,
+		STATS
 	}
 
-	public TomcatFile(final TomcatBase base, final String fileName) {
+	public TomcatFile(final TomcatBase base, final String fileName, final ServiceType type) {
 
-		this(base.resolve(), fileName, false);
-	}
-
-	private TomcatFile(final Path baseDir, final String fileName, final boolean taxonomy) {
-
+		Path baseDir = base.resolve();
 		Path confPath = baseDir.resolve(CONF_DIRECTORY);
-		String servicesDir = taxonomy ? TAXONOMY_SERVICES_DIRECTORY : RIF_SERVICES_DIRECTORY;
+
+		String servicesDir;
+		switch (type) {
+
+			case RIF:
+				servicesDir = RIF_SERVICES_DIRECTORY;
+				break;
+			case TAXONOMY:
+				servicesDir = TAXONOMY_SERVICES_DIRECTORY;
+				break;
+			case STATS:
+				servicesDir = STATS_SERVICE_DIRECTORY;
+				break;
+			default:
+				servicesDir = "";
+		}
+
 		classesPath = baseDir.resolve(WEBAPPS_DIRECTORY).resolve(servicesDir)
-				.resolve(WEB_INF_DIRECTORY).resolve(CLASSES_DIRECTORY);
+				              .resolve(WEB_INF_DIRECTORY).resolve(CLASSES_DIRECTORY);
 		libPath = baseDir.resolve(WEBAPPS_DIRECTORY).resolve(servicesDir)
 				          .resolve(WEB_INF_DIRECTORY).resolve(LIB_DIRECTORY);
 

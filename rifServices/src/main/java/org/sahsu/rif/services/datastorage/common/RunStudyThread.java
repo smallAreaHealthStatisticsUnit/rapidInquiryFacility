@@ -24,7 +24,8 @@ public class RunStudyThread implements Runnable {
 	private User user;
 	private RIFStudySubmission studySubmission;
 	private String studyID;
-	
+	private String url;
+
 	private StudyStateMachine studyStateMachine;
 	
 	private StudyStateManager studyStateManager;
@@ -37,18 +38,16 @@ public class RunStudyThread implements Runnable {
 		studyStateMachine.initialiseState();
 	}
 	
-	public void initialise(
-		final Connection connection,
-		final User user,
-		final String password,		
-		final RIFStudySubmission studySubmission,
-		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final ServiceResources rifServiceResources) throws RIFServiceException {
+	public void initialise(final Connection connection, final User user, final String password,
+			final RIFStudySubmission studySubmission,
+			final RIFServiceStartupOptions rifServiceStartupOptions,
+			final ServiceResources rifServiceResources, final String url)
+			throws RIFServiceException {
 		
 		this.connection = connection;
 		this.user = user;				
 		this.studySubmission = studySubmission;
-		
+		this.url = url;
 		
 		RIFDatabaseProperties rifDatabaseProperties 
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
@@ -232,7 +231,7 @@ public class RunStudyThread implements Runnable {
 			// because this is a database procedure that failed the transaction must be rolled back
 			rollbackStudy();
 
-			StudyState errorStudyState = studyStateMachine.ExtractFailure();
+			StudyState errorStudyState = studyStateMachine.extractFailure();
 			String statusMessage
 				= RIFServiceMessages.getMessage(
 					"studyState.studyExtractFailure.description");
@@ -245,17 +244,14 @@ public class RunStudyThread implements Runnable {
 		throws RIFServiceException {
 
 		try {
-			statisticsProcessing.performStep(
-				connection,
-				studySubmission, 
-				studyID);
+			statisticsProcessing.performStep(connection, studySubmission, studyID, url);
 			String statusMessage
 				= RIFServiceMessages.getMessage(
 					"studyState.studyResultsComputed.description");
 			updateStudyStatusState(statusMessage);
 		}	
 		catch (RIFServiceException rifServiceException) {
-			StudyState errorStudyState = studyStateMachine.RFailure();
+			StudyState errorStudyState = studyStateMachine.rFailure();
 			String statusMessage
 				= RIFServiceMessages.getMessage(
 					"studyState.studyResultsRFailure.description");

@@ -20,37 +20,48 @@ public interface AppFile {
 	String FRONT_END_PARAMETERS_FILE = "frontEndParameters.json5";
 
 	/**
-	 * Returns a AppFile for the specified file, assuming we're in the rifServices environment.
+	 * Returns an AppFile for the specified file, assuming we're in the rifServices environment.
 	 * @param fileName the name of the file
 	 * @return a representation of the specified file name
 	 */
 	static AppFile getServicesInstance(String fileName) {
 
 		// Only Tomcat versions for now
-		return getInstance(fileName, false);
+		return getInstance(fileName, TomcatFile.ServiceType.RIF);
 	}
 
 	/**
-	 * Returns a AppFile for the specified file, assuming we're in the taxonomyServices environment.
+	 * Returns an AppFile for the specified file, assuming we're in the taxonomyServices
+	 * environment.
 	 * @param fileName the name of the file
 	 * @return a representation of the specified file name
 	 */
 	static AppFile getTaxonomyInstance(String fileName) {
 
-		// Only Tomcat versions for now
-		return getInstance(fileName, true);
+		return getInstance(fileName, TomcatFile.ServiceType.TAXONOMY);
 	}
 
 	/**
-	 * Returns a AppFile for the specified file, allowing for selection between the rifServices
-	 * and taxonomyServices environments.
+	 * Returns an AppFile for the specified file, assuming we're in the statistics service
+	 * environment.
 	 * @param fileName the name of the file
-	 * @param taxonomy true if the taxonomyServices enviromnent is required, false for rifServices.
 	 * @return a representation of the specified file name
 	 */
-	static AppFile getInstance(String fileName, boolean taxonomy) {
+	static AppFile getStatisticsInstance(String fileName) {
 
-		return new TomcatFile(new TomcatBase(), fileName, taxonomy);
+		return getInstance(fileName, TomcatFile.ServiceType.STATS);
+	}
+
+	/**
+	 * Returns an AppFile for the specified file, allowing for selection between the various
+	 * environments.
+	 * @param fileName the name of the file
+	 * @param type the approprate {@code ServiceType}
+	 * @return a representation of the specified file name
+	 */
+	static AppFile getInstance(String fileName, TomcatFile.ServiceType type) {
+
+		return new TomcatFile(new TomcatBase(), fileName, type);
 	}
 
 	static AppFile getFrontEndParametersInstance() {
