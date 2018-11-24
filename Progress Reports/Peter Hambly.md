@@ -3088,5 +3088,21 @@ Further changes are needed to support risk analysis:
   shapes and for exposure covariates;
 * Patch wsrif, install and document remote Oracle database connectivity; 
 * Documentation;
-* Test R Risk analsysis scripts;
+* Test R Risk analysis scripts;
 
+#### 18th to 23rd November
+
+* Tile caching: GeoJSON support;
+* RIF meetings; sort move of *wsrif* to private network, COMARE extract for RIF. Test Heathrow noise model shapefile load at COA
+* Tile caching: PNG support;
+* Tile caching. Test pull #114;
+* Add separate abstracted  logging to #114, tile generator thread;
+
+#### 26th to 30th November
+
+* Tile caching: auto generation on services startup;
+ 
+Risk analysis issues:
+
+1. Using add by postcode produces errors on its own, but works;
+2. Errors if nonsensical exposure bands are selected;
