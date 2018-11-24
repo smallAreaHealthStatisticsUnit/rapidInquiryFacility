@@ -65,7 +65,6 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-//import java.awt.image.BufferedImage;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
@@ -157,26 +156,6 @@ public class RIFTiles {
 			BufferedImage.TYPE_INT_ARGB); // Allow transparency [will work for PNG as well!]
 		Graphics2D g2d = bufferedImage.createGraphics();
 		
-	/*	
-	// geotiff code
-		GridCoverageFactory factory = new GridCoverageFactory();
-		GridCoverage2D coverage = factory.create("geotiff", bufferedImage, bounds);
-		CoverageProcessor processor = new CoverageProcessor(null);
-
-		ParameterValueGroup param = processor.getOperation("CoverageCrop").getParameters();
-
-		GeneralEnvelope crop = new GeneralEnvelope(bounds);
-		param.parameter("Source").setValue(coverage);
-		param.parameter("Envelope").setValue(crop);
-
-		GridCoverage2D cropped = (GridCoverage2D) processor.doOperation(param);
-		RenderedImage raster = cropped.getRenderedImage();
-				
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		AffineTransform at = AffineTransform.getTranslateInstance(0, 0);
-		g2d.drawRenderedImage(raster, at);
-			 */
-		
 		Rectangle outputArea = new Rectangle(0, 0, w, h);
 		GTRenderer renderer = new StreamingRenderer();
 		LabelCacheImpl labelCache = new LabelCacheImpl();
@@ -191,7 +170,7 @@ public class RIFTiles {
 		
 		ImageIO.write(bufferedImage, "png", os);
 
-		cachePngTile(os, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y);
+		cacheTile(null /* tileGeoJson */, os, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "png");
 		String result=Base64.getEncoder().encodeToString(os.toByteArray());
 		
 		mapContent.dispose();
@@ -270,7 +249,6 @@ public class RIFTiles {
 		final Connection connection,
 		final JSONObject tileTopoJson, 
 		final JSONArray bboxJson, 
-		final String tileType,
 		final String myTileTable, 
 		final String myGeometryTable, 
 		final String geography,
@@ -412,7 +390,9 @@ public class RIFTiles {
 		tileGeoJson.put("type", "FeatureCollection");
 		tileGeoJson.put("features", geoJsonFeatures);
 		
-		cacheGeoJsonTile(tileGeoJson, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y);
+		if (addBoundingBoxToTile) {
+			cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "json");
+		}
 		return tileGeoJson;
 	}
 
@@ -574,74 +554,55 @@ public class RIFTiles {
 	}
 
 	/*
-	 * Function: 	cacheGeoJsonTile()
-	 * Description: Cache GeoJSON tile. Write to .json.tmp and then rename to ensure atomic
+	 * Function: 	cacheTile()
+	 * Description: Cache GeoJSON/PNG tile. Write to .json.tmp and then rename to ensure atomic
 	 * Returns:     Write GeoJSON ByteArrayOutputStream to tile: 
 	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.json
 	 */	
-	private void cacheGeoJsonTile(
+	private void cacheTile(
 		final JSONObject tileGeoJson,
-		final String geography,
-		final Integer zoomlevel, 
-		final String geoLevel, 
-		final Integer x, 
-		final Integer y) 
-			throws RIFServiceException {
-			
-		File tmpFile=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "json.tmp");
-		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "json");
-		if (!file.exists() && !tmpFile.exists()) {
-			FileOutputStream stream = null;
-			try {
-				stream = new FileOutputStream(tmpFile);
-				stream.write(tileGeoJson.toString().getBytes(StandardCharsets.UTF_8));
-			} 
-			catch (IOException ioException) {
-				throw new RIFServiceException(
-					RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
-					"Error writing " + tmpFile.toString() + ": " + ioException.getMessage());
-			}
-			finally {
-				try {
-					stream.close();
-				} 
-				catch (IOException ioException) {
-					throw new RIFServiceException(
-						RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
-						"Error writing " + tmpFile.toString() + ": " + ioException.getMessage());
-				}
-			}
-			if (!file.exists()) {
-				rifLogger.info(getClass(), "Cache GeoJSON tile(" + file.length() + " bytes): " + file.getAbsolutePath());
-				tmpFile.renameTo(file);
-			}
-		}
-	}
-	
-	/*
-	 * Function: 	cachePngTile()
-	 * Description: Cache PNG tile. Write to .png.tmp and then rename to ensure atomic
-	 * Returns:     Write PNG ByteArrayOutputStream to tile: 
-	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.png
-	 */	
-	private void cachePngTile(
 		ByteArrayOutputStream pngTileStream,
 		final String geography,
 		final Integer zoomlevel, 
 		final String geoLevel, 
 		final Integer x, 
-		final Integer y) 
+		final Integer y,
+		final String fileExtension) 
 			throws RIFServiceException {
 			
-		File tmpFile=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png.tmp"); // Use atomic rename
-		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png");
+		File tmpFile=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, fileExtension + ".tmp");
+		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, fileExtension);
 		if (!file.exists() && !tmpFile.exists()) {
 			FileOutputStream stream = null;
 			try {
 				stream = new FileOutputStream(tmpFile);
-				stream.write(pngTileStream.toByteArray());
+				if (tileGeoJson == null && pngTileStream == null) {
+					throw new RIFServiceException(
+						RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR, "Both tileGeoJson and pngTileStream are null");
+				}
+				else if (tileGeoJson != null && pngTileStream != null) {
+					throw new RIFServiceException(
+						RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR, "Both tileGeoJson and pngTileStream are not null");
+				}
+				else if (tileGeoJson == null && pngTileStream != null) {
+					stream.write(pngTileStream.toByteArray());
+				}
+				else if (tileGeoJson != null && pngTileStream == null) {
+					stream.write(tileGeoJson.toString().getBytes(StandardCharsets.UTF_8));
+				}
 			} 
 			catch (IOException ioException) {
+				try {
+					if (!tmpFile.exists()) {
+						tmpFile.delete();
+					}
+				}
+				catch (SecurityException securityException) {
+					throw new RIFServiceException(
+						RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+						"Recursive error writing " + tmpFile.toString() + ": " + ioException.getMessage() + 
+						"; 2nd error: " + securityException.getMessage());
+				}
 				throw new RIFServiceException(
 					RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
 					"Error writing " + tmpFile.toString() + ": " + ioException.getMessage());
@@ -651,17 +612,65 @@ public class RIFTiles {
 					stream.close();
 				} 
 				catch (IOException ioException) {
+					try {
+						if (!tmpFile.exists()) {
+							tmpFile.delete();
+						}
+					}
+					catch (SecurityException securityException) {
+						throw new RIFServiceException(
+							RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+							"Recursive error writing " + tmpFile.toString() + ": " + ioException.getMessage() + 
+							"; 2nd error: " + securityException.getMessage());
+					}
 					throw new RIFServiceException(
 						RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
 						"Error writing " + tmpFile.toString() + ": " + ioException.getMessage());
 				}
 			}
+			
+			if (!tmpFile.exists()) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+						"Temporary file: " + tmpFile.toString() + " does not exist");
+			}
+			else if (tmpFile.length() == 0) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+						"Temporary file: " + tmpFile.toString() + " is zero sized");
+			}
+			
 			if (!file.exists()) {
-				rifLogger.info(getClass(), "Cache PNG tile(" + file.length() + " bytes): " + file.getAbsolutePath());
-				tmpFile.renameTo(file);
+				try {
+					rifLogger.info(getClass(), "Cache tile(" + file.length() + " bytes): " + file.getAbsolutePath());
+					tmpFile.renameTo(file);
+				}
+				catch (Exception exception) {
+					try {
+						if (!tmpFile.exists()) {
+							tmpFile.delete();
+						}
+					}
+					catch (SecurityException securityException) {
+						throw new RIFServiceException(
+							RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+							"Recursive error renaming: " + " to: " + file.toString() + tmpFile.toString() + ": " + exception.getMessage() + 
+							"; 2nd error: " + securityException.getMessage());
+					}
+					throw new RIFServiceException(
+						RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+						"Error renaming: " + tmpFile.toString() + " to: " + file.toString() + ": " + exception.getMessage());
+				}
 			}
 		}
-	}	
+		else if (tmpFile.exists()) {
+			rifLogger.info(getClass(), " Temporary tile(" + tmpFile.length() + " bytes) exists, cannot cache: " + file.getAbsolutePath());
+		}
+		else if (file.exists()) {
+			rifLogger.info(getClass(), " Tile(" + file.length() + " bytes) already cached: " + file.getAbsolutePath());
+		}
+	}
+	
 	
 	/*
 	 * Function: 	getCachedGeoJsonTile()
@@ -828,5 +837,213 @@ public class RIFTiles {
 	private double tile2lat(int y, int zoomlevel) {
 		double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, zoomlevel);
 		return Math.toDegrees(Math.atan(Math.sinh(n)));
+	}
+
+	/* 
+	 * Function:	generateTiles()
+	 * Description: Generate tiles
+	 *				Called from RIFTilesGenerator on RIF Services middleware start
+	 */	
+	public void generateTiles(Connection connection) 
+		throws RIFServiceException {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		SelectQueryFormatter generateTilesQueryFormatter
+				= new MSSQLSelectQueryFormatter();
+
+		//STEP 1: get the geolevels with more than 5000 areaIds
+		/*
+			SELECT a.geography, a.geolevel_id, a.geolevel_name, a.description AS geolevel_description, a.areaid_count, b.tiletable
+			  FROM rif40.rif40_geolevels a, rif40.rif40_geographies b
+			 WHERE a.geography = b.geography
+               AND a.areaid_count > 5000
+             ORDER BY a.areaid_count DESC;
+		*/
+
+		generateTilesQueryFormatter.addSelectField("rif40.rif40_geolevels", "geography");
+		generateTilesQueryFormatter.addSelectField("rif40.rif40_geolevels", "geolevel_id");
+		generateTilesQueryFormatter.addSelectField("rif40.rif40_geolevels", "geolevel_name");
+		generateTilesQueryFormatter.addSelectField("rif40.rif40_geographies", "tiletable");
+		generateTilesQueryFormatter.addSelectField("rif40.rif40_geographies", "geometrytable");
+		generateTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
+		generateTilesQueryFormatter.addFromTable("rif40.rif40_geographies");
+		generateTilesQueryFormatter.addWhereJoinCondition("rif40.rif40_geolevels", 
+			"geography", "rif40.rif40_geographies", "geography");
+		generateTilesQueryFormatter.addWhereParameterWithOperator("rif40.rif40_geolevels.areaid_count", ">=");
+		generateTilesQueryFormatter.addOrderByCondition("areaid_count", SelectQueryFormatter.SortOrder.ASCENDING);
+
+		Integer minAreaIdCount = new Integer(5000);
+		baseSQLManager.logSQLQuery(
+				"generateTiles",
+				generateTilesQueryFormatter,
+				minAreaIdCount.toString());
+
+		try {
+			statement = connection.prepareStatement(generateTilesQueryFormatter.generateQuery());
+			statement.setInt(1, minAreaIdCount.intValue());
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+
+				String geography=resultSet.getString(1);
+				Integer geolevelId=new Integer(resultSet.getInt(2));	
+				String geolevelName=resultSet.getString(3);		
+				String tileTable=resultSet.getString(4);		
+				String geometryTable=resultSet.getString(5);	
+				generateTilesForGeoLevel(connection, geolevelId, tileTable, geometryTable, geography, geolevelName);
+			}	
+		}
+		catch (SQLException sqlException) {
+			throw new RIFServiceException(
+				RIFServiceError.TILE_GENERATE_SQL_ERROR,
+				sqlException.getMessage());
+		}
+		finally {
+			//Cleanup database resources
+			try {
+				connection.commit();
+				SQLQueryUtility.close(statement);
+				SQLQueryUtility.close(resultSet);		
+			}
+			catch (SQLException sqlException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_GENERATE_SQL_ERROR,
+					sqlException.getMessage());
+			}
+		}			
+	}
+	
+	private void generateTilesForGeoLevel(
+		final Connection connection, 
+		final Integer geolevelId, 
+		final String tileTable, 
+		final String geometryTable,
+		final String geography, 
+		final String geolevelName)
+			throws RIFServiceException, SQLException {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		SelectQueryFormatter generateTilesForGeoLevelQueryFormatter
+				= new MSSQLSelectQueryFormatter();
+
+		//STEP 2: get the total tiles and areaIds
+		/*
+			SELECT COUNT(tile_id) AS tiles, SUM(areaid_count) AS areaid_count
+			  FROM rif_data.t_tiles_sahsuland
+			 WHERE geolevel_id = 4;
+		*/
+
+		generateTilesForGeoLevelQueryFormatter.addSelectField("COUNT(tile_id) AS tile_count");
+		generateTilesForGeoLevelQueryFormatter.addSelectField("SUM(areaid_count) AS areaid_count");
+		generateTilesForGeoLevelQueryFormatter.addFromTable("rif_data.t_" + tileTable.toLowerCase());
+		generateTilesForGeoLevelQueryFormatter.addWhereParameter("rif_data.t_" + tileTable.toLowerCase(), "geolevel_id");
+
+		baseSQLManager.logSQLQuery(
+				"generateTiles",
+				generateTilesForGeoLevelQueryFormatter,
+				geolevelId.toString());
+
+		try {
+			statement = connection.prepareStatement(generateTilesForGeoLevelQueryFormatter.generateQuery());
+			statement.setInt(1, geolevelId.intValue());
+			resultSet = statement.executeQuery();
+			resultSet.next();
+			int tileCount=resultSet.getInt(1);	
+			int areaidCount=resultSet.getInt(2);		
+			rifLogger.info(getClass(), "Generating up to " + tileCount + " tiles for: " + areaidCount + " areas in: " + geography + "." + geolevelName);
+			int generatedCount=generateTilesForGeoLevel2(connection, geolevelId, tileTable, geometryTable, geography, geolevelName, tileCount);
+			rifLogger.info(getClass(), "Generated " + generatedCount + "/" + tileCount + 
+				" tiles for: " + areaidCount + " areas in: " + geography + "." + geolevelName);
+		}	
+		finally {
+			//Cleanup database resources
+			connection.commit();
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);		
+		}						
+	}
+	
+	private int generateTilesForGeoLevel2(
+		final Connection connection, 
+		final Integer geolevelId, 
+		final String tileTable, 
+		final String geometryTable,
+		final String geography, 
+		final String geolevelName,
+		final int tileCount)
+			throws RIFServiceException, SQLException {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		SelectQueryFormatter generateTilesForGeoLevelQueryFormatter
+				= new MSSQLSelectQueryFormatter();
+
+		//STEP 3: get the tile: zoomlevel, x, y, tile_id
+		/*
+			SELECT zoomlevel, x, y, tile_id
+			  FROM rif_data.t_tiles_sahsuland
+			 WHERE geolevel_id = 4
+			 ORDER BY zoomlevel, x, y;
+		*/
+
+		generateTilesForGeoLevelQueryFormatter.addSelectField("zoomlevel");
+		generateTilesForGeoLevelQueryFormatter.addSelectField("x");
+		generateTilesForGeoLevelQueryFormatter.addSelectField("y");
+		generateTilesForGeoLevelQueryFormatter.addSelectField("optimised_topojson");
+		generateTilesForGeoLevelQueryFormatter.addFromTable("rif_data.t_" + tileTable.toLowerCase());
+		generateTilesForGeoLevelQueryFormatter.addWhereParameter("rif_data.t_" + tileTable.toLowerCase(), "geolevel_id");
+		generateTilesForGeoLevelQueryFormatter.addOrderByCondition("zoomlevel", SelectQueryFormatter.SortOrder.ASCENDING);
+		generateTilesForGeoLevelQueryFormatter.addOrderByCondition("x", SelectQueryFormatter.SortOrder.ASCENDING);
+		generateTilesForGeoLevelQueryFormatter.addOrderByCondition("y", SelectQueryFormatter.SortOrder.ASCENDING);
+
+		baseSQLManager.logSQLQuery(
+				"generateTiles",
+				generateTilesForGeoLevelQueryFormatter,
+				geolevelId.toString());
+		int generatedCount=0;
+
+		try {
+			statement = connection.prepareStatement(generateTilesForGeoLevelQueryFormatter.generateQuery());
+			statement.setInt(1, geolevelId.intValue());
+			resultSet = statement.executeQuery();
+			int i=0;
+			while (resultSet.next()) {
+				i++;
+				int zoomlevel=resultSet.getInt(1);	
+				int x=resultSet.getInt(2);		
+				int y=resultSet.getInt(3);			
+				String optimisedTopojson=resultSet.getString(4);	
+				File file=getCachedTileFile(geography, zoomlevel, geolevelName, x, y, "png");	
+				if (!file.exists()) {
+					generatedCount++;
+					rifLogger.info(getClass(), "Generate tile (" + i + "/" + tileCount + "): " + file.toString());
+/*
+					JSONObject tileTopoJson = new JSONObject(optimisedTopojson);
+					JSONArray bboxJson = tile2boundingBox(x, y, zoomlevel);
+					JSONObject tileGeoJson = topoJson2geoJson(connection, 
+						tileTopoJson, bboxJson, tileTable, geometryTable, 
+						geography,
+						zoomlevel, geolevelName, x, y, false /- addBoundingBoxToTile -/);
+						
+					String result = geoJson2png(tileGeoJson, bboxJson, geography, zoomlevel, 
+						geolevelName, x, y); */
+							
+				}
+			}	
+		}	
+/*		catch (IOException ioException) {
+			throw new RIFServiceException(
+				RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
+				ioException.getMessage());
+		}*/
+		finally {
+			//Cleanup database resources
+			connection.commit();
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);		
+		}	
+
+		return generatedCount;
 	}
 }

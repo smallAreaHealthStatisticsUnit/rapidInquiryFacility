@@ -978,7 +978,7 @@ public class BaseSQLManager implements SQLManager {
 		return errorMessage;
 	}
 	
-	private Connection createConnection(
+	public Connection createConnection(
 		final String userID,
 		final String password,
 		final boolean isFirstConnectionForUser,
