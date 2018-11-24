@@ -983,6 +983,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 			else if (tileType.equals("geojson") || tileType.equals("png")) {	
 				if (result != null && result.length() > 0 && 
 					!result.equals("{\"type\": \"FeatureCollection\",\"features\":[]}") /* Null tile */) {
+						// ALSO HANDLE NO GEOJSON FOR ZOOMLEVEL
+						// AND INVALID ZOOMLEVEL (e.g. 12) support
 					try {
 						
 						JSONObject tileTopoJson = new JSONObject(result);
@@ -1001,7 +1003,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 							addBoundingBoxToTile=true;
 						}
 						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, 
-							tileTopoJson, bboxJson, tileType, myTileTable, myGeometryTable, 
+							tileTopoJson, bboxJson, myTileTable, myGeometryTable, 
 							geography.getName().toUpperCase(),
 							zoomlevel, geoLevelSelect.getName().toUpperCase(), x, y, addBoundingBoxToTile);
 						
