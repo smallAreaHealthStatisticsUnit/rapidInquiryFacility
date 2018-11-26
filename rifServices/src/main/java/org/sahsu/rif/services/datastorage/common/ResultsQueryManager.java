@@ -862,11 +862,14 @@ public class ResultsQueryManager extends BaseSQLManager {
 			final Integer zoomlevel, 
 			final Integer x,
 			final Integer y,
-			final String tileType) throws RIFServiceException {
+			String tileType) throws RIFServiceException {
 		
 		String result = null;
 		RIFTiles rifTiles = new RIFTiles(options);
-		if (tileType.equals("geojson")) {
+		if (tileType == null) {
+			tileType="topojson";
+		}
+		else if (tileType.equals("geojson")) {
 			result=rifTiles.getCachedGeoJsonTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
 			if (result != null) {
 				return result;
@@ -881,7 +884,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 		//STEP 1: get the tile table name
 		/*
-		SELECT tiletable
+		SELECT tiletable, geometrytable
 		FROM [sahsuland_dev].[rif40].[rif40_geographies]
 		WHERE geography = 'SAHSULAND';
 		*/
@@ -917,8 +920,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 			resultSet.next();
 
 			//This is the tile table name for this geography
-			String myTileTable = "rif_data." + resultSet.getString(1);
-			String myGeometryTable = "rif_data." + resultSet.getString(2);
+			String myTileTable = resultSet.getString(1);
+			String myGeometryTable = resultSet.getString(2);
 
 			SelectQueryFormatter getMapTilesQueryFormatter
 					= new MSSQLSelectQueryFormatter();
@@ -938,16 +941,17 @@ public class ResultsQueryManager extends BaseSQLManager {
 				   TILES_SAHSULAND.y=324
 			*/
 
-			getMapTilesQueryFormatter.addSelectField(myTileTable,"optimised_topojson");
-			getMapTilesQueryFormatter.addFromTable(myTileTable);
+			getMapTilesQueryFormatter.addSelectField("rif_data." + myTileTable, "optimised_topojson");
+			getMapTilesQueryFormatter.addFromTable("rif_data." + myTileTable);
 			getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
-			getMapTilesQueryFormatter.addWhereJoinCondition(myTileTable, "geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
+			getMapTilesQueryFormatter.addWhereJoinCondition("rif_data." + myTileTable, 
+				"geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
 			getMapTilesQueryFormatter.addWhereParameter(
 				applySchemaPrefixIfNeeded("rif40_geolevels"),
 				"geolevel_name");
-			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "zoomlevel");
-			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "x");
-			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "y");
+			getMapTilesQueryFormatter.addWhereParameter("rif_data." + myTileTable, "zoomlevel");
+			getMapTilesQueryFormatter.addWhereParameter("rif_data." + myTileTable, "x");
+			getMapTilesQueryFormatter.addWhereParameter("rif_data." + myTileTable, "y");
 
 			logSQLQuery(
 					"getTileMakerTiles",
@@ -1078,6 +1082,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 			SQLQueryUtility.close(statement2);
 			SQLQueryUtility.close(resultSet2);
 		}
+
 	}
 	
 	//get 'global' geography attribute table
