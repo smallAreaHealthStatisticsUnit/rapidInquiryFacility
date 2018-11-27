@@ -50,7 +50,7 @@ public class RIFTilesGenerator implements Runnable {
 
 		} */
 		catch(RIFServiceException rifServiceException) {
-			rifLogger.info(this.getClass(), "Tile generator run() run() FAILED: " + rifServiceException.getMessage());
+			rifLogger.info(this.getClass(), "Tile generator run() FAILED: " + rifServiceException.getMessage());
 			rifServiceException.printErrors();
 		}
 	}
