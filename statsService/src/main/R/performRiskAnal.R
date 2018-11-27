@@ -25,9 +25,10 @@ convertToDBFormatRA=function(dataIn){
   dataOut = cbind(dataOut, inv_id)
   
   band_id = dataIn$band_id
+  exposure = dataIn$exposure
   genders = dataIn$gender
   direct_standardisation = 0 # For now RIf only does indirect standardisation
-  dataOut = cbind(dataOut, band_id, genders, direct_standardisation)
+  dataOut = cbind(dataOut, band_id, exposure, genders, direct_standardisation)
   
   observed = dataIn$observed
   adjusted = dataIn$adjusted
@@ -136,11 +137,11 @@ performBandAnal <- function(data) {
     study_id=x$study_id[1]
     area_id=x$area_id[1]
     band_id=x$band_id[1]
-    #exposure=x$exposure[1]
+    exposure=x$exposure_value[1]
     gender=x$sex[1]
     observed=sum(x$inv_1)
-    #return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))
-    return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))
+    return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))
+    #return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))
   })
   RES=RES[,-1]#We delete the sex column
   RES2=ddply(RES,.variables='area_id',.fun=function(x){
@@ -148,11 +149,11 @@ performBandAnal <- function(data) {
     study_id=x$study_id[1]
     area_id=x$area_id[1]
     band_id=x$band_id[1]
-    #exposure=x$exposure[1]
+    exposure=x$exposure[1]
     gender=3
     observed=sum(x$observed)
-    #return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))
-    return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))
+    return(data.frame(study_or_comparison,study_id,area_id,band_id,exposure,gender,observed))
+    #return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))
   })
   RES=rbind(RES,RES2)
   RES=RES[order(RES$area_id, RES$gender),]
@@ -454,7 +455,7 @@ performBandAnal <- function(data) {
   Bands = ddply(data, .variables=c('band_id','gender'),.fun=function(x){
     study_id=x$study_id[1]
     band_id=x$band_id[1]
-    #exposure = mean(x$exposure)
+    exposure = mean(x$exposure, na.rm = TRUE)
     gender = x$gender[1]
     observed = sum(x$observed)
     if (adj) { 
@@ -462,8 +463,8 @@ performBandAnal <- function(data) {
     } else {
       expected = sum(x$EXP_UNADJ)
     }
-    #return(data.frame(study_id, band_id,exposure,gender,observed, expected))
-    return(data.frame(study_id, band_id,gender,observed, expected))
+    return(data.frame(study_id, band_id,exposure,gender,observed, expected))
+    #return(data.frame(study_id, band_id,gender,observed, expected))
   })
   
   Bands$adjusted = adj
@@ -493,6 +494,24 @@ performHomogAnal <- function(Bands) {
   #calculate the chi-square test for homogeneity (from p94 of the RIF v3.2 manual)
   # df is number of bands - 1
   
+  #Establish what we have in the way of exposure data
+  # if all the exposure is all NaNs then we substitute the bandid for the exposure
+  # if some of the expsures are NaNs then we don't calcuate the linearity tests
+  AllNaN = TRUE
+  NoNaN = TRUE
+  for (i in 1:length(Bands$exposure)){
+    if (is.nan(Bands$exposure[i])){
+      NoNaN = FALSE
+    } else {
+      AllNaN = FALSE
+    }
+  }
+  
+  if (AllNaN == TRUE) {
+    Bands$exposure = Bands$band_id
+    NoNaN = TRUE
+  }
+  
   # A pValHomog < 0.05 suggests the results are not homgenous across the bands (>95% likelihood)
   # A pValLT < 0.05 suggests the
   study_id = c()
@@ -519,15 +538,17 @@ performHomogAnal <- function(Bands) {
     gender = i
     chisqHomog = sum( (Bandi$observed - (Bandi$expected*Osum/Esum))^2 / (Bandi$expected*Osum/Esum))
     pValHomog = pchisq(chisqHomog, df = df, lower.tail = FALSE)
-    # Not doing linearity test until exposure properly implemented
-    #numer = (sum(Bandi$exposure*(Bandi$observed - (Bandi$expected*Osum/Esum))))^2
-    #denom = sum((Bandi$exposure)^2 * (Bandi$expected*Osum/Esum)) - (((sum(Bandi$exposure * (Bandi$expected*Osum/Esum)))^2)/Osum)
-    #chisqLT = numer / denom
-    #pValLT = pchisq(chisqLT, df = df, lower.tail = FALSE)
+    # Only do linearity tests if we have something in the exposure fields
+    if (NoNaN == TRUE){
+      numer = (sum(Bandi$exposure*(Bandi$observed - (Bandi$expected*Osum/Esum))))^2
+      denom = sum((Bandi$exposure)^2 * (Bandi$expected*Osum/Esum)) - (((sum(Bandi$exposure * (Bandi$expected*Osum/Esum)))^2)/Osum)
+      chisqLT = numer / denom
+      pValLT = pchisq(chisqLT, df = df, lower.tail = FALSE)
+    }
     bandsLT5 = length(which(Bandi$expected < 5))
     
-    #HomogRes = rbind(HomogRes, cbind(study_id, inv_id, gender,df, chisqHomog, pValHomog, chisqLT, pValLT, bandsLT5))
-    HomogRes = rbind(HomogRes, cbind(study_id, inv_id, gender,df, chisqHomog, pValHomog, bandsLT5))
+    HomogRes = rbind(HomogRes, cbind(study_id, inv_id, gender,df, chisqHomog, pValHomog, chisqLT, pValLT, bandsLT5))
+    #HomogRes = rbind(HomogRes, cbind(study_id, inv_id, gender,df, chisqHomog, pValHomog, bandsLT5))
   }  
   return(HomogRes)
   

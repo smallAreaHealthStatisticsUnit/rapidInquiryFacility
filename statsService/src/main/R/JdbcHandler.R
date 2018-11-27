@@ -209,9 +209,9 @@ saveDataFrameToDatabaseTable <- function(data) {
 					replace(x, is.infinite(x), NA) # Replace INF will NA for SQL Server
 				}))
 				
-				cat(paste0("Replace NAN with NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
+				cat(paste0("Replace NAN will NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
 				data<-do.call(data.frame, lapply(data, function(x) {
-					replace(x, is.nan(x), NA) # Replace NaN with NA for SQL Server
+					replace(x, is.nan(x), NA) # Replace NaN will NA for SQL Server
 				}))
 
 				cat(paste0("Replace \"\" will NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
@@ -522,7 +522,8 @@ insertHomogeneityResults <- function(homogData) {
     
     # Finally update the record which should now exist
     updateStmt <- paste("UPDATE rif40.t_rif40_homogeneity SET username=\'" , userID,"\', homogeneity_dof=", homogData$df[i],
-                        ", homogeneity_chi2=", homogData$chisqHomog[i], ", homogeneity_p=", homogData$pValHomog[i], ", explt5=",homogData$bandsLT5[i],
+                        ", homogeneity_chi2=", homogData$chisqHomog[i], ", homogeneity_p=", homogData$pValHomog[i], 
+                        ", linearity_chi2=", homogData$chisqLT[i], ", linearity_p=", homogData$pValLT[i], ", explt5=",homogData$bandsLT5[i],
                         " WHERE inv_id =", homogData$inv_id[i], " AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj), 
                         " and genders = ", homogData$gender[i], ";\n", sep="") 
             res <- tryCatch({
