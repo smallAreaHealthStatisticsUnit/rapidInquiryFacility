@@ -866,17 +866,18 @@ public class ResultsQueryManager extends BaseSQLManager {
 		
 		String result = null;
 		RIFTiles rifTiles = new RIFTiles(options);
+		RIFTilesCache rifTilesCache = new RIFTilesCache(options);
 		if (tileType == null) {
 			tileType="topojson";
 		}
 		else if (tileType.equals("geojson")) {
-			result=rifTiles.getCachedGeoJsonTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
+			result=rifTilesCache.getCachedGeoJsonTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
 			if (result != null) {
 				return result;
 			}
 		}
  		else if (tileType.equals("png")) {	
-			result=rifTiles.getCachedPngTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
+			result=rifTilesCache.getCachedPngTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
 			if (result != null) {
 				return result; // In base64
 			}
