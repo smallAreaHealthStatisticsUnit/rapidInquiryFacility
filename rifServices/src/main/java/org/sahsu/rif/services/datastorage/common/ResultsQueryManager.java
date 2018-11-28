@@ -987,20 +987,10 @@ public class ResultsQueryManager extends BaseSQLManager {
 			}
 			else if (tileType.equals("geojson") || tileType.equals("png")) {	
 				if (result != null && result.length() > 0 && 
-					!result.equals("{\"type\": \"FeatureCollection\",\"features\":[]}") /* Null tile */) {
-						// ALSO HANDLE NO GEOJSON FOR ZOOMLEVEL
-						// AND INVALID ZOOMLEVEL (e.g. 12) support
+					!result.equals(rifTiles.getNullTopoJSONTile()) /* Null TopoJSON tile */) {
 					try {
 						
 						JSONObject tileTopoJson = new JSONObject(result);
-// This is the bounding box of the GeoJSON, not the tile!
-//						JSONArray bboxJson = tileTopoJson.optJSONArray("bbox");
-//						if (bboxJson == null) {
-//							throw new JSONException("TopoJSON Array[\"bbox\"] not found");
-//						}
-//						else if (bboxJson.length() != 4) {
-//							throw new JSONException("TopoJSON Array[\"bbox\"] is not of length 4: " + bboxJson.toString());
-//						}
 						JSONArray bboxJson = rifTiles.tile2boundingBox(x, y, zoomlevel);
 						
 						boolean addBoundingBoxToTile=false;
@@ -1042,10 +1032,43 @@ public class ResultsQueryManager extends BaseSQLManager {
 					}
 				}
 				else if (tileType.equals("png") && result != null && result.length() > 0 && 
-					result.equals("{\"type\": \"FeatureCollection\",\"features\":[]}") /* Null tile */) {
+					result.equals(rifTiles.getNullTopoJSONTile() /* Null TopoJSON tile */)) {
+									
+					try {				
+						result=rifTilesCache.getCachedPngTile("NULL", 0, "NULL", 0, 0);
+						if (result == null) {
+							JSONObject nullTileGeoJson = new JSONObject(rifTiles.getNullGeoJSONTile());
+							JSONArray nullTileBboxJson = rifTiles.tile2boundingBox(0, 0, 0);
+							result = rifTiles.geoJson2png(nullTileGeoJson, nullTileBboxJson, "NULL", 0, "NULL", 0, 0);
+							
+							rifLogger.info(getClass(), "Generated NULL PNG tile");
+						}
+						return result; // In base64
+					}
+					catch (JSONException jsonException) {
+						throw new RIFServiceException(
+							RIFServiceError.JSON_PARSE_ERROR,
+							jsonException.getMessage() + "; in generate NULL PNG tile");
+					}
+					catch (IOException ioException) {
 						throw new RIFServiceException(
 							RIFServiceError.GRAPHICS_IO_ERROR,
-							"Null tile not yet supported");
+							ioException.getMessage() + "; in generate NULL PNG tile");
+					}
+				}
+				else if (tileType.equals("geojson") && result != null && result.length() > 0 && 
+					result.equals(rifTiles.getNullTopoJSONTile() /* Null TopoJSON tile */)) {
+									
+					try {		
+						JSONArray bboxJson = rifTiles.tile2boundingBox(x, y, zoomlevel);		
+						result = rifTiles.getNullGeoJSONTile(bboxJson);
+						return result; 
+					}
+					catch (JSONException jsonException) {
+						throw new RIFServiceException(
+							RIFServiceError.JSON_PARSE_ERROR,
+							jsonException.getMessage() + "; in generate NULL GeoJSON tile");
+					}
 				}
 				else {
 					return result;

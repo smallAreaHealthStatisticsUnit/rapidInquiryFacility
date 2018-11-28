@@ -79,6 +79,9 @@ public class RIFTiles {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
+	
+	private static String NULL_TOPOJSON_TILE="{\"type\": \"FeatureCollection\",\"features\":[]}";
+	private static String NULL_GEOJSON_TILE="{\"features\":[],\"type\":\"FeatureCollection\"}\";";
 	 
 	private static BaseSQLManager baseSQLManager = null;
 	private static RifWellKnownText rifWellKnownText = null;
@@ -144,9 +147,11 @@ public class RIFTiles {
 			mapViewport.setBounds(bounds);
 			mapContent.setViewport(mapViewport);
 			
-			Style style = SLD.createSimpleStyle(features.getSchema());
-			Layer layer = new FeatureLayer(features, style);
-			mapContent.addLayer(layer);
+			if (features != null && !features.isEmpty()) {
+				Style style = SLD.createSimpleStyle(features.getSchema());
+				Layer layer = new FeatureLayer(features, style);
+				mapContent.addLayer(layer);
+			}
 			
 			BufferedImage bufferedImage = new BufferedImage(w, h, 
 				BufferedImage.TYPE_INT_ARGB); // Allow transparency [will work for PNG as well!]
@@ -187,10 +192,14 @@ public class RIFTiles {
 					"; x: " + x +
 					"; y: " + y + " [Ignored]", cacheException);
 			}
+			String tileGeoJsonStr=tileGeoJson.toString(2);
+			if (tileGeoJsonStr.length() > 600) {
+				tileGeoJsonStr=tileGeoJsonStr.substring(1, 600);
+			}
 			throw new RIFServiceException(
 				RIFServiceError.TILE_GENERATE_GEOTOOLS_ERROR,
 				"Tile generation error: " + exception.getMessage() + lineSeparator +
-				"GeoJSON: " + tileGeoJson.toString(2).substring(1, 600), exception);
+				"GeoJSON: " + tileGeoJsonStr, exception);
 		}
 		
 		return result;
@@ -979,7 +988,7 @@ public class RIFTiles {
 				File file=rifTilesCache.getCachedTileFile(geography, zoomlevel, geolevelName, x, y, "png");	
 				if (!file.exists()) {
 					generatedCount++;
-					rifLogger.info(getClass(), "Generate GeoJSON  (" + i + "/" + tileCount + "): " + file.toString());
+					rifLogger.debug(getClass(), "Generate GeoJSON (" + i + "/" + tileCount + "): " + file.toString());
 
 					JSONObject tileTopoJson = new JSONObject(optimisedTopojson);
 					JSONArray bboxJson = tile2boundingBox(x, y, zoomlevel);
@@ -1029,4 +1038,39 @@ public class RIFTiles {
 
 		return generatedCount;
 	}
+	
+	/*
+	 * Function: 	getNullTopoJSONTile()
+	 * Description:	Fetches the NULL topoJSON tile
+	 * Returns:		String
+	 */
+	public String getNullTopoJSONTile() {
+		return NULL_TOPOJSON_TILE;
+	}
+	
+	/*
+	 * Function: 	getNullGeoJSONTile()
+	 * Description:	Fetches the NULL GeoJSON tile
+	 * Returns:		String
+	 */
+	public String getNullGeoJSONTile() {
+		return NULL_GEOJSON_TILE;
+	}
+	
+	/*
+	 * Function: 	getNullGeoJSONTile()
+	 * Description:	Fetches the NULL GeoJSON tile with a tile bounding box as a feature
+	 * Returns:		String
+	 */
+	public String getNullGeoJSONTile(
+		final JSONArray bboxJson) {
+		JSONObject nullGeoJsonTile = new JSONObject(NULL_GEOJSON_TILE);
+		JSONObject bboxJsonProperties = new JSONObject();
+		JSONArray geoJsonFeatures = nullGeoJsonTile.getJSONArray("features");
+		geoJsonFeatures.put(createGeoJsonBboxFeature(bboxJson, bboxJsonProperties));
+		nullGeoJsonTile.put("features", geoJsonFeatures);
+		
+		return nullGeoJsonTile.toString();
+	}
+	
 }
