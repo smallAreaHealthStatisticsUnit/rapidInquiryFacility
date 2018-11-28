@@ -1065,7 +1065,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 			throw new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
-		} catch(RIFServiceException exception) {
+		} catch(RIFServiceException exception) { // Also catch RIFSQLException super class
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
 			String errorMessage
@@ -1073,7 +1073,10 @@ public class ResultsQueryManager extends BaseSQLManager {
 					"sqlResultsQueryManager.unableToGetTiles",
 					geoLevelSelect.getDisplayName(),
 					geography.getDisplayName());
-			throw exception;
+					
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage, exception);
 		} finally {
 			//Cleanup database resources
 			SQLQueryUtility.close(statement);
@@ -1082,7 +1085,6 @@ public class ResultsQueryManager extends BaseSQLManager {
 			SQLQueryUtility.close(statement2);
 			SQLQueryUtility.close(resultSet2);
 		}
-
 	}
 	
 	//get 'global' geography attribute table

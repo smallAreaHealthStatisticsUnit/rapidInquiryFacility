@@ -7,6 +7,7 @@ import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.graphics.RIFTiles;
 import org.sahsu.rif.services.datastorage.common.BaseSQLManager;
@@ -23,7 +24,7 @@ public class RIFTilesGenerator implements Runnable {
 	public RIFTilesGenerator() { // Dummy constructor
 	}
 	
-	public void initialise( // Initialize function
+	public void initialise( // Initialize function; called before run
 		final String username, 
 		final String password,
 		final RIFServiceStartupOptions rifServiceStartupOptions)
@@ -40,19 +41,13 @@ public class RIFTilesGenerator implements Runnable {
 	public void run() { // Required Thread run function
 		try {			
 			RIFTiles rifTiles = new RIFTiles(rifServiceStartupOptions);
-			rifTiles.generateTiles(connection);
+			rifTiles.generateTiles(connection); // Generated 913 tiles for: 3 geolevels in 00:14:07.567 (EWS2011)
 			rifLogger.info(this.getClass(), "Tile generator run() Finished OK!");
-		}
-/*		catch(InterruptedException interruptedException) {
-			rifLogger.info(this.getClass(), "Tile generator run() run() FAILED: " + interruptedException.getMessage());
-			rifLogger.error(this.getClass(), getClass().getSimpleName() + " ERROR",
-			                interruptedException);
-
-		} */
-		catch(RIFServiceException rifServiceException) {
+		}		
+		catch(RIFServiceException rifServiceException) { // Also catch RIFSQLException super class
 			rifLogger.info(this.getClass(), "Tile generator run() FAILED: " + rifServiceException.getMessage());
 			rifServiceException.printErrors();
-		}
+		}		
 	}
 	
 }

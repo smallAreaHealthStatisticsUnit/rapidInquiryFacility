@@ -29,6 +29,7 @@ import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.datastorage.common.RifWellKnownText;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -246,7 +247,7 @@ public class RIFTiles {
 		
 		geoJsonFeature.put("geometry", geometry);
 		
-		rifLogger.info(getClass(), "Processed bbox: " + bboxJson.toString() + " into feature: " + geoJsonFeature.toString(2));
+//		rifLogger.info(getClass(), "Processed bbox: " + bboxJson.toString() + " into feature: " + geoJsonFeature.toString(2));
 		return geoJsonFeature;
 	}
 					
@@ -278,7 +279,7 @@ public class RIFTiles {
 		final Integer x, 
 		final Integer y,
 		final boolean addBoundingBoxToTile)
-			throws SQLException, JSONException, RIFServiceException
+			throws RIFSQLException, JSONException, RIFServiceException
 	{
 	
 		PreparedStatement statement2 = null;
@@ -305,32 +306,40 @@ public class RIFTiles {
 			baseSQLManager.applySchemaPrefixIfNeeded("rif40_geolevels"),
 			"geolevel_name");
 		
-		baseSQLManager.logSQLQuery(
+		String sqlQueryText = baseSQLManager.logSQLQuery(
 				"topoJson2geoJson",
 				generateTilesForGeoLevelQueryFormatter2,
 				geoLevel);	
 
-		statement2 = connection.prepareStatement(generateTilesForGeoLevelQueryFormatter2.generateQuery());
-		statement2.setString(1, geoLevel);
-		
-		resultSet2 = statement2.executeQuery();
-		resultSet2.next();
-		int minZoomlevel=resultSet2.getInt(1);	
-		int maxZoomlevel=resultSet2.getInt(2);	
-		
 		JSONObject geoJSON;
-		
 		try {
+			statement2 = connection.prepareStatement(generateTilesForGeoLevelQueryFormatter2.generateQuery());
+			statement2.setString(1, geoLevel);
+			
+			resultSet2 = statement2.executeQuery();
+			resultSet2.next();
+			int minZoomlevel=resultSet2.getInt(1);	
+			int maxZoomlevel=resultSet2.getInt(2);			
+		
 			geoJSON = topoJson2geoJson(connection, 
 					tileTopoJson, bboxJson, myTileTable, myGeometryTable, 
 					geography, zoomlevel, geoLevel, x, y, addBoundingBoxToTile,
 					minZoomlevel, maxZoomlevel);
 		}	
-		finally {
-			//Cleanup database resources
-			connection.commit();	
-			SQLQueryUtility.close(statement2);
-			SQLQueryUtility.close(resultSet2);		
+		catch (SQLException sqlException) {
+			throw new RIFSQLException(this.getClass(), sqlException, statement2, sqlQueryText);
+		}
+		finally { //Cleanup database resources
+			try {
+				connection.commit();	
+				SQLQueryUtility.close(statement2);
+				SQLQueryUtility.close(resultSet2);		
+			}	
+			catch (SQLException sqlException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_GENERATE_SQL_ERROR,
+					sqlException.getMessage(), sqlException);
+			}
 		}	
 		
 		return geoJSON;
@@ -443,17 +452,14 @@ public class RIFTiles {
 					
 					processedCount+=processGeoJsonArrayList(connection, zoomlevel, geoLevel, myGeometryTable, areaIdList, 
 						geoJsonFeatures, propertiesHash, minZoomlevel, maxZoomlevel);
-					if (processedCount != geometries.length()) {
-						rifLogger.warning(getClass(), "Processed: " + geometries.length() + " geometries" +
-							"; geoJsonFeatures: " + geoJsonFeatures.length() +
-							"; geometries: " + geometries.length() +
-							"; valid areaIds: " + processedCount);					}
-					else {
-						rifLogger.info(getClass(), "Processed: " + geometries.length() + " geometries" +
-							"; geoJsonFeatures: " + geoJsonFeatures.length() +
-							"; geometries: " + geometries.length() +
-							"; valid areaIds: " + processedCount);
-					}
+//					rifLogger.debug(getClass(), "Processed: " + geometries.length() + " geometries" +
+//						"; geoJsonFeatures: " + geoJsonFeatures.length() +
+//						"; geometries: " + geometries.length() +
+//						"; valid areaIds: " + processedCount +
+//						"; for geoLevel: " + geoLevel +
+//						"; zoomlevel: " + zoomlevel +
+//						"; x: " + x +
+//						"; y: " + y);
 					
 					if (addBoundingBoxToTile && bboxJsonProperties != null) {
 						geoJsonFeatures.put(createGeoJsonBboxFeature(bboxJson, bboxJsonProperties));
@@ -543,7 +549,7 @@ public class RIFTiles {
 				"; got: " + processedCount);
 		}	
 		else {		
-			rifLogger.info(getClass(), "Processed: " + processedCount + " areaIds" +
+			rifLogger.debug(getClass(), "Processed: " + processedCount + " areaIds" +
 				"; removed: " + removedCount +
 				"; total geoJsonFeatures: " + geoJsonFeatures.length());
 		}
@@ -564,7 +570,7 @@ public class RIFTiles {
 		final ArrayList<String> areaIdList,
 		final int minZoomlevel,
 		final int maxZoomlevel
-		) throws SQLException, RIFServiceException {
+		) throws RIFSQLException, RIFServiceException {
 			
 		HashMap<String, String> result = new HashMap<String, String>();
 		
@@ -602,25 +608,25 @@ public class RIFTiles {
 		getMapTilesQueryFormatter.addWhereParameter("rif_data." + myGeometryTable, "zoomlevel");
 		getMapTilesQueryFormatter.addWhereIn("rif_data." + myGeometryTable, "areaid", areaIdList);
 
-		baseSQLManager.logSQLQuery(
+		String sqlQueryText = baseSQLManager.logSQLQuery(
 				"topoJson2geoJson",
 				getMapTilesQueryFormatter,
 				geoLevel,
 				zoomlevel.toString());
 
-		statement = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());
-		statement.setString(1, geoLevel);
-		if (zoomlevel >= minZoomlevel && zoomlevel <= maxZoomlevel) {
-			statement.setInt(2, zoomlevel);
-		}
-		else if (zoomlevel < minZoomlevel) {
-			statement.setInt(2, minZoomlevel);
-		}	
-		else if (zoomlevel > maxZoomlevel) {
-			statement.setInt(2, maxZoomlevel);
-		}	
-		
 		try {
+			statement = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());
+			statement.setString(1, geoLevel);
+			if (zoomlevel >= minZoomlevel && zoomlevel <= maxZoomlevel) {
+				statement.setInt(2, zoomlevel);
+			}
+			else if (zoomlevel < minZoomlevel) {
+				statement.setInt(2, minZoomlevel);
+			}	
+			else if (zoomlevel > maxZoomlevel) {
+				statement.setInt(2, maxZoomlevel);
+			}	
+			
 			resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 
@@ -632,12 +638,20 @@ public class RIFTiles {
 				throw new SQLException("Error in WKT fetch; expecting: " + areaIdList.size() + "; got: " + result.size());
 			}
 		}
-		finally {
-			//Cleanup database resources
-			connection.commit();
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
-			
+		catch (SQLException sqlException) {
+			throw new RIFSQLException(this.getClass(), sqlException, statement, sqlQueryText);
+		}
+		finally { //Cleanup database resources
+			try {
+				connection.commit();
+				SQLQueryUtility.close(statement);
+				SQLQueryUtility.close(resultSet);
+			}
+			catch (SQLException sqlException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_GENERATE_SQL_ERROR,
+					sqlException.getMessage(), sqlException);
+			}
 		}
 		return result;
 	}
@@ -662,7 +676,7 @@ public class RIFTiles {
 		File tmpFile=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, fileExtension + ".tmp");
 		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, fileExtension);
 		if (!file.exists() && !tmpFile.exists()) {
-			rifLogger.info(getClass(), "Cache temporary tile: " + tmpFile.getAbsolutePath());
+//			rifLogger.debug(getClass(), "Cache temporary tile: " + tmpFile.getAbsolutePath());
 			FileOutputStream stream = null;
 			try {
 				stream = new FileOutputStream(tmpFile);
@@ -935,7 +949,7 @@ public class RIFTiles {
 	 *				Called from RIFTilesGenerator on RIF Services middleware start
 	 */	
 	public void generateTiles(Connection connection) 
-		throws RIFServiceException {
+		throws RIFServiceException, RIFSQLException {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		LocalDateTime start = LocalDateTime.now(); 
@@ -967,7 +981,7 @@ public class RIFTiles {
 		generateTilesQueryFormatter.addOrderByCondition("areaid_count", SelectQueryFormatter.SortOrder.ASCENDING);
 
 		Integer minAreaIdCount = new Integer(5000);
-		baseSQLManager.logSQLQuery(
+		String sqlQueryText = baseSQLManager.logSQLQuery(
 				"generateTiles",
 				generateTilesQueryFormatter,
 				minAreaIdCount.toString());
@@ -997,12 +1011,10 @@ public class RIFTiles {
 			Duration duration = Duration.between(start, end);
 			rifLogger.warning(getClass(), "generateTiles() had error: Generated " + generatedCount +
 				" tiles for: " + geolevelCount + " geolevels in " + formatDuration(duration));
-			throw new RIFServiceException(
-				RIFServiceError.TILE_GENERATE_SQL_ERROR,
-				sqlException.getMessage(), sqlException);
+
+			throw new RIFSQLException(this.getClass(), sqlException, statement, sqlQueryText);
 		}
-		finally {
-			//Cleanup database resources
+		finally { //Cleanup database resources
 			try {
 				connection.commit();
 				SQLQueryUtility.close(statement);
@@ -1046,7 +1058,7 @@ public class RIFTiles {
 		final String geometryTable,
 		final String geography, 
 		final String geolevelName)
-			throws RIFServiceException, SQLException {
+			throws RIFServiceException, RIFSQLException {
 		PreparedStatement statement = null;
 		PreparedStatement statement2 = null;
 		ResultSet resultSet = null;
@@ -1082,28 +1094,49 @@ public class RIFTiles {
 		generateTilesForGeoLevelQueryFormatter2.addFromTable("rif_data." + geometryTable.toLowerCase());
 		generateTilesForGeoLevelQueryFormatter2.addWhereParameter("rif_data." + geometryTable.toLowerCase(), "geolevel_id");
 		
-		baseSQLManager.logSQLQuery(
+		String sqlQueryText = baseSQLManager.logSQLQuery(
 				"generateTiles",
 				generateTilesForGeoLevelQueryFormatter,
 				geolevelId.toString());	
-		baseSQLManager.logSQLQuery(
+		int tileCount=0;
+		int areaidCount=0;
+		try {
+			statement = connection.prepareStatement(generateTilesForGeoLevelQueryFormatter.generateQuery());
+			statement.setInt(1, geolevelId.intValue());
+			resultSet = statement.executeQuery();
+			resultSet.next();
+			tileCount=resultSet.getInt(1);	
+			areaidCount=resultSet.getInt(2);
+		}
+		catch (SQLException sqlException) {
+			throw new RIFSQLException(this.getClass(), sqlException, statement, sqlQueryText);
+		}
+		finally { //Cleanup database resources
+			try {
+				connection.commit();
+				SQLQueryUtility.close(statement);
+				SQLQueryUtility.close(resultSet);
+			}
+			catch (SQLException sqlException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_GENERATE_SQL_ERROR,
+					sqlException.getMessage(), sqlException);
+			}
+		}
+
+		String sqlQueryText2 = baseSQLManager.logSQLQuery(
 				"generateTiles",
 				generateTilesForGeoLevelQueryFormatter2,
 				geolevelId.toString());
-
+				
 		try {
-			statement = connection.prepareStatement(generateTilesForGeoLevelQueryFormatter.generateQuery());
 			statement2 = connection.prepareStatement(generateTilesForGeoLevelQueryFormatter2.generateQuery());
-			statement.setInt(1, geolevelId.intValue());
 			statement2.setInt(1, geolevelId.intValue());
-			resultSet = statement.executeQuery();
 			resultSet2 = statement2.executeQuery();
-			resultSet.next();
-			resultSet2.next();
-			int tileCount=resultSet.getInt(1);	
-			int areaidCount=resultSet.getInt(2);	
+			resultSet2.next();	
 			int minZoomlevel=resultSet2.getInt(1);	
-			int maxZoomlevel=resultSet2.getInt(2);		
+			int maxZoomlevel=resultSet2.getInt(2);	
+			
 			rifLogger.info(getClass(), 
 				"Generating up to " + tileCount + " tiles for: " + areaidCount + " areas in: " + geography + "." + geolevelName +
 				"; minZoomlevel: " + minZoomlevel + "; maxZoomlevel: " + maxZoomlevel);
@@ -1120,13 +1153,20 @@ public class RIFTiles {
 			rifLogger.info(getClass(), "Generated " + generatedCount + "/" + tileCount + 
 				" tiles for: " + areaidCount + " areas in: " + geography + "." + geolevelName);
 		}	
-		finally {
-			//Cleanup database resources
-			connection.commit();
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);	
-			SQLQueryUtility.close(statement2);
-			SQLQueryUtility.close(resultSet2);		
+		catch (SQLException sqlException2) {
+			throw new RIFSQLException(this.getClass(), sqlException2, statement2, sqlQueryText2);
+		}
+		finally { //Cleanup database resources
+			try {
+				connection.commit();
+				SQLQueryUtility.close(statement2);
+				SQLQueryUtility.close(resultSet2);
+			}
+			catch (SQLException sqlException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_GENERATE_SQL_ERROR,
+					sqlException.getMessage(), sqlException);
+			}	
 		}				
 
 		return generatedCount;
@@ -1147,7 +1187,7 @@ public class RIFTiles {
 		final int tileCount,
 		final int minZoomlevel,
 		final int maxZoomlevel)
-			throws RIFServiceException, SQLException {
+			throws RIFServiceException, RIFSQLException {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		
@@ -1172,7 +1212,7 @@ public class RIFTiles {
 		generateTilesForGeoLevelQueryFormatter.addOrderByCondition("x", SelectQueryFormatter.SortOrder.ASCENDING);
 		generateTilesForGeoLevelQueryFormatter.addOrderByCondition("y", SelectQueryFormatter.SortOrder.ASCENDING);
 
-		baseSQLManager.logSQLQuery(
+		String sqlQueryText = baseSQLManager.logSQLQuery(
 				"generateTiles",
 				generateTilesForGeoLevelQueryFormatter,
 				geolevelId.toString());
@@ -1215,6 +1255,9 @@ public class RIFTiles {
 				}
 			}	
 		}	
+		catch (SQLException sqlException) {
+			throw new RIFSQLException(this.getClass(), sqlException, statement, sqlQueryText);
+		}
 		catch (JSONException jsonException) {
 			throw new RIFServiceException(
 				RIFServiceError.TILE_GENERATE_JSON_ERROR,
@@ -1225,12 +1268,18 @@ public class RIFTiles {
 				RIFServiceError.TILE_CACHE_FILE_WRITE_ERROR,
 				ioException.getMessage(), ioException);
 		}
-		finally {
-			//Cleanup database resources
-			connection.commit();
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);		
-		}	
+		finally { //Cleanup database resources
+			try {
+				connection.commit();
+				SQLQueryUtility.close(statement);
+				SQLQueryUtility.close(resultSet);	
+			}				
+			catch (SQLException sqlException) {
+				throw new RIFServiceException(
+					RIFServiceError.TILE_GENERATE_SQL_ERROR,
+					sqlException.getMessage(), sqlException);
+			}
+		}			
 
 		return generatedCount;
 	}

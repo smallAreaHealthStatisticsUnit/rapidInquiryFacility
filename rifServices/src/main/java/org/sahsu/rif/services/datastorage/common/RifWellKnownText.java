@@ -142,10 +142,10 @@ public class RifWellKnownText {
 				}
 				
 				if (ignored > 0) {
-						rifLogger.warning(getClass(), "Removed " + ignored + 
-							" POINT/MULTIPOINT/LINESTRING/MULTILINESTRINGs for geoLevel: " + geoLevel +
-							"; zoomlevel: " + zoomlevel +
-							"; areaId: " + areaId);
+					rifLogger.debug(getClass(), "Removed " + ignored + 
+						" POINT/MULTIPOINT/LINESTRING/MULTILINESTRINGs for geoLevel: " + geoLevel +
+						"; zoomlevel: " + zoomlevel +
+						"; areaId: " + areaId);
 				}
 			}
 			catch (ParseException wktParseException) {
@@ -206,7 +206,7 @@ public class RifWellKnownText {
 		JSONObject njsonGeometry = null;
 		
 		if (multipolygon == null) { // Area reduces to POINT/MULTIPOINT/LINESTRING/MULTILINESTRINGs by simplification
-			rifLogger.warning(getClass(), "WKT to Geometry convert returned null: " + wkt);
+			rifLogger.debug(getClass(), "WKT to Geometry convert returned null: " + wkt);
 			return null;
 		}
 		else {			
