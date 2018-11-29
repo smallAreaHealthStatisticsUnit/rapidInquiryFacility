@@ -3112,3 +3112,4 @@ Risk analysis issues:
 2. Errors if nonsensical exposure bands are selected;
 3. Clear does not work after restore from file;
 4. Adding a point produces errors after restore from file;
+5. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
