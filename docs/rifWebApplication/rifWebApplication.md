@@ -688,7 +688,16 @@ Debugging logging faults:
 		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
-    </RollingFile>
+	</RollingFile>
+    <RollingFile name="STATISTICSLOGGER" 
+				 filePattern="${logdir}/StatisticsLogger.%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>	
     <RollingFile name="OTHER"
 				 filePattern="${logdir}/Other.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
@@ -746,12 +755,19 @@ Debugging logging faults:
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="FRONTENDLOGGER"/>
     </Logger>
-      <!-- RIF FRont End logger: rifGenericLibrary.util.TaxonomyLogger -->
-    <Logger name="rifGenericLibrary.util.TaxonomyLogger"
-		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- RIF FRont End logger: org.sahsu.rif.generic.util.TaxonomyLogger -->
+    <Logger name="org.sahsu.rif.generic.util.TaxonomyLogger"
+		level="info" additivity="false"> <!-- Change to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="TAXONOMYLOGGER"/>
     </Logger>
+      <!-- RIF FRont End logger: org.sahsu.rif.generic.util.StatisticsLogger -->
+    <Logger name="org.sahsu.rif.generic.util.StatisticsLogger"
+		level="info" additivity="false"> <!-- Change to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="STATISTICSLOGGER"/>
+    </Logger>
+	
   </Loggers>
 </Configuration>
 ```
@@ -794,7 +810,7 @@ The following make targets are provided:
 To run a make target type *make <target>;e.g. *make install*.
 
 The following files are then built and copied into the rapidInquiryFacility directory:
-*taxonomy.war*, *rifServices.war*, *RIF40.war*
+*taxonomy.war*, *rifServices.war*, *RIF40.war*, *statistics.war*
 
 ## Building Using a Windows Batch File
 
@@ -1856,8 +1872,14 @@ Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
 Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
 ```
 
+<<<<<<< HEAD
 In the case the initial size is 192M and the maximum heap size is 3040M. In the Tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
 increase this to a much larger value less than the maximum, at least 2048M. Restart the Tomcat service.
+=======
+In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
+increase this to a much larger value less than the maximum, at least 2048M. Tile generation can require large amounts of memory, UK census output area tiles 
+require 7G of memory. Restart the tomcat service.
+>>>>>>> master
 
 ### Study extracts but R does not run
 
@@ -2143,9 +2165,15 @@ See the database Management manual: [Patching](https://smallareahealthstatistics
   and taxonomyServices trees to .old;
 * Follow the instructions in
   [installing the web services]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services).
+<<<<<<< HEAD
   i.e. copy replacement *taxonomy.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start Tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart Tomcat;
+=======
+  i.e. copy replacement *taxonomy.war*, *statistics.war* and *rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
+* Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
+* Restart tomcat;
+>>>>>>> master
 * When you are satisfied with the patch remove the .old files and directories in *%CATALINA_HOME%\webapps*.
 
 Do **NOT** attempt to warm upgrade the RIF middleware. It will fail if any of the following are true:
@@ -2404,6 +2432,39 @@ With:
 
 ## Other Setup
 
+### PNG Tile Generation
+
+For *geolevels* with more than 5000 areas the RIF middleware can auto generate PNG tiles on startup. If you do not do this the tiles 
+will be generated on the fly; this can take up to 60 seconds per tile for the most complex tiles with >200,000 areas. Tiles are then cached.
+To rebuild the cache delete the tiles scratchSpace directory: *c:\rifDemo\scratchSpace\scratchSpace\tiles\<my geography>* For UK 2011 
+census geography this typically takes 10 to 20 minutes. You need to edit the *conf* directory *RIFServiceStartupProperties.properties*:
+```
+#
+# Tile generator: set if you need automatic tile generation for geolevels with more than 5000 areas 
+# (see: disableMouseClicksAt in frontEndParameters.json5)
+#
+tileGeneratorUsername=<username>
+tileGeneratorPassword=<password>
+```
+
+This requires 7G of memory; edit %CATALINA_HOME%/bin/setenv.bat to add **-Xmx7g** to *CATALINA_OPTS*:
+```
+Exception in thread "http-nio-8080-AsyncTimeout"
+Exception: java.lang.OutOfMemoryError thrown from the UncaughtExceptionHandler in thread "http-nio-8080-AsyncTimeout"
+Exception in thread "http-nio-8080-ClientPoller-0" java.lang.OutOfMemoryError: GC overhead limit exceeded
+
+Exception: java.lang.OutOfMemoryError thrown from the UncaughtExceptionHandler in thread "ajp-nio-8009-ClientPoller-1"
+Exception in thread "http-nio-8080-exec-1" Exception in thread "http-nio-8080-exec-2" java.lang.OutOfMemoryError: GC overhead limit
+exceeded
+Exception in thread "http-nio-8080-exec-6"
+Exception: java.lang.OutOfMemoryError thrown from the UncaughtExceptionHandler in thread "http-nio-8080-exec-6"
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+Exception in thread "pool-611-thread-1" java.lang.OutOfMemoryError: GC overhead limit exceeded
+Exception in thread "ajp-nio-8009-exec-3" Exception in thread "http-nio-8080-exec-12" java.lang.OutOfMemoryError: GC overhead limit
+exceeded
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+```
+ 
 ### Front End Logging
 
 Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
