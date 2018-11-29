@@ -3100,9 +3100,15 @@ Further changes are needed to support risk analysis:
 
 #### 26th to 30th November
 
-* Tile caching: auto generation on services startup;
- 
+* Tile caching: auto generation on services startup using a tile generator thread;
+* RIF extract planning;
+* Removed duff lines/points from polygons to remove GeoTools SLD errors; also applied to extract
+* Prepare paperwork for COMARE and Heathrow extracts
+* Test pull #116, create pull #117 for tile generation; document tile generation
+
 Risk analysis issues:
 
 1. Using add by postcode produces errors on its own, but works;
 2. Errors if nonsensical exposure bands are selected;
+3. Clear does not work after restore from file;
+4. Adding a point produces errors after restore from file;
