@@ -671,7 +671,7 @@ angular.module("RIF")
                                 CommonMappingStateService.getState("areamap").map.removeLayer($scope.geoJSON);
                             }
 
-                            var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt); //  With no x/y/z returns URL
+                            var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt, "topojson"); //  With no x/y/z returns URL
                             latlngList = []; // centroids!
                             $scope.latlngListById = []; // centroids!
                             centroidMarkers = new L.layerGroup();
@@ -1023,9 +1023,24 @@ angular.module("RIF")
 								
 								var latlngListDups=0;
 								var areaIdObj={};
-								if ($scope.noMouseClocks && CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
+								if ($scope.noMouseClocks && 
+								    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering");
 									areaIdObj=CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name);
+									var pngURL=topojsonURL.replace('&tileType=topojson', '&tileType=png');
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering, pngURL: " +
+										pngURL);
+									$scope.pngTiles = new L.TileLayer(pngURL, {
+										attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+										interactive: true
+									}); // End of L.TileLayer
+									
+									if ($scope.pngTiles == undefined) {
+										reject("failed to create TileLayer");
+									}
+									else {
+										CommonMappingStateService.getState("areamap").map.addLayer($scope.pngTiles);
+									}
 								}
 								else {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer disable areaId filtering");
