@@ -21,12 +21,26 @@ import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
+/**
+ * Caching for RIF Generated Tiles. Tiles are either in GeoJSON or PNG form
+ *
+ * @author		Peter Hambly
+ * @version 	1.0
+ * @since 		4.0
+ */
 public class RIFTilesCache {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-	private static String EXTRACT_DIRECTORY;
+	private static String EXTRACT_DIRECTORY = null;
 
+	/**
+	 * Constructor
+	 *
+	 * @param RIFServiceStartupOptions for the extract directory
+	 *
+	 * @throws NullPointerException
+	 */
 	public RIFTilesCache(final RIFServiceStartupOptions options) {
 		try {
 			EXTRACT_DIRECTORY = options.getExtractDirectory();
@@ -38,15 +52,27 @@ public class RIFTilesCache {
 		}
 	}
 	
-	/*
-	 * Function: 	cacheTile()
-	 * Description: Cache GeoJSON/PNG tile. Write to .json.tmp and then rename to ensure atomic
-	 * Returns:     Write GeoJSON ByteArrayOutputStream to tile: 
-	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.json
+	/**
+	 * Cache GeoJSON/PNG tile. Write to .<fileExtension>.tmp and then rename to ensure file creation is atomic
+	 * <p>
+	 * Write GeoJSON ByteArrayOutputStream to tile: 
+	 * EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.<fileExtension>
+	 * </p>
+	 *
+	 * @param tileGeoJson 		Tile GeoJSON as JSONObject (is null if pngTileStream is not null)
+	 * @param pngTileStream 	PNG tile as ByteArrayOutputStream (is null if tileGeoJson is not null)
+	 * @param geography			Uppercase String
+	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param geoLevel 			Uppercase String
+	 * @param x 				X tile number		
+	 * @param y					Y tile number
+	 * @param fileExtension		File extension: .json or .png
+	 *
+	 * @throws RIFServiceException
 	 */	
 	public void cacheTile(
 		final JSONObject tileGeoJson,
-		ByteArrayOutputStream pngTileStream,
+		final ByteArrayOutputStream pngTileStream,
 		final String geography,
 		final Integer zoomlevel, 
 		final String geoLevel, 
@@ -157,13 +183,23 @@ public class RIFTilesCache {
 		}
 	}
 	
-	
-	/*
-	 * Function: 	getCachedGeoJsonTile()
-	 * Description:	Get GeoJSON tile
-	 * Returns:     NULL or GeoJSON file as string read from the tile cache directory: 
-	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.json
-	 */		
+	/**
+	 * Get GeoJSON tile.
+	 * <p>
+	 * Fetch GeoJSON ByteArrayOutputStream tile from: 
+	 * EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.json
+	 * </p>
+	 *
+	 * @param geography			Uppercase String
+	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param geoLevel 			Uppercase String
+	 * @param x 				X tile number		
+	 * @param y					Y tile number
+	 *
+	 * @return String GeoJSON tile
+	 *
+	 * @throws RIFServiceException
+	 */			
 	public String getCachedGeoJsonTile(
 		final String geography,
 		final Integer zoomlevel, 
@@ -192,11 +228,22 @@ public class RIFTilesCache {
 		return null;
 	}
 
-	/*
-	 * Function: 	getCachedPngTile()
-	 * Description:	Get PNG tile
-	 * Returns:     NULL or PNG file as Base64 encoded string read from the tile cache directory: 
-	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.png
+	/**
+	 * Get PNG tile.
+	 * <p>
+	 * Fetch PNG ByteArrayOutputStream tile from: 
+	 * EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.png
+	 * </p>
+	 *
+	 * @param geography			Uppercase String
+	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param geoLevel 			Uppercase String
+	 * @param x 				X tile number		
+	 * @param y					Y tile number
+	 *
+	 * @return String GeoJSON tile base64 encoded (to use same code infrastructure as GeoJSON and TopoJSON tiles)
+	 *
+	 * @throws RIFServiceException
 	 */		
 	public String getCachedPngTile(
 		final String geography,
@@ -223,13 +270,25 @@ public class RIFTilesCache {
 		}
 		return null;
 	}
-		
-	/*
-	 * Function: 	getCachedTileFile()
-	 * Description:	Create File object for file in tile cache directory. File does NOT need to exist
-	 * Returns:     File object for file in tile cache directory: 
-	 *					EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>/<y>.<fileExtension>
-	 */		
+
+	/**
+	 * Create File object for file in tile cache directory. The file does NOT need to exist.
+	 * <p>
+	 * The cache directory is: EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>
+	 * The file is y.<fileExtension>
+	 * </p>
+	 *
+	 * @param geography			Uppercase String
+	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param geoLevel 			Uppercase String
+	 * @param x 				X tile number		
+	 * @param y					Y tile number
+	 * @param fileExtension		File extension: .json or .png
+	 *
+	 * @return File object
+	 *
+	 * @throws RIFServiceException
+	 */			
 	public File getCachedTileFile(
 		final String geography,
 		final Integer zoomlevel, 
@@ -242,11 +301,21 @@ public class RIFTilesCache {
 		Path path = createTileDirectoryPath(geography, zoomlevel, geoLevel, x);
 		return new File(path.toString() + File.separator + y.toString() + "." + fileExtension);
 	}
-	
-	/*
-	 * Function: 	createTileDirectoryPath()
-	 * Description:	Create path to tile cache directory. Will create directory if required
-	 * Returns:     Path to tile cache directory: EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x> 
+
+	/**
+	 * Create path to tile cache directory. Will create directory if required.
+	 * <p>
+	 * The cache directory is: EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x>
+	 * </p>
+	 *
+	 * @param geography			Uppercase String
+	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param geoLevel 			Uppercase String
+	 * @param x 				X tile number
+	 *
+	 * @return Path to tile cache directory: EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x> 
+	 *
+	 * @throws RIFServiceException
 	 */
 	private Path createTileDirectoryPath(
 		final String geography,

@@ -9,7 +9,14 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.graphics.RIFTilesGenerator;
 
 /**
- * This will eventually be used to create PNG tiles. Added for hot deployment testing.
+ * Create PNG tiles for geolevels with more than 5000 areas.
+ * <p>
+ * Runs RIFTilesGenerator as a separate thread
+ * </p>
+ *
+ * @author		Peter Hambly
+ * @version 	1.0
+ * @since 		4.0
  */
 final class RIFService {
 

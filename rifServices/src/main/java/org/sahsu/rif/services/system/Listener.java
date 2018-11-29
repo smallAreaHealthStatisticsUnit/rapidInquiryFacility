@@ -8,6 +8,10 @@ import org.sahsu.rif.generic.util.RIFLogger;
 
 /**
  * Starts the RIF when the server starts, and tries to stop it when the server stops.
+ *
+ * @author		Peter Hambly
+ * @version 	1.0
+ * @since 		4.0
  */
 @WebListener
 public class Listener implements ServletContextListener {
