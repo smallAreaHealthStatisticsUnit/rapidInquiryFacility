@@ -1025,11 +1025,6 @@ public class ResultsQueryManager extends BaseSQLManager {
 							RIFServiceError.JSON_PARSE_ERROR,
 							jsonException.getMessage() + "; in: topojson[0-300]=" + result.substring(1, 300));
 					}
-					catch (IOException ioException) {
-						throw new RIFServiceException(
-							RIFServiceError.GRAPHICS_IO_ERROR,
-							ioException.getMessage() + "; in: topojson[0-300]=" + result.substring(1, 300));
-					}
 				}
 				else if (tileType.equals("png") && result != null && result.length() > 0 && 
 					result.equals(rifTiles.getNullTopoJSONTile() /* Null TopoJSON tile */)) {
@@ -1049,11 +1044,6 @@ public class ResultsQueryManager extends BaseSQLManager {
 						throw new RIFServiceException(
 							RIFServiceError.JSON_PARSE_ERROR,
 							jsonException.getMessage() + "; in generate NULL PNG tile");
-					}
-					catch (IOException ioException) {
-						throw new RIFServiceException(
-							RIFServiceError.GRAPHICS_IO_ERROR,
-							ioException.getMessage() + "; in generate NULL PNG tile");
 					}
 				}
 				else if (tileType.equals("geojson") && result != null && result.length() > 0 && 

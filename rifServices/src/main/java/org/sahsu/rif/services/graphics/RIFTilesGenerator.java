@@ -65,6 +65,10 @@ public class RIFTilesGenerator implements Runnable {
 			rifTiles.generateTiles(connection); // Generated 913 tiles for: 3 geolevels in 00:14:07.567 (EWS2011)
 			rifLogger.info(this.getClass(), "Tile generator run() Finished OK!");
 		}		
+		catch(SQLException sqlException) { // Finally {} has failed closing cursors or releasing resultsets: 
+										   // usually a fatal database error
+			rifLogger.info(this.getClass(), "Tile generator run() UNHANDLED SQL EXCEPTION: " + sqlException.getMessage());
+		}		
 		catch(RIFServiceException rifServiceException) { // Also catch RIFSQLException super class
 			rifLogger.info(this.getClass(), "Tile generator run() FAILED: " + rifServiceException.getMessage());
 			rifServiceException.printErrors();
