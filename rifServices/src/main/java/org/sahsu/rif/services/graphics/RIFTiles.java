@@ -1,62 +1,49 @@
 package org.sahsu.rif.services.graphics;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.time.Duration;
-import java.time.LocalDateTime;
-
-import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.services.datastorage.common.BaseSQLManager;
 import org.apache.commons.collections.IteratorUtils;
-
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
-import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
-import org.sahsu.rif.services.system.RIFServiceError;
-import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.services.datastorage.common.RifWellKnownText;
-import org.sahsu.rif.services.datastorage.common.RIFTilesCache;
-import org.sahsu.rif.generic.datastorage.RIFSQLException;
-
-import org.json.JSONObject;
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import org.geotools.feature.FeatureCollection;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.map.MapViewport;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.renderer.GTRenderer;
+import org.geotools.renderer.label.LabelCacheImpl;
+import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
-import org.geotools.renderer.lite.StreamingRenderer;
-import org.geotools.renderer.label.LabelCacheImpl;
-import org.geotools.renderer.GTRenderer;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
+import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
+import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.services.datastorage.common.BaseSQLManager;
+import org.sahsu.rif.services.datastorage.common.RIFTilesCache;
+import org.sahsu.rif.services.datastorage.common.RifWellKnownText;
+import org.sahsu.rif.services.system.RIFServiceError;
+import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 import javax.imageio.ImageIO;
-
-import java.awt.image.BufferedImage;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-
-import java.io.InputStream;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * Create PNG tiles for geolevels with more than 5000 areas.
@@ -107,9 +94,9 @@ public class RIFTiles {
 	 *
 	 * @param tileGeoJson		JSONObject of tile GeoJSON
 	 * @param bboxJson			JSONArray bounding box in GeoJSON format [minX, minY, maxX, maxY]
-	 * @param geography			Uppercase String
+	 * @param geography			geography as uppercase String
 	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
-	 * @param geoLevel 			Uppercase String
+	 * @param geoLevel 			geolevel as uppercase String
 	 * @param x 				X tile number		
 	 * @param y					Y tile number
 	 *
@@ -126,7 +113,7 @@ public class RIFTiles {
 		final String geoLevel, 
 		final Integer x, 
 		final Integer y) throws JSONException, RIFServiceException {
-		
+
 		String result;
 		try {
 			FeatureJSON featureJSON = new FeatureJSON();
@@ -191,9 +178,10 @@ public class RIFTiles {
 			try { // Write failing JSON to cache
 				File file=rifTilesCache.getCachedTileFile(geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "json");	
 				if (file.exists()) {
-					file.delete();
+					if (file.delete()) {
+						rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "json");
+					}
 				}
-				rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "json");
 			}
 			catch (Exception cacheException) {
 				rifLogger.error(getClass(), "Failed to cache failing GeoJSON for geography: " + geography +
@@ -513,9 +501,8 @@ public class RIFTiles {
 						JSONObject jsonGeometry=geometries.getJSONObject(i);
 						JSONObject properties=jsonGeometry.optJSONObject("properties");		
 						if (i == 0) {
-							bboxJsonProperties=jsonGeometry.optJSONObject("properties");
+							bboxJsonProperties = jsonGeometry.optJSONObject("properties");
 						}
-						// Add bounding box as geoJSON feature so we can see the boundary of the tile	
 					
 						if (properties != null) {			
 							String areaId = properties.getString("area_id");
@@ -523,9 +510,9 @@ public class RIFTiles {
 							propertiesHash.put(areaId, properties);	
 						}
 						else {
-							List<String> jsonGeometryList = IteratorUtils.toList(jsonGeometry.keys());
-							String jsonGeometryText = String.join(", ", jsonGeometryList);
-							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + jsonGeometryText);
+							List<String> propertiesList = IteratorUtils.toList(properties.keys());
+							String propertiesText = String.join(", ", propertiesList);
+							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + propertiesText);
 						}
 
 						if (i % 10000 == 0) { // Process in blocks of 10,000
@@ -538,7 +525,8 @@ public class RIFTiles {
 						
 					} // End of for loop
 					
-					processedCount+=processGeoJsonArrayList(connection, zoomlevel, geoLevel, myGeometryTable, areaIdList, 
+					/* processedCount+= */
+					processGeoJsonArrayList(connection, zoomlevel, geoLevel, myGeometryTable, areaIdList,
 						geoJsonFeatures, propertiesHash, minZoomlevel, maxZoomlevel);
 //					rifLogger.debug(getClass(), "Processed: " + geometries.length() + " geometries" +
 //						"; geoJsonFeatures: " + geoJsonFeatures.length() +
@@ -558,14 +546,14 @@ public class RIFTiles {
 					throw new JSONException("TopoJSON Array[\"geometries\"] not found");
 				}				
 			}
-			else {
-				List<String> collectionList = IteratorUtils.toList(collection.keys());
+			else /* if (collection != null) */ {
+				List<String> collectionList = IteratorUtils.toList(collection.keys()); // Ignore NPE warnings from ItelliJ
 				String collectionText = String.join(", ", collectionList);
 				throw new JSONException("TopoJSON Object[\"objects\"] not found; keys: " + collectionText);
 			}
 		}
-		else {
-			List<String> tileTopoJsonList = IteratorUtils.toList(tileTopoJson.keys());
+		else /* if (tileTopoJson != null) */ {
+			List<String> tileTopoJsonList = IteratorUtils.toList(tileTopoJson.keys()); // Ignore NPE warnings from ItelliJ
 			String tileTopoJsonText = String.join(", ", tileTopoJsonList);
 			throw new JSONException("TopoJSON Object[\"objects\"] not found; keys: " + tileTopoJsonText);
 		}
@@ -734,9 +722,10 @@ public class RIFTiles {
 			else if (zoomlevel < minZoomlevel) {
 				statement.setInt(2, minZoomlevel);
 			}	
-			else if (zoomlevel > maxZoomlevel) { // minZoomLevel and maxZoomLevel are the limits of the Geometry lookup table
-												 // minZoomLevel is set by the tile Maker and usually 6, and maxZoomLevel 9. Zoomlevel can 
-												 // be from 0 to 22, but is limited in the rest validation  to 11 (i.e. IntelliJ is wrong)
+			else { // zoomlevel > maxZoomlevel
+				   // minZoomLevel and maxZoomLevel are the limits of the Geometry lookup table
+				   // minZoomLevel is set by the tile Maker and usually 6, and maxZoomLevel 9. Zoomlevel can
+				   // be from 0 to 22, but is limited in the rest validation  to 11 (i.e. IntelliJ is ambiguous)
 				statement.setInt(2, maxZoomlevel);
 			}	
 			
@@ -947,7 +936,7 @@ public class RIFTiles {
 		PreparedStatement statement2 = null;
 		ResultSet resultSet = null;
 		ResultSet resultSet2 = null;
-		int generatedCount=0;
+		int generatedCount;
 		
 		SelectQueryFormatter generateTilesForGeoLevelQueryFormatter
 				= new MSSQLSelectQueryFormatter();
