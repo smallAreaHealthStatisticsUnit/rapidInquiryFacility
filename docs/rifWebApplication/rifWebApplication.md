@@ -2447,7 +2447,7 @@ tileGeneratorUsername=<username>
 tileGeneratorPassword=<password>
 ```
 
-This requires 7G of memory; edit %CATALINA_HOME%/bin/setenv.bat to add **-Xmx7g** to *CATALINA_OPTS*:
+This process requires 7G of memory; edit %CATALINA_HOME%/bin/setenv.bat to add **-Xmx7g** to *CATALINA_OPTS*:
 ```
 Exception in thread "http-nio-8080-AsyncTimeout"
 Exception: java.lang.OutOfMemoryError thrown from the UncaughtExceptionHandler in thread "http-nio-8080-AsyncTimeout"
