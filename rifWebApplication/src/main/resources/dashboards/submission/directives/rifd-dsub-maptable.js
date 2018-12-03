@@ -725,6 +725,11 @@ angular.module("RIF")
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] mapInitialise OK: " + 
 											(res ? res : "no status"))
 										// Add topoJSON tiles to map
+										return asyncCreateTileLayer(topojsonURL);
+									}).then(function (res) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] TileLayer OK: " + 
+											(res ? res : "no status"))
+										// Add topoJSON tiles to map
 										return asyncCreateTopoJsonLayer(topojsonURL);
 									}).then(function (res) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer OK: " + 
@@ -1017,18 +1022,12 @@ angular.module("RIF")
 							}); // End of $q constructor
 						}
 							
-						function asyncCreateTopoJsonLayer(topojsonURL) {
-							$scope.geoJSONLoadCount=0;
+						function asyncCreateTileLayer(topojsonURL) {
 							return $q(function(resolve, reject) {
-								
-								var latlngListDups=0;
-								var areaIdObj={};
 								if ($scope.noMouseClocks && 
 								    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering");
-									areaIdObj=CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name);
 									var pngURL=topojsonURL.replace('&tileType=topojson', '&tileType=png');
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering, pngURL: " +
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] TileLayer enabled; pngURL: " +
 										pngURL);
 									$scope.pngTiles = new L.TileLayer(pngURL, {
 										attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
@@ -1039,8 +1038,30 @@ angular.module("RIF")
 										reject("failed to create TileLayer");
 									}
 									else {
+										$scope.pngTiles.on('load', function(layer) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] TileLayer: " + pngURL + " loaded");
+						
+											resolve("topoJsonGridLayer enable areaId filtering: added TileLayer");
+										});
 										CommonMappingStateService.getState("areamap").map.addLayer($scope.pngTiles);
 									}
+								}
+								else {
+									resolve("topoJsonGridLayer enable areaId filtering disabled");
+								}
+							});							
+						}
+						
+						function asyncCreateTopoJsonLayer(topojsonURL) {
+							$scope.geoJSONLoadCount=0;
+							return $q(function(resolve, reject) {
+								
+								var latlngListDups=0;
+								var areaIdObj={};
+								if ($scope.noMouseClocks && 
+								    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering");
+									areaIdObj=CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name);
 								}
 								else {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer disable areaId filtering");
