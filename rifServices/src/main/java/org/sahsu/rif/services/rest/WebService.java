@@ -1069,8 +1069,8 @@ public class WebService {
 		}
 		
 		Response response;
-		if (!isAnError && tileType.equals("png")) { // PNG tile create
-			response = webServiceResponseGenerator.generateWebServicePdfResponse(
+		if (!isAnError && tileType != null && tileType.equals("png")) { // PNG tile create
+			response = webServiceResponseGenerator.generateWebServicePngResponse(
 					servletRequest,
 					result);
 		}

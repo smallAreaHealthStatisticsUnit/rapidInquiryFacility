@@ -243,7 +243,7 @@ final public class WebServiceResponseGenerator {
 				rifLogger.error(this.getClass(), "generateWebServiceResponse() error",
 					exception);
 				
-				responseBuilder = Response.status(500).entity("generateWebServiceResponse(): Error in PDF generation: " + 
+				responseBuilder = Response.status(500).entity("generateWebServiceResponse(): Error in response generation: " + 
 					exception.getMessage());
 				responseBuilder.type("text/plain");
 			}
@@ -252,7 +252,7 @@ final public class WebServiceResponseGenerator {
 			}
 		}
 
-		public Response generateWebServicePdfResponse(
+		public Response generateWebServicePngResponse(
 			final HttpServletRequest servletRequest,
 			final String data) {
 			
@@ -271,7 +271,7 @@ final public class WebServiceResponseGenerator {
 				rifLogger.error(this.getClass(), "generateWebServicePdfResponse() error",
 					exception);
 				
-				responseBuilder = Response.status(500).entity("generateWebServicePdfResponse(): Error in PDF generation: " + 
+				responseBuilder = Response.status(500).entity("generateWebServicePdfResponse(): Error in PNG generation: " + 
 					exception.getMessage() + lineSeparator +
 //					"Stack >>>" + lineSeparator + exception.getStack() + lineSeparator +
 					"Data: " + data);
