@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 import org.geotools.geometry.jts.Geometries;
 import org.geotools.geometry.jts.GeometryBuilder;
-import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -39,14 +38,13 @@ import org.geotools.geojson.geom.GeometryJSON;
 public class RifWellKnownText {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");
+	private static final String lineSeparator = System.getProperty("line.separator");
 	private static WKTReader reader = null;
 	private static GeometryBuilder geometryBuilder = null;
-	private static GeometryFactory geometryFactory = null;
 	private static GeometryJSON geoJSONWriter = null;
 	
 	public RifWellKnownText() { // constructor
-		geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 		geoJSONWriter = new GeometryJSON();
 		reader = new WKTReader(geometryFactory);		
 		geometryBuilder = new GeometryBuilder(geometryFactory);
@@ -60,14 +58,14 @@ public class RifWellKnownText {
 	 * Removes POINT/MULTIPOINT/LINESTRING/MULTILINESTRINGs
 	 * </p>
 	 *
-	 * @param String wkt
-	 * @param String geoLevel
-	 * @param int zoomlevel
-	 * @param String areaId
+	 * @param wkt String
+	 * @param geoLevel tring
+	 * @param zoomlevel int
+	 * @param areaId String
      *
-	 * @returns MultiPolygon
+	 * @return MultiPolygon
 	 *
-	 * @throws RIFServiceException
+	 * @throws RIFServiceException for Unsupported Geometries
      */	
 	public MultiPolygon createGeometryFromWkt(
 			final String wkt, 
@@ -101,12 +99,12 @@ public class RifWellKnownText {
 							Geometries nthGeomType = Geometries.get(nthGeometry);
 							switch (nthGeomType) {
 								case POLYGON: // Convert POLYGON to MULTIPOLYGON
-									nthGeometryList.add((Polygon)nthGeometry);
+									nthGeometryList.add(nthGeometry);
 									break;		
 								case MULTIPOLYGON:
 									for (int j=0; j<nthGeometry.getNumGeometries(); j++) {
 										Polygon nthPolygon=(Polygon)nthGeometry.getGeometryN(i);
-										nthGeometryList.add((Polygon)nthGeometry);
+										nthGeometryList.add(nthPolygon);
 									}
 									break;
 								case LINESTRING:
@@ -196,14 +194,14 @@ public class RifWellKnownText {
 	 * Would need to ST_Transform if the SRID is not WGS84
 	 * </p>
 	 *
-	 * @param String wkt
-	 * @param String geoLevel
-	 * @param int zoomlevel
-	 * @param String areaId
+	 * @param wkt String
+	 * @param geoLevel String
+	 * @param zoomlevel int
+	 * @param areaId String
      *
-	 * @returns JSONObject
+	 * @return JSONObject
 	 *
-	 * @throws RIFServiceException
+	 * @throws RIFServiceException for WKT and JSON conversion exceptions
      */		
 	public JSONObject wktToGeoJSON(
 			final String wkt, 
@@ -269,14 +267,12 @@ public class RifWellKnownText {
 	 *			},
 	 * </p>
 	 *
-	 * @param String wkt
-	 * @param String geoLevel
-	 * @param int zoomlevel
-	 * @param String areaId
-     *
-	 * @returns JSONObject
+	 * @param geometry JSONObject
+	 * @param geoLevel String
+	 * @param zoomlevel int
+	 * @param areaId String
 	 *
-	 * @throws JSONException
+	 * @throws JSONException for logical issues with the JSON
      */		
 	private void checkGeoJsonGeometry(
 		final JSONObject geometry,
@@ -295,7 +291,7 @@ public class RifWellKnownText {
 						throw new JSONException("Found non Polygon: \"" + type + "\" in geometry for geoLevel: " + geoLevel +
 							"; areaId: " + areaId +
 							"; zoomlevel: " + zoomlevel +
-							"; geometry: " + geometryToString(geometry, 300, false /* pretty print */));
+							"; geometry: " + geometryToString(geometry, false /* pretty print */));
 					}
 				} 
 				else if (geometry.optString("type") != null) { // Checked above
@@ -304,20 +300,19 @@ public class RifWellKnownText {
 					throw new JSONException("JSONObject multiple geometries found for geoLevel: " + geoLevel +
 						"; areaId: " + areaId +
 						"; zoomlevel: " + zoomlevel +
-						"; geometries: " + geometryToString(geometry.optJSONArray("geometries"), 300, false /* pretty print */));
+						"; geometries: " + geometryToString(geometry.optJSONArray("geometries"), false /* pretty print */));
 				}
 				else {
 					throw new JSONException("Unexpected JSON found for geoLevel: " + geoLevel +
 						"; areaId: " + areaId +
 						"; zoomlevel: " + zoomlevel +
-						"; geometry: " + geometryToString(geometry, 300, false /* pretty print */));
+						"; geometry: " + geometryToString(geometry, false /* pretty print */));
 				}
 			}
 			else {
 				throw new JSONException("JSONObject geometry not found for geoLevel: " + geoLevel +
 					"; areaId: " + areaId +
-					"; zoomlevel: " + zoomlevel +
-					"; geometry: " + geometryToString(geometry, 300, false /* pretty print */));
+					"; zoomlevel: " + zoomlevel);
 			}
 		}
 		catch (JSONException jsonException) {
@@ -332,18 +327,16 @@ public class RifWellKnownText {
 	/** 
 	 * Convert GeoJSON Geometry from JSONObject to String form
 	 *
-	 * @param JSONObject GeoJSON geometry
-	 * @param int truncate at length
-	 * @param boolean pretty print GeoJSON (as JSON5)
+	 * @param geometry JSONObject
+	 * @param prettyPrint boolean pretty print GeoJSON (as JSON5)
      *
-	 * @returns String GeoJSON
+	 * @return String GeoJSON
 	 *
-	 * @throws JSONException
+	 * @throws JSONException for JSON conversion errors
      */		 
 	private String geometryToString(
-		final JSONObject geometry,
-		final int truncateAtLength,
-		final boolean prettyPrint)
+			final JSONObject geometry,
+			final boolean prettyPrint)
 			throws JSONException {
 			
 		String text=null;
@@ -368,18 +361,16 @@ public class RifWellKnownText {
 	/** 
 	 * Convert JSONArray Geometry from JSONArray to String form
 	 *
-	 * @param JSONArray GeoJSON geometry
-	 * @param int truncate at length
-	 * @param boolean pretty print GeoJSON (as JSON5)
+	 * @param geometry JSONArray GeoJSON geometry
+	 * @param prettyPrint boolean pretty print GeoJSON (as JSON5)
      *
-	 * @returns String GeoJSON
+	 * @return String GeoJSON
 	 *
-	 * @throws JSONException
+	 * @throws JSONException for JSON conversion errors
      */		
 	private String geometryToString(
-		final JSONArray geometry,
-		final int truncateAtLength,
-		final boolean prettyPrint)
+			final JSONArray geometry,
+			final boolean prettyPrint)
 			throws JSONException {
 			
 		String text=null;
