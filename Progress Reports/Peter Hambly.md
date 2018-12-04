@@ -3106,6 +3106,86 @@ Further changes are needed to support risk analysis:
 * Prepare paperwork for COMARE and Heathrow extracts
 * Test pull #116, create pull #117 for tile generation; document tile generation
 
+#### 3rd to 7th December
+
+* Scripts for COMARE load, RIF meeting, data load meetings, issue with rif_user role
+* Heathrow extract specificiation; derive COA list and noise controur from day and night noise rasters
+* Issues with new users:
+  * SQL Server needs to create required views automatically;
+  * Scripts need to insert the *TEST* project into *t_rif40_user_projects*. The username must be in lowercase: Postgres errors:
+    ```
+	ERROR:  record "old" is not assigned yet
+	DETAIL:  The tuple structure of a not-yet-assigned record is indeterminate.
+	CONTEXT:  PL/pgSQL function rif40_trg_pkg.trigger_fct_t_rif40_user_projects_checks() line 43 at IF
+	```
+	Simple fix: ```ALTER TABLE t_rif40_user_projects DISABLE TRIGGER t_rif40_user_projects_checks;```.
+	Trigger code needs to specify INSERT in -20522 check;
+  * Lack of the *rif_manager* role (i.e. *rif_user* only) causes on SQL Server:
+    ```
+	```
+    and Postgres:  
+    ```
+	15:57:46.702 [pool-11-thread-1] ERROR org.sahsu.rif.generic.util.CommonLogger : [org.sahsu.rif.services.datastorage.common.StudySubmissionStep]:
+	RIFSQLException: Warnings/Messages >>>
+	No warnings/messages found.
+	<<<
+	BaseSQLManager logSQLQuery >>>
+	QUERY NAME: addGeneralInformationToStudy
+	PARAMETERS(16): 
+		 1: 'SAHSULAND'
+		 2: 'TEST'
+		 3: 'TEST 1002'
+		 4: '1'
+		 5: 'SAHSU_GRD_LEVEL1'
+		 6: 'SAHSU_GRD_LEVEL4'
+		 7: 'POP_SAHSULAND_POP'
+		 8: '1995'
+		 9: '1996'
+		 10: '21'
+		 11: '0'
+		 12: '0'
+		 13: '0'
+		 14: '0'
+		 15: 'HET'
+		 16: 'null'
+	SQL QUERY TEXT: 
+	INSERT INTO rif40.rif40_studies( 
+	   geography,
+	   project,
+	   study_name,
+	   study_type,
+	   comparison_geolevel_name,
+	   study_geolevel_name,
+	   denom_tab,
+	   year_start,
+	   year_stop,
+	   max_age_group,
+	   min_age_group,
+	   suppression_value,
+	   extract_permitted,
+	   transfer_permitted,
+	   stats_method,
+	   risk_analysis_exposure_field) 
+	VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+
+
+	<<< End BaseSQLManager logSQLQuery
+
+	exception: ERROR: permission denied for relation rif40_study_shares
+	getMessage:          PSQLException: ERROR: permission denied for relation rif40_study_shares
+	getRootCauseMessage: PSQLException: ERROR: permission denied for relation rif40_study_shares
+	getThrowableCount:   1
+	getRootCauseStackTrace >>>
+	org.postgresql.util.PSQLException: ERROR: permission denied for relation rif40_study_shares
+		at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2198)
+		at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:1927)
+		at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:255)
+		at org.postgresql.jdbc2.AbstractJdbc2Statement.execute(AbstractJdbc2Statement.java:561)
+		at org.postgresql.jdbc2.AbstractJdbc2Statement.executeWithFlags(AbstractJdbc2Statement.java:419)
+		at org.postgresql.jdbc2.AbstractJdbc2Statement.executeUpdate(AbstractJdbc2Statement.java:365)
+		at org.sahsu.rif.services.datastorage.common.StudySubmissionStep.addGeneralInformationToStudy(StudySubmissionStep.java:502)
+  ```
+
 Risk analysis issues:
 
 1. Using add by postcode produces errors on its own, but works;
@@ -3113,3 +3193,4 @@ Risk analysis issues:
 3. Clear does not work after restore from file;
 4. Adding a point produces errors after restore from file;
 5. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
+6. Load list from text file loads OK but does not display correctly;
