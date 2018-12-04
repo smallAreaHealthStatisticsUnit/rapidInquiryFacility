@@ -10,6 +10,7 @@ __email__ = "m.mccallion@imperial.ac.uk"
 
 import os
 import sys
+from collections import namedtuple
 import shutil
 import argparse
 
@@ -17,11 +18,18 @@ import argparse
 def main():
 
     # Check that we have all the values we need
-    db_type, script_root, cat_home, war_dir = check_arguments()
+    # db_type, script_root, cat_home, war_dir = check_arguments()
 
-    print("About to install with DB {}, scripts in {}, Tomcat in "
-          "{}, WAR files in {}".format(long_db_name(db_type), script_root,
-                                  cat_home, war_dir))
+    args = check_arguments()
+    print("About to install with the following settings:"
+          "\n\tDB: {} "
+          "\n\tScripts directory: {} "
+          "\n\tTomcat directory: {}"
+          "\n\tWAR files directory: {}"
+          .format(long_db_name(args.db_type),
+                  args.script_root,
+                  args.cat_home,
+                  args.war_dir))
 
     #
     # prompt for go/no-go
@@ -46,8 +54,8 @@ def long_db_name(db):
 
 
 def check_arguments():
-    """Checks the command-line arguments, displaying the help if there is a
-    problem, or if requested.
+    """Checks the command-line arguments, displaying the usage message if
+    there is a problem, or if requested.
     """
     parser = argparse.ArgumentParser(description="Install the RIF")
     db_group = parser.add_mutually_exclusive_group()
@@ -84,10 +92,11 @@ def check_arguments():
     # ===========
     # Use the home value if specified; if not we try CATALINA_HOME, and if
     # that's not set then we exit with an error.
-    if not args.home:
-        cat_home = os.getenv("CATALINA_HOME")
-    else:
+    if args.home:
         cat_home = args.home
+    else:
+        cat_home = os.getenv("CATALINA_HOME")
+
     if cat_home is None or cat_home == '':
         print("CATALINA_HOME is not set in the environment and no value "
               "given for --home.")
@@ -95,7 +104,7 @@ def check_arguments():
 
     # Scripts
     # =======
-    # Use the script directory if given; otherwise assume it's the current
+    # Use the SQL script directory if given; otherwise assume it's the current
     # directory
     script_root = args.scripts
     if not script_root:
@@ -107,10 +116,13 @@ def check_arguments():
     if not war_dir:
         war_dir = "."
 
-    return db_type, str.strip(script_root), str.strip(cat_home), \
-           str.strip(war_dir)
-
+    # Using a named tuple for the return value for simplicity of creation and
+    # clarity of naming.
+    Args = namedtuple("Args", ["db_type", "script_root", "cat_home",
+                               "war_dir"])
+    return Args(db_type, str.strip(script_root), str.strip(cat_home),
+                str.strip(war_dir))
 
 if __name__ == "__main__":
-    print("Initialising. Arguments are {}".format(sys.argv))
+    # print("Initialising. Arguments are {}".format(sys.argv))
     sys.exit(main())
