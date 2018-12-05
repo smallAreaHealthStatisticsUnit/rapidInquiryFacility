@@ -434,8 +434,11 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 
 nullProtect <- function(col) {
 
-	protectedCol <- paste("CASE WHEN", col, " = 'NAN' THEN NULL ELSE", col, "END")
-	return(protectedCol)
+	if (is.na(col) || is.nan(col)) {
+		return("NULL")
+	} else {
+		return(col)
+	}
 }
 
 ##================================================================================
@@ -484,58 +487,70 @@ insertHomogeneityResults <- function(homogData) {
   # Save data frame to csv file for debugging
   #
   if (dumpFramesToCsv == TRUE) {
-    cat(paste0("Saving data frame to: ", temporaryHomogFileName, "\n"), sep="")
-    write.csv(homogData, file=temporaryHomogFileName)
+	cat(paste0("Saving data frame to: ", temporaryHomogFileName, "\n"), sep="")
+	write.csv(homogData, file=temporaryHomogFileName)
   }
   
   
   #Insert 3 rows, M,F,Both
   for (i in 1:3)
   {
-     selHomog <- paste0("select * FROM rif40.t_rif40_homogeneity WHERE inv_id =", homogData$inv_id[i]," AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj), " and genders = ", homogData$gender[i], sep="")
-     homogExists <- tryCatch(doQuery(selHomog),
-     warning=function(w) {
-       cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
-       exitValue <<- 1
-     },
-     error=function(e) {
-       cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
-       exitValue <<- 1
-     })
-     numberOfRows <- nrow(homogExists)
+	 selHomog <- paste0(
+	 	"select * FROM rif40.t_rif40_homogeneity WHERE inv_id =", homogData$inv_id[i],
+	 	" AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj),
+	 	" and genders = ", homogData$gender[i], sep="")
+	 homogExists <- tryCatch(doQuery(selHomog),
+	 warning=function(w) {
+	   cat(paste("JDBC UNABLE TO SELECT FROM t_rif40_homogeneity! ", w, "\n"), sep="")
+	   exitValue <<- 1
+	 },
+	 error=function(e) {
+	   cat(paste("JDBC ERROR SELECTING FROM t_rif40_homogeneity! ", geterrmessage(), "\n"), sep="")
+	   exitValue <<- 1
+	 })
+	 numberOfRows <- nrow(homogExists)
 
-     if (numberOfRows == 0) {
-     
-      insertStmt <- paste("INSERT INTO rif40.t_rif40_homogeneity(inv_id, study_id, adjusted, genders) VALUES (",
-                                     homogData$inv_id[i],",",homogData$study_id[i],",",as.integer(adj),",",homogData$gender[i],");")
-      res <- tryCatch({
-                withErrorTracing({ dbSendUpdate(connection, insertStmt) })
-             },warning=function(w) {
-                cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
-                exitValue <<- 1
-              },
-            error=function(e) {
-              cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
-              exitValue <<- 1
-            })
-    }
-    
-    # Finally update the record which should now exist
-    updateStmt <- paste("UPDATE rif40.t_rif40_homogeneity SET username=\'" , userID,"\', homogeneity_dof=", homogData$df[i],
-                        ", homogeneity_chi2=", homogData$chisqHomog[i], ", homogeneity_p=", homogData$pValHomog[i], 
-                        ", linearity_chi2=", homogData$chisqLT[i], ", linearity_p=", homogData$pValLT[i], ", explt5=",homogData$bandsLT5[i],
-                        " WHERE inv_id =", homogData$inv_id[i], " AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj), 
-                        " and genders = ", homogData$gender[i], ";\n", sep="") 
-            res <- tryCatch({
-              withErrorTracing({ dbSendUpdate(connection, updateStmt) })
-            },warning=function(w) {
-              cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
-              exitValue <<- 1
-            },
-            error=function(e) {
-              cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
-              exitValue <<- 1
-            })
+	 if (numberOfRows == 0) {
+	 
+	  insertStmt <- paste(
+	  	"INSERT INTO rif40.t_rif40_homogeneity(inv_id, study_id, adjusted, genders) VALUES (",
+	  		homogData$inv_id[i], ",", homogData$study_id[i], ",", as.integer(adj), ",",
+	  		homogData$gender[i],");")
+	  res <- tryCatch({
+				withErrorTracing({ dbSendUpdate(connection, insertStmt) })
+			 },warning=function(w) {
+				cat(paste("JDBC UNABLE TO INSERT INTO t_rif40_homogeneity! ", w, "\n"), sep="")
+				exitValue <<- 1
+			  },
+			error=function(e) {
+			  cat(paste("JDBC ERROR INSERTING INTO t_rif40_homogeneity! ", geterrmessage(), "\n"),
+			  sep="")
+			  exitValue <<- 1
+			})
+	}
+	
+	# Finally update the record which should now exist
+	updateStmt <- paste("UPDATE rif40.t_rif40_homogeneity SET username = '" , userID,
+						"', homogeneity_dof = ", nullProtect(homogData$df[i]),
+						", homogeneity_chi2 = ", nullProtect(homogData$chisqHomog[i]),
+						", homogeneity_p = ", nullProtect(homogData$pValHomog[i]),
+						", linearity_chi2 = ", nullProtect(homogData$chisqLT[i]),
+						", linearity_p = ", nullProtect(homogData$pValLT[i]),
+						", explt5 = ", nullProtect(homogData$bandsLT5[i]),
+						" WHERE inv_id = ", homogData$inv_id[i],
+						" AND study_id = ", homogData$study_id[i],
+						" and adjusted = ", as.integer(adj),
+						" and genders = ", homogData$gender[i], ";\n", sep="") 
+			res <- tryCatch({
+			  withErrorTracing({ dbSendUpdate(connection, updateStmt) })
+			},warning=function(w) {
+			  cat(paste("JDBC UNABLE TO UPDATE t_rif40_homogeneity! ", w, "\n"), sep="")
+			  exitValue <<- 1
+			},
+			error=function(e) {
+			  cat(paste("JDBC ERROR UPDATING t_rif40_homogeneity! ", geterrmessage(), "\n"), sep="")
+			  exitValue <<- 1
+			})
   }
   return(exitValue);
 } # End of updateMapTableFromSmoothedResultsTable()
