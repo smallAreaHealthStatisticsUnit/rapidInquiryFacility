@@ -3122,6 +3122,97 @@ Further changes are needed to support risk analysis:
 	Trigger code needs to specify INSERT in -20522 check;
   * Lack of the *rif_manager* role (i.e. *rif_user* only) causes on SQL Server:
     ```
+	09:47:44.143 [pool-7-thread-1] INFO  org.sahsu.rif.generic.util.CommonLogger : [org.sahsu.rif.services.datastorage.common.StudySubmissionStep]:
+	BaseSQLManager logSQLQuery >>>
+	QUERY NAME: addGeneralInformationToStudy
+	PARAMETERS(16): 
+		 1: 'SAHSULAND'
+		 2: 'TEST'
+		 3: 'TEST 1002'
+		 4: '1'
+		 5: 'SAHSU_GRD_LEVEL1'
+		 6: 'SAHSU_GRD_LEVEL4'
+		 7: 'POP_SAHSULAND_POP'
+		 8: '1995'
+		 9: '1996'
+		 10: '21'
+		 11: '0'
+		 12: '0'
+		 13: '0'
+		 14: '0'
+		 15: 'HET'
+		 16: 'null'
+	SQL QUERY TEXT: 
+	INSERT INTO rif40.rif40_studies( 
+	   geography,
+	   project,
+	   study_name,
+	   study_type,
+	   comparison_geolevel_name,
+	   study_geolevel_name,
+	   denom_tab,
+	   year_start,
+	   year_stop,
+	   max_age_group,
+	   min_age_group,
+	   suppression_value,
+	   extract_permitted,
+	   transfer_permitted,
+	   stats_method,
+	   risk_analysis_exposure_field) 
+	VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+
+
+	<<< End BaseSQLManager logSQLQuery
+
+	09:47:44.477 [pool-7-thread-1] WARN  org.sahsu.rif.generic.util.CommonLogger : [org.sahsu.rif.generic.datastorage.SQLQueryUtility]:
+	SQL Error/Warning >>>
+	Message:           The statement has been terminated.
+	SQLState:          S0000
+	Vendor error code: 3621	
+	```
+	Running the SQL manually gives:
+	```
+	1> INSERT INTO rif40.rif40_studies(
+	2>    geography,
+	3>    project,
+	4>    study_name,
+	5>    study_type,
+	6>    comparison_geolevel_name,
+	7>    study_geolevel_name,
+	8>    denom_tab,
+	9>    year_start,
+	10>    year_stop,
+	11>    max_age_group,
+	12>    min_age_group,
+	13>    suppression_value,
+	14>    extract_permitted,
+	15>    transfer_permitted,
+	16>    stats_method,
+	17>    risk_analysis_exposure_field)
+	18> VALUES ('SAHSULAND',
+	19>  'TEST',
+	20>  'TEST 1002',
+	21>  1,
+	22>  'SAHSU_GRD_LEVEL1',
+	23>  'SAHSU_GRD_LEVEL4',
+	24>  'POP_SAHSULAND_POP',
+	25>  1995,
+	26>  1996,
+	27>  21,
+	28>  0,
+	29>  0,
+	30>  0,
+	31>  0,
+	32>  'HET',
+	33>  'null');
+	34> go
+
+	(0 rows affected)
+
+	(1 rows affected)
+	Msg 51131, Level 16, State 1, Server DESKTOP-4P2SA80, Procedure tr_rif40_studies, Line 47
+	View name: [rif40].[rif40_studies], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: aina	
 	```
     and Postgres:  
     ```
@@ -3184,8 +3275,9 @@ Further changes are needed to support risk analysis:
 		at org.postgresql.jdbc2.AbstractJdbc2Statement.executeWithFlags(AbstractJdbc2Statement.java:419)
 		at org.postgresql.jdbc2.AbstractJdbc2Statement.executeUpdate(AbstractJdbc2Statement.java:365)
 		at org.sahsu.rif.services.datastorage.common.StudySubmissionStep.addGeneralInformationToStudy(StudySubmissionStep.java:502)
-  ```
-
+    ```
+    Note that Postgres and SQL Server are different
+	
 Risk analysis issues:
 
 1. Using add by postcode produces errors on its own, but works;
