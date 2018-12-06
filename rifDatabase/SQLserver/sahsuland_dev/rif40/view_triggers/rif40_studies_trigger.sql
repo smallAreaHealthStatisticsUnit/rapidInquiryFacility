@@ -39,11 +39,11 @@ BEGIN
 --
 	DECLARE @insert_invalid_user VARCHAR(MAX) = 
 	(
-		select SUSER_SNAME() AS username
-		from inserted
-		where NOT (username = SUSER_SNAME() OR username is null)
-		OR NOT ([rif40].[rif40_has_role](SUSER_SNAME(),'rif_user') = 1
-		AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') = 1)
+		SELECT SUSER_SNAME() AS username
+		  FROM inserted
+		 WHERE NOT (username = SUSER_SNAME() OR username is null)		  /* Not the study owner */
+		   AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_user')    != 1 /* Not a rif_user or a rif_manager */
+	       AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') != 1
 	);
 
 	IF @insert_invalid_user IS NOT NULL
@@ -150,7 +150,9 @@ BEGIN
            authorised_by=inserted.authorised_by, 
            authorised_on=inserted.authorised_on, 
            authorised_notes=inserted.authorised_notes,
-           study_state=inserted.study_state
+           study_state=inserted.study_state,
+		   select_state=inserted.select_state,
+		   print_state=inserted.print_state
       FROM [rif40].[t_rif40_studies] a
 	  JOIN inserted ON (inserted.study_id = a.study_id);
 END;

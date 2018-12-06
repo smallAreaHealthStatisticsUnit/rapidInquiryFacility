@@ -155,10 +155,10 @@ BEGIN
 	
 	-- grantee_username has RIF_USER or RIF_MANAGER
 	DECLARE @grantee_roles varchar(max) = (
-		select study_id, grantee_username
-		from inserted
-		where [rif40].[rif40_has_role](grantee_username, 'rif_manager')=0 
-		and [rif40].[rif40_has_role](grantee_username, 'rif_user')=0
+		SELECT study_id, grantee_username
+		  FROM inserted
+		 WHERE [rif40].[rif40_has_role](SUSER_SNAME(),'rif_user')    != 1 /* Not a rif_user or a rif_manager */
+	       AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') != 1
 		FOR XML PATH('')
 	);
 	IF @grantee_roles IS NOT NULL

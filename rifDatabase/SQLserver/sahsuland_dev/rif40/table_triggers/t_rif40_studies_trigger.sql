@@ -172,6 +172,18 @@ BEGIN
 		and (COALESCE(a.print_state, '')  != COALESCE(b.print_state, '')
 		or   COALESCE(a.select_state, '') != COALESCE(b.select_state, ''))
 		FOR XML PATH(''));
+	DECLARE @printstate VARCHAR(MAX) = ( 
+		SELECT a.study_id, COALESCE(a.print_state, 'NULL') AS new_print_state, COALESCE(b.print_state, 'NULL') AS old_print_state
+		FROM inserted a, deleted b
+		where a.study_id=b.study_id
+		FOR XML PATH(''))
+	SET @printstate = 'Print state: ' + REPLACE(@printstate, '><', '>'+CHAR(10)+'<');		
+	DECLARE @selectstate VARCHAR(MAX) = ( 
+		SELECT a.study_id, COALESCE(a.select_state, 'NULL') AS new_select_state, COALESCE(b.select_state, 'NULL') AS old_select_state
+		FROM inserted a, deleted b
+		where a.study_id=b.study_id
+		FOR XML PATH(''));
+	SET @selectstate = 'Select state: ' + REPLACE(@selectstate, '><', '>'+CHAR(10)+'<');	
 
 	IF @is_state_change IS NOT NULL AND @is_ig_update IS NOT NULL 
 	BEGIN
@@ -246,6 +258,8 @@ BEGIN
 	BEGIN TRY
 
 		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @state_change;
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @printstate;
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @selectstate;
 		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @inserted;
 		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @deleted;
 
@@ -661,10 +675,12 @@ BEGIN
 
 	DECLARE @not_manager_extract_prob VARCHAR(MAX)=
 	(
-		select username, study_id
-		from inserted
-		where extract_permitted=1
-		and [rif40].[rif40_has_role](username,'rif_manager')=0
+		select a.username, a.study_id, a.extract_permitted AS new_extract_permitted, b.extract_permitted AS old_extract_permitted
+		from inserted a, deleted b
+		where a.extract_permitted=1
+		  AND a.extract_permitted != b.extract_permitted
+		  AND a.study_id = b.study_id
+		and [rif40].[rif40_has_role](a.username,'rif_manager')=0
 		FOR XML PATH('')
 	);
 	IF @not_manager_extract_prob IS NOT NULL

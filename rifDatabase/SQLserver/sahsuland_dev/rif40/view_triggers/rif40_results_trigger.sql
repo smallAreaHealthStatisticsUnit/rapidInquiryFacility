@@ -39,11 +39,11 @@ BEGIN
 --
 	DECLARE @insert_invalid_user VARCHAR(MAX) = 
 	(
-		select username, study_id, inv_id, band_id, genders, direct_standardisation, adjusted
-		from inserted
-		where (username != USER and username is not null)
-		OR ([rif40].[rif40_has_role](USER,'rif_user') = 0
-		AND [rif40].[rif40_has_role](USER,'rif_manager') = 0)
+		SELECT SUSER_SNAME() AS username, study_id, inv_id, band_id, genders, direct_standardisation, adjusted
+		  FROM inserted
+		 WHERE NOT (username = SUSER_SNAME() OR username is null)		  /* Not the study owner */
+		   AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_user')    != 1 /* Not a rif_user or a rif_manager */
+	       AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') != 1
 		FOR XML PATH('')
 	);
 	IF @insert_invalid_user IS NOT NULL
