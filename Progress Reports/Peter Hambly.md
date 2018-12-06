@@ -3277,6 +3277,7 @@ Further changes are needed to support risk analysis:
 		at org.sahsu.rif.services.datastorage.common.StudySubmissionStep.addGeneralInformationToStudy(StudySubmissionStep.java:502)
     ```
     Note that Postgres and SQL Server are different
+* Heathrow covariates, fixes for rif_user role faults;
 	
 Risk analysis issues:
 
