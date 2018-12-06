@@ -82,7 +82,24 @@ BEGIN
 		THROW 51005, @err, 1; 
 	END CATCH;
 	
-
+	-- username is valid user
+	DECLARE @invalid_username varchar(max) = (
+		SELECT a.username
+		FROM inserted a
+		WHERE NOT EXISTS (select 1
+		FROM [sys].[database_principals] b WHERE a.username collate database_default=b.name collate database_default)
+		FOR XML PATH('')
+	);
+	IF @invalid_username IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg3 varchar(max) = formatmessage(51010, @invalid_username);
+		THROW 51010, @err_msg3, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_study_shares]';
+		THROW 51010, @err_msg3, 1;
+	END CATCH 
 	
 -- Check project has no end date + log
 	DECLARE @date_ended NVARCHAR(MAX)= 

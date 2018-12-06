@@ -214,6 +214,7 @@ Table name: [rif40].[t_rif40_studies] , UPDATE failed - non IG UPDATE not allowe
 /*
  2. Fix for inserting invalid usernames into t_rif40_user_projects
  */
+:r ..\sahsuland_dev\rif40\table_triggers\t_rif40_user_projects_trigger.sql
 
 --
 -- Testing stop
