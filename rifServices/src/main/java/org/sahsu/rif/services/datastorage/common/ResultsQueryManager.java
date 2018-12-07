@@ -33,6 +33,7 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.datastorage.common.RifLocale;
 import org.sahsu.rif.services.rest.RIFResultTableJSONGenerator;
 import org.sahsu.rif.services.graphics.RIFTiles;
+import org.sahsu.rif.services.graphics.SlippyTile;
 
 import java.io.IOException;
 
@@ -867,17 +868,18 @@ public class ResultsQueryManager extends BaseSQLManager {
 		String result = null;
 		RIFTiles rifTiles = new RIFTiles(options);
 		RIFTilesCache rifTilesCache = new RIFTilesCache(options);
+		SlippyTile slippyTile = new SlippyTile(zoomlevel, x, y);
 		if (tileType == null) {
 			tileType="topojson";
 		}
 		else if (tileType.equals("geojson")) {
-			result=rifTilesCache.getCachedGeoJsonTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
+			result=rifTilesCache.getCachedGeoJsonTile(geography.getName().toLowerCase(), slippyTile, geoLevelSelect.getName().toLowerCase());
 			if (result != null) {
 				return result;
 			}
 		}
  		else if (tileType.equals("png")) {	
-			result=rifTilesCache.getCachedPngTile(geography.getName().toLowerCase(), zoomlevel, geoLevelSelect.getName().toLowerCase(), x, y);
+			result=rifTilesCache.getCachedPngTile(geography.getName().toLowerCase(), slippyTile, geoLevelSelect.getName().toLowerCase());
 			if (result != null) {
 				return result; // In base64
 			}
@@ -969,9 +971,18 @@ public class ResultsQueryManager extends BaseSQLManager {
 			statement2.setInt(4, y);
 
 			resultSet2 = statement2.executeQuery();
-			resultSet2.next();
-			result = resultSet2.getString(1);
-
+			if (resultSet2.next()) {
+				result = resultSet2.getString(1);
+			}
+			else {			
+				String tileDoesNotExistError="Tile does not exist for geography: " + geography.getName().toUpperCase() +
+				   "; tileTable: " + myTileTable +
+				   "; zoomlevel: " + zoomlevel.toString() +
+				   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + lineSeparator + 
+				   "; x/y: " + x + "/" + y;
+				throw new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, tileDoesNotExistError);
+			}
+			
 			connection.commit();
 			
 			if (tileType.equals("topojson")) {		
@@ -999,11 +1010,11 @@ public class ResultsQueryManager extends BaseSQLManager {
 						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, 
 							tileTopoJson, myTileTable, myGeometryTable, 
 							geography.getName().toUpperCase(),
-							zoomlevel, geoLevelSelect.getName().toUpperCase(), x, y, addBoundingBoxToTile);
+							slippyTile, geoLevelSelect.getName().toUpperCase(), addBoundingBoxToTile);
 						
 						if (tileType.equals("png")) {	
-							result = rifTiles.geoJson2png(tileGeoJson, geography.getName().toUpperCase(), zoomlevel, 
-								geoLevelSelect.getName().toUpperCase(), x, y);
+							result = rifTiles.geoJson2png(tileGeoJson, geography.getName().toUpperCase(), slippyTile, 
+								geoLevelSelect.getName().toUpperCase());
 						}
 						else {
 							result = tileGeoJson.toString();
@@ -1029,10 +1040,11 @@ public class ResultsQueryManager extends BaseSQLManager {
 					result.equals(rifTiles.getNullTopoJSONTile() /* Null TopoJSON tile */)) {
 									
 					try {				
-						result=rifTilesCache.getCachedPngTile("NULL", 0, "NULL", 0, 0);
+						SlippyTile nullSlippyTile = new SlippyTile(0, 0, 0);
+						result=rifTilesCache.getCachedPngTile("NULL", nullSlippyTile, "NULL");
 						if (result == null) {
 							JSONObject nullTileGeoJson = new JSONObject(rifTiles.getNullGeoJSONTile());
-							result = rifTiles.geoJson2png(nullTileGeoJson, "NULL", 0, "NULL", 0, 0);
+							result = rifTiles.geoJson2png(nullTileGeoJson, "NULL" /* Geography */, nullSlippyTile, "NULL" /* Geolevel name */);
 							
 							rifLogger.info(getClass(), "Generated NULL PNG tile");
 						}
@@ -1048,7 +1060,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 					result.equals(rifTiles.getNullTopoJSONTile() /* Null TopoJSON tile */)) {
 									
 					try {		
-						JSONArray bboxJson = rifTiles.tile2boundingBox(x, y, zoomlevel);		
+						JSONArray bboxJson = slippyTile.tile2boundingBox();		
 						result = rifTiles.getNullGeoJSONTile(bboxJson); // Add bounding box for debug purposes
 						return result; 
 					}

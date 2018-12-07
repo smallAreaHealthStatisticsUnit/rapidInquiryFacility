@@ -4,6 +4,7 @@ import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.graphics.SlippyTile;
 
 import org.json.JSONObject;
 
@@ -62,10 +63,8 @@ public class RIFTilesCache {
 	 * @param tileGeoJson 		Tile GeoJSON as JSONObject (is null if pngTileStream is not null)
 	 * @param pngTileStream 	PNG tile as ByteArrayOutputStream (is null if tileGeoJson is not null)
 	 * @param geography			Uppercase String
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel 			Uppercase String
-	 * @param x 				X tile number		
-	 * @param y					Y tile number
 	 * @param fileExtension		File extension: .json or .png
 	 *
 	 * @throws RIFServiceException
@@ -74,15 +73,13 @@ public class RIFTilesCache {
 		final JSONObject tileGeoJson,
 		final ByteArrayOutputStream pngTileStream,
 		final String geography,
-		final Integer zoomlevel, 
+		final SlippyTile slippyTile, 
 		final String geoLevel, 
-		final Integer x, 
-		final Integer y,
 		final String fileExtension) 
 			throws RIFServiceException {
 			
-		File tmpFile=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, fileExtension + ".tmp");
-		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, fileExtension);
+		File tmpFile=getCachedTileFile(geography, slippyTile, geoLevel, fileExtension + ".tmp");
+		File file=getCachedTileFile(geography, slippyTile, geoLevel, fileExtension);
 		if (!file.exists() && !tmpFile.exists()) {
 //			rifLogger.debug(getClass(), "Cache temporary tile: " + tmpFile.getAbsolutePath());
 			FileOutputStream stream = null;
@@ -191,10 +188,8 @@ public class RIFTilesCache {
 	 * </p>
 	 *
 	 * @param geography			Uppercase String
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel 			Uppercase String
-	 * @param x 				X tile number		
-	 * @param y					Y tile number
 	 *
 	 * @return String GeoJSON tile
 	 *
@@ -202,14 +197,12 @@ public class RIFTilesCache {
 	 */			
 	public String getCachedGeoJsonTile(
 		final String geography,
-		final Integer zoomlevel, 
-		final String geoLevel, 
-		final Integer x, 
-		final Integer y) 
+		final SlippyTile slippyTile, 
+		final String geoLevel) 
 			throws RIFServiceException {
 			
 		JSONObject tileGeoJson = new JSONObject();
-		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "json");
+		File file=getCachedTileFile(geography, slippyTile, geoLevel, "json");
 		if (file.exists()) {
 			rifLogger.info(getClass(), "DeoJSON tile (" + file.length() + " bytes) cache hit: " + file.getAbsolutePath());
 			byte[] bytes = null;
@@ -236,10 +229,8 @@ public class RIFTilesCache {
 	 * </p>
 	 *
 	 * @param geography			Uppercase String
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel 			Uppercase String
-	 * @param x 				X tile number		
-	 * @param y					Y tile number
 	 *
 	 * @return String GeoJSON tile base64 encoded (to use same code infrastructure as GeoJSON and TopoJSON tiles)
 	 *
@@ -247,13 +238,11 @@ public class RIFTilesCache {
 	 */		
 	public String getCachedPngTile(
 		final String geography,
-		final Integer zoomlevel, 
-		final String geoLevel, 
-		final Integer x, 
-		final Integer y) 
+		final SlippyTile slippyTile, 
+		final String geoLevel) 
 			throws RIFServiceException {
 			
-		File file=getCachedTileFile(geography, zoomlevel, geoLevel, x, y, "png");	
+		File file=getCachedTileFile(geography, slippyTile, geoLevel, "png");	
 		if (file.exists()) {
 			rifLogger.info(getClass(), "PNG tile (" + file.length() + " bytes) cache hit: " + file.getAbsolutePath());
 			byte[] bytes = null;
@@ -279,10 +268,8 @@ public class RIFTilesCache {
 	 * </p>
 	 *
 	 * @param geography			Uppercase String
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel 			Uppercase String
-	 * @param x 				X tile number		
-	 * @param y					Y tile number
 	 * @param fileExtension		File extension: .json or .png
 	 *
 	 * @return File object
@@ -291,15 +278,13 @@ public class RIFTilesCache {
 	 */			
 	public File getCachedTileFile(
 		final String geography,
-		final Integer zoomlevel, 
-		final String geoLevel, 
-		final Integer x, 
-		final Integer y,
+		final SlippyTile slippyTile, 
+		final String geoLevel,
 		String fileExtension) 
 			throws RIFServiceException {
 			
-		Path path = createTileDirectoryPath(geography, zoomlevel, geoLevel, x);
-		return new File(path.toString() + File.separator + y.toString() + "." + fileExtension);
+		Path path = createTileDirectoryPath(geography, slippyTile, geoLevel);
+		return new File(path.toString() + File.separator + new Integer(slippyTile.getY()).toString() + "." + fileExtension);
 	}
 
 	/**
@@ -309,9 +294,8 @@ public class RIFTilesCache {
 	 * </p>
 	 *
 	 * @param geography			Uppercase String
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel 			Uppercase String
-	 * @param x 				X tile number
 	 *
 	 * @return Path to tile cache directory: EXTRACT_DIRECTORY/scratchspace/tiles/<geography>/<geolevel>/<zoomlevel>/<x> 
 	 *
@@ -319,9 +303,8 @@ public class RIFTilesCache {
 	 */
 	private Path createTileDirectoryPath(
 		final String geography,
-		final Integer zoomlevel, 
-		final String geoLevel, 
-		final Integer x) 
+		final SlippyTile slippyTile, 
+		final String geoLevel) 
 			throws RIFServiceException {
 
 		if (geography == null) { 
@@ -334,19 +317,16 @@ public class RIFTilesCache {
 					RIFServiceError.INVALID_PARAMETER,
 					"NULL geoLevel specified, unable to create tile cache path");
 		}
-		if (zoomlevel == null) { 
+		if (slippyTile == null) { 
 			throw new RIFServiceException(
 					RIFServiceError.INVALID_PARAMETER,
-					"NULL zoomlevel specified, unable to create tile cache path");
-		}	
-		if (x == null) { 
-			throw new RIFServiceException(
-					RIFServiceError.INVALID_PARAMETER,
-					"NULL x specified, unable to create tile cache path");
-		}		
-
+					"NULL slippyTile specified, unable to create tile cache path");
+		}
 		Path path = FileSystems.getDefault().getPath(EXTRACT_DIRECTORY, "scratchspace").
-						resolve("tiles").resolve(geography).resolve(geoLevel).resolve(zoomlevel.toString()).resolve(x.toString());
+						resolve("tiles").
+						resolve(geography).resolve(geoLevel).
+						resolve(new Integer(slippyTile.getZoomlevel()).toString()).
+						resolve(new Integer(slippyTile.getX()).toString());
 	
 		if (!path.toFile().exists()) {
 			rifLogger.info(getClass(), "Creating tile cache directory: " + path.toString());

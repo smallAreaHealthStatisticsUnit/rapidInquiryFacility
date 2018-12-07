@@ -28,6 +28,7 @@ import org.sahsu.rif.services.datastorage.common.RIFTilesCache;
 import org.sahsu.rif.services.datastorage.common.RifWellKnownText;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.graphics.SlippyTile;
 
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
@@ -94,10 +95,8 @@ public class RIFTiles {
 	 *
 	 * @param tileGeoJson		JSONObject of tile GeoJSON
 	 * @param geography			geography as uppercase String
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel 			geolevel as uppercase String
-	 * @param x 				X tile number		
-	 * @param y					Y tile number
 	 *
 	 * @return PNG coded in base64
 	 *
@@ -107,14 +106,12 @@ public class RIFTiles {
 	public String geoJson2png(
 		final JSONObject tileGeoJson,
 		final String geography,
-		final Integer zoomlevel, 
-		final String geoLevel, 
-		final Integer x, 
-		final Integer y) throws JSONException, RIFServiceException {
+		final SlippyTile slippyTile, 
+		final String geoLevel) throws JSONException, RIFServiceException {
 
 		String result;
 		try {
-			JSONArray bboxJson = tile2boundingBox(x, y, zoomlevel);
+			JSONArray bboxJson = slippyTile.tile2boundingBox();
 			FeatureJSON featureJSON = new FeatureJSON();
 			InputStream is = new ByteArrayInputStream(tileGeoJson.toString().getBytes());
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -124,7 +121,7 @@ public class RIFTiles {
 			
 			// Style 
 			MapContent mapContent = new MapContent();
-			mapContent.setTitle(geoLevel + "/" + zoomlevel + "/" + x + "/" + y + ".png");
+			mapContent.setTitle(geoLevel + slippyTile.getPathFileName() + ".png");
 		
 			int w = 256;
 			int h = 256;
@@ -167,7 +164,7 @@ public class RIFTiles {
 			
 			ImageIO.write(bufferedImage, "png", os);
 
-			rifTilesCache.cacheTile(null /* tileGeoJson */, os, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "png");
+			rifTilesCache.cacheTile(null /* tileGeoJson */, os, geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), "png");
 			result=Base64.getEncoder().encodeToString(os.toByteArray());
 			
 			mapContent.dispose();
@@ -175,19 +172,17 @@ public class RIFTiles {
 		}
 		catch (Exception exception) {
 			try { // Write failing JSON to cache
-				File file=rifTilesCache.getCachedTileFile(geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "json");	
+				File file=rifTilesCache.getCachedTileFile(geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), "json");	
 				if (file.exists()) {
 					if (file.delete()) {
-						rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "json");
+						rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), 	"json");
 					}
 				}
 			}
 			catch (Exception cacheException) {
 				rifLogger.error(getClass(), "Failed to cache failing GeoJSON for geography: " + geography +
 					"; geoLevel: " + geoLevel +
-					"; zoomlevel: " + zoomlevel +
-					"; x: " + x +
-					"; y: " + y + " [Ignored]", cacheException);
+					"; slippyTile: " + slippyTile.getPathFileName() + " [Ignored]", cacheException);
 			}
 			String tileGeoJsonStr=tileGeoJson.toString(2);
 			if (tileGeoJsonStr.length() > 600) {
@@ -284,10 +279,8 @@ public class RIFTiles {
 	 * @param myTileTable		Tile table name in uppercase
 	 * @param myGeometryTable	Geometry table name in uppercase
 	 * @param geography			Uppercase String
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel 			Uppercase String
-	 * @param x 				X tile number		
-	 * @param y					Y tile number
 	 *
 	 * @return GeoJSON as JSONObject
 	 *
@@ -301,10 +294,8 @@ public class RIFTiles {
 		final String myTileTable, 
 		final String myGeometryTable, 
 		final String geography,
-		final Integer zoomlevel, 
+		final SlippyTile slippyTile, 
 		final String geoLevel, 
-		final Integer x, 
-		final Integer y,
 		final boolean addBoundingBoxToTile)
 			throws RIFSQLException, JSONException, RIFServiceException, SQLException
 	{
@@ -350,7 +341,7 @@ public class RIFTiles {
 		
 			geoJSON = topoJson2geoJson(connection, 
 					tileTopoJson, myGeometryTable,
-					geography, zoomlevel, geoLevel, x, y, addBoundingBoxToTile,
+					geography, slippyTile, geoLevel, addBoundingBoxToTile,
 					minZoomlevel, maxZoomlevel);
 		}	
 		catch (SQLException sqlException) {
@@ -383,10 +374,8 @@ public class RIFTiles {
 	 * @param tileTopoJson		JSONObject of tile GeoJSON
 	 * @param myGeometryTable   Geometry table name in uppercase
 	 * @param geography         Geography as a uppercase String
-	 * @param zoomlevel        	0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel          Geolevel as an uppercase String
-	 * @param x                	X tile number
-	 * @param y                 Y tile number
 	 * @param minZoomlevel      Minimum zoomlevel
 	 * @param maxZoomlevel      Maximum zoomlevel
 	 *
@@ -471,16 +460,14 @@ public class RIFTiles {
 			final JSONObject tileTopoJson,
 			final String myGeometryTable,
 			final String geography,
-			final Integer zoomlevel,
+			final SlippyTile slippyTile, 
 			final String geoLevel,
-			final Integer x,
-			final Integer y,
 			final boolean addBoundingBoxToTile,
 			final int minZoomlevel,
 			final int maxZoomlevel)
 			throws SQLException, JSONException, RIFServiceException
 	{	
-		JSONArray bboxJson = tile2boundingBox(x, y, zoomlevel);
+		JSONArray bboxJson = slippyTile.tile2boundingBox();
 		JSONArray geoJsonFeatures = new JSONArray();	 
 		JSONArray geometries;
 		
@@ -516,7 +503,7 @@ public class RIFTiles {
 						}
 
 						if (i % 10000 == 0) { // Process in blocks of 10,000
-							processedCount+=processGeoJsonArrayList(connection, zoomlevel, geoLevel, myGeometryTable, 
+							processedCount+=processGeoJsonArrayList(connection, slippyTile.getZoomlevel(), geoLevel, myGeometryTable, 
 								areaIdList, geoJsonFeatures, propertiesHash, minZoomlevel, maxZoomlevel);
 							
 							areaIdList.clear();
@@ -526,7 +513,7 @@ public class RIFTiles {
 					} // End of for loop
 					
 					/* processedCount+= */
-					processGeoJsonArrayList(connection, zoomlevel, geoLevel, myGeometryTable, areaIdList,
+					processGeoJsonArrayList(connection, slippyTile.getZoomlevel(), geoLevel, myGeometryTable, areaIdList,
 						geoJsonFeatures, propertiesHash, minZoomlevel, maxZoomlevel);
 //					rifLogger.debug(getClass(), "Processed: " + geometries.length() + " geometries" +
 //						"; geoJsonFeatures: " + geoJsonFeatures.length() +
@@ -563,7 +550,7 @@ public class RIFTiles {
 		tileGeoJson.put("features", geoJsonFeatures);
 		
 		if (addBoundingBoxToTile) {
-			rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), zoomlevel, geoLevel.toLowerCase(), x, y, "json");
+			rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), "json");
 		}
 		return tileGeoJson;
 	}
@@ -750,64 +737,6 @@ public class RIFTiles {
 
 		}
 		return result;
-	}
-
-	/** 
-	 * Get bounding box for tile
-	 *
-	 * <p>
-	 * Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
-	 * </p>
-	 *
-	 * @param x 				X tile number		
-	 * @param y					Y tile number
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
-	 *
-	 * @return JSONArray bboxJson is: [minX, minY, maxX, maxY]
-     */	
-	public JSONArray tile2boundingBox(
-		final int x, 
-		final int y, 
-		final int zoomlevel) {
-		JSONArray bboxJson = new JSONArray();
-		bboxJson.put(tile2lon(x, zoomlevel));		// Wast: minX
-		bboxJson.put(tile2lat(y + 1, zoomlevel));	// South: minY
-		bboxJson.put(tile2lon(x + 1, zoomlevel));	// East: maxX
-		bboxJson.put(tile2lat(y, zoomlevel));		// North: maxY
-		return bboxJson;
-	}
-
-	/** 
-	 * Get Longitude for tile
-	 *
-	 * <p>
-	 * Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
-	 * </p>
-	 *
-	 * @param x 				X tile number	
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
-	 *
-	 * @return Longitude (X) in 4326
-     */		
-	private double tile2lon(int x, int zoomlevel) {
-		return x / Math.pow(2.0, zoomlevel) * 360.0 - 180;
-	}
-
-	/** 
-	 * Get Latitude for tile
-	 *
-	 * <p>
-	 * Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
-	 * </p>
-	 *
-	 * @param y 				Y tile number	
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
-	 *
-	 * @return Latitude (Y) in 4326 
-     */			
-	private double tile2lat(int y, int zoomlevel) {
-		double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, zoomlevel);
-		return Math.toDegrees(Math.atan(Math.sinh(n)));
 	}
 
 	/** 
@@ -1099,25 +1028,25 @@ public class RIFTiles {
 				int x=resultSet.getInt(2);		
 				int y=resultSet.getInt(3);			
 				String optimisedTopojson=resultSet.getString(4);	
-				File file=rifTilesCache.getCachedTileFile(geography, zoomlevel, geolevelName, x, y, "png");	
+				SlippyTile slippyTile = new SlippyTile(zoomlevel, x, y);
+					
+				File file=rifTilesCache.getCachedTileFile(geography, slippyTile, geolevelName, "png");	
 				if (!file.exists()) {
 					generatedCount++;
 					rifLogger.debug(getClass(), "Generate GeoJSON (" + i + "/" + tileCount + "): " + file.toString());
-
+		
 					JSONObject tileTopoJson = new JSONObject(optimisedTopojson);
 					JSONObject tileGeoJson = topoJson2geoJson(connection, 
 						tileTopoJson, geometryTable,
-						geography, zoomlevel, geolevelName, x, y, false /* addBoundingBoxToTile */,
+						geography, slippyTile, geolevelName, false /* addBoundingBoxToTile */,
 						minZoomlevel, maxZoomlevel);
 						
 					rifLogger.info(getClass(), "Generate PNG tile (" + i + "/" + tileCount + "): " + file.toString());
 					geoJson2png(
 						tileGeoJson,
 						geography,
-						zoomlevel,
-						geolevelName,
-						x,
-						y);
+						slippyTile,
+						geolevelName);
 
 				}
 			}	
