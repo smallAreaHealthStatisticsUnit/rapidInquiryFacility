@@ -1,12 +1,3 @@
-/*
-Update/insert: 
-Check - USER exists.
-Check - USER is Kerberos USER on INSERT.
-Check - UPDATE not allowed.
-Check - DELETE only allowed on own records.
-
-*/
-
 
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.tables t ON tr.parent_id = t.object_id
@@ -56,11 +47,20 @@ Declare  @XTYPE varchar(5);
 		THROW 51006, @err_msg8, 1;
 	END CATCH;
 
---for insert, check that new values are valid
+--
+-- For insert, check that new values are valid:
+-- Check all fields are not null: study_id, grantor,grantee_username
+-- Check that the study_id exists
+-- Grantee username is valid user
+-- Grantor username is valid user
+-- Grantee username has RIF_USER or RIF_MANAGER
+-- If the Grantor is NOT owner of the study they are a RIF_MANAGER	
+-- If the grantor != grantee_username then the grantor is a RIF_MANAGER
+--	
 IF (@XTYPE = 'I')
 BEGIN
 	
-	
+	-- Check all not null: study_id, grantor,grantee_username
 	DECLARE @invalid_values varchar(max) = (
 		SELECT study_id, grantor,grantee_username 
 		FROM inserted
@@ -103,37 +103,6 @@ BEGIN
 			THROW 51008, @err_msg2, 1;
 		END CATCH;
 		
-		
-	-- Grantor is NOT owner of the study
-	DECLARE @GRANTOR nvarchar(MAX) =
-		(
-		SELECT 
-			grantor, a.study_id
-			from inserted a
-			WHERE NOT EXISTS (select 1
-			FROM [rif40].[t_rif40_studies] b 
-			WHERE b.username=a.grantor and b.study_id=a.study_id)
-			FOR XML PATH('')
-		);
-	IF @GRANTOR IS NOT NULL
-	BEGIN TRY
-		IF IS_MEMBER(N'rif_manager') = 1 
-		BEGIN
-			DECLARE @logmsg VARCHAR(MAX) = 'Study not owned by grantor but current user is RIF_MANAGER: '+@GRANTOR;
-			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_study_shares]', @logmsg;
-		END
-		ELSE
-		BEGIN
-			rollback;
-			DECLARE @err_msg7 varchar(max) = formatmessage(51009, @GRANTOR);
-			THROW 51009, @err_msg7, 1;
-		END;
-	END TRY
-	BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_study_shares]';
-		THROW 51009, @err_msg7, 1;
-	END CATCH 
-	
 	--Grantee username is valid user
 	DECLARE @invalid_grantee varchar(max) = (
 		SELECT a.study_id, a.grantee_username
@@ -151,6 +120,25 @@ BEGIN
 	BEGIN CATCH
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_study_shares]';
 		THROW 51010, @err_msg3, 1;
+	END CATCH 
+	
+	--GRANTOR username is valid user
+	DECLARE @invalid_grantor varchar(max) = (
+		SELECT a.study_id, a.grantor
+		FROM inserted a
+		WHERE NOT EXISTS (select 1
+		FROM [sys].[database_principals] b WHERE a.grantor collate database_default=b.name collate database_default)
+		FOR XML PATH('')
+	);
+	IF @invalid_grantor IS NOT NULL
+	BEGIN TRY
+		rollback;
+		DECLARE @err_msg9 varchar(max) = formatmessage(51010, @invalid_grantor);
+		THROW 51010, @err_msg9, 1;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_study_shares]';
+		THROW 51010, @err_msg9, 1;
 	END CATCH 
 	
 	-- grantee_username has RIF_USER or RIF_MANAGER
@@ -171,10 +159,68 @@ BEGIN
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_study_shares]';
 		THROW 51011, @err_msg4, 1;
 	END CATCH
+	
+	-- If the grantor is NOT owner of the study they are a RIF_MANAGER
+	DECLARE @GRANTOR nvarchar(MAX) =
+		(
+		SELECT 
+			grantor, grantee_username, a.study_id
+			from inserted a
+			WHERE NOT EXISTS (select 1
+			FROM [rif40].[t_rif40_studies] b 
+			WHERE b.username=a.grantor and b.study_id=a.study_id)
+			FOR XML PATH('')
+		);
+	IF @GRANTOR IS NOT NULL
+	BEGIN TRY
+		IF IS_MEMBER(N'rif_manager') = 1 
+		BEGIN
+			DECLARE @logmsg VARCHAR(MAX) = 'Study not owned by grantor but current user is a RIF_MANAGER: '+@GRANTOR;
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_study_shares]', @logmsg;
+		END
+		ELSE
+		BEGIN
+			rollback;
+			DECLARE @err_msg7 varchar(max) = formatmessage(51009, @GRANTOR);
+			THROW 51009, @err_msg7, 1;
+		END;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_study_shares]';
+		THROW 51009, @err_msg7, 1;
+	END CATCH 
+	
+	-- If the grantor != grantee_username then the grantor is a RIF_MANAGER
+	DECLARE @MISMATCHED_GRANTOR nvarchar(MAX) =
+		(
+		SELECT 
+			grantor, grantee_username, a.study_id
+			from inserted a
+			WHERE grantor != grantee_username
+			FOR XML PATH('')
+		);
+	IF @GRANTOR IS NOT NULL
+	BEGIN TRY
+		IF IS_MEMBER(N'rif_manager') = 1 
+		BEGIN
+			DECLARE @logmsg8 VARCHAR(MAX) = 'Study owned by grantor with a different grantee but current user is a RIF_MANAGER: '+@GRANTOR;
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[tr_study_shares]', @logmsg8;
+		END
+		ELSE
+		BEGIN
+			rollback;
+			DECLARE @err_msg10 varchar(max) = formatmessage(51009, @MISMATCHED_GRANTOR);
+			THROW 51009, @err_msg10, 1;
+		END;
+	END TRY
+	BEGIN CATCH
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[tr_study_shares]';
+		THROW 51009, @err_msg10, 1;
+	END CATCH 
 
 END;
 
---Delete: check that user owns the study being deleted
+--Delete: check that user owns the study being deleted or is a RIF_MANAGER
 IF (@XTYPE = 'D')
 BEGIN
 	DECLARE @not_owner varchar(max) = 
