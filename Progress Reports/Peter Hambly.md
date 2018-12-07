@@ -3278,7 +3278,18 @@ Further changes are needed to support risk analysis:
     ```
     Note that Postgres and SQL Server are different
 * Heathrow covariates, fixes for rif_user role faults;
-	
+* Fix for *extract_permitted*, *printstate* and *selectstate* RIF_USER role support in T_RIF40_STUDIES table
+* Fix for RIF_USER role so that RIF_MANAGER role is not required (faulty trigger logic in 10 views);
+* Table t_rif40_user_projects - check the username is a valid user;
+* Table rif40_study_shares: for insert, check that new values are valid:
+  - Check all fields are not null: study_id, grantor,grantee_username
+  - Check that the study_id exists
+  - Grantee username is valid user
+  - Grantor username is valid user
+  - Grantee username has RIF_USER or RIF_MANAGER
+  - If the Grantor is NOT owner of the study they are a RIF_MANAGER	
+  - If the grantor != grantee_username then the grantor is a RIF_MANAGER;
+  
 Risk analysis issues:
 
 1. Using add by postcode produces errors on its own, but works;
