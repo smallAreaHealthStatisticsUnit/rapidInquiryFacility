@@ -991,19 +991,18 @@ public class ResultsQueryManager extends BaseSQLManager {
 					try {
 						
 						JSONObject tileTopoJson = new JSONObject(result);
-						JSONArray bboxJson = rifTiles.tile2boundingBox(x, y, zoomlevel);
 						
 						boolean addBoundingBoxToTile=false;
 						if (tileType.equals("geojson")) {
 							addBoundingBoxToTile=true;
 						}
 						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, 
-							tileTopoJson, bboxJson, myTileTable, myGeometryTable, 
+							tileTopoJson, myTileTable, myGeometryTable, 
 							geography.getName().toUpperCase(),
 							zoomlevel, geoLevelSelect.getName().toUpperCase(), x, y, addBoundingBoxToTile);
 						
 						if (tileType.equals("png")) {	
-							result = rifTiles.geoJson2png(tileGeoJson, bboxJson, geography.getName().toUpperCase(), zoomlevel, 
+							result = rifTiles.geoJson2png(tileGeoJson, geography.getName().toUpperCase(), zoomlevel, 
 								geoLevelSelect.getName().toUpperCase(), x, y);
 						}
 						else {
@@ -1033,8 +1032,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 						result=rifTilesCache.getCachedPngTile("NULL", 0, "NULL", 0, 0);
 						if (result == null) {
 							JSONObject nullTileGeoJson = new JSONObject(rifTiles.getNullGeoJSONTile());
-							JSONArray nullTileBboxJson = rifTiles.tile2boundingBox(0, 0, 0);
-							result = rifTiles.geoJson2png(nullTileGeoJson, nullTileBboxJson, "NULL", 0, "NULL", 0, 0);
+							result = rifTiles.geoJson2png(nullTileGeoJson, "NULL", 0, "NULL", 0, 0);
 							
 							rifLogger.info(getClass(), "Generated NULL PNG tile");
 						}
@@ -1051,7 +1049,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 									
 					try {		
 						JSONArray bboxJson = rifTiles.tile2boundingBox(x, y, zoomlevel);		
-						result = rifTiles.getNullGeoJSONTile(bboxJson);
+						result = rifTiles.getNullGeoJSONTile(bboxJson); // Add bounding box for debug purposes
 						return result; 
 					}
 					catch (JSONException jsonException) {
