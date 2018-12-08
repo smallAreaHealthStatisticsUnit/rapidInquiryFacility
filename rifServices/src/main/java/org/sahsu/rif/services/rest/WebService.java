@@ -53,6 +53,7 @@ import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLWriter;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.graphics.RIFTilesException;
 
 public class WebService {
 
@@ -1057,6 +1058,14 @@ public class WebService {
 					x,
 					y,
 					tileType);
+		}
+		catch(RIFTilesException rifTilesException) {
+			isAnError=true;
+			rifLogger.warning(this.getClass(), rifTilesException.getMessage());
+			result
+				= serialiseException(
+					servletRequest,
+					rifTilesException);
 		}
 		catch(Exception exception) {
 			isAnError=true;

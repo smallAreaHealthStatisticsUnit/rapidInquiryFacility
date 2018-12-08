@@ -9,7 +9,7 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.util.RIFLogger;
-import org.sahsu.rif.services.graphics.RIFTiles;
+import org.sahsu.rif.services.datastorage.common.RIFTiles;
 import org.sahsu.rif.services.datastorage.common.BaseSQLManager;
 
 /**

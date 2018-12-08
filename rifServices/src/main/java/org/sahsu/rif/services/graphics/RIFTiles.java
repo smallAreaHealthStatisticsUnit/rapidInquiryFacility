@@ -1,19 +1,7 @@
-package org.sahsu.rif.services.graphics;
+package org.sahsu.rif.services.datastorage.common;
 
 import org.apache.commons.collections.IteratorUtils;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.geojson.feature.FeatureJSON;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.map.FeatureLayer;
-import org.geotools.map.Layer;
-import org.geotools.map.MapContent;
-import org.geotools.map.MapViewport;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.renderer.GTRenderer;
-import org.geotools.renderer.label.LabelCacheImpl;
-import org.geotools.renderer.lite.StreamingRenderer;
-import org.geotools.styling.SLD;
-import org.geotools.styling.Style;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,15 +17,9 @@ import org.sahsu.rif.services.datastorage.common.RifWellKnownText;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.graphics.SlippyTile;
+import org.sahsu.rif.services.graphics.RIFPdfTiles;
 
-import javax.imageio.ImageIO;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -64,6 +46,7 @@ public class RIFTiles {
 	private static BaseSQLManager baseSQLManager = null;
 	private static RifWellKnownText rifWellKnownText = null;
 	private static RIFTilesCache rifTilesCache = null;
+	private static RIFPdfTiles rifPdfTiles = null;
 	
 	/**
 	 * Constructor
@@ -79,182 +62,13 @@ public class RIFTiles {
 			}			
 			rifWellKnownText = new RifWellKnownText();
 			rifTilesCache = new RIFTilesCache(options);
+			rifPdfTiles = new RIFPdfTiles(options);
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
 				"Error in RIFTiles() constructor");
 			throw new NullPointerException();
 		}
-	}
-
-	/** 
-	 * Convert geoJSON to transparent PNG tile, cropped to BBOX
-	 * <p>
-	 * https://gis.stackexchange.com/questions/245875/convert-geojson-to-png
-	 * </p>
-	 *
-	 * @param tileGeoJson		JSONObject of tile GeoJSON
-	 * @param geography			geography as uppercase String
-	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
-	 * @param geoLevel 			geolevel as uppercase String
-	 *
-	 * @return PNG coded in base64
-	 *
-	 * @throws RIFServiceException RIF error
-	 * @throws JSONException Error manipulating JSON
-     */	
-	public String geoJson2png(
-		final JSONObject tileGeoJson,
-		final String geography,
-		final SlippyTile slippyTile, 
-		final String geoLevel) throws JSONException, RIFServiceException {
-
-		String result;
-		try {
-			JSONArray bboxJson = slippyTile.tile2boundingBox();
-			FeatureJSON featureJSON = new FeatureJSON();
-			InputStream is = new ByteArrayInputStream(tileGeoJson.toString().getBytes());
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-			// Convert GeoJSON toFeatureCollection 	
-			FeatureCollection features = featureJSON.readFeatureCollection(is);
-			
-			// Style 
-			MapContent mapContent = new MapContent();
-			mapContent.setTitle(geoLevel + slippyTile.getPathFileName() + ".png");
-		
-			int w = 256;
-			int h = 256;
-			// bboxJson is: [minX, minY, maxX, maxY] 
-			ReferencedEnvelope bounds = new ReferencedEnvelope(
-					bboxJson.getDouble(0) /* xMin: West */,
-					bboxJson.getDouble(2) /* xMax: East */,
-					bboxJson.getDouble(1) /* yMin: South */,
-					bboxJson.getDouble(3) /* yMax: North */,
-					DefaultGeographicCRS.WGS84
-				);	
-
-			MapViewport mapViewport = mapContent.getViewport();
-	//		mapViewport.setMatchingAspectRatio(true);
-			mapViewport.setScreenArea(new Rectangle(Math.round(w), Math.round(h)));
-			mapViewport.setBounds(bounds);
-			mapContent.setViewport(mapViewport);
-			
-			if (features != null && !features.isEmpty()) {
-				Style style = SLD.createSimpleStyle(features.getSchema());
-				Layer layer = new FeatureLayer(features, style);
-				mapContent.addLayer(layer);
-			}
-			
-			BufferedImage bufferedImage = new BufferedImage(w, h, 
-				BufferedImage.TYPE_INT_ARGB); // Allow transparency [will work for PNG as well!]
-			Graphics2D g2d = bufferedImage.createGraphics();
-			
-			Rectangle outputArea = new Rectangle(0, 0, w, h);
-			GTRenderer renderer = new StreamingRenderer();
-			LabelCacheImpl labelCache = new LabelCacheImpl();
-			Map<Object, Object> hints = renderer.getRendererHints();
-			if (hints == null) {
-				hints = new HashMap<>();
-			}
-			hints.put(StreamingRenderer.LABEL_CACHE_KEY, labelCache);
-			renderer.setRendererHints(hints);
-			renderer.setMapContent(mapContent);
-			renderer.paint(g2d, outputArea, bounds); 
-			
-			ImageIO.write(bufferedImage, "png", os);
-
-			rifTilesCache.cacheTile(null /* tileGeoJson */, os, geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), "png");
-			result=Base64.getEncoder().encodeToString(os.toByteArray());
-			
-			mapContent.dispose();
-			g2d.dispose();
-		}
-		catch (Exception exception) {
-			try { // Write failing JSON to cache
-				File file=rifTilesCache.getCachedTileFile(geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), "json");	
-				if (file.exists()) {
-					if (file.delete()) {
-						rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), 	"json");
-					}
-				}
-			}
-			catch (Exception cacheException) {
-				rifLogger.error(getClass(), "Failed to cache failing GeoJSON for geography: " + geography +
-					"; geoLevel: " + geoLevel +
-					"; slippyTile: " + slippyTile.getPathFileName() + " [Ignored]", cacheException);
-			}
-			String tileGeoJsonStr=tileGeoJson.toString(2);
-			if (tileGeoJsonStr.length() > 600) {
-				tileGeoJsonStr=tileGeoJsonStr.substring(1, 600);
-			}
-			throw new RIFServiceException(
-				RIFServiceError.TILE_GENERATE_GEOTOOLS_ERROR,
-				"Tile generation error: " + exception.getMessage() + lineSeparator +
-				"GeoJSON: " + tileGeoJsonStr, exception);
-		}
-		
-		return result;
-	}
-
-	/** 
-	 * Add bounding box as geoJSON feature so we can see the boundary of the tile
-	 *
-	 * @param bboxJson			JSONArray bounding box in GeoJSON format [minX, minY, maxX, maxY]
-	 * @param properties		JSONArray of GeoJSON properties
-	 *
-	 * @return GeoJSON bounding box as a feature (for debugging Tile boundaries) JSONObject
-	 *
-	 * @throws JSONException Error manipulating JSON
-     */		
-	private JSONObject createGeoJsonBboxFeature(
-		final JSONArray bboxJson,
-		final JSONObject properties) 
-			throws JSONException {
-		JSONObject geoJsonFeature = new JSONObject();
-		
-		properties.put("gid", 0);
-		properties.put("name", "BBOX");
-		properties.put("area_id", "BBOX");
-		
-		geoJsonFeature.put("type", "Feature");
-		geoJsonFeature.put("properties", properties);
-		
-		JSONObject geometry = new JSONObject();
-		geometry.put("type", "MultiPolygon");
-		
-		// bboxJson is: [minX, minY, maxX, maxY] 
-		// coordinates are(SW, NW, NE, SE, SW): [[[[minX, minY],[minX, maxY],[maxX, maxY],[maxX, minY],[minX, minY]]]]
-		
-		JSONArray sw = new JSONArray(); // [minX, minY]
-		sw.put(bboxJson.getDouble(0));
-		sw.put(bboxJson.getDouble(1));
-		JSONArray nw = new JSONArray(); // [minX, maxY]
-		nw.put(bboxJson.getDouble(0));
-		nw.put(bboxJson.getDouble(3));
-		JSONArray ne = new JSONArray(); // [maxX, maxY]
-		ne.put(bboxJson.getDouble(2));
-		ne.put(bboxJson.getDouble(3));
-		JSONArray se = new JSONArray(); // [maxX, minY]
-		se.put(bboxJson.getDouble(2));
-		se.put(bboxJson.getDouble(1));
-		
-		JSONArray coordinates = new JSONArray();
-		JSONArray coordinates2 = new JSONArray();
-		JSONArray coordinates3 = new JSONArray();
-		coordinates.put(sw);
-		coordinates.put(nw);
-		coordinates.put(ne);
-		coordinates.put(se);
-		coordinates.put(sw);
-		coordinates2.put(coordinates);
-		coordinates3.put(coordinates2);
-		geometry.put("coordinates", coordinates3);
-		
-		geoJsonFeature.put("geometry", geometry);
-		
-//		rifLogger.info(getClass(), "Processed bbox: " + bboxJson.toString() + " into feature: " + geoJsonFeature.toString(2));
-		return geoJsonFeature;
 	}
 
 	/** 
@@ -354,282 +168,6 @@ public class RIFTiles {
 		}	
 		
 		return geoJSON;
-	}
-
-	/** 
-	 * Convert TopoJSON to GeoJSON
-	 * <p>	 
-	 * There is no Java way of converting TopoJSON to GeoJSON like topojson.feature(topology, object)
-	 * https://github.com/topojson/topojson-client/blob/master/README.md#feature
-	 * Various Java libraries to manipulate GeoJSon are immature, unmaintained and undocumented.
-	 * GDAL can convert, but again it is not documented, especially GDAL Java.
-	 *
-	 * The chosen method here is to populate <myTileTable>.optimised_geojson by parsing the area_ids from
-	 * the topoJSON properties and then fetching the GeoJSON from <myGeometryTable>
-	 *	 
-	 * Called from: RIFTiles.java generateTiles(); knows determine minZoomlevel and maxZoomlevel									
-	 * </p>
-	 *
-	 * @param connection		JDBC Connection
-	 * @param tileTopoJson		JSONObject of tile GeoJSON
-	 * @param myGeometryTable   Geometry table name in uppercase
-	 * @param geography         Geography as a uppercase String
-	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
-	 * @param geoLevel          Geolevel as an uppercase String
-	 * @param minZoomlevel      Minimum zoomlevel
-	 * @param maxZoomlevel      Maximum zoomlevel
-	 *
-	 * @return GeoJSON as JSONObject
-	 *
-	 * @throws RIFServiceException RIF error
-	 * @throws RIFSQLException RIF SQL error
-	 * @throws JSONException Error manipulating JSON
-     */	
-	/* Generated GeoJSON in Json5 format:
-	 *
-	 * {
-	 * 	"features": [{
-	 * 			"geometry": {
-	 * 				"coordinates": [[[[-7.2447, 54.3752], [-7.2332, 54.3759], [-7.2339, 54.3767], [-7.2326, 54.3772], ... ]]]
-	 * 				"type": "MultiPolygon"
-	 *			},
-	 *			"type": "Feature",
-	 *			"properties": {
-	 *				"gid": 0,
-	 *				"SAHSU_GRD_LEVEL1": "01",
-	 *				"zoomlevel": 0,
-	 *				"name": "BBOX",
-	 *				"geographic_centroid": {
-	 *					"coordinates": [-6.30097, 54.1803],
-	 *					"type": "Point"
-	 *				},
-	 *				"x": 0,
-	 *				"y": 0,
-	 *				"area_id": "BBOX"
-	 *			}
-	 *		}, { ...
-	 *	 }
-	 *		 	],
-	 *	"type": "FeatureCollection"
-	 * }
-	 *
-	 * Source TopoJSON in Json5 format:
-	 *
-	 *		{
-	 *			"transform": {
-	 *				"scale": [1.2645986036803175E-4, 1.964578552911635E-4],
-	 *				"translate": [-6.151058640054187, 53.198324512334224]
-	 *			},
-	 *			"objects": {
-	 *				"collection": {
-	 *					"type": "GeometryCollection",
-	 *					"bbox": [-8.649433731630149, 49.87112937372648, 1.7627739932037385, 60.84572000540925],
-	 *					"geometries": [{
-	 *							"type": "GeometryCollection",
-	 *							"properties": {
-	 *								"gid": 1,
-	 *								"area_id": "UK",
-	 *								"name": "United_Kingdom",
-	 *								"geographic_centroid": {
-	 *									"type": "Point",
-	 *									"coordinates": [-4.03309, 55.8001]
-	 *								},
-	 *								"x": 0,
-	 *								"y": 0,
-	 *								"SCNTRY2011": "UK",
-	 *								"zoomlevel": 0
-	 *							},
-	 *							"id": 1,
-	 *							"geometries": [{
-	 *									"type": "Polygon",
-	 *									"arcs": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]]
-	 *								}, ...
-	 *							]
-	 *						}
-	 *					],
-	 *						...
-	 *				}
-	 *			},
-	 *			"bbox": [-6.151058640054187, 53.198324512334224, -4.886586496234238, 55.16270660739057],
-	 *			"type": "Topology",
-	 *			"arcs": [[[95, 7301], ... ]]
-	 *		}				
-	 */			
-	private JSONObject topoJson2geoJson(
-			final Connection connection,
-			final JSONObject tileTopoJson,
-			final String myGeometryTable,
-			final String geography,
-			final SlippyTile slippyTile, 
-			final String geoLevel,
-			final boolean addBoundingBoxToTile,
-			final int minZoomlevel,
-			final int maxZoomlevel)
-			throws SQLException, JSONException, RIFServiceException
-	{	
-		JSONArray bboxJson = slippyTile.tile2boundingBox();
-		JSONArray geoJsonFeatures = new JSONArray();	 
-		JSONArray geometries;
-		
-		JSONObject objects = tileTopoJson.optJSONObject("objects");
-		if (objects != null) {
-			JSONObject collection = objects.optJSONObject("collection");
-			if (collection != null) {
-				geometries = collection.optJSONArray("geometries");
-				if (geometries != null) {
-					
-					ArrayList<String> areaIdList = new ArrayList<>();
-					JSONObject bboxJsonProperties = null;
-					HashMap<String, JSONObject> propertiesHash = new HashMap<>();
-					int processedCount=0;
-					
-					for (int i=0; i<geometries.length(); i++) {
-						
-						JSONObject jsonGeometry=geometries.getJSONObject(i);
-						JSONObject properties=jsonGeometry.optJSONObject("properties");		
-						if (i == 0) {
-							bboxJsonProperties = jsonGeometry.optJSONObject("properties");
-						}
-					
-						if (properties != null) {			
-							String areaId = properties.getString("area_id");
-							areaIdList.add(areaId);
-							propertiesHash.put(areaId, properties);	
-						}
-						else {
-							List<String> propertiesList = IteratorUtils.toList(properties.keys());
-							String propertiesText = String.join(", ", propertiesList);
-							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + propertiesText);
-						}
-
-						if (i % 10000 == 0) { // Process in blocks of 10,000
-							processedCount+=processGeoJsonArrayList(connection, slippyTile.getZoomlevel(), geoLevel, myGeometryTable, 
-								areaIdList, geoJsonFeatures, propertiesHash, minZoomlevel, maxZoomlevel);
-							
-							areaIdList.clear();
-							propertiesHash.clear();
-						}
-						
-					} // End of for loop
-					
-					/* processedCount+= */
-					processGeoJsonArrayList(connection, slippyTile.getZoomlevel(), geoLevel, myGeometryTable, areaIdList,
-						geoJsonFeatures, propertiesHash, minZoomlevel, maxZoomlevel);
-//					rifLogger.debug(getClass(), "Processed: " + geometries.length() + " geometries" +
-//						"; geoJsonFeatures: " + geoJsonFeatures.length() +
-//						"; geometries: " + geometries.length() +
-//						"; valid areaIds: " + processedCount +
-//						"; for geoLevel: " + geoLevel +
-//						"; zoomlevel: " + zoomlevel +
-//						"; x: " + x +
-//						"; y: " + y);
-					
-					if (addBoundingBoxToTile && bboxJsonProperties != null) {
-						geoJsonFeatures.put(createGeoJsonBboxFeature(bboxJson, bboxJsonProperties));
-					}
-						
-				}
-				else {
-					throw new JSONException("TopoJSON Array[\"geometries\"] not found");
-				}				
-			}
-			else /* if (collection != null) */ {
-				List<String> collectionList = IteratorUtils.toList(collection.keys()); // Ignore NPE warnings from ItelliJ
-				String collectionText = String.join(", ", collectionList);
-				throw new JSONException("TopoJSON Object[\"objects\"] not found; keys: " + collectionText);
-			}
-		}
-		else /* if (tileTopoJson != null) */ {
-			List<String> tileTopoJsonList = IteratorUtils.toList(tileTopoJson.keys()); // Ignore NPE warnings from ItelliJ
-			String tileTopoJsonText = String.join(", ", tileTopoJsonList);
-			throw new JSONException("TopoJSON Object[\"objects\"] not found; keys: " + tileTopoJsonText);
-		}
-		
-		JSONObject tileGeoJson = new JSONObject();
-		tileGeoJson.put("type", "FeatureCollection");
-		tileGeoJson.put("features", geoJsonFeatures);
-		
-		if (addBoundingBoxToTile) {
-			rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), "json");
-		}
-		return tileGeoJson;
-	}
-
-	/** 
-	 * Process array list into GeoJSON features
-	 *
-	 * @param connection 		Database JDBC Connection object	
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
-	 * @param geoLevel 			Uppercase String	 
-	 * @param myGeometryTable 	Uppercase String	 
-	 * @param areaIdList		ArrayList<String> of areaIDs
-	 * @param geoJsonFeatures	JSONArray GeoJSON features 
-	 * @param propertiesHash	HashMap<String, JSONObject> of areaID and JSON properties	
-	 * @param minZoomlevel		Minimum zoomlevel
-	 * @param maxZoomlevel		Maximum zoomlevel
-	 *
-	 * @return Number of GeoJSON features processed
-	 *
-	 * @throws RIFServiceException RIF error
-	 * @throws SQLException logical database error
-     */		
-	private int processGeoJsonArrayList(
-		final Connection connection,
-		final Integer zoomlevel,
-		final String geoLevel,
-		final String myGeometryTable,
-		final ArrayList<String> areaIdList,
-		final JSONArray geoJsonFeatures,
-		final HashMap<String, JSONObject> propertiesHash,
-		final int minZoomlevel,
-		final int maxZoomlevel) 
-			throws SQLException, RIFServiceException {
-		
-		int processedCount=0;
-		int removedCount=0;
-		HashMap<String, String> wktHash = getWKT(connection, zoomlevel, geoLevel, myGeometryTable.toLowerCase(), areaIdList,
-			minZoomlevel, maxZoomlevel);
-		if (wktHash != null) {
-			
-			if (wktHash.size() != areaIdList.size()) {
-				throw new SQLException("Error in getWKT; expecting: " + areaIdList.size() + "; got: " + wktHash.size());
-			}
-			Set set = wktHash.entrySet();
-			for (Object o : set) {
-				processedCount++;
-				Map.Entry mentry = (Map.Entry) o;
-				String areaIdKey = (String) mentry.getKey();
-				String wkt = (String) mentry.getValue();
-
-				JSONObject geoJsonFeature = new JSONObject();
-				geoJsonFeature.put("type", "Feature");
-				geoJsonFeature.put("properties", propertiesHash.get(areaIdKey));
-				JSONObject njsonGeometry = rifWellKnownText.wktToGeoJSON(wkt, geoLevel, zoomlevel, areaIdKey);
-				if (njsonGeometry != null) {
-					geoJsonFeature.put("geometry", njsonGeometry);
-					geoJsonFeatures.put(geoJsonFeature);
-				} 
-				else {
-					removedCount++;
-				}
-			} // End of while loop
-		}
-		else {
-			throw new JSONException("Null wktHash for geoLevel: " + geoLevel +
-				"; zoomlevel: " + zoomlevel);
-		}	
-		
-		if (processedCount != areaIdList.size()) {
-			throw new SQLException("Error processing GoeJSON features from WKT; expecting: " + areaIdList.size() + 
-				"; got: " + processedCount);
-		}	
-		else {		
-			rifLogger.debug(getClass(), "Processed: " + processedCount + " areaIds" +
-				"; removed: " + removedCount +
-				"; total geoJsonFeatures: " + geoJsonFeatures.length());
-		}
-							
-		return geoJsonFeatures.length();
 	}
 
 	/** 
@@ -1042,7 +580,7 @@ public class RIFTiles {
 						minZoomlevel, maxZoomlevel);
 						
 					rifLogger.info(getClass(), "Generate PNG tile (" + i + "/" + tileCount + "): " + file.toString());
-					geoJson2png(
+					rifPdfTiles.geoJson2png(
 						tileGeoJson,
 						geography,
 						slippyTile,
@@ -1066,6 +604,66 @@ public class RIFTiles {
 		}			
 
 		return generatedCount;
+	}
+	
+	/** 
+	 * Add bounding box as geoJSON feature so we can see the boundary of the tile
+	 *
+	 * @param bboxJson			JSONArray bounding box in GeoJSON format [minX, minY, maxX, maxY]
+	 * @param properties		JSONArray of GeoJSON properties
+	 *
+	 * @return GeoJSON bounding box as a feature (for debugging Tile boundaries) JSONObject
+	 *
+	 * @throws JSONException Error manipulating JSON
+     */		
+	private JSONObject createGeoJsonBboxFeature(
+		final JSONArray bboxJson,
+		final JSONObject properties) 
+			throws JSONException {
+		JSONObject geoJsonFeature = new JSONObject();
+		
+		properties.put("gid", 0);
+		properties.put("name", "BBOX");
+		properties.put("area_id", "BBOX");
+		
+		geoJsonFeature.put("type", "Feature");
+		geoJsonFeature.put("properties", properties);
+		
+		JSONObject geometry = new JSONObject();
+		geometry.put("type", "MultiPolygon");
+		
+		// bboxJson is: [minX, minY, maxX, maxY] 
+		// coordinates are(SW, NW, NE, SE, SW): [[[[minX, minY],[minX, maxY],[maxX, maxY],[maxX, minY],[minX, minY]]]]
+		
+		JSONArray sw = new JSONArray(); // [minX, minY]
+		sw.put(bboxJson.getDouble(0));
+		sw.put(bboxJson.getDouble(1));
+		JSONArray nw = new JSONArray(); // [minX, maxY]
+		nw.put(bboxJson.getDouble(0));
+		nw.put(bboxJson.getDouble(3));
+		JSONArray ne = new JSONArray(); // [maxX, maxY]
+		ne.put(bboxJson.getDouble(2));
+		ne.put(bboxJson.getDouble(3));
+		JSONArray se = new JSONArray(); // [maxX, minY]
+		se.put(bboxJson.getDouble(2));
+		se.put(bboxJson.getDouble(1));
+		
+		JSONArray coordinates = new JSONArray();
+		JSONArray coordinates2 = new JSONArray();
+		JSONArray coordinates3 = new JSONArray();
+		coordinates.put(sw);
+		coordinates.put(nw);
+		coordinates.put(ne);
+		coordinates.put(se);
+		coordinates.put(sw);
+		coordinates2.put(coordinates);
+		coordinates3.put(coordinates2);
+		geometry.put("coordinates", coordinates3);
+		
+		geoJsonFeature.put("geometry", geometry);
+		
+//		rifLogger.info(getClass(), "Processed bbox: " + bboxJson.toString() + " into feature: " + geoJsonFeature.toString(2));
+		return geoJsonFeature;
 	}
 
 	/** 
@@ -1104,4 +702,279 @@ public class RIFTiles {
 		return nullGeoJsonTile.toString();
 	}
 	
+	/** 
+	 * Convert TopoJSON to GeoJSON
+	 * <p>	 
+	 * There is no Java way of converting TopoJSON to GeoJSON like topojson.feature(topology, object)
+	 * https://github.com/topojson/topojson-client/blob/master/README.md#feature
+	 * Various Java libraries to manipulate GeoJSon are immature, unmaintained and undocumented.
+	 * GDAL can convert, but again it is not documented, especially GDAL Java.
+	 *
+	 * The chosen method here is to populate <myTileTable>.optimised_geojson by parsing the area_ids from
+	 * the topoJSON properties and then fetching the GeoJSON from <myGeometryTable>
+	 *	 
+	 * Called from: RIFTiles.java generateTiles(); knows determine minZoomlevel and maxZoomlevel									
+	 * </p>
+	 *
+	 * @param connection		JDBC Connection
+	 * @param tileTopoJson		JSONObject of tile GeoJSON
+	 * @param myGeometryTable   Geometry table name in uppercase
+	 * @param geography         Geography as a uppercase String
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
+	 * @param geoLevel          Geolevel as an uppercase String
+	 * @param minZoomlevel      Minimum zoomlevel
+	 * @param maxZoomlevel      Maximum zoomlevel
+	 *
+	 * @return GeoJSON as JSONObject
+	 *
+	 * @throws RIFServiceException RIF error
+	 * @throws RIFSQLException RIF SQL error
+	 * @throws JSONException Error manipulating JSON
+     */	
+	/* Generated GeoJSON in Json5 format:
+	 *
+	 * {
+	 * 	"features": [{
+	 * 			"geometry": {
+	 * 				"coordinates": [[[[-7.2447, 54.3752], [-7.2332, 54.3759], [-7.2339, 54.3767], [-7.2326, 54.3772], ... ]]]
+	 * 				"type": "MultiPolygon"
+	 *			},
+	 *			"type": "Feature",
+	 *			"properties": {
+	 *				"gid": 0,
+	 *				"SAHSU_GRD_LEVEL1": "01",
+	 *				"zoomlevel": 0,
+	 *				"name": "BBOX",
+	 *				"geographic_centroid": {
+	 *					"coordinates": [-6.30097, 54.1803],
+	 *					"type": "Point"
+	 *				},
+	 *				"x": 0,
+	 *				"y": 0,
+	 *				"area_id": "BBOX"
+	 *			}
+	 *		}, { ...
+	 *	 }
+	 *		 	],
+	 *	"type": "FeatureCollection"
+	 * }
+	 *
+	 * Source TopoJSON in Json5 format:
+	 *
+	 *		{
+	 *			"transform": {
+	 *				"scale": [1.2645986036803175E-4, 1.964578552911635E-4],
+	 *				"translate": [-6.151058640054187, 53.198324512334224]
+	 *			},
+	 *			"objects": {
+	 *				"collection": {
+	 *					"type": "GeometryCollection",
+	 *					"bbox": [-8.649433731630149, 49.87112937372648, 1.7627739932037385, 60.84572000540925],
+	 *					"geometries": [{
+	 *							"type": "GeometryCollection",
+	 *							"properties": {
+	 *								"gid": 1,
+	 *								"area_id": "UK",
+	 *								"name": "United_Kingdom",
+	 *								"geographic_centroid": {
+	 *									"type": "Point",
+	 *									"coordinates": [-4.03309, 55.8001]
+	 *								},
+	 *								"x": 0,
+	 *								"y": 0,
+	 *								"SCNTRY2011": "UK",
+	 *								"zoomlevel": 0
+	 *							},
+	 *							"id": 1,
+	 *							"geometries": [{
+	 *									"type": "Polygon",
+	 *									"arcs": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]]
+	 *								}, ...
+	 *							]
+	 *						}
+	 *					],
+	 *						...
+	 *				}
+	 *			},
+	 *			"bbox": [-6.151058640054187, 53.198324512334224, -4.886586496234238, 55.16270660739057],
+	 *			"type": "Topology",
+	 *			"arcs": [[[95, 7301], ... ]]
+	 *		}				
+	 */			
+	private JSONObject topoJson2geoJson(
+			final Connection connection,
+			final JSONObject tileTopoJson,
+			final String myGeometryTable,
+			final String geography,
+			final SlippyTile slippyTile, 
+			final String geoLevel,
+			final boolean addBoundingBoxToTile,
+			final int minZoomlevel,
+			final int maxZoomlevel)
+			throws SQLException, JSONException, RIFServiceException
+	{	
+		JSONArray bboxJson = slippyTile.tile2boundingBox();
+		JSONArray geoJsonFeatures = new JSONArray();	 
+		JSONArray geometries;
+		
+		JSONObject objects = tileTopoJson.optJSONObject("objects");
+		if (objects != null) {
+			JSONObject collection = objects.optJSONObject("collection");
+			if (collection != null) {
+				geometries = collection.optJSONArray("geometries");
+				if (geometries != null) {
+					
+					ArrayList<String> areaIdList = new ArrayList<>();
+					JSONObject bboxJsonProperties = null;
+					HashMap<String, JSONObject> propertiesHash = new HashMap<>();
+					int processedCount=0;
+					
+					for (int i=0; i<geometries.length(); i++) {
+						
+						JSONObject jsonGeometry=geometries.getJSONObject(i);
+						JSONObject properties=jsonGeometry.optJSONObject("properties");		
+						if (i == 0) {
+							bboxJsonProperties = jsonGeometry.optJSONObject("properties");
+						}
+					
+						if (properties != null) {			
+							String areaId = properties.getString("area_id");
+							areaIdList.add(areaId);
+							propertiesHash.put(areaId, properties);	
+						}
+						else {
+							List<String> propertiesList = IteratorUtils.toList(properties.keys());
+							String propertiesText = String.join(", ", propertiesList);
+							throw new JSONException("TopoJSON Object[\"properties\"] not found; keys: " + propertiesText);
+						}
+
+						if (i % 10000 == 0) { // Process in blocks of 10,000
+							processedCount+=processGeoJsonArrayList(connection, slippyTile.getZoomlevel(), geoLevel, myGeometryTable, 
+								areaIdList, geoJsonFeatures, propertiesHash, minZoomlevel, maxZoomlevel);
+							
+							areaIdList.clear();
+							propertiesHash.clear();
+						}
+						
+					} // End of for loop
+					
+					/* processedCount+= */
+					processGeoJsonArrayList(connection, slippyTile.getZoomlevel(), geoLevel, myGeometryTable, areaIdList,
+						geoJsonFeatures, propertiesHash, minZoomlevel, maxZoomlevel);
+//					rifLogger.debug(getClass(), "Processed: " + geometries.length() + " geometries" +
+//						"; geoJsonFeatures: " + geoJsonFeatures.length() +
+//						"; geometries: " + geometries.length() +
+//						"; valid areaIds: " + processedCount +
+//						"; for geoLevel: " + geoLevel +
+//						"; zoomlevel: " + zoomlevel +
+//						"; x: " + x +
+//						"; y: " + y);
+					
+					if (addBoundingBoxToTile && bboxJsonProperties != null) {
+						geoJsonFeatures.put(createGeoJsonBboxFeature(bboxJson, bboxJsonProperties));
+					}
+						
+				}
+				else {
+					throw new JSONException("TopoJSON Array[\"geometries\"] not found");
+				}				
+			}
+			else /* if (collection != null) */ {
+				List<String> collectionList = IteratorUtils.toList(collection.keys()); // Ignore NPE warnings from ItelliJ
+				String collectionText = String.join(", ", collectionList);
+				throw new JSONException("TopoJSON Object[\"objects\"] not found; keys: " + collectionText);
+			}
+		}
+		else /* if (tileTopoJson != null) */ {
+			List<String> tileTopoJsonList = IteratorUtils.toList(tileTopoJson.keys()); // Ignore NPE warnings from ItelliJ
+			String tileTopoJsonText = String.join(", ", tileTopoJsonList);
+			throw new JSONException("TopoJSON Object[\"objects\"] not found; keys: " + tileTopoJsonText);
+		}
+		
+		JSONObject tileGeoJson = new JSONObject();
+		tileGeoJson.put("type", "FeatureCollection");
+		tileGeoJson.put("features", geoJsonFeatures);
+		
+		if (addBoundingBoxToTile) {
+			rifTilesCache.cacheTile(tileGeoJson, null /* pngTileStream */, geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), "json");
+		}
+		return tileGeoJson;
+	}
+
+	/** 
+	 * Process array list into GeoJSON features
+	 *
+	 * @param connection 		Database JDBC Connection object	
+	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param geoLevel 			Uppercase String	 
+	 * @param myGeometryTable 	Uppercase String	 
+	 * @param areaIdList		ArrayList<String> of areaIDs
+	 * @param geoJsonFeatures	JSONArray GeoJSON features 
+	 * @param propertiesHash	HashMap<String, JSONObject> of areaID and JSON properties	
+	 * @param minZoomlevel		Minimum zoomlevel
+	 * @param maxZoomlevel		Maximum zoomlevel
+	 *
+	 * @return Number of GeoJSON features processed
+	 *
+	 * @throws RIFServiceException RIF error
+	 * @throws SQLException logical database error
+     */		
+	private int processGeoJsonArrayList(
+		final Connection connection,
+		final Integer zoomlevel,
+		final String geoLevel,
+		final String myGeometryTable,
+		final ArrayList<String> areaIdList,
+		final JSONArray geoJsonFeatures,
+		final HashMap<String, JSONObject> propertiesHash,
+		final int minZoomlevel,
+		final int maxZoomlevel) 
+			throws SQLException, RIFServiceException {
+		
+		int processedCount=0;
+		int removedCount=0;
+		HashMap<String, String> wktHash = getWKT(connection, zoomlevel, geoLevel, myGeometryTable.toLowerCase(), areaIdList,
+			minZoomlevel, maxZoomlevel);
+		if (wktHash != null) {
+			
+			if (wktHash.size() != areaIdList.size()) {
+				throw new SQLException("Error in getWKT; expecting: " + areaIdList.size() + "; got: " + wktHash.size());
+			}
+			Set set = wktHash.entrySet();
+			for (Object o : set) {
+				processedCount++;
+				Map.Entry mentry = (Map.Entry) o;
+				String areaIdKey = (String) mentry.getKey();
+				String wkt = (String) mentry.getValue();
+
+				JSONObject geoJsonFeature = new JSONObject();
+				geoJsonFeature.put("type", "Feature");
+				geoJsonFeature.put("properties", propertiesHash.get(areaIdKey));
+				JSONObject njsonGeometry = rifWellKnownText.wktToGeoJSON(wkt, geoLevel, zoomlevel, areaIdKey);
+				if (njsonGeometry != null) {
+					geoJsonFeature.put("geometry", njsonGeometry);
+					geoJsonFeatures.put(geoJsonFeature);
+				} 
+				else {
+					removedCount++;
+				}
+			} // End of while loop
+		}
+		else {
+			throw new JSONException("Null wktHash for geoLevel: " + geoLevel +
+				"; zoomlevel: " + zoomlevel);
+		}	
+		
+		if (processedCount != areaIdList.size()) {
+			throw new SQLException("Error processing GoeJSON features from WKT; expecting: " + areaIdList.size() + 
+				"; got: " + processedCount);
+		}	
+		else {		
+			rifLogger.debug(getClass(), "Processed: " + processedCount + " areaIds" +
+				"; removed: " + removedCount +
+				"; total geoJsonFeatures: " + geoJsonFeatures.length());
+		}
+							
+		return geoJsonFeatures.length();
+	}
 }

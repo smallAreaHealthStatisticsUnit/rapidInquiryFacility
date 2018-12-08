@@ -1547,11 +1547,7 @@ public class CommonUserService implements UserService {
 					tileType);
 		} 
 		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getTileMakerTiles",
-				rifServiceException);			
+			throw rifServiceException; // Do not Log		
 		}
 		finally {
 			//Reclaim pooled connection
