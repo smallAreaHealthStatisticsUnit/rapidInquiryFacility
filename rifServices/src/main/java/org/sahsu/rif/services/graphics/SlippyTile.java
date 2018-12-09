@@ -146,14 +146,15 @@ public class SlippyTile {
 	 * Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
 	 * </p>
 	 *
-	 * @return JSONArray bboxJson is: [minX, minY, maxX, maxY]
+	 * @return JSONArray bboxJson is: [minX, minY, maxX, maxY] 
      */	
 	public JSONArray tile2boundingBox() {
 		JSONArray bboxJson = new JSONArray();
-		bboxJson.put(toLongitude());		// Wast: minX
-		bboxJson.put(toLatitude(y + 1, zoomlevel));	// South: minY
-		bboxJson.put(toLongitude());	// East: maxX
-		bboxJson.put(toLatitude(y, zoomlevel));		// North: maxY
+
+		bboxJson.put(toLongitude(x, zoomlevel));		// Wast: minX
+		bboxJson.put(toLatitude(y, zoomlevel));			// South: minY
+		bboxJson.put(toLongitude(x + 1, zoomlevel));	// East: maxX
+		bboxJson.put(toLatitude(y + 1, zoomlevel));		// North: maxY
 		return bboxJson;
 	}
 
