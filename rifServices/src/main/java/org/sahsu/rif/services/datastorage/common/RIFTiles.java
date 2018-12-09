@@ -35,7 +35,7 @@ import java.util.*;
  * @version 	1.0
  * @since 		4.0
  */
-public class RIFTiles {
+public class RIFTiles  extends BaseSQLManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final String lineSeparator = System.getProperty("line.separator");
@@ -43,7 +43,6 @@ public class RIFTiles {
 	private static final String NULL_GEOJSON_TILE="{\"features\":[],\"type\":\"FeatureCollection\"}\";";
 	private static final String NULL_TOPOJSON_TILE="{\"type\": \"FeatureCollection\",\"features\":[]}";
 	 
-	private static BaseSQLManager baseSQLManager = null;
 	private static RifWellKnownText rifWellKnownText = null;
 	private static RIFTilesCache rifTilesCache = null;
 	private static RIFPdfTiles rifPdfTiles = null;
@@ -56,10 +55,8 @@ public class RIFTiles {
 	 * @throws NullPointerException on Constructor failure
 	 */
 	public RIFTiles(final RIFServiceStartupOptions options) {
-		try {
-			if (baseSQLManager == null) {
-				baseSQLManager = new BaseSQLManager(options);
-			}			
+		super(options);	
+		try {		
 			rifWellKnownText = new RifWellKnownText();
 			rifTilesCache = new RIFTilesCache(options);
 			rifPdfTiles = new RIFPdfTiles(options);
@@ -88,13 +85,13 @@ public class RIFTiles {
 	 * Called from: ResultsQueryManager.java; needs to determine minZoomlevel and maxZoomlevel
 	 * </p>
 	 *
-	 * @param connection		JDBC Connection
-	 * @param tileTopoJson		JSONObject of tile GeoJSON
-	 * @param myTileTable		Tile table name in uppercase
-	 * @param myGeometryTable	Geometry table name in uppercase
-	 * @param geography			Uppercase String
-	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
-	 * @param geoLevel 			Uppercase String
+	 * @param connection			JDBC Connection
+	 * @param tileTopoJson			JSONObject of tile GeoJSON
+	 * @param geography				Uppercase String
+	 * @param slippyTile 			SlippyTile (zoomlevel, x, y)
+	 * @param hmap 					HashMap<String, String>; hashes are "topoJSON", "tileTable" and "geometryTable"
+	 * @param geoLevel 				Uppercase String
+	 * @param addBoundingBoxToTile 	Add bounding box as an additional feature for debug purposes
 	 *
 	 * @return GeoJSON as JSONObject
 	 *
@@ -105,15 +102,15 @@ public class RIFTiles {
 	 	public JSONObject topoJson2geoJson(
 		final Connection connection,
 		final JSONObject tileTopoJson, 
-		final String myTileTable, 
-		final String myGeometryTable, 
 		final String geography,
 		final SlippyTile slippyTile, 
+		final HashMap<String, String> hmap,
 		final String geoLevel, 
 		final boolean addBoundingBoxToTile)
 			throws RIFSQLException, JSONException, RIFServiceException, SQLException
 	{
-	
+		String myTileTable = hmap.get("tileTable");
+		String myGeometryTable = hmap.get("geometryTable");
 		PreparedStatement statement2 = null;
 		ResultSet resultSet2 = null;
 		
@@ -135,10 +132,10 @@ public class RIFTiles {
 		generateTilesForGeoLevelQueryFormatter2.addWhereJoinCondition("rif_data." + myGeometryTable, 
 			"geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
 		generateTilesForGeoLevelQueryFormatter2.addWhereParameter(
-			baseSQLManager.applySchemaPrefixIfNeeded("rif40_geolevels"),
+			applySchemaPrefixIfNeeded("rif40_geolevels"),
 			"geolevel_name");
 		
-		String sqlQueryText = baseSQLManager.logSQLQuery(
+		String sqlQueryText = logSQLQuery(
 				"topoJson2geoJson",
 				generateTilesForGeoLevelQueryFormatter2,
 				geoLevel);	
@@ -154,8 +151,8 @@ public class RIFTiles {
 			int maxZoomlevel=resultSet2.getInt(2);			
 		
 			geoJSON = topoJson2geoJson(connection, 
-					tileTopoJson, myGeometryTable,
-					geography, slippyTile, geoLevel, addBoundingBoxToTile,
+					tileTopoJson,
+					geography, slippyTile, hmap, geoLevel, addBoundingBoxToTile,
 					minZoomlevel, maxZoomlevel);
 		}	
 		catch (SQLException sqlException) {
@@ -227,12 +224,12 @@ public class RIFTiles {
 		getMapTilesQueryFormatter.addWhereJoinCondition("rif_data." + myGeometryTable, 
 			"geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
 		getMapTilesQueryFormatter.addWhereParameter(
-			baseSQLManager.applySchemaPrefixIfNeeded("rif40_geolevels"),
+			applySchemaPrefixIfNeeded("rif40_geolevels"),
 			"geolevel_name");
 		getMapTilesQueryFormatter.addWhereParameter("rif_data." + myGeometryTable, "zoomlevel");
 		getMapTilesQueryFormatter.addWhereIn("rif_data." + myGeometryTable, "areaid", areaIdList);
 
-		String sqlQueryText = baseSQLManager.logSQLQuery(
+		String sqlQueryText = logSQLQuery(
 				"topoJson2geoJson",
 				getMapTilesQueryFormatter,
 				geoLevel,
@@ -278,6 +275,140 @@ public class RIFTiles {
 	}
 
 	/** 
+	 * Get topoJSON tile
+	 *
+	 * @param connection 		Database JDBC Connection object	
+	 * @param geography 		Geography string in uppercase
+	 * @param geoLevelSelect 	Geolevel string in uppercase
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
+     */	
+	// Duplicate code in generateTilesForGeoLevel()
+	public HashMap<String, String> getTopoJsonTile(
+			final Connection connection, 
+			final String geography,
+			final String geoLevelSelect, 
+			final SlippyTile slippyTile) 
+			throws RIFServiceException, SQLException {
+
+		HashMap<String, String> hmap = new HashMap<String, String>();
+
+		//STEP 1: get the tile table name
+		/*
+		SELECT tiletable, geometrytable
+		FROM [sahsuland_dev].[rif40].[rif40_geographies]
+		WHERE geography = 'SAHSULAND';
+		*/
+
+		SelectQueryFormatter getMapTileTableQueryFormatter =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+
+		getMapTileTableQueryFormatter.setDatabaseSchemaName(SCHEMA_NAME);
+		getMapTileTableQueryFormatter.addSelectField("rif40_geographies", "tiletable");
+		getMapTileTableQueryFormatter.addSelectField("rif40_geographies", "geometrytable");
+		getMapTileTableQueryFormatter.addFromTable("rif40_geographies");
+		getMapTileTableQueryFormatter.addWhereParameter("geography");
+
+		String sqlQueryText = logSQLQuery(
+				"getTileMakerTiles",
+				getMapTileTableQueryFormatter,
+				geography);
+
+		//For tile table name
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		String tileTable = null;
+		String geometryTable = null;
+		try {
+			statement = connection.prepareStatement(getMapTileTableQueryFormatter.generateQuery());
+			statement.setString(1, geography);
+
+			resultSet = statement.executeQuery();
+			resultSet.next();
+
+			tileTable = resultSet.getString(1);
+			geometryTable = resultSet.getString(2);
+			hmap.put("tileTable", tileTable);
+			hmap.put("geometryTable", geometryTable);
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			throw new RIFSQLException(this.getClass(), sqlException, statement, sqlQueryText);
+		} finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+
+		//For map tiles
+		PreparedStatement statement2 = null;
+		ResultSet resultSet2 = null;
+		String sqlQueryText2 =  null;
+		try {
+			//This is the tile table name for this geography
+			SelectQueryFormatter getMapTilesQueryFormatter
+					= new MSSQLSelectQueryFormatter();
+
+			//STEP 2: get the tiles
+			/*
+				SELECT
+				   TILES_SAHSULAND.optimised_topojson
+				FROM
+				   TILES_SAHSULAND,
+				   rif40_geolevels
+				WHERE
+				   TILES_SAHSULAND.geolevel_id = rif40_geolevels.geolevel_id AND
+				   rif40_geolevels.geolevel_name='SAHSU_GRD_LEVEL2' AND
+				   TILES_SAHSULAND.zoomlevel=10 AND
+				   TILES_SAHSULAND.x=490 AND
+				   TILES_SAHSULAND.y=324
+			*/
+
+			getMapTilesQueryFormatter.addSelectField("rif_data." + tileTable, "optimised_topojson");
+			getMapTilesQueryFormatter.addFromTable("rif_data." + tileTable);
+			getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
+			getMapTilesQueryFormatter.addWhereJoinCondition("rif_data." + tileTable, 
+				"geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
+			getMapTilesQueryFormatter.addWhereParameter(
+				applySchemaPrefixIfNeeded("rif40_geolevels"),
+				"geolevel_name");
+			getMapTilesQueryFormatter.addWhereParameter("rif_data." + tileTable, "zoomlevel");
+			getMapTilesQueryFormatter.addWhereParameter("rif_data." + tileTable, "x");
+			getMapTilesQueryFormatter.addWhereParameter("rif_data." + tileTable, "y");
+
+			sqlQueryText2 = logSQLQuery(
+					"getTileMakerTiles",
+					getMapTilesQueryFormatter,
+					geoLevelSelect,
+					new Integer(slippyTile.getZoomlevel()).toString(),
+					new Integer(slippyTile.getX()).toString(),
+					new Integer(slippyTile.getY()).toString());
+
+			statement2 = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());
+			statement2.setString(1, geoLevelSelect);
+			statement2.setInt(2, new Integer(slippyTile.getZoomlevel()));
+			statement2.setInt(3, new Integer(slippyTile.getX()));
+			statement2.setInt(4, new Integer(slippyTile.getY()));
+
+			resultSet2 = statement2.executeQuery();
+			if (resultSet2.next()) {
+				String topoJSON = resultSet2.getString(1);
+				hmap.put("topoJSON", topoJSON);
+			}
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			throw new RIFSQLException(this.getClass(), sqlException, statement2, sqlQueryText2);
+		} finally {
+			//Cleanup database resources
+
+			SQLQueryUtility.close(statement2);
+			SQLQueryUtility.close(resultSet2);
+		}
+		
+		connection.commit();
+
+		return hmap;
+	}
+
+	/** 
 	 * Generate tiles for geolevels with more than 5000 areaIds
 	 *
 	 * <p>
@@ -293,7 +424,8 @@ public class RIFTiles {
 		LocalDateTime start = LocalDateTime.now(); 
 		int generatedCount=0;
 		int geolevelCount=0;
-		
+		HashMap<String, String> hmap = new HashMap<String, String>();
+
 		SelectQueryFormatter generateTilesQueryFormatter
 				= new MSSQLSelectQueryFormatter();
 
@@ -319,7 +451,7 @@ public class RIFTiles {
 		generateTilesQueryFormatter.addOrderByCondition("areaid_count", SelectQueryFormatter.SortOrder.ASCENDING);
 
 		int minAreaIdCount = 5000; // ItelliJ is wrong will not compile!
-		String sqlQueryText = baseSQLManager.logSQLQuery(
+		String sqlQueryText = logSQLQuery(
 				"generateTiles",
 				generateTilesQueryFormatter,
 				String.valueOf(minAreaIdCount));
@@ -332,11 +464,13 @@ public class RIFTiles {
 
 				String geography=resultSet.getString(1);
 				int geolevelId=resultSet.getInt(2); // XXXX
-				String geolevelName=resultSet.getString(3);		
+				String geolevelName=resultSet.getString(3);	
 				String tileTable=resultSet.getString(4);		
-				String geometryTable=resultSet.getString(5);	
+				String geometryTable=resultSet.getString(5);
+	 			hmap.put("tileTable", tileTable);
+				hmap.put("geometryTable", geometryTable);
 				geolevelCount++;
-				generatedCount+=determineTilesForGeoLevel(connection, geolevelId, tileTable, geometryTable, geography, geolevelName);
+				generatedCount+=determineTilesForGeoLevel(connection, geolevelId, hmap, geography, geolevelName);
 			}	
 			
 			LocalDateTime end = LocalDateTime.now(); 
@@ -384,8 +518,7 @@ public class RIFTiles {
 	 *
 	 * @param connection 		Database JDBC Connection object	
 	 * @param geolevelId 		Database geolevel ID
-	 * @param tileTable		Tile table name in uppercase
-	 * @param geometryTable	Geometry table name in uppercase
+	 * @param hmap 				HashMap<String, String>; hashes are "topoJSON", "tileTable" and "geometryTable"
 	 * @param geography			Uppercase String
 	 * @param geolevelName 		Name of geolevel
 	 *
@@ -394,11 +527,13 @@ public class RIFTiles {
 	private int determineTilesForGeoLevel(
 		final Connection connection, 
 		final int geolevelId, 
-		final String tileTable, 
-		final String geometryTable,
+		final HashMap<String, String> hmap,
 		final String geography, 
 		final String geolevelName)
 			throws RIFServiceException, SQLException {
+
+		String tileTable = hmap.get("tileTable");
+		String geometryTable = hmap.get("geometryTable");
 		PreparedStatement statement = null;
 		PreparedStatement statement2 = null;
 		ResultSet resultSet = null;
@@ -434,7 +569,7 @@ public class RIFTiles {
 		generateTilesForGeoLevelQueryFormatter2.addFromTable("rif_data." + geometryTable.toLowerCase());
 		generateTilesForGeoLevelQueryFormatter2.addWhereParameter("rif_data." + geometryTable.toLowerCase(), "geolevel_id");
 		
-		String sqlQueryText = baseSQLManager.logSQLQuery(
+		String sqlQueryText = logSQLQuery(
 				"generateTiles",
 				generateTilesForGeoLevelQueryFormatter,
 				String.valueOf(geolevelId));	
@@ -457,7 +592,7 @@ public class RIFTiles {
 			SQLQueryUtility.close(resultSet);
 		}
 
-		String sqlQueryText2 = baseSQLManager.logSQLQuery(
+		String sqlQueryText2 = logSQLQuery(
 				"generateTiles",
 				generateTilesForGeoLevelQueryFormatter2,
 				String.valueOf(geolevelId));
@@ -476,8 +611,7 @@ public class RIFTiles {
 			generatedCount=generateTilesForGeoLevel(
 				connection, 
 				geolevelId, 
-				tileTable, 
-				geometryTable, 
+				hmap,
 				geography, 
 				geolevelName, 
 				tileCount,
@@ -503,8 +637,7 @@ public class RIFTiles {
 	 *
 	 * @param connection 		Database JDBC Connection object	
 	 * @param geolevelId 		Database geolevel ID
-	 * @param tileTable		Tile table name in uppercase
-	 * @param geometryTable	Geometry table name in uppercase
+	 * @param hmap 				HashMap<String, String>; hashes are "topoJSON", "tileTable" and "geometryTable"
 	 * @param geography			Uppercase String
 	 * @param geolevelName 		Name of geolevel
 	 * @param tileCount 		Number of tiles to be processed	
@@ -516,8 +649,7 @@ public class RIFTiles {
 	private int generateTilesForGeoLevel(
 		final Connection connection, 
 		final int geolevelId, 
-		final String tileTable, 
-		final String geometryTable,
+		final HashMap<String, String> hmap,
 		final String geography, 
 		final String geolevelName,
 		final int tileCount,
@@ -526,7 +658,10 @@ public class RIFTiles {
 			throws RIFServiceException, SQLException {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
-		
+
+		String tileTable = hmap.get("tileTable");
+		String geometryTable = hmap.get("geometryTable");
+
 		SelectQueryFormatter generateTilesForGeoLevelQueryFormatter
 				= new MSSQLSelectQueryFormatter();
 
@@ -548,7 +683,7 @@ public class RIFTiles {
 		generateTilesForGeoLevelQueryFormatter.addOrderByCondition("x", SelectQueryFormatter.SortOrder.ASCENDING);
 		generateTilesForGeoLevelQueryFormatter.addOrderByCondition("y", SelectQueryFormatter.SortOrder.ASCENDING);
 
-		String sqlQueryText = baseSQLManager.logSQLQuery(
+		String sqlQueryText = logSQLQuery(
 				"generateTiles",
 				generateTilesForGeoLevelQueryFormatter,
 				String.valueOf(geolevelId));
@@ -566,26 +701,34 @@ public class RIFTiles {
 				int x=resultSet.getInt(2);		
 				int y=resultSet.getInt(3);			
 				String optimisedTopojson=resultSet.getString(4);	
+				hmap.put("topoJSON", optimisedTopojson);
 				SlippyTile slippyTile = new SlippyTile(zoomlevel, x, y);
 					
 				File file=rifTilesCache.getCachedTileFile(geography, slippyTile, geolevelName, "png");	
 				if (!file.exists()) {
 					generatedCount++;
-					rifLogger.debug(getClass(), "Generate GeoJSON (" + i + "/" + tileCount + "): " + file.toString());
+					rifLogger.debug(getClass(), "Generate GeoJSON (" + i + "/" + tileCount + "): " + file.toString() +
+						"; from optimisedTopojson, size: " + optimisedTopojson.length());
 		
 					JSONObject tileTopoJson = new JSONObject(optimisedTopojson);
 					JSONObject tileGeoJson = topoJson2geoJson(connection, 
-						tileTopoJson, geometryTable,
-						geography, slippyTile, geolevelName, false /* addBoundingBoxToTile */,
+						tileTopoJson,
+						geography, slippyTile, hmap, geolevelName, false /* addBoundingBoxToTile */,
 						minZoomlevel, maxZoomlevel);
 						
 					rifLogger.info(getClass(), "Generate PNG tile (" + i + "/" + tileCount + "): " + file.toString());
-					rifPdfTiles.geoJson2png(
-						tileGeoJson,
-						geography,
-						slippyTile,
-						geolevelName);
-
+					try {
+						rifPdfTiles.geoJson2png(
+							tileGeoJson,
+							geography,
+							slippyTile,
+							geolevelName);
+					}	
+					catch (Exception exception) {
+						throw new RIFServiceException(
+							RIFServiceError.TILE_GENERATE_GEOTOOLS_ERROR,
+							exception.getMessage(), exception);
+					}
 				}
 			}	
 		}	
@@ -716,14 +859,15 @@ public class RIFTiles {
 	 * Called from: RIFTiles.java generateTiles(); knows determine minZoomlevel and maxZoomlevel									
 	 * </p>
 	 *
-	 * @param connection		JDBC Connection
-	 * @param tileTopoJson		JSONObject of tile GeoJSON
-	 * @param myGeometryTable   Geometry table name in uppercase
-	 * @param geography         Geography as a uppercase String
-	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
-	 * @param geoLevel          Geolevel as an uppercase String
-	 * @param minZoomlevel      Minimum zoomlevel
-	 * @param maxZoomlevel      Maximum zoomlevel
+	 * @param connection			JDBC Connection
+	 * @param tileTopoJson			JSONObject of tile GeoJSON
+	 * @param geography      	  	Geography as a uppercase String
+	 * @param slippyTile 			SlippyTile (zoomlevel, x, y)
+	 * @param hmap 					HashMap<String, String>; hashes are "topoJSON", "tileTable" and "geometryTable"
+	 * @param geoLevel     	     	Geolevel as an uppercase String
+	 * @param addBoundingBoxToTile 	Add bounding box as an additional feature for debug purposes
+	 * @param minZoomlevel      	Minimum zoomlevel
+	 * @param maxZoomlevel     		Maximum zoomlevel
 	 *
 	 * @return GeoJSON as JSONObject
 	 *
@@ -804,15 +948,16 @@ public class RIFTiles {
 	private JSONObject topoJson2geoJson(
 			final Connection connection,
 			final JSONObject tileTopoJson,
-			final String myGeometryTable,
 			final String geography,
 			final SlippyTile slippyTile, 
+			final HashMap<String, String> hmap,
 			final String geoLevel,
 			final boolean addBoundingBoxToTile,
 			final int minZoomlevel,
 			final int maxZoomlevel)
 			throws SQLException, JSONException, RIFServiceException
 	{	
+		String myGeometryTable = hmap.get("geometryTable");
 		JSONArray bboxJson = slippyTile.tile2boundingBox();
 		JSONArray geoJsonFeatures = new JSONArray();	 
 		JSONArray geometries;

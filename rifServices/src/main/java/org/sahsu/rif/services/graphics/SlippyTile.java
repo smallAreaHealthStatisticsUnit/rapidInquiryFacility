@@ -16,21 +16,91 @@ public class SlippyTile {
 	static Integer y;
 		
 	/**
-	 * Constructor
+	 * Constructor from x/y and zoomlevel
+	 *
+	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 * @param x 				X tile number		
+	 * @param y					Y tile number
+	 */
+	public SlippyTile(
+		final Integer zoomlevel, 
+		final Integer x, 
+		final Integer y) throws RIFTilesException {
+		
+		if (zoomlevel < 0 || zoomlevel > 18) {
+			throw new RIFTilesException(new Exception("Invalid zoomlevel (0-18): " + zoomlevel), null);
+		}
+		int maxTiles=(int)Math.pow(2, zoomlevel); // For zoomlevel
+		if (x < 0 || x >= maxTiles) {
+			throw new RIFTilesException(new Exception("Invalid x (0-" + (maxTiles-1) + "): " + x), null);
+		}
+		if (y < 0 || y >= maxTiles) {
+			throw new RIFTilesException(new Exception("Invalid y (0-" + (maxTiles-1) + "): " + y), null);
+		}
+		this.zoomlevel = zoomlevel;
+		this.x = x;
+		this.y = y;
+	}
+
+	/** 
+	 * Constructor from Lat/Long and zoomlevel
+	 *
+	 * <p>
+	 * Java OSM functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
+	 * </p>
 	 *
 	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
 	 * @param x 				X tile number		
 	 * @param y					Y tile number
 	 *
-	 * @throws NullPointerException on Constructor failure
-	 */
-	public SlippyTile(
-		final Integer zoomlevel, 
-		final Integer x, 
-		final Integer y) {
-			this.zoomlevel = zoomlevel;
-			this.x = x;
-			this.y = y;
+     */	
+	private SlippyTile(
+			final double lat, 
+			final double lon, 
+			final int zoomlevel) {
+		int x = (int)Math.floor( (lon + 180) / 360 * (1<<zoomlevel) ) ;
+		int y = (int)Math.floor( (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 
+				2 * (1<<zoomlevel) ) ;
+		if (x < 0) {
+			x=0;
+		}
+		if (x >= (1<<zoomlevel)) {
+			x=((1<<zoomlevel)-1);
+		}
+		if (y < 0) {
+			y=0;
+		}
+		if (y >= (1<<zoomlevel)) {
+			y=((1<<zoomlevel)-1);
+		}
+
+		this.zoomlevel = zoomlevel;
+	}
+
+	/** 
+	 * Get slippy tile parent (next lower resolution zoomlevel)
+     *
+	 * @return SlippyTile
+	 *
+	 * @throws RIFTilesException: invalid zoomlevel in slippyTile
+     */	
+	public SlippyTile getParentTile() throws RIFTilesException {
+		double lon=toLongitude(); // minX
+		double lat=toLatitude(); // minY
+
+		if (zoomlevel < 1) {
+			throw new RIFTilesException(new Exception("Invalid zoomlevel (1-18): " + zoomlevel), null);
+		}
+		return new SlippyTile(lat, lon, zoomlevel-1);
+	}
+
+	/** 
+	 * Get slippy tile info
+	 *
+	 * @return String slippy tile info
+     */	
+	public String toString() {
+		return "zoomlevel: " + zoomlevel + "; x: " + x + "; y: " + y;
 	}
 
 	/** 
@@ -80,11 +150,24 @@ public class SlippyTile {
      */	
 	public JSONArray tile2boundingBox() {
 		JSONArray bboxJson = new JSONArray();
-		bboxJson.put(tile2lon(x, zoomlevel));		// Wast: minX
-		bboxJson.put(tile2lat(y + 1, zoomlevel));	// South: minY
-		bboxJson.put(tile2lon(x + 1, zoomlevel));	// East: maxX
-		bboxJson.put(tile2lat(y, zoomlevel));		// North: maxY
+		bboxJson.put(toLongitude());		// Wast: minX
+		bboxJson.put(toLatitude(y + 1, zoomlevel));	// South: minY
+		bboxJson.put(toLongitude());	// East: maxX
+		bboxJson.put(toLatitude(y, zoomlevel));		// North: maxY
 		return bboxJson;
+	}
+
+	/** 
+	 * Get Longitude for tile
+	 *
+	 * <p>
+	 * Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
+	 * </p>
+	 *
+	 * @return Longitude (X) in 4326
+     */		
+	private double toLongitude() {
+		return x / Math.pow(2.0, zoomlevel) * 360.0 - 180;
 	}
 
 	/** 
@@ -99,8 +182,21 @@ public class SlippyTile {
 	 *
 	 * @return Longitude (X) in 4326
      */		
-	private double tile2lon(int x, int zoomlevel) {
+	private double toLongitude(int x, int zoomlevel) {
 		return x / Math.pow(2.0, zoomlevel) * 360.0 - 180;
+	}
+
+	/** 
+	 * Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
+	 * </p>
+	 *
+	 * @param y 				Y tile number	
+	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
+	 *
+	 * @return Latitude (Y) in 4326 
+     */			
+	private double toLatitude(int y, int zoomlevel) {		double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, zoomlevel);
+		return Math.toDegrees(Math.atan(Math.sinh(n)));
 	}
 
 	/** 
@@ -110,12 +206,9 @@ public class SlippyTile {
 	 * Java OSM BBOX functions from: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Java
 	 * </p>
 	 *
-	 * @param y 				Y tile number	
-	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
-	 *
 	 * @return Latitude (Y) in 4326 
      */			
-	private double tile2lat(int y, int zoomlevel) {
+	private double toLatitude() {
 		double n = Math.PI - (2.0 * Math.PI * y) / Math.pow(2.0, zoomlevel);
 		return Math.toDegrees(Math.atan(Math.sinh(n)));
 	}

@@ -1,6 +1,7 @@
 package org.sahsu.rif.services.datastorage.common;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -10,6 +11,7 @@ import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
@@ -1546,6 +1548,9 @@ public class CommonUserService implements UserService {
 					y,
 					tileType);
 		} 
+		catch (SQLException sqlException) {
+			throw new RIFSQLException(this.getClass(), sqlException, null, null);
+		}
 		catch(RIFServiceException rifServiceException) {
 			throw rifServiceException; // Do not Log		
 		}

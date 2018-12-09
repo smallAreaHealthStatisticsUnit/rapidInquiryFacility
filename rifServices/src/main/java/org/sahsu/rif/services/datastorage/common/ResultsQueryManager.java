@@ -10,6 +10,7 @@ import java.text.NumberFormat;
 import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import org.apache.commons.collections.IteratorUtils;
 
@@ -865,13 +866,13 @@ public class ResultsQueryManager extends BaseSQLManager {
 			final Integer zoomlevel, 
 			final Integer x,
 			final Integer y,
-			String tileType) throws RIFServiceException, RIFTilesException {
+			String tileType) throws RIFServiceException, RIFTilesException, SQLException {
 		
 		String result = null;
 		RIFTiles rifTiles = new RIFTiles(options);
 		RIFTilesCache rifTilesCache = new RIFTilesCache(options);
 		RIFPdfTiles rifPdfTiles = new RIFPdfTiles(options);
-		SlippyTile slippyTile = new SlippyTile(zoomlevel, x, y);
+		SlippyTile slippyTile = new SlippyTile(zoomlevel, x, y); // Will raise RIFTilesException is x/y/zoomlevel are invalid
 		if (tileType == null) {
 			tileType="topojson";
 		}
@@ -888,114 +889,28 @@ public class ResultsQueryManager extends BaseSQLManager {
 			}
 		}
 
-		//STEP 1: get the tile table name
-		/*
-		SELECT tiletable, geometrytable
-		FROM [sahsuland_dev].[rif40].[rif40_geographies]
-		WHERE geography = 'SAHSULAND';
-		*/
-
-		SelectQueryFormatter getMapTileTableQueryFormatter =
-				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
-
-		getMapTileTableQueryFormatter.setDatabaseSchemaName(SCHEMA_NAME);
-		getMapTileTableQueryFormatter.addSelectField("rif40_geographies", "tiletable");
-		getMapTileTableQueryFormatter.addSelectField("rif40_geographies", "geometrytable");
-		getMapTileTableQueryFormatter.addFromTable("rif40_geographies");
-		getMapTileTableQueryFormatter.addWhereParameter("geography");
-
-		logSQLQuery(
-				"getTileMakerTiles",
-				getMapTileTableQueryFormatter,
-				geography.getName().toUpperCase());
-
-		//For tile table name
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-
-		//For map tiles
-		PreparedStatement statement2 = null;
-		ResultSet resultSet2 = null;
-
+		HashMap<String, String> hmap = rifTiles.getTopoJsonTile(connection, geography.getName().toUpperCase(), 
+			geoLevelSelect.getName().toUpperCase(), slippyTile);
+		result=hmap.get("topoJSON");
 		try {
-
-			statement = connection.prepareStatement(getMapTileTableQueryFormatter.generateQuery());
-			statement.setString(1, geography.getName().toUpperCase());
-
-			resultSet = statement.executeQuery();
-			resultSet.next();
-
-			//This is the tile table name for this geography
-			String myTileTable = resultSet.getString(1);
-			String myGeometryTable = resultSet.getString(2);
-
-			SelectQueryFormatter getMapTilesQueryFormatter
-					= new MSSQLSelectQueryFormatter();
-
-			//STEP 2: get the tiles
-			/*
-				SELECT
-				   TILES_SAHSULAND.optimised_topojson
-				FROM
-				   TILES_SAHSULAND,
-				   rif40_geolevels
-				WHERE
-				   TILES_SAHSULAND.geolevel_id = rif40_geolevels.geolevel_id AND
-				   rif40_geolevels.geolevel_name='SAHSU_GRD_LEVEL2' AND
-				   TILES_SAHSULAND.zoomlevel=10 AND
-				   TILES_SAHSULAND.x=490 AND
-				   TILES_SAHSULAND.y=324
-			*/
-
-			getMapTilesQueryFormatter.addSelectField("rif_data." + myTileTable, "optimised_topojson");
-			getMapTilesQueryFormatter.addFromTable("rif_data." + myTileTable);
-			getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
-			getMapTilesQueryFormatter.addWhereJoinCondition("rif_data." + myTileTable, 
-				"geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
-			getMapTilesQueryFormatter.addWhereParameter(
-				applySchemaPrefixIfNeeded("rif40_geolevels"),
-				"geolevel_name");
-			getMapTilesQueryFormatter.addWhereParameter("rif_data." + myTileTable, "zoomlevel");
-			getMapTilesQueryFormatter.addWhereParameter("rif_data." + myTileTable, "x");
-			getMapTilesQueryFormatter.addWhereParameter("rif_data." + myTileTable, "y");
-
-			logSQLQuery(
-					"getTileMakerTiles",
-					getMapTilesQueryFormatter,
-					geoLevelSelect.getName().toUpperCase(),
-					zoomlevel.toString(),
-					x.toString(),
-					y.toString());
-
-			statement2 = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());
-			statement2.setString(1, geoLevelSelect.getName().toUpperCase());
-			statement2.setInt(2, zoomlevel);
-			statement2.setInt(3, x);
-			statement2.setInt(4, y);
-
-			resultSet2 = statement2.executeQuery();
-			if (resultSet2.next()) {
-				result = resultSet2.getString(1);
-			}
-			else {			
+			if (result == null) { // Not found
+				SlippyTile parentTile=null;
+				if (zoomlevel > 0) {
+					parentTile = slippyTile.getParentTile(); // Will raise RIFTilesException is no parent
+				}
 				String tileDoesNotExistError="Tile does not exist for geography: " + geography.getName().toUpperCase() +
-				   "; tileTable: " + myTileTable +
-				   "; zoomlevel: " + zoomlevel.toString() +
 				   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + 
-				   "; x/y: " + x + "/" + y;
-				throw new RIFTilesException(new Exception(tileDoesNotExistError), new SlippyTile(zoomlevel, x, y));
+				   "; slippyTile: " + slippyTile.toString() +
+				   "; parentTile: " + (parentTile != null ? parentTile.toString() : "no parent");
+				throw new RIFTilesException(new Exception(tileDoesNotExistError), slippyTile);
 			}
-			
-			connection.commit();
 			
 			if (tileType.equals("topojson")) {		
 
 				rifLogger.info(getClass(), "get tile for geography: " + geography.getName().toUpperCase() +
 										   "; tileType: " + tileType +
-										   "; tileTable: " + myTileTable +
-										   "; zoomlevel: " + zoomlevel.toString() +
-										   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + lineSeparator + 
-										   "; x/y: " + x + "/" + y +
+										   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + 
+										   "; slippyTile: " + slippyTile.toString() +
 										   "; length: " + result.length());			
 				return result;
 			}
@@ -1011,9 +926,9 @@ public class ResultsQueryManager extends BaseSQLManager {
 							addBoundingBoxToTile=true;
 						}
 						JSONObject tileGeoJson = rifTiles.topoJson2geoJson(connection, 
-							tileTopoJson, myTileTable, myGeometryTable, 
+							tileTopoJson, 
 							geography.getName().toUpperCase(),
-							slippyTile, geoLevelSelect.getName().toUpperCase(), addBoundingBoxToTile);
+							slippyTile, hmap, geoLevelSelect.getName().toUpperCase(), addBoundingBoxToTile);
 						
 						if (tileType.equals("png")) {	
 							result = rifPdfTiles.geoJson2png(tileGeoJson, geography.getName().toUpperCase(), slippyTile, 
@@ -1025,10 +940,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 						rifLogger.info(getClass(), 
 							"topoJson2geoJson tile for geography: " + geography.getName().toUpperCase() +
 							"; tileType: " + tileType +
-							"; tileTable: " + myTileTable +
-							"; zoomlevel: " + zoomlevel.toString() +
 							"; geolevel: " + geoLevelSelect.getName().toUpperCase() + lineSeparator + 
-							"; x/y: " + x + "/" + y +
+						    "; slippyTile: " + slippyTile.toString() +
 							"; length: " + result.length());
 				
 						return result;
@@ -1083,17 +996,6 @@ public class ResultsQueryManager extends BaseSQLManager {
 			
 		} catch(RIFTilesException rifTilesException) {
 			throw rifTilesException;
-		} catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			String errorMessage
-					= RIFServiceMessages.getMessage(
-					"sqlResultsQueryManager.unableToGetTiles",
-					geoLevelSelect.getDisplayName(),
-					geography.getDisplayName());
-			throw new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
 		} catch(RIFServiceException exception) { // Also catch RIFSQLException super class
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
@@ -1106,14 +1008,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 			throw new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage, exception);
-		} finally {
-			//Cleanup database resources
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
-
-			SQLQueryUtility.close(statement2);
-			SQLQueryUtility.close(resultSet2);
-		}
+		} 
 	}
 	
 	//get 'global' geography attribute table

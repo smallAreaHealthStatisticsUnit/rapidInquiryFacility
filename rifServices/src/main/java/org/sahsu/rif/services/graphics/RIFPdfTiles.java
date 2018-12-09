@@ -19,7 +19,6 @@ import org.geotools.renderer.label.LabelCacheImpl;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -98,7 +97,13 @@ public class RIFPdfTiles {
 
 			// Convert GeoJSON toFeatureCollection 	
 			FeatureCollection features = featureJSON.readFeatureCollection(is);
-			
+			if (features.size() == 0) {
+				String tileGeoJsonStr = tileGeoJson.toString();
+				if (tileGeoJsonStr.length() > 300 ) {
+					tileGeoJsonStr = tileGeoJsonStr.substring(0, 300);
+				}
+				throw new JSONException("No features for tileGeoJson: " + tileGeoJsonStr);
+			}
 			// Style 
 			MapContent mapContent = new MapContent();
 			mapContent.setTitle(geoLevel + slippyTile.getPathFileName() + ".png");
@@ -140,8 +145,24 @@ public class RIFPdfTiles {
 			hints.put(StreamingRenderer.LABEL_CACHE_KEY, labelCache);
 			renderer.setRendererHints(hints);
 			renderer.setMapContent(mapContent);
+/*
+10:59:32.949 [pool-8-thread-1] WARN  org.geotools.renderer.lite.RendererUtilities org.geotools.renderer.lite.RendererUtilities: Dete
+rminant is 0
+java.awt.geom.NoninvertibleTransformException: Determinant is 0
+        at java.awt.geom.AffineTransform.createInverse(AffineTransform.java:2706) ~[?:1.8.0_111]
+        at org.geotools.renderer.lite.RendererUtilities.worldToScreenTransform(RendererUtilities.java:181) [gt-render-18.2.jar:?]
+        at org.geotools.renderer.lite.StreamingRenderer.paint(StreamingRenderer.java:617) [gt-render-18.2.jar:?]
+        at org.sahsu.rif.services.graphics.RIFPdfTiles.geoJson2png(RIFPdfTiles.java:143) [classes/:4.0.0-SNAPSHOT]
+        at org.sahsu.rif.services.datastorage.common.RIFTiles.generateTilesForGeoLevel(RIFTiles.java:718) [classes/:4.0.0-SNAPSHOT]
+        at org.sahsu.rif.services.datastorage.common.RIFTiles.determineTilesForGeoLevel(RIFTiles.java:609) [classes/:4.0.0-SNAPSHOT]
+
+        at org.sahsu.rif.services.datastorage.common.RIFTiles.generateTiles(RIFTiles.java:471) [classes/:4.0.0-SNAPSHOT]
+        at org.sahsu.rif.services.graphics.RIFTilesGenerator.run(RIFTilesGenerator.java:65) [classes/:4.0.0-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [?:1.8.0_111]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [?:1.8.0_111]
+        at java.lang.Thread.run(Thread.java:745) [?:1.8.0_111] 
+*/
 			renderer.paint(g2d, outputArea, bounds); 
-			
 			ImageIO.write(bufferedImage, "png", os);
 
 			rifTilesCache.cacheTile(null /* tileGeoJson */, os, geography.toLowerCase(), slippyTile, geoLevel.toLowerCase(), "png");
