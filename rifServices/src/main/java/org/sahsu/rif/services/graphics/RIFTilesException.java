@@ -3,6 +3,13 @@ package org.sahsu.rif.services.graphics;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.graphics.SlippyTile;
 
+/**
+ * Tile handling exception (usually the tile requested is invalid).
+ *
+ * @author		Peter Hambly
+ * @version 	1.0
+ * @since 		4.0
+ */
 public class RIFTilesException extends RIFServiceException {
 	
 	private static SlippyTile slippyTile = null;

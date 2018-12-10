@@ -10,10 +10,10 @@ import org.json.JSONArray;
  * @since 		4.0
  */
 public class SlippyTile {
-	
-	static Integer zoomlevel;
-	static Integer x; 
-	static Integer y;
+
+	private static Integer zoomlevel;
+	private static Integer x;
+	private static Integer y;
 		
 	/**
 	 * Constructor from x/y and zoomlevel
@@ -50,8 +50,8 @@ public class SlippyTile {
 	 * </p>
 	 *
 	 * @param zoomlevel 		0-9 (depends in TileMaker maximum zoomlevel)
-	 * @param x 				X tile number		
-	 * @param y					Y tile number
+	 * @param lat				Latitude
+	 * @param lon				Longitude
 	 *
      */	
 	private SlippyTile(
