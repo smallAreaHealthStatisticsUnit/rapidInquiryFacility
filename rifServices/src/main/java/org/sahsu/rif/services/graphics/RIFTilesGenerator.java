@@ -11,6 +11,7 @@ import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.datastorage.common.RIFTiles;
 import org.sahsu.rif.services.datastorage.common.BaseSQLManager;
+import org.sahsu.rif.generic.concepts.User;
 
 /**
  * Create PNG tiles for geolevels with more than 5000 areas.
@@ -27,6 +28,8 @@ public class RIFTilesGenerator implements Runnable {
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static RIFServiceStartupOptions rifServiceStartupOptions = null;
 	private static Connection connection = null;
+	private static BaseSQLManager baseSQLManager = null;
+	private static String username = null;
 	
 	public RIFTilesGenerator() { // Dummy constructor
 	}
@@ -35,7 +38,6 @@ public class RIFTilesGenerator implements Runnable {
 	 * Initialize function; called before run
 	 *
 	 * @param String username
-	 * @param String password
 	 * @param RIFServiceStartupOptions for the extract directory
 	 *
 	 * @throws RIFServiceException RIF error
@@ -44,16 +46,14 @@ public class RIFTilesGenerator implements Runnable {
      */		
 	public void initialise( 
 		final String username, 
-		final String password,
 		final RIFServiceStartupOptions rifServiceStartupOptions)
-		throws RIFServiceException, SQLException, ClassNotFoundException {
+		throws RIFServiceException, ClassNotFoundException {
 			
 		this.rifServiceStartupOptions=rifServiceStartupOptions;
+		this.username = username;
+		this.baseSQLManager = new BaseSQLManager(rifServiceStartupOptions);
+
 		Class.forName(rifServiceStartupOptions.getDatabaseDriverClassName()); // Load JDBC driver
-		BaseSQLManager baseSQLManager = new BaseSQLManager(rifServiceStartupOptions);
-		this.connection=baseSQLManager.createConnection(username, password, 
-			false 	/* isFirstConnectionForUser */,
-			true 	/* isReadOnly */);
 	}
 
 	/** 
@@ -62,6 +62,27 @@ public class RIFTilesGenerator implements Runnable {
 	public void run() {
 		try {			
 			RIFTiles rifTiles = new RIFTiles(rifServiceStartupOptions);
+
+			User user = User.newInstance(username, "::1" /* IP address */);
+			String password=null;
+			int sleepInteval=1;
+			do {
+				password=baseSQLManager.getUserPassword(user);
+				if (password == null ) {
+					if (sleepInteval <= 256) {
+						sleepInteval=sleepInteval*2;
+					}
+					rifLogger.info(getClass(), 
+						"RIF Middleware Tile Generator cannot be run yet, tileGeneratorUsername: " +
+						username + " has not yet logged on to the RIF; sleeping for: " + sleepInteval + " seconds");
+					Thread.sleep(sleepInteval*1000);
+				}
+			} while (password == null);
+
+			this.connection=baseSQLManager.createConnection(username, password, 
+				false 	/* isFirstConnectionForUser */,
+				true 	/* isReadOnly */);
+
 			rifTiles.generateTiles(connection); // Generated 913 tiles for: 3 geolevels in 00:14:07.567 (EWS2011)
 			rifLogger.info(this.getClass(), "Tile generator run() Finished OK!");
 		}		
@@ -72,7 +93,10 @@ public class RIFTilesGenerator implements Runnable {
 		catch(RIFServiceException rifServiceException) { // Also catch RIFSQLException super class
 			rifLogger.info(this.getClass(), "Tile generator run() FAILED: " + rifServiceException.getMessage());
 			rifServiceException.printErrors();
-		}		
+		}	
+		catch (InterruptedException interruptedException) {
+			rifLogger.info(this.getClass(), "Tile generator run() UNHANDLED INTERRUPTEDEXCEPTION: " + interruptedException.getMessage());
+		}	
 	}
 	
 }

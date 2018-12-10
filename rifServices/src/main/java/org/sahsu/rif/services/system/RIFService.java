@@ -56,16 +56,13 @@ final class RIFService {
 						RIFServiceStartupOptions.newInstance(true, false);
 					RIFTilesGenerator rifTilesGenerator = new RIFTilesGenerator();
 					String username=rifServiceStartupOptions.getOptionalRIfServiceProperty("tileGeneratorUsername", "null");
-					String password=rifServiceStartupOptions.getOptionalRIfServiceProperty("tileGeneratorPassword", "null");
-			
-					if (username.equals("null") || password.equals("null")) {
+					if (username.equals("null")) {
 						logger.info(getClass(), 
-							"RIF Middleware Tile Generator cannot be run: tileGeneratorUsername or tileGeneratorPassword not set in RIFServiceStartupProperties.properties");
+							"RIF Middleware Tile Generator cannot be run: tileGeneratorUsername not set in RIFServiceStartupProperties.properties");
 					}
 					else {
 						rifTilesGenerator.initialise(
 							username,
-							password,
 							rifServiceStartupOptions);
 						
 						ExecutorService exec = Executors.newSingleThreadExecutor();
