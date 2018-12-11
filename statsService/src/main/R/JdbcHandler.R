@@ -279,8 +279,23 @@ generateTableIndexSQLQuery <- function(tableName, columnName) {
 	")")
 
 	cat(paste0("SQL> ", sqlIndexQuery))
-	
+
 	return(sqlIndexQuery);
+}
+
+convertSqlNansToNulls <- function(col) {
+
+	protectedCol <- paste("CASE WHEN", col, " = 'NAN' THEN NULL ELSE", col, "END")
+	return(protectedCol)
+}
+
+convertRNansToNulls <- function(col) {
+
+	if (is.na(col) || is.nan(col)) {
+		return("NULL")
+	} else {
+		return(col)
+	}
 }
 
 ##================================================================================
@@ -311,7 +326,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 		updateStmtPart0 <- paste(
 			"UPDATE ", mapTableName, "\n SET ")
 	}
-	
+
 	updateStmtPart1 <- paste0(updateStmtPart0,
 		"direct_standardisation=b.direct_standardisation,",
 		"adjusted=b.adjusted,",
@@ -320,17 +335,17 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 		"lower95=b.lower95,",
 		"upper95=b.upper95,",
 		"relative_risk=b.relative_risk,",
-		"smoothed_relative_risk=", nullProtect("b.smoothed_relative_risk"),
-		", posterior_probability=", nullProtect("b.posterior_probability"),
-		", posterior_probability_upper95=", nullProtect("b.posterior_probability_upper95"),
-		", posterior_probability_lower95=", nullProtect("b.posterior_probability_lower95"),
-		", residual_relative_risk=", nullProtect("b.residual_relative_risk"),
-		", residual_rr_lower95=", nullProtect("b.residual_rr_lower95"),
-		", residual_rr_upper95=", nullProtect("b.residual_rr_upper95"),
-		", smoothed_smr=", nullProtect("b.smoothed_smr"),
-		", smoothed_smr_lower95=", nullProtect("b.smoothed_smr_lower95"),
-		", smoothed_smr_upper95=", nullProtect("b.smoothed_smr_upper95"), sep="\n")
-	
+		"smoothed_relative_risk=", convertSqlNansToNulls("b.smoothed_relative_risk"),
+		", posterior_probability=", convertSqlNansToNulls("b.posterior_probability"),
+		", posterior_probability_upper95=", convertSqlNansToNulls("b.posterior_probability_upper95"),
+		", posterior_probability_lower95=", convertSqlNansToNulls("b.posterior_probability_lower95"),
+		", residual_relative_risk=", convertSqlNansToNulls("b.residual_relative_risk"),
+		", residual_rr_lower95=", convertSqlNansToNulls("b.residual_rr_lower95"),
+		", residual_rr_upper95=", convertSqlNansToNulls("b.residual_rr_upper95"),
+		", smoothed_smr=", convertSqlNansToNulls("b.smoothed_smr"),
+		", smoothed_smr_lower95=", convertSqlNansToNulls("b.smoothed_smr_lower95"),
+		", smoothed_smr_upper95=", convertSqlNansToNulls("b.smoothed_smr_upper95"), sep="\n")
+
 	if (db_driver_prefix == "jdbc:postgresql") {
 		updateStmtPart2 <- paste0(updateStmtPart1,
 			" FROM ", temporarySmoothedResultsTableName, " b WHERE ",
@@ -347,7 +362,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 			"a.inv_id=b.inv_id AND ",
 			"a.genders=b.genders ", sep="\n")
 	}
-	
+
 	if (studyType == "riskAnalysis") { # No area id
 		if (db_driver_prefix == "jdbc:postgresql") {
 			updateMapTableSQLQuery <- updateStmtPart2;
@@ -366,7 +381,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 				updateMapTableSQLQuery <- paste0(updateStmtPart2,
 							" AND CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))")
 			}
-		} 
+		}
 		else {
 			if (db_driver_prefix == "jdbc:postgresql") {
 				updateMapTableSQLQuery <- paste0(updateStmtPart2, " AND a.area_id=b.area_id")		}
@@ -381,8 +396,8 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 
 	lerrorTrace<-capture.output({
 		res <- tryCatch({
-				withErrorTracing({  
-					dbSendUpdate(connection, updateMapTableSQLQuery) 
+				withErrorTracing({
+					dbSendUpdate(connection, updateMapTableSQLQuery)
 				})
 			},
 			warning=function(w) {
@@ -396,7 +411,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 				cat(err, sep="")
 				exitValue <<- 1
 			}, finally=function() {
-	
+
 				if (is.null(res)) {
 					cat(paste("QUERY FAILED! SQL> ", updateMapTableSQLQuery,
 					"; res: ", res, "\n"), sep="")
@@ -432,14 +447,6 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 	return(lerrorTrace);
 } # End of updateMapTableFromSmoothedResultsTable()
 
-nullProtect <- function(col) {
-
-	if (is.na(col) || is.nan(col)) {
-		return("NULL")
-	} else {
-		return(col)
-	}
-}
 
 ##================================================================================
 ##FUNCTION: dropTemporaryTable
@@ -531,12 +538,12 @@ insertHomogeneityResults <- function(homogData) {
 	
 	# Finally update the record which should now exist
 	updateStmt <- paste("UPDATE rif40.t_rif40_homogeneity SET username = '" , userID,
-						"', homogeneity_dof = ", nullProtect(homogData$df[i]),
-						", homogeneity_chi2 = ", nullProtect(homogData$chisqHomog[i]),
-						", homogeneity_p = ", nullProtect(homogData$pValHomog[i]),
-						", linearity_chi2 = ", nullProtect(homogData$chisqLT[i]),
-						", linearity_p = ", nullProtect(homogData$pValLT[i]),
-						", explt5 = ", nullProtect(homogData$bandsLT5[i]),
+						"', homogeneity_dof = ", convertRNansToNulls(homogData$df[i]),
+						", homogeneity_chi2 = ", convertRNansToNulls(homogData$chisqHomog[i]),
+						", homogeneity_p = ", convertRNansToNulls(homogData$pValHomog[i]),
+						", linearity_chi2 = ", convertRNansToNulls(homogData$chisqLT[i]),
+						", linearity_p = ", convertRNansToNulls(homogData$pValLT[i]),
+						", explt5 = ", convertRNansToNulls(homogData$bandsLT5[i]),
 						" WHERE inv_id = ", homogData$inv_id[i],
 						" AND study_id = ", homogData$study_id[i],
 						" and adjusted = ", as.integer(adj),
