@@ -22,6 +22,7 @@ final class RIFService {
 
 	private final static RIFService THE_INSTANCE = new RIFService(); // Not static
 	private final RIFLogger logger = RIFLogger.getLogger();
+	private static RIFTilesGenerator rifTilesGenerator = null;
 
 	private boolean running;
 	private Path scriptPath;
@@ -50,11 +51,10 @@ final class RIFService {
 
 				running = true;
 				logger.info(getClass(), "RIF Middleware Service started");
-				
 				try {
 					RIFServiceStartupOptions rifServiceStartupOptions =
 						RIFServiceStartupOptions.newInstance(true, false);
-					RIFTilesGenerator rifTilesGenerator = new RIFTilesGenerator();
+					rifTilesGenerator = new RIFTilesGenerator();
 					String username=rifServiceStartupOptions.getOptionalRIfServiceProperty("tileGeneratorUsername", "null");
 					if (username.equals("null")) {
 						logger.info(getClass(), 
@@ -64,7 +64,6 @@ final class RIFService {
 						rifTilesGenerator.initialise(
 							username,
 							rifServiceStartupOptions);
-						
 						ExecutorService exec = Executors.newSingleThreadExecutor();
 						exec.execute(rifTilesGenerator);
 						logger.info(getClass(), "RIF Middleware Tile Generator running");
@@ -84,6 +83,11 @@ final class RIFService {
 
 	void stop() {
 		logger.info(getClass(), "Shutdown requested for RIF Middleware Service");
+	
+		if (rifTilesGenerator != null) {
+			rifTilesGenerator.doStop();
+		}
+	
 	}
 
 	boolean isRunning() {

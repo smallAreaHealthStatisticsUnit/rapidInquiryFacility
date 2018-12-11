@@ -26,6 +26,8 @@ public class RIFTilesGenerator implements Runnable {
 	private static RIFServiceStartupOptions rifServiceStartupOptions = null;
 	private static BaseSQLManager baseSQLManager = null;
 	private static String username = null;
+	private static boolean doStop = false;
+	private static int sleepInteval=1;
 	
 	public RIFTilesGenerator() { // Dummy constructor
 	}
@@ -45,7 +47,8 @@ public class RIFTilesGenerator implements Runnable {
 			
 		this.rifServiceStartupOptions=rifServiceStartupOptions;
 		this.username = username;
-		this.baseSQLManager = new BaseSQLManager(rifServiceStartupOptions);
+		baseSQLManager = new BaseSQLManager(rifServiceStartupOptions);
+		sleepInteval=2;
 
 		Class.forName(rifServiceStartupOptions.getDatabaseDriverClassName()); // Load JDBC driver
 	}
@@ -59,19 +62,28 @@ public class RIFTilesGenerator implements Runnable {
 
 			User user = User.newInstance(username, "::1" /* IP address */);
 			String password=null;
-			int sleepInteval=1;
 			do {
 				password=baseSQLManager.getUserPassword(user);
 				if (password == null ) {
-					if (sleepInteval <= 256) {
-						sleepInteval=sleepInteval*2;
+					if (sleepInteval <= 30) {
+						sleepInteval=sleepInteval+2;
 					}
 					rifLogger.info(getClass(), 
 						"RIF Middleware Tile Generator cannot be run yet, tileGeneratorUsername: " +
 						username + " has not yet logged on to the RIF; sleeping for: " + sleepInteval + " seconds");
-					Thread.sleep(sleepInteval*1000);
+					try {
+						for (int i=0; i<sleepInteval; i++) {
+							Thread.sleep(1000); // 1 sec
+							if (!keepRunning()) {
+								break;
+							}
+						}
+					}
+					catch (InterruptedException interruptedException) {
+						rifLogger.info(this.getClass(), "Tile generator run() INTERRUPTEDEXCEPTION: " + interruptedException.getMessage());
+					}	
 				}
-			} while (password == null);
+			} while (password == null && keepRunning());
 
 			/* isFirstConnectionForUser */
 			/* isReadOnly */
@@ -90,9 +102,20 @@ public class RIFTilesGenerator implements Runnable {
 			rifLogger.info(this.getClass(), "Tile generator run() FAILED: " + rifServiceException.getMessage());
 			rifServiceException.printErrors();
 		}	
-		catch (InterruptedException interruptedException) {
-			rifLogger.info(this.getClass(), "Tile generator run() UNHANDLED INTERRUPTEDEXCEPTION: " + interruptedException.getMessage());
-		}	
 	}
-	
+
+	/** 
+	 * RIFService shutdown thread
+	 */
+    public synchronized void doStop() {
+		rifLogger.info(this.getClass(), "Tile generator doStop() called from RIFService");
+        doStop = true;
+    }
+
+	/** 
+	 * Should the thread keep running?
+	 */
+    private synchronized boolean keepRunning() {
+        return doStop == false;
+    }
 }
