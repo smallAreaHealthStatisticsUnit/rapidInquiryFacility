@@ -73,10 +73,10 @@ def main():
             sql_server_script_root_dir = settings.script_root / "SQLserver"
 
             print("About to run {}; switching to {}".format(
-                db_script, sql_server_script_root_dir))
+                db_script, db_script.parent))
 
             result = subprocess.run([str(db_script)],
-                                    cwd=sql_server_script_root_dir)
+                                    cwd=db_script.parent)
 
         # Deploy WAR files
         if settings.dev_mode:
