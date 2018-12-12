@@ -33,6 +33,8 @@ default_parser = ConfigParser(allow_no_value=True,
                               interpolation=ExtendedInterpolation())
 user_parser = ConfigParser(allow_no_value=True,
                            interpolation=ExtendedInterpolation())
+default_config = default_parser["DEFAULT"]
+user_config = user_parser["DEFAULT"]
 
 def main():
 
@@ -130,7 +132,9 @@ def get_settings():
 
     # Tomcat home: if it's not set we use the environment variable
     tomcat_home = get_value_from_user("tomcat_home", is_path=True)
-    while tomcat_home is None or str(tomcat_home).strip() == "":
+
+    # The second test below is to catch no value being given by the user
+    while tomcat_home is None or tomcat_home == Path("").resolve():
         tomcat_home_str = os.getenv("CATALINA_HOME")
 
         # Make sure we have a value.
@@ -139,6 +143,7 @@ def get_settings():
                   "given for {}.".format(all_settings.get("tomcat_home")))
         else:
             tomcat_home = Path(tomcat_home_str)
+    print("Final tomcat: {}".format(str(tomcat_home)))
 
     # In development we assume that this script is being run from installer/
     # under the project root. The root directory is thus one level up.
@@ -168,8 +173,6 @@ def get_value_from_user(key, is_path=False):
        :param is_path: whether or not the setting is a path-like object
     """
 
-    default_config = default_parser["DEFAULT"]
-    user_config = user_parser["DEFAULT"]
     current_value = ""
     if key in user_config:
         current_value = user_config[key]
@@ -195,7 +198,7 @@ def get_value_from_user(key, is_path=False):
 
 def long_db_name(db):
 
-    return "Microsoft SQL Server" if db == "ms" else "PostgreSQL"
+    return "Microsoft SQL Server" if db.strip() == "ms" else "PostgreSQL"
 
 
 def check_arguments():
