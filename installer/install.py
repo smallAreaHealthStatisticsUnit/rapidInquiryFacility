@@ -5,6 +5,7 @@ Installer for the Rapid Inquiry Facility (RIF).
 Prerequisites: Tomcat; either PostgreSQL or Microsoft SQL Server; R
 
 """
+
 __author__ = "Martin McCallion"
 __email__ = "m.mccallion@imperial.ac.uk"
 
@@ -12,6 +13,7 @@ import os
 import sys
 import argparse
 import shutil
+import subprocess
 from collections import namedtuple
 from pathlib import Path
 from configparser import ConfigParser, ExtendedInterpolation
@@ -61,6 +63,7 @@ def main():
             # with them later if necessary.
             db_script = args.script_root / "SQLserver" / "installation" / \
                         "rebuild_all.bat"
+            result = subprocess.run([str(db_script)], cwd=args.script_root)
 
         # Deploy WAR files
         if args.dev_mode:
@@ -78,6 +81,7 @@ def main():
                          args.war_dir / "taxonomies.war",
                          args.war_dir / "statistics.war",
                          args.war_dir / "RIF40.war"]
+
         for f in war_files:
             shutil.copy(f, args.cat_home / "webapps")
 
@@ -92,6 +96,7 @@ def get_settings():
     user has confirmed. If the file does not exist, we load the defaults from
     install.ini in the current directory.
     """
+
     # Create the RIF home directory and properties file if they don't exist
     home_dir = Path.home()
     rif_home = home_dir / ".rif"
@@ -156,6 +161,7 @@ def get_value_from_user(key, default_config):
     """Gets a new value from the user, prompting with the current value
        from the config files if one exists.
     """
+
     user_config = user_parser["DEFAULT"]
     current_value = ""
     if key in user_config:
@@ -184,6 +190,7 @@ def check_arguments():
     """Checks the command-line arguments, displaying the usage message if
     there is a problem, or if requested.
     """
+
     parser = argparse.ArgumentParser(description="Install the RIF")
     db_group = parser.add_mutually_exclusive_group()
     db_group.add_argument("--ms", help="Database is Microsoft SQL Server",
