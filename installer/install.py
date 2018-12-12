@@ -26,6 +26,11 @@ all_settings = {"development_mode": "Development mode?",
                 "war_files_location": "Directory containing the WAR files",
                 }
 
+# We have the default settings file in the current directory and the user's
+# version in their home. We only user the DEFAULT section in each (for
+# now).
+default_parser = ConfigParser(allow_no_value=True,
+                              interpolation=ExtendedInterpolation())
 user_parser = ConfigParser(allow_no_value=True,
                            interpolation=ExtendedInterpolation())
 
@@ -36,7 +41,7 @@ def main():
 
     # args = check_arguments()
 
-    args = get_settings()
+    settings = get_settings()
 
     print("About to install with the following settings:"
           "\n\tDevelopment mode: {}"
@@ -44,49 +49,52 @@ def main():
           "\n\tScripts directory: {} "
           "\n\tTomcat home directory: {}"
           "\n\tWAR files directory: {}"
-          .format(bool(args.dev_mode),
-                  long_db_name(args.db_type),
-                  args.script_root,
-                  args.cat_home,
-                  args.war_dir))
+          .format(bool(settings.dev_mode),
+                  long_db_name(settings.db_type),
+                  settings.script_root,
+                  settings.cat_home,
+                  settings.war_dir))
 
     # prompt for go/no-go
     if input("Continue? [No]: "):
 
-        # Run SQL scripts...
-        if args.db_type == "pg":
-            db_script = args.script_root / "Postgres" / "production" / \
+        # Run SQL scripts
+        if settings.db_type == "pg":
+            db_script = settings.script_root / "Postgres" / "production" / \
                         "db_create.sql"
         else:
             # Assumes both that it's SQL Server, and that we're running on
             # Windows. Linux versions of SQLServer exist, but we'll deal
             # with them later if necessary.
-            db_script = args.script_root / "SQLserver" / "installation" / \
+            db_script = settings.script_root / "SQLserver" / "installation" / \
                         "rebuild_all.bat"
-            sql_server_script_root_dir = args.script_root / "SQLserver"
+            sql_server_script_root_dir = settings.script_root / "SQLserver"
+
+            print("About to run {}; switching to {}".format(
+                db_script, sql_server_script_root_dir))
+
             result = subprocess.run([str(db_script)],
-                                    cwd=sql_server_script_root_dir,
-                                    shell=True)
+                                    cwd=sql_server_script_root_dir)
 
         # Deploy WAR files
-        if args.dev_mode:
+        if settings.dev_mode:
             war_files = [
-                args.war_dir / "rifServices" / "target" / "rifServices.war",
-                args.war_dir / "taxonomyServices" / "target" /
+                settings.war_dir / "rifServices" / "target" / "rifServices.war",
+                settings.war_dir / "taxonomyServices" / "target" /
                 "taxonomies.war",
-                args.war_dir / "statsService" / "target" / "statistics.war",
-                args.war_dir / "rifWebApplication" / "target" / "RIF40.war"
+                settings.war_dir / "statsService" / "target" / "statistics.war",
+                settings.war_dir / "rifWebApplication" / "target" / "RIF40.war"
             ]
         else:
             # If not development, just copy the files from the specified
             # directory
-            war_files = [args.war_dir / "rifServices.war",
-                         args.war_dir / "taxonomies.war",
-                         args.war_dir / "statistics.war",
-                         args.war_dir / "RIF40.war"]
+            war_files = [settings.war_dir / "rifServices.war",
+                         settings.war_dir / "taxonomies.war",
+                         settings.war_dir / "statistics.war",
+                         settings.war_dir / "RIF40.war"]
 
         for f in war_files:
-            shutil.copy(f, args.cat_home / "webapps")
+            shutil.copy(f, settings.cat_home / "webapps")
 
 # enddef main()
 
@@ -108,43 +116,36 @@ def get_settings():
     user_props.touch(exist_ok=True)
     default_props = Path.cwd() / "install.ini"
 
-    # We have the default file in the current directory and the user's
-    # version in their home. We only user the DEFAULT section in each (for
-    # now).
-    default_parser = ConfigParser(allow_no_value=True,
-                                  interpolation=ExtendedInterpolation())
     default_parser.read(default_props)
-    default_config = default_parser["DEFAULT"]
     user_parser.read(user_props)
 
     # Check if we're in development mode
-    reply = get_value_from_user("development_mode", default_config)
+    reply = get_value_from_user("development_mode")
     dev_mode = strtobool(reply)
 
     # Database type and script root
-    db_type = get_value_from_user("db_type", default_config)
+    db_type = get_value_from_user("db_type")
     db_script_root = Path(get_value_from_user("script_home",
-                                              default_config)).resolve()
+                                              is_path=True)).resolve()
 
     # Tomcat home: if it's not set we use the environment variable
-    tomcat_home_str = get_value_from_user("tomcat_home", default_config)
-    if tomcat_home_str is None or tomcat_home_str.strip() == "":
+    tomcat_home = get_value_from_user("tomcat_home", is_path=True)
+    while tomcat_home is None or str(tomcat_home).strip() == "":
         tomcat_home_str = os.getenv("CATALINA_HOME")
 
-    # Make sure we have a value.
-    while tomcat_home_str is None or tomcat_home_str.strip() == "":
-        print("CATALINA_HOME is not set in the environment and no value "
-              "given for {}.".format(all_settings.get("tomcat_home")))
-        tomcat_home_str = get_value_from_user("tomcat_home", default_config)
-    tomcat_home = Path(tomcat_home_str)
+        # Make sure we have a value.
+        if tomcat_home_str is None or tomcat_home_str.strip() == "":
+            print("CATALINA_HOME is not set in the environment and no value "
+                  "given for {}.".format(all_settings.get("tomcat_home")))
+        else:
+            tomcat_home = Path(tomcat_home_str)
 
     # In development we assume that this script is being run from installer/
     # under the project root. The root directory is thus one level up.
     if dev_mode:
         war_dir = Path.cwd().resolve().parent
     else:
-        war_dir = Path(get_value_from_user("war_files_location",
-                                           default_config)).resolve()
+        war_dir = get_value_from_user("war_files_location", is_path=True)
 
     # Update the user's config file
     # user_config["key"] = "reply"
@@ -155,16 +156,19 @@ def get_settings():
 
     # Using a named tuple for the return value for simplicity of creation and
     # clarity of naming.
-    Args = namedtuple("Args", ["db_type", "script_root", "cat_home",
+    Settings = namedtuple("Settings", ["db_type", "script_root", "cat_home",
                                "war_dir", "dev_mode"])
-    return Args(db_type, db_script_root, tomcat_home, war_dir, dev_mode)
+    return Settings(db_type, db_script_root, tomcat_home, war_dir, dev_mode)
 
 
-def get_value_from_user(key, default_config):
+def get_value_from_user(key, is_path=False):
     """Gets a new value from the user, prompting with the current value
        from the config files if one exists.
+       :param key: the setting being processed
+       :param is_path: whether or not the setting is a path-like object
     """
 
+    default_config = default_parser["DEFAULT"]
     user_config = user_parser["DEFAULT"]
     current_value = ""
     if key in user_config:
@@ -175,13 +179,18 @@ def get_value_from_user(key, default_config):
     if reply is None or reply.strip() == "":
         reply = current_value
 
+    if is_path:
+        returned_reply = Path(reply.strip()).resolve()
+    else:
+        returned_reply = reply.strip()
+
     # Update the user's config value
     if key == "development_mode":
         # Just to make sure we get "True" or "False" in the file
         user_parser["DEFAULT"][key] = str(bool(reply))
     else:
-        user_parser["DEFAULT"][key] = reply
-    return reply.strip()
+        user_parser["DEFAULT"][key] = str(returned_reply)
+    return returned_reply
 
 
 def long_db_name(db):
