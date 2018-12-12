@@ -65,7 +65,8 @@ def main():
                         "rebuild_all.bat"
             sql_server_script_root_dir = args.script_root / "SQLserver"
             result = subprocess.run([str(db_script)],
-                                    cwd=sql_server_script_root_dir)
+                                    cwd=sql_server_script_root_dir,
+                                    shell=True)
 
         # Deploy WAR files
         if args.dev_mode:
