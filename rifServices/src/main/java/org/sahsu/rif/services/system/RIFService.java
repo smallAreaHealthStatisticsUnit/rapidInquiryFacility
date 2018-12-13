@@ -3,6 +3,7 @@ package org.sahsu.rif.services.system;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
@@ -23,6 +24,7 @@ final class RIFService {
 	private final static RIFService THE_INSTANCE = new RIFService(); // Not static
 	private final RIFLogger logger = RIFLogger.getLogger();
 	private static RIFTilesGenerator rifTilesGenerator = null;
+	private static ExecutorService exec = null;
 
 	private boolean running;
 	private Path scriptPath;
@@ -44,7 +46,6 @@ final class RIFService {
 	public void start() {
 
 		logger.info(getClass(), "Starting the RIF Middleware Service");
-		
 		if (!isRunning()) {
 
 			try {
@@ -64,7 +65,7 @@ final class RIFService {
 						rifTilesGenerator.initialise(
 							username,
 							rifServiceStartupOptions);
-						ExecutorService exec = Executors.newSingleThreadExecutor();
+						exec = Executors.newSingleThreadExecutor();
 						exec.execute(rifTilesGenerator);
 						logger.info(getClass(), "RIF Middleware Tile Generator running");
 					}
@@ -82,10 +83,36 @@ final class RIFService {
 	}
 
 	void stop() {
-		logger.info(getClass(), "Shutdown requested for RIF Middleware Service");
 	
-		if (rifTilesGenerator != null) {
-			rifTilesGenerator.doStop();
+		if (rifTilesGenerator != null && exec != null && !exec.isShutdown()) {	
+			logger.info(getClass(), "Shutdown requested for RIF Middleware Service");
+			try {
+				rifTilesGenerator.doStop();
+				Thread.sleep(1000); // 1 sec
+				exec.shutdownNow();
+				if (!exec.awaitTermination(60, TimeUnit.SECONDS)) {
+					logger.error(getClass(), "RIFervice executor thread did not terminate");
+				}
+				rifTilesGenerator=null;
+				if (exec.isShutdown()) {
+					logger.info(getClass(), "Shutdown requested for RIF Middleware Service: tile generator shutdown completed");
+				}
+				else {
+					logger.warning(getClass(), "Shutdown requested for RIF Middleware Service: tile generator shutdown is incomplete");
+				}
+			} catch (InterruptedException interruptedException) {
+				logger.error(getClass(), "RIFervice executor thread INTERRUPTEDEXCEPTION", interruptedException);
+				// (Re-)Cancel if current thread also interrupted
+				exec.shutdownNow();
+				// Preserve interrupt status
+				Thread.currentThread().interrupt();
+			}
+		}
+		else if (rifTilesGenerator != null && exec != null && exec.isShutdown()) {	
+			logger.info(getClass(), "Shutdown requested for RIF Middleware Service: tile generator is already shutdown");
+		}
+		else {
+			logger.info(getClass(), "Shutdown requested for RIF Middleware Service: tile generator was never started");
 		}
 	
 	}
