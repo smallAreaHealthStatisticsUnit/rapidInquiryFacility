@@ -3299,6 +3299,12 @@ Further changes are needed to support risk analysis:
   * SQL Server population database - msoa2011 does not link to geography;
   * Server server hidden messages: "The statement has been terminated vensor error code 3621;
   * rif40_execute_insert_statement.sql no error with code: 56699. You get this is if study insert inserts no rows (probably a +100 error);
+  * *pg_partitioned_table* issue on Postgres 9.x:
+    ```
+	psql:rif40-pg_sahsu_heathrow.sql:252: ERROR:  relation "pg_partitioned_table" does not exist
+    LINE 10:      FROM pg_partitioned_table p, pg_attribute b, pg_class c...
+	```
+* Fix issue #119 for spurious ranges that break t_rif40_inv_conditions CONSTRAINT max_condition_ck; pull #122;
 
 #### 17th to 20th December
 
