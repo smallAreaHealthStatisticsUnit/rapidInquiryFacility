@@ -3289,7 +3289,21 @@ Further changes are needed to support risk analysis:
   - Grantee username has RIF_USER or RIF_MANAGER
   - If the Grantor is NOT owner of the study they are a RIF_MANAGER	
   - If the grantor != grantee_username then the grantor is a RIF_MANAGER;
-  
+
+#### 10th to 14th December
+ 
+* Restructure tile generator;
+* Load COMARE data, found fault in SQL Server denominator data, tile generator shutdown handler. Issues from load:
+  * Missing GRANT from covariate scripts;
+  * Postgres Update format for large/large table joins should use a Common Table Expression;
+  * SQL Server population database - msoa2011 does not link to geography;
+  * Server server hidden messages: "The statement has been terminated vensor error code 3621;
+  * rif40_execute_insert_statement.sql no error with code: 56699. You get this is if study insert inserts no rows (probably a +100 error);
+
+#### 17th to 20th December
+
+* PE/BD meeting, Heathrow data loading;
+
 Risk analysis issues:
 
 1. Using add by postcode produces errors on its own, but works;
