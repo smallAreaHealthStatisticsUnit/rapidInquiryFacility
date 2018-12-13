@@ -92,7 +92,7 @@ Check table_name, total_field, sex_field_name, age_group_field_name, age_sex_gro
 -- $State: Exp $
 -- $Locker:  $
 --
-	c1rt CURSOR (l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR
+	c1rt_pg10 CURSOR (l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR
 		WITH all_tab_columns AS (
 			SELECT UPPER(a.tablename) AS tablename, UPPER(b.attname) AS columnname, UPPER(schemaname) AS schemaname	/* Tables */
 			  FROM pg_tables a, pg_attribute b, pg_class c
@@ -127,6 +127,35 @@ Check table_name, total_field, sex_field_name, age_group_field_name, age_sex_gro
 		 WHERE schemaname = UPPER(l_schema)
 		   AND tablename  = UPPER(l_table)
 		   AND columnname = UPPER(l_column);
+	c1rt_pg9 CURSOR (l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR /* No pg_partitioned_table */
+		WITH all_tab_columns AS (
+			SELECT UPPER(a.tablename) AS tablename, UPPER(b.attname) AS columnname, UPPER(schemaname) AS schemaname	/* Tables */
+			  FROM pg_tables a, pg_attribute b, pg_class c
+			 WHERE c.oid        = b.attrelid
+			   AND c.relname    = a.tablename
+			   AND c.relkind    = 'r' /* Relational table */
+			   AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
+			 UNION		 			 
+			SELECT UPPER(a.viewname) AS tablename, UPPER(b.attname) AS columnname, UPPER(schemaname) AS schemaname	/* Views */
+			  FROM pg_views a, pg_attribute b, pg_class c
+			 WHERE c.oid        = b.attrelid
+			   AND c.relname    = a.viewname
+			   AND c.relkind    = 'v' /* View */
+			 UNION
+			SELECT UPPER(a.relname) AS tablename, UPPER(d.attname) AS columnname, UPPER(n.nspname) AS schemaname				/* User FDW foreign tables */
+			  FROM pg_foreign_table b, pg_roles r, pg_attribute d, pg_class a
+				LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
+			 WHERE b.ftrelid  = a.oid
+			   AND a.relowner = (SELECT oid FROM pg_roles WHERE rolname = USER)
+			   AND a.relowner = r.oid
+			   AND n.nspname  = USER
+			   AND a.oid      = d.attrelid
+		)
+		SELECT columnname
+		  FROM all_tab_columns
+		 WHERE schemaname = UPPER(l_schema)
+		   AND tablename  = UPPER(l_table)
+		   AND columnname = UPPER(l_column);		   
 	c1_rec RECORD;
 --
 	schema		varchar(30);
@@ -146,9 +175,15 @@ BEGIN
 --
 	IF (schema IS NOT NULL) THEN
 		IF (NEW.total_field IS NOT NULL AND NEW.total_field::text <> '') THEN
-			OPEN c1rt(schema, NEW.table_name, NEW.total_field);
-			FETCH c1rt INTO c1_rec;
-			CLOSE c1rt;
+			IF to_regclass('pg_catalog.pg_partitioned_table') IS NOT NULL /* PG 10 */ THEN
+				OPEN c1rt_pg10(schema, NEW.table_name, NEW.total_field);
+				FETCH c1rt_pg10 INTO c1_rec;
+				CLOSE c1rt_pg10;
+			ELSE 
+				OPEN c1rt_pg9(schema, NEW.table_name, NEW.total_field);
+				FETCH c1rt_pg9 INTO c1_rec;
+				CLOSE c1rt_pg9;
+			END IF;
 			IF coalesce(c1_rec.columnname::text, '') = '' THEN
 				PERFORM rif40_log_pkg.rif40_error(-20180, 'trigger_fct_rif40_tables_checks', '[20180] Error: RIF40_TABLES TOTAL_FIELD % column not found in table: %',
 					NEW.total_field::VARCHAR	/* Total field */,
