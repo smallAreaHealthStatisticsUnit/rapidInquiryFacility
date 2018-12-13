@@ -3278,7 +3278,38 @@ Further changes are needed to support risk analysis:
     ```
     Note that Postgres and SQL Server are different
 * Heathrow covariates, fixes for rif_user role faults;
-	
+* Fix for *extract_permitted*, *printstate* and *selectstate* RIF_USER role support in T_RIF40_STUDIES table
+* Fix for RIF_USER role so that RIF_MANAGER role is not required (faulty trigger logic in 10 views);
+* Table t_rif40_user_projects - check the username is a valid user;
+* Table rif40_study_shares: for insert, check that new values are valid:
+  - Check all fields are not null: study_id, grantor,grantee_username
+  - Check that the study_id exists
+  - Grantee username is valid user
+  - Grantor username is valid user
+  - Grantee username has RIF_USER or RIF_MANAGER
+  - If the Grantor is NOT owner of the study they are a RIF_MANAGER	
+  - If the grantor != grantee_username then the grantor is a RIF_MANAGER;
+
+#### 10th to 14th December
+ 
+* Restructure tile generator;
+* Load COMARE data, found fault in SQL Server denominator data, tile generator shutdown handler. Issues from load:
+  * Missing GRANT from covariate scripts;
+  * Postgres Update format for large/large table joins should use a Common Table Expression;
+  * SQL Server population database - msoa2011 does not link to geography;
+  * Server server hidden messages: "The statement has been terminated vensor error code 3621;
+  * rif40_execute_insert_statement.sql no error with code: 56699. You get this is if study insert inserts no rows (probably a +100 error);
+  * *pg_partitioned_table* issue on Postgres 9.x:
+    ```
+	psql:rif40-pg_sahsu_heathrow.sql:252: ERROR:  relation "pg_partitioned_table" does not exist
+    LINE 10:      FROM pg_partitioned_table p, pg_attribute b, pg_class c...
+	```
+* Fix issue #119 for spurious ranges that break t_rif40_inv_conditions CONSTRAINT max_condition_ck; pull #122;
+
+#### 17th to 20th December
+
+* PE/BD meeting, Heathrow data loading;
+
 Risk analysis issues:
 
 1. Using add by postcode produces errors on its own, but works;
