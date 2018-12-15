@@ -113,7 +113,8 @@ angular.module("RIF")
 							}
 							
 							if (isRest && url && res.config.method == "GET") {
-								AlertService.consoleDebug("[rifs-back-interceptor.js] " + res.config.method + ": " + url);
+								AlertService.consoleDebug("[rifs-back-interceptor.js] " + res.config.method + ": " + url /*,
+									new Error("Auto created for stack trace") */);
 							}	
 						}						
 						

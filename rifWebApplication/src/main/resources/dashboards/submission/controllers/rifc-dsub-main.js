@@ -44,7 +44,7 @@ angular.module("RIF")
                  * Calls to API returns a chain of promises
                  */
 				$scope.numerator = {};
-				$scope.denominator = "";
+				$scope.denominatorTableName = "";
                 $scope.geographies = [];
 				$scope.fractions = [];	
 				$scope.fraction = "";	
@@ -69,22 +69,27 @@ angular.module("RIF")
                 function handleGeographies(res) {
                     $scope.geographies.length = 0;
 //					$scope.geographyDescriptions = {}; // Need to add description to array
-//					$scope.consoleDebug("[rifc-dsub-main.js] res.data[0]: " + JSON.stringify(res.data[0], null, 1));
 					
                     for (var i = 0; i < res.data[0].names.length; i++) {
                         $scope.geographies.push(res.data[0].names[i]);
                     }
                     var thisGeography = SubmissionStateService.getState().geography;
-                    if ($scope.geographies.indexOf(thisGeography) !== -1) {
+					if (thisGeography && $scope.geographies.indexOf(thisGeography) >= 0) {
                         $scope.geography = thisGeography;
                     } else {
                         $scope.geography = $scope.geographies[0];
+						SubmissionStateService.getState().geography = $scope.geography;
                     }
-                    SubmissionStateService.getState().geography = $scope.geography;
+					$scope.consoleDebug("[rifc-dsub-main.js] Set $scope.geography: " + $scope.geography +
+						"; thisGeography: " + thisGeography +
+						"; SubmissionStateService.getState().geography: " + SubmissionStateService.getState().geography +
+						"; $scope.geographies: " + JSON.stringify($scope.geographies));
                     //Fill health themes drop-down
                     $scope.healthThemes = [];
                     user.getHealthThemes(user.currentUser, $scope.geography).then(
-						function (res) { handleHealthThemes(res); }, 
+						function (res) { 
+							handleHealthThemes(res); 
+						}, 
 						function (err) { handleError(err, "unable to get health themes"); }); //2ND PROMISE
                 }
                 $scope.geographyChange = function () {
@@ -97,8 +102,9 @@ angular.module("RIF")
                     SubmissionStateService.getState().comparisonTree = false;
                     SubmissionStateService.getState().studyTree = false;
                     SubmissionStateService.getState().investigationTree = false;
-                    SubmissionStateService.getState().numerator = "";
-                    SubmissionStateService.getState().denominator = "";
+                    SubmissionStateService.getState().numerator = {};
+                    SubmissionStateService.getState().numeratorTableName = "";
+                    SubmissionStateService.getState().denominatorTableName = "";
                     $scope.resetState();
                 };
 
@@ -108,21 +114,35 @@ angular.module("RIF")
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.healthThemes.push({name: res.data[i].name, description: res.data[i].description});
                     }
-                    $scope.healthTheme = $scope.healthThemes[0];
-                    SubmissionStateService.getState().healthTheme = $scope.healthTheme;
-                    $scope.healthThemeChange();
+					
+                    var thisHealthTheme = SubmissionStateService.getState().healthTheme;
+					if (thisHealthTheme && $scope.healthThemes.indexOf(thisHealthTheme) >= 0) {
+                        $scope.healthTheme = thisHealthTheme;
+                    } else {
+                        $scope.healthTheme = $scope.healthThemes[0];
+						SubmissionStateService.getState().healthTheme = $scope.healthTheme;
+                    }
+					
+					$scope.consoleDebug("[rifc-dsub-main.js] $scope.healthTheme: " + JSON.stringify($scope.healthTheme) +
+						"; thisHealthTheme: " + thisHealthTheme +
+						"; $scope.geography: " + $scope.geography +
+						"; $scope.healthThemes: " + JSON.stringify($scope.healthThemes, null, 1));
+                    handleHealthTheme();
                 }
-
-                //Get relevant numerators and associated denominators
-                $scope.healthThemeChange = function () {
-                    if ($scope.healthTheme) {
+                function handleHealthTheme(res) {
+                   if ($scope.healthTheme) {
                         SubmissionStateService.getState().healthTheme = $scope.healthTheme;
                         user.getNumerator(user.currentUser, $scope.geography, $scope.healthTheme.description).then(
 							function (res) { handleFractions(res); }, 
 							function (err) { handleError(err, "unable to get numerator/denominator pair"); }); //3RD PROMISE
                     } else {
                         $scope.fractions.length = 0;
-                    }
+                    }					
+				}
+
+                //Get relevant numerators and associated denominators
+                $scope.healthThemeChange = function () {
+                    handleHealthTheme();
                 };
 				
                 function handleFractions(res) {
@@ -132,32 +152,63 @@ angular.module("RIF")
                     }
 					
                     if (SubmissionStateService.getState().numerator && 
-					    typeof(SubmissionStateService.getState().numerator) == "string" &&
-						SubmissionStateService.getState().numerator.length > 0) {
-                        var thisNum = SubmissionStateService.getState().numerator;
+						SubmissionStateService.getState().numeratorTableName &&
+						SubmissionStateService.getState().denominatorTableName &&
+					    angular.isObject(SubmissionStateService.getState().numerator) &&
+						angular.isString(SubmissionStateService.getState().numeratorTableName) &&
+						angular.isString(SubmissionStateService.getState().denominatorTableName)) {
+                        var thisNum = SubmissionStateService.getState().numeratorTableName;
+						var setOk=false;
                         for (var i = 0; i < $scope.fractions.length; i++) {
                             if ($scope.fractions[i].numeratorTableName == thisNum) {
-								$scope.consoleDebug("[rifc-dsub-main.js] Set $scope.numerator, $scope.fractions etc from DB/SubmissionStateService: " + 
-									$scope.fractions[i].numeratorTableName);
+								$scope.consoleDebug("[rifc-dsub-main.js] Set $scope.numerator, $scope.denominatorTableName etc from DB/SubmissionStateService: " + 
+									JSON.stringify($scope.fractions[i]) +
+									"; SubmissionStateService.getState().numerator: " + JSON.stringify(SubmissionStateService.getState().numerator) +
+									"; SubmissionStateService.getState().numeratorTableName: " + SubmissionStateService.getState().numeratorTableName +
+									"; SubmissionStateService.getState().denominatorTableName: " + SubmissionStateService.getState().denominatorTableName);
                                 $scope.numerator = $scope.fractions[i];
-                                $scope.denominator = $scope.fractions[i].denominatorTableName;
+                                $scope.denominatorTableName = $scope.fractions[i].denominatorTableName;
+								setOk=true;
                             }
                         }
+						if (!setOk) {
+							$scope.consoleDebug("[rifc-dsub-main.js] Unable to determine denominator from numerator: " + thisNum + 
+								" and fractions: " + JSON.stringify($scope.fractions, null, 1) +
+							"; SubmissionStateService.getState().geography: " + SubmissionStateService.getState().geography +
+							"; SubmissionStateService.getState().numerator: " + JSON.stringify(SubmissionStateService.getState().numerator) +
+							"; SubmissionStateService.getState().numeratorTableName: " + SubmissionStateService.getState().numeratorTableName +
+							"; SubmissionStateService.getState().denominatorTableName: " + SubmissionStateService.getState().denominatorTableName);
+							$scope.numerator = $scope.fractions[0];
+							$scope.numeratorTableName = $scope.fractions[0].numeratorTableName;	
+							$scope.denominatorTableName = $scope.fractions[0].denominatorTableName;						
+							$scope.consoleDebug("[rifc-dsub-main.js] Set default $scope.numerator, $scope.denominatorTableName etc from DB: " + 
+								JSON.stringify($scope.fractions[0]) +
+								"; SubmissionStateService.getState().numerator: " + JSON.stringify(SubmissionStateService.getState().numerator) +
+								"; SubmissionStateService.getState().numeratorTableName: " + SubmissionStateService.getState().numeratorTableName +
+								"; SubmissionStateService.getState().denominatorTableName: " + SubmissionStateService.getState().denominatorTableName);
+								
+						}
                     } else {
-						$scope.consoleDebug("[rifc-dsub-main.js] Set default $scope.numerator, $scope.fractions etc from DB: " + 
-							$scope.fractions[0].numeratorTableName);
                         $scope.numerator = $scope.fractions[0];
-                        $scope.denominator = $scope.fractions[0].denominatorTableName;
+                        $scope.numeratorTableName = $scope.fractions[0].numeratorTableName;	
+                        $scope.denominatorTableName = $scope.fractions[0].denominatorTableName;						
+						$scope.consoleDebug("[rifc-dsub-main.js] Set default $scope.numerator, $scope.denominatorTableName etc from DB: " + 
+							JSON.stringify($scope.fractions[0]) +
+							"; SubmissionStateService.getState().numerator: " + JSON.stringify(SubmissionStateService.getState().numerator) +
+							"; SubmissionStateService.getState().numeratorTableName: " + SubmissionStateService.getState().numeratorTableName +
+							"; SubmissionStateService.getState().denominatorTableName: " + SubmissionStateService.getState().denominatorTableName);
+
                     }
 					
-					// Default $scope.denominator and $scope.numerator is set in SubmissionStateService
-					if (checkNumeratorKeys($scope.numerator)) {
-//						$scope.consoleDebug("[rifc-dsub-main.js] Set SubmissionStateService.getState().numerator: " + 
-//							JSON.stringify($scope.numerator, null, 1));
+					// Default $scope.denominatorTableName and $scope.numerator is set in SubmissionStateService
+					if (checkNumeratorKeys($scope.numerator)) { // An object!
+						$scope.consoleDebug("[rifc-dsub-main.js] Set SubmissionStateService.getState().numerator from $scope.numerator: " + 
+							JSON.stringify($scope.numerator, null, 1));
 //						$scope.numerator = copyFraction($scope.numerator);  // This removes the hashkey and causes the {{numerator.numeratorTableName}}
 																			// tooltip to "disappear"
-						SubmissionStateService.getState().numerator = $scope.numerator.numeratorTableName;
-						SubmissionStateService.getState().denominator = $scope.numerator;
+						SubmissionStateService.getState().numerator = $scope.numerator;
+						SubmissionStateService.getState().denominatorTableName = $scope.numerator.denominatorTableName;
+						SubmissionStateService.getState().numeratorTableName = $scope.numerator.numeratorTableName;
 					}
 /*					else if (checkNumeratorKeys(SubmissionStateService.getState().numerator)) {
 						$scope.consoleDebug("[rifc-dsub-main.js] Restore $scope.numerator from SubmissionStateService.getState().numerator: " + 
@@ -165,8 +216,11 @@ angular.module("RIF")
 						$scope.numerator = copyFraction(SubmissionStateService.getState().numerator);
 					} */
 					
-					if ($scope.denominator == undefined && SubmissionStateService.getState().numerator) {
-						$scope.denominator = SubmissionStateService.getState().numerator.denominatorTableName;
+					if ($scope.denominatorTableName == undefined && SubmissionStateService.getState().numerator) {
+						$scope.denominatorTableName = SubmissionStateService.getState().numerator.denominatorTableName;
+					}
+					if ($scope.numerator == undefined && SubmissionStateService.getState().numerator) {
+						$scope.numerator = SubmissionStateService.getState().numerator;
 					}
 					
 					
@@ -177,7 +231,7 @@ angular.module("RIF")
 					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 1) +
 						"; SubmissionStateService.getState(): " + JSON.stringify(SubmissionStateService.getState(), null, 1) +
 						"; $scope.numerator: " + JSON.stringify($scope.numerator, null, 1) +
-						"; $scope.denominator: " + $scope.denominator +
+						"; $scope.denominatorTableName: " + $scope.denominatorTableName +
 						"; $scope.studyName: " + $scope.studyName);
                 }
 				
@@ -237,25 +291,33 @@ angular.module("RIF")
                 //sync the denominator
                 $scope.numeratorChange = function () {
                     if ($scope.numerator) {
-                        $scope.denominator = $scope.numerator.denominatorTableName;
+						if (angular.isObject($scope.numerator)) {
+							$scope.denominatorTableName = $scope.numerator.denominatorTableName;
+						}
+						else {	
+							$scope.showError("Numerator is not an object: " + $scope.numerator);
+						}
                     } else {
-                        $scope.denominator = "";
+                        $scope.denominatorTableName = "";
                     }
 					
-					if (!compareFractions(SubmissionStateService.getState().numerator, $scope.numerator) &&
-					    !compareFractions(SubmissionStateService.getState().denominator, $scope.numerator)) {
+					if ($scope.numerator &&
+					    !compareFractions(SubmissionStateService.getState().numerator, $scope.numerator)) {
 					
+						SubmissionStateService.getState().numerator = $scope.numerator;
+						SubmissionStateService.getState().numeratorTableName = $scope.numerator.numeratorTableName;
+						SubmissionStateService.getState().denominatorTableName = $scope.numerator.denominatorTableName;
 						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), reset investigation parameters, $scope.numerator: " + 
 							JSON.stringify($scope.numerator, null, 1) +
 							"; SubmissionStateService.getState().numerator: " + JSON.stringify(SubmissionStateService.getState().numerator, null, 1) +
-							"; SubmissionStateService.getState().denominator: " + JSON.stringify(SubmissionStateService.getState().denominator, null, 1));
-						SubmissionStateService.getState().numerator = $scope.numerator;
-						SubmissionStateService.getState().denominator = $scope.numerator;
+							"; SubmissionStateService.getState().denominatorTableName: " + SubmissionStateService.getState().denominatorTableName +
+							"; SubmissionStateService.getState().numeratorTableName: " + SubmissionStateService.getState().numeratorTableName);
 						//This will have an impact on investigations year range, so reset investigation parameters
 						ParameterStateService.resetState();
 					}
 					else {		
-						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), no change: " + JSON.stringify($scope.numerator, null, 2));
+						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), no change, $scope.numerator: " + 
+							JSON.stringify($scope.numerator, null, 2));
 					}	
                 };
 
@@ -274,6 +336,10 @@ angular.module("RIF")
 					if ($scope.studyName == "" && SubmissionStateService.getState().studyName) {
 						$scope.studyName = SubmissionStateService.getState().studyName;
 					}
-					$scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
+					if (SubmissionStateService.getState().geography) {
+						$scope.geography = SubmissionStateService.getState().geography;
+					}
+					$scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName +
+						"; $scope.geography: " + $scope.geography);
                 };
             }]);

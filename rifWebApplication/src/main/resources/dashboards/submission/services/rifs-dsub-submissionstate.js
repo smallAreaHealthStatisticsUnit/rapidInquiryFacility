@@ -78,13 +78,8 @@ angular.module("RIF")
 						  "denominatorTableDescription": "population health file",
 						  "$$hashKey": "object:248"
 						 },
-						 "denominator": {
-						  "numeratorTableName": "NUM_SAHSULAND_CANCER",
-						  "numeratorTableDescription": "cancer numerator",
-						  "denominatorTableName": "POP_SAHSULAND_POP",
-						  "denominatorTableDescription": "population health file",
-						  "$$hashKey": "object:248"
-						 },
+						 "numeratorTableName": "NUM_SAHSULAND_CANCER",
+						 "denominatorTableName": "POP_SAHSULAND_POP",
 						 "projectName": "",
 						 "projectDescription": "",
 						 "studyDescription": "TEST 1006 LUNG CANCER BYM 95 96 Risk Analyisis 02 db covariate",
@@ -95,12 +90,12 @@ angular.module("RIF")
 						var errors=0;
 						var stringKeyList;
 						if (strict) { // Strict: study name has to exist
-							stringKeyList = ['studyName', 'geography', 'numerator', 'studyType'];
+							stringKeyList = ['studyName', 'geography', 'numeratorTableName', 'denominatorTableName', 'studyType'];
 						}
 						else {
-							stringKeyList = ['geography', 'numerator', 'studyType'];
+							stringKeyList = ['geography', 'numeratorTableName', 'denominatorTableName', 'studyType'];
 						}
-						var objectKeyList = ['healthTheme', 'denominator'];
+						var objectKeyList = ['healthTheme', 'numerator'];
 						for (var i=0; i<stringKeyList.length; i++) {
 							if (s[stringKeyList[i]] && s[stringKeyList[i]].length > 0) { // OK
 							}
@@ -131,8 +126,8 @@ angular.module("RIF")
 								}
 							}
 							else {
-								AlertService.rifMessage('warning', 'Submission state verification: no object key: ' + 
-									objectKeyList[i]);
+								AlertService.rifMessage('warning', 'Submission state verification: no object key "' + 
+									objectKeyList[i] + '": ' + JSON.stringify(s[objectKeyList[i]]));
 								errors++;
 							}
 						}

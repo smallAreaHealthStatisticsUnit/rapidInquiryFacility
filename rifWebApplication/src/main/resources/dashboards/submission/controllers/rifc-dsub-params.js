@@ -122,14 +122,21 @@ angular.module("RIF")
 
                 //Check geography and level selected
                 var thisGeography;
-                var thisNumerator;
+                var thisNumerator = "";
                 var thisGeoLevel;
 
                 $scope.fillContents = function () {
                     thisGeography = SubmissionStateService.getState().geography;
-					if (SubmissionStateService.getState().numerator) {
-						thisNumerator = SubmissionStateService.getState().numerator;
+					if (SubmissionStateService.getState().numerator && 
+					    angular.isObject(SubmissionStateService.getState().numerator) &&
+						angular.isString(SubmissionStateService.getState().numeratorTableName)) { // Check it is a string
+						thisNumerator = SubmissionStateService.getState().numerator.numeratorTableName;
 					}
+					else { // Its is an object
+						$scope.showWarning("Numerator is not valid: " + JSON.stringify(numerator));
+						thisNumerator = "";
+					}
+					
                     thisGeoLevel = StudyAreaStateService.getState().studyResolution;
 
                     //taxonomy services
