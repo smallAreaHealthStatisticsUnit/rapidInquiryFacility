@@ -3310,11 +3310,19 @@ Further changes are needed to support risk analysis:
 
 * PE/BD meeting, Heathrow data loading;
 
-Risk analysis issues:
+Risk analysis issues (branch: risk-analysis-fixes-2)
 
-1. Using add by postcode produces errors on its own, but works;
-2. Errors if nonsensical exposure bands are selected;
-3. Clear does not work after restore from file;
-4. Adding a point produces errors after restore from file;
-5. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
-6. Load list from text file loads OK but does not display correctly;
+1. Multiple Health outcomes produces errors
+2. Health outcome may requir a geography change - if it is wrong you get:
+   ```
+   ERROR: No health data for theme "SAHSU land cancer incidence example data", geography "EWS2011". 
+   ERROR: Could not retrieve your project information from the database: unable to get numerator/denominator pair 
+   ```
+3. Using add by postcode produces errors on its own, but works;
+4. Errors if nonsensical exposure bands are selected;
+5. Clear does not work after restore from file;
+6. Adding a point produces errors after restore from file;
+7. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
+8. Load list from text file loads OK but does not display correctly;
+9. Need a file type filter when loading JSON files;
+10. Zip shapefile load to be able to cope with projections other than 4326 (e.g. local grid)
