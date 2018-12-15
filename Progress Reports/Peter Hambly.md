@@ -3310,10 +3310,12 @@ Further changes are needed to support risk analysis:
 
 * PE/BD meeting, Heathrow data loading;
 
-Risk analysis issues (branch: risk-analysis-fixes-2)
+# In progress work at contract end (20/12/2018)
+
+## Risk analysis issues (branch: risk-analysis-fixes-2)
 
 1. Multiple Health outcomes produces errors
-2. Health outcome may requir a geography change - if it is wrong you get:
+2. Health outcome may require a geography change - if it is wrong you get:
    ```
    ERROR: No health data for theme "SAHSU land cancer incidence example data", geography "EWS2011". 
    ERROR: Could not retrieve your project information from the database: unable to get numerator/denominator pair 
@@ -3326,3 +3328,17 @@ Risk analysis issues (branch: risk-analysis-fixes-2)
 8. Load list from text file loads OK but does not display correctly;
 9. Need a file type filter when loading JSON files;
 10. Zip shapefile load to be able to cope with projections other than 4326 (e.g. local grid)
+
+## Heathrow Data Load Scripts
+
+*rif40-pg_sahsu_heathrow.sql*, *rif40-mssql_sahsu_heathrow.sql* partially complete for one outcome: **stroke**. Need to test in RIF with mad up data to check ICD selection works. 
+* Will require an "All ICD 10 codes (A% to Z%) filter added to WHO ICD 10 taxonomy file;
+* Needs branch *risk-analysis-fixes-2* fix 1 (Multiple Health outcomes produces errors) to be able to test.
+
+## RIF User role faults
+
+* The RIF role *rif_user* cannot run studies. The branch *rif_user_role_fixes* repairs this. This is not fully tested. This also repairs a Postgres 9/10 incompaitiblity in *rif40_trg_pkg.trigger_fct_rif40_tables_checks()*.
+
+## Use PNG tiles instead of GeoJSON
+
+* This first patch add the ability to generate PNG tiles and to use them when you return to a previously selected study or comparision area. The branch *png_tiles_from_geojson* implements this and is complete apart from supporting tile generation below the maximum database geolevel. (GeoJSON interpolates automatically; PNG tiles must be generated). 
