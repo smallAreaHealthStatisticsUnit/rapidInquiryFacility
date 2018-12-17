@@ -38,64 +38,59 @@ user_config = user_parser["DEFAULT"]
 
 def main():
 
-    # Check that we have all the values we need
-    # db_type, script_root, cat_home, war_dir = check_arguments()
+    # This sends output to the specified file as well as stdout.
+    with Logger("install.log"):
+        settings = get_settings()
 
-    # args = check_arguments()
+        # prompt for go/no-go
+        print("About to install with the following settings:"
+              "\n\tDevelopment mode: {}"
+              "\n\tDB: {} "
+              "\n\tScripts directory: {} "
+              "\n\tTomcat home directory: {}"
+              "\n\tWAR files directory: {}"
+                .format(bool(settings.dev_mode),
+                      long_db_name(settings.db_type),
+                      settings.script_root,
+                      settings.cat_home,
+                      settings.war_dir))
+        if input("Continue? [No]: "):
 
-    settings = get_settings()
+            # Run SQL scripts
+            if settings.db_type == "pg":
+                db_script = settings.script_root / "Postgres" / "production" / \
+                            "db_create.sql"
+            else:
+                # Assumes both that it's SQL Server, and that we're running on
+                # Windows. Linux versions of SQLServer exist, but we'll deal
+                # with them later if necessary.
+                db_script = settings.script_root / "SQLserver" / "installation" / \
+                            "rebuild_all.bat"
 
-    print("About to install with the following settings:"
-          "\n\tDevelopment mode: {}"
-          "\n\tDB: {} "
-          "\n\tScripts directory: {} "
-          "\n\tTomcat home directory: {}"
-          "\n\tWAR files directory: {}"
-            .format(bool(settings.dev_mode),
-                  long_db_name(settings.db_type),
-                  settings.script_root,
-                  settings.cat_home,
-                  settings.war_dir))
+                print("About to run {}; switching to {}".format(
+                    db_script, db_script.parent))
 
-    # prompt for go/no-go
-    if input("Continue? [No]: "):
+                result = subprocess.run([str(db_script)], cwd=db_script.parent)
 
-        # Run SQL scripts
-        if settings.db_type == "pg":
-            db_script = settings.script_root / "Postgres" / "production" / \
-                        "db_create.sql"
-        else:
-            # Assumes both that it's SQL Server, and that we're running on
-            # Windows. Linux versions of SQLServer exist, but we'll deal
-            # with them later if necessary.
-            db_script = settings.script_root / "SQLserver" / "installation" / \
-                        "rebuild_all.bat"
-            sql_server_script_root_dir = settings.script_root / "SQLserver"
+            # Deploy WAR files
+            if settings.dev_mode:
+                war_files = [
+                    settings.war_dir / "rifServices" / "target" / "rifServices.war",
+                    settings.war_dir / "taxonomyServices" / "target" /
+                        "taxonomies.war",
+                    settings.war_dir / "statsService" / "target" / "statistics.war",
+                    settings.war_dir / "rifWebApplication" / "target" / "RIF40.war"
+                ]
+            else:
+                # If not development, just copy the files from the specified
+                # directory
+                war_files = [settings.war_dir / "rifServices.war",
+                             settings.war_dir / "taxonomies.war",
+                             settings.war_dir / "statistics.war",
+                             settings.war_dir / "RIF40.war"]
 
-            print("About to run {}; switching to {}".format(
-                db_script, db_script.parent))
-
-            result = subprocess.run([str(db_script)], cwd=db_script.parent)
-
-        # Deploy WAR files
-        if settings.dev_mode:
-            war_files = [
-                settings.war_dir / "rifServices" / "target" / "rifServices.war",
-                settings.war_dir / "taxonomyServices" / "target" /
-                    "taxonomies.war",
-                settings.war_dir / "statsService" / "target" / "statistics.war",
-                settings.war_dir / "rifWebApplication" / "target" / "RIF40.war"
-            ]
-        else:
-            # If not development, just copy the files from the specified
-            # directory
-            war_files = [settings.war_dir / "rifServices.war",
-                         settings.war_dir / "taxonomies.war",
-                         settings.war_dir / "statistics.war",
-                         settings.war_dir / "RIF40.war"]
-
-        for f in war_files:
-            shutil.copy(f, settings.cat_home / "webapps")
+            for f in war_files:
+                shutil.copy(f, settings.cat_home / "webapps")
 
 # enddef main()
 
@@ -276,6 +271,47 @@ def check_arguments():
                                "war_dir"])
     return Args(db_type, str.strip(script_root), str.strip(cat_home),
                 str.strip(war_dir))
+
+
+# I got this from https://stackoverflow.com/a/24583265/1517620
+class Logger(object):
+    """Lumberjack class - duplicates sys.stdout to a log file and it's okay."""
+    #source: https://stackoverflow.com/q/616645
+
+    def __init__(self, filename="install.log", mode="ab", buff=0):
+        self.stdout = sys.stdout
+        self.file = open(filename, mode, buff)
+        sys.stdout = self
+
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *args):
+        self.close()
+
+    def write(self, message):
+        self.stdout.write(message)
+        self.file.write(message.encode("utf-8"))
+
+    def flush(self):
+        self.stdout.flush()
+        self.file.flush()
+        os.fsync(self.file.fileno())
+
+    def close(self):
+        if self.stdout != None:
+            sys.stdout = self.stdout
+            self.stdout = None
+
+        if self.file != None:
+            self.file.close()
+            self.file = None
+
+
+
 
 if __name__ == "__main__":
     # print("Initialising. Arguments are {}".format(sys.argv))
