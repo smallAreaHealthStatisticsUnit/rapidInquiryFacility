@@ -174,7 +174,9 @@ def get_value_from_user(key, is_path=False):
     if key == "tomcat_home":
         # The second test below is to catch no value being given by the user
         while reply is None or reply == Path("").resolve():
+            print("In tomcat section; reply is {}".format(reply))
             tomcat_home_str = os.getenv("CATALINA_HOME")
+            print("cat home is {}".format(tomcat_home_str))
 
             # Make sure we have a value.
             if tomcat_home_str is None or tomcat_home_str.strip() == "":
@@ -182,6 +184,7 @@ def get_value_from_user(key, is_path=False):
                       "given for {}.".format(all_settings.get("tomcat_home")))
             else:
                 reply = tomcat_home_str
+            print("In tomcat section; reply is {}".format(reply))
 
     if is_path:
         returned_reply = Path(reply.strip()).resolve()
@@ -194,6 +197,7 @@ def get_value_from_user(key, is_path=False):
         user_parser["DEFAULT"][key] = str(bool(reply))
     else:
         user_parser["DEFAULT"][key] = str(returned_reply)
+    print("Returning {}".format(str(returned_reply)))
     return returned_reply
 
 
