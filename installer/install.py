@@ -173,7 +173,7 @@ def get_value_from_user(key, is_path=False):
     # Special handling for Tomcat's home directory
     if key == "tomcat_home":
         # The second test below is to catch no value being given by the user
-        while reply is None or reply == Path("").resolve():
+        while reply is None or reply.strip() == "":
             print("In tomcat section; reply is {}".format(reply))
             tomcat_home_str = os.getenv("CATALINA_HOME")
             print("cat home is {}".format(tomcat_home_str))
