@@ -18,6 +18,7 @@ from collections import namedtuple
 from pathlib import Path
 from configparser import ConfigParser, ExtendedInterpolation
 from distutils.util import strtobool
+from contextlib import contextmanager
 
 all_settings = {"development_mode": "Development mode?",
                 "db_type": "Database type",
@@ -36,10 +37,20 @@ user_parser = ConfigParser(allow_no_value=True,
 default_config = default_parser["DEFAULT"]
 user_config = user_parser["DEFAULT"]
 
+@contextmanager
+def logger(output):
+    """Redirecting standard output."""
+    stdout = sys.stdout
+    sys.stdout = output
+    try:
+        yield
+    finally:
+        sys.stdout = stdout
+
 def main():
 
     # This sends output to the specified file as well as stdout.
-    with Logger("install.log"):
+    with logger("install.log"):
         settings = get_settings()
 
         # prompt for go/no-go
@@ -274,41 +285,41 @@ def check_arguments():
 
 
 # I got this from https://stackoverflow.com/a/24583265/1517620
-class Logger(object):
-    """Lumberjack class - duplicates sys.stdout to a log file and it's okay."""
-    #source: https://stackoverflow.com/q/616645
-
-    def __init__(self, filename="install.log", mode="ab", buff=0):
-        self.stdout = sys.stdout
-        self.file = open(filename, mode, buff)
-        sys.stdout = self
-
-    def __del__(self):
-        self.close()
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, *args):
-        self.close()
-
-    def write(self, message):
-        self.stdout.write(message)
-        self.file.write(message.encode("utf-8"))
-
-    def flush(self):
-        self.stdout.flush()
-        self.file.flush()
-        os.fsync(self.file.fileno())
-
-    def close(self):
-        if self.stdout != None:
-            sys.stdout = self.stdout
-            self.stdout = None
-
-        if self.file != None:
-            self.file.close()
-            self.file = None
+# class Logger(object):
+#     """Lumberjack class - duplicates sys.stdout to a log file and it's okay."""
+#     #source: https://stackoverflow.com/q/616645
+#
+#     def __init__(self, filename="install.log", mode="ab", buff=0):
+#         self.stdout = sys.stdout
+#         self.file = open(filename, mode, buff)
+#         sys.stdout = self
+#
+#     def __del__(self):
+#         self.close()
+#
+#     def __enter__(self):
+#         pass
+#
+#     def __exit__(self, *args):
+#         self.close()
+#
+#     def write(self, message):
+#         self.stdout.write(message)
+#         self.file.write(message.encode("utf-8"))
+#
+#     def flush(self):
+#         self.stdout.flush()
+#         self.file.flush()
+#         os.fsync(self.file.fileno())
+#
+#     def close(self):
+#         if self.stdout != None:
+#             sys.stdout = self.stdout
+#             self.stdout = None
+#
+#         if self.file != None:
+#             self.file.close()
+#             self.file = None
 
 
 if __name__ == "__main__":
