@@ -27,7 +27,7 @@ all_settings = {"development_mode": "Development mode?",
                 }
 
 # We have the default settings file in the current directory and the user's
-# version in their home. We only user the DEFAULT section in each (for
+# version in their home. We only user the [DEFAULT] section in each (for
 # now).
 default_parser = ConfigParser(allow_no_value=True,
                               interpolation=ExtendedInterpolation())
@@ -70,26 +70,13 @@ def main():
                 print("About to run {}; switching to {}".format(
                     db_script, db_script.parent))
 
-                result = subprocess.run([str(db_script)], cwd=db_script.parent)
+                result = subprocess.run([str(db_script)],
+                                        cwd=db_script.parent,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
 
             # Deploy WAR files
-            if settings.dev_mode:
-                war_files = [
-                    settings.war_dir / "rifServices" / "target" / "rifServices.war",
-                    settings.war_dir / "taxonomyServices" / "target" /
-                        "taxonomies.war",
-                    settings.war_dir / "statsService" / "target" / "statistics.war",
-                    settings.war_dir / "rifWebApplication" / "target" / "RIF40.war"
-                ]
-            else:
-                # If not development, just copy the files from the specified
-                # directory
-                war_files = [settings.war_dir / "rifServices.war",
-                             settings.war_dir / "taxonomies.war",
-                             settings.war_dir / "statistics.war",
-                             settings.war_dir / "RIF40.war"]
-
-            for f in war_files:
+            for f in get_war_files(settings):
                 shutil.copy(f, settings.cat_home / "webapps")
 
 # enddef main()
@@ -126,7 +113,6 @@ def get_settings():
 
     # Tomcat home: if it's not set we use the environment variable
     tomcat_home = get_value_from_user("tomcat_home", is_path=True)
-    print("Final tomcat: {}".format(str(tomcat_home)))
 
     # In development we assume that this script is being run from installer/
     # under the project root. The root directory is thus one level up.
@@ -138,7 +124,6 @@ def get_settings():
     # Update the user's config file
     # user_config["key"] = "reply"
     # user_parser
-    print(user_parser.items("DEFAULT"))
     props_file = open(user_props, "w")
     user_parser.write(props_file)
 
@@ -169,9 +154,7 @@ def get_value_from_user(key, is_path=False):
     if key == "tomcat_home":
         # The second test below is to catch no value being given by the user
         while reply is None or reply.strip() == "":
-            print("In tomcat section; reply is {}".format(reply))
             tomcat_home_str = os.getenv("CATALINA_HOME")
-            print("cat home is {}".format(tomcat_home_str))
 
             # Make sure we have a value.
             if tomcat_home_str is None or tomcat_home_str.strip() == "":
@@ -179,7 +162,6 @@ def get_value_from_user(key, is_path=False):
                       "given for {}.".format(all_settings.get("tomcat_home")))
             else:
                 reply = tomcat_home_str
-            print("In tomcat section; reply is {}".format(reply))
 
     if is_path:
         returned_reply = Path(reply.strip()).resolve()
@@ -192,8 +174,26 @@ def get_value_from_user(key, is_path=False):
         user_parser["DEFAULT"][key] = str(bool(reply))
     else:
         user_parser["DEFAULT"][key] = str(returned_reply)
-    print("Returning {}".format(str(returned_reply)))
     return returned_reply
+
+
+def get_war_files(settings):
+    if settings.dev_mode:
+        war_files = [
+            settings.war_dir / "rifServices" / "target" / "rifServices.war",
+            settings.war_dir / "taxonomyServices" / "target" /
+            "taxonomies.war",
+            settings.war_dir / "statsService" / "target" / "statistics.war",
+            settings.war_dir / "rifWebApplication" / "target" / "RIF40.war"
+        ]
+    else:
+        # If not development, just copy the files from the specified
+        # directory
+        war_files = [settings.war_dir / "rifServices.war",
+                     settings.war_dir / "taxonomies.war",
+                     settings.war_dir / "statistics.war",
+                     settings.war_dir / "RIF40.war"]
+    return war_files
 
 
 def long_db_name(db):
@@ -309,8 +309,6 @@ class Logger(object):
         if self.file != None:
             self.file.close()
             self.file = None
-
-
 
 
 if __name__ == "__main__":
