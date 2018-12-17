@@ -51,7 +51,7 @@ def main():
           "\n\tScripts directory: {} "
           "\n\tTomcat home directory: {}"
           "\n\tWAR files directory: {}"
-          .format(bool(settings.dev_mode),
+            .format(bool(settings.dev_mode),
                   long_db_name(settings.db_type),
                   settings.script_root,
                   settings.cat_home,
@@ -75,15 +75,14 @@ def main():
             print("About to run {}; switching to {}".format(
                 db_script, db_script.parent))
 
-            result = subprocess.run([str(db_script)],
-                                    cwd=db_script.parent)
+            result = subprocess.run([str(db_script)], cwd=db_script.parent)
 
         # Deploy WAR files
         if settings.dev_mode:
             war_files = [
                 settings.war_dir / "rifServices" / "target" / "rifServices.war",
                 settings.war_dir / "taxonomyServices" / "target" /
-                "taxonomies.war",
+                    "taxonomies.war",
                 settings.war_dir / "statsService" / "target" / "statistics.war",
                 settings.war_dir / "rifWebApplication" / "target" / "RIF40.war"
             ]
@@ -132,17 +131,6 @@ def get_settings():
 
     # Tomcat home: if it's not set we use the environment variable
     tomcat_home = get_value_from_user("tomcat_home", is_path=True)
-
-    # The second test below is to catch no value being given by the user
-    while tomcat_home is None or tomcat_home == Path("").resolve():
-        tomcat_home_str = os.getenv("CATALINA_HOME")
-
-        # Make sure we have a value.
-        if tomcat_home_str is None or tomcat_home_str.strip() == "":
-            print("CATALINA_HOME is not set in the environment and no value "
-                  "given for {}.".format(all_settings.get("tomcat_home")))
-        else:
-            tomcat_home = Path(tomcat_home_str)
     print("Final tomcat: {}".format(str(tomcat_home)))
 
     # In development we assume that this script is being run from installer/
@@ -181,6 +169,19 @@ def get_value_from_user(key, is_path=False):
     reply = input("{} [{}] ".format(all_settings.get(key), current_value))
     if reply is None or reply.strip() == "":
         reply = current_value
+
+    # Special handling for Tomcat's home directory
+    if key == "tomcat_home":
+        # The second test below is to catch no value being given by the user
+        while reply is None or reply == Path("").resolve():
+            tomcat_home_str = os.getenv("CATALINA_HOME")
+
+            # Make sure we have a value.
+            if tomcat_home_str is None or tomcat_home_str.strip() == "":
+                print("CATALINA_HOME is not set in the environment and no value "
+                      "given for {}.".format(all_settings.get("tomcat_home")))
+            else:
+                reply = tomcat_home_str
 
     if is_path:
         returned_reply = Path(reply.strip()).resolve()
