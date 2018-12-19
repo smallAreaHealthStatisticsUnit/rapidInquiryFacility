@@ -3278,12 +3278,67 @@ Further changes are needed to support risk analysis:
     ```
     Note that Postgres and SQL Server are different
 * Heathrow covariates, fixes for rif_user role faults;
-	
-Risk analysis issues:
+* Fix for *extract_permitted*, *printstate* and *selectstate* RIF_USER role support in T_RIF40_STUDIES table
+* Fix for RIF_USER role so that RIF_MANAGER role is not required (faulty trigger logic in 10 views);
+* Table t_rif40_user_projects - check the username is a valid user;
+* Table rif40_study_shares: for insert, check that new values are valid:
+  - Check all fields are not null: study_id, grantor,grantee_username
+  - Check that the study_id exists
+  - Grantee username is valid user
+  - Grantor username is valid user
+  - Grantee username has RIF_USER or RIF_MANAGER
+  - If the Grantor is NOT owner of the study they are a RIF_MANAGER	
+  - If the grantor != grantee_username then the grantor is a RIF_MANAGER;
 
-1. Using add by postcode produces errors on its own, but works;
-2. Errors if nonsensical exposure bands are selected;
-3. Clear does not work after restore from file;
-4. Adding a point produces errors after restore from file;
-5. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
-6. Load list from text file loads OK but does not display correctly;
+#### 10th to 14th December
+ 
+* Restructure tile generator;
+* Load COMARE data, found fault in SQL Server denominator data, tile generator shutdown handler. Issues from load:
+  * Missing GRANT from covariate scripts;
+  * Postgres Update format for large/large table joins should use a Common Table Expression;
+  * SQL Server population database - msoa2011 does not link to geography;
+  * Server server hidden messages: "The statement has been terminated vensor error code 3621;
+  * rif40_execute_insert_statement.sql no error with code: 56699. You get this is if study insert inserts no rows (probably a +100 error);
+  * *pg_partitioned_table* issue on Postgres 9.x:
+    ```
+	psql:rif40-pg_sahsu_heathrow.sql:252: ERROR:  relation "pg_partitioned_table" does not exist
+    LINE 10:      FROM pg_partitioned_table p, pg_attribute b, pg_class c...
+	```
+* Fix issue #119 for spurious ranges that break t_rif40_inv_conditions CONSTRAINT max_condition_ck; pull #122;
+
+#### 17th to 20th December
+
+* PE/BD meeting, Heathrow data loading;
+
+# In progress work at contract end (20/12/2018)
+
+## Risk analysis issues (branch: risk-analysis-fixes-2)
+
+1. Multiple Health outcomes produces errors
+2. Health outcome may require a geography change - if it is wrong you get:
+   ```
+   ERROR: No health data for theme "SAHSU land cancer incidence example data", geography "EWS2011". 
+   ERROR: Could not retrieve your project information from the database: unable to get numerator/denominator pair 
+   ```
+3. Using add by postcode produces errors on its own, but works;
+4. Errors if nonsensical exposure bands are selected;
+5. Clear does not work after restore from file;
+6. Adding a point produces errors after restore from file;
+7. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
+8. Load list from text file loads OK but does not display correctly;
+9. Need a file type filter when loading JSON files;
+10. Zip shapefile load to be able to cope with projections other than 4326 (e.g. local grid)
+
+## Heathrow Data Load Scripts
+
+*rif40-pg_sahsu_heathrow.sql*, *rif40-mssql_sahsu_heathrow.sql* partially complete for one outcome: **stroke**. Need to test in RIF with mad up data to check ICD selection works. 
+* Will require an "All ICD 10 codes (A% to Z%) filter added to WHO ICD 10 taxonomy file;
+* Needs branch *risk-analysis-fixes-2* fix 1 (Multiple Health outcomes produces errors) to be able to test.
+
+## RIF User role faults
+
+* The RIF role *rif_user* cannot run studies. The branch *rif_user_role_fixes* repairs this. This is not fully tested. This also repairs a Postgres 9/10 incompaitiblity in *rif40_trg_pkg.trigger_fct_rif40_tables_checks()*.
+
+## Use PNG tiles instead of GeoJSON
+
+* This first patch add the ability to generate PNG tiles and to use them when you return to a previously selected study or comparision area. The branch *png_tiles_from_geojson* implements this and is complete apart from supporting tile generation below the maximum database geolevel. (GeoJSON interpolates automatically; PNG tiles must be generated). 
