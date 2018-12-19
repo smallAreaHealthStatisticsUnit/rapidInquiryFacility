@@ -71,9 +71,7 @@ def main():
                     db_script, db_script.parent))
 
                 result = subprocess.run([str(db_script)],
-                                        cwd=db_script.parent,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
+                                        cwd=db_script.parent)
 
             # Deploy WAR files
             for f in get_war_files(settings):
