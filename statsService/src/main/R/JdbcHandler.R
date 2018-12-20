@@ -209,9 +209,9 @@ saveDataFrameToDatabaseTable <- function(data) {
 					replace(x, is.infinite(x), NA) # Replace INF will NA for SQL Server
 				}))
 				
-				cat(paste0("Replace NAN with NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
+				cat(paste0("Replace NAN will NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
 				data<-do.call(data.frame, lapply(data, function(x) {
-					replace(x, is.nan(x), NA) # Replace NaN with NA for SQL Server
+					replace(x, is.nan(x), NA) # Replace NaN will NA for SQL Server
 				}))
 
 				cat(paste0("Replace \"\" will NA for temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
@@ -279,8 +279,23 @@ generateTableIndexSQLQuery <- function(tableName, columnName) {
 	")")
 
 	cat(paste0("SQL> ", sqlIndexQuery))
-	
+
 	return(sqlIndexQuery);
+}
+
+convertSqlNansToNulls <- function(col) {
+
+	protectedCol <- paste("CASE WHEN", col, " = 'NAN' THEN NULL ELSE", col, "END")
+	return(protectedCol)
+}
+
+convertRNansToNulls <- function(col) {
+
+	if (is.na(col) || is.nan(col)) {
+		return("NULL")
+	} else {
+		return(col)
+	}
 }
 
 ##================================================================================
@@ -311,7 +326,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 		updateStmtPart0 <- paste(
 			"UPDATE ", mapTableName, "\n SET ")
 	}
-	
+
 	updateStmtPart1 <- paste0(updateStmtPart0,
 		"direct_standardisation=b.direct_standardisation,",
 		"adjusted=b.adjusted,",
@@ -320,17 +335,17 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 		"lower95=b.lower95,",
 		"upper95=b.upper95,",
 		"relative_risk=b.relative_risk,",
-		"smoothed_relative_risk=", nullProtect("b.smoothed_relative_risk"),
-		", posterior_probability=", nullProtect("b.posterior_probability"),
-		", posterior_probability_upper95=", nullProtect("b.posterior_probability_upper95"),
-		", posterior_probability_lower95=", nullProtect("b.posterior_probability_lower95"),
-		", residual_relative_risk=", nullProtect("b.residual_relative_risk"),
-		", residual_rr_lower95=", nullProtect("b.residual_rr_lower95"),
-		", residual_rr_upper95=", nullProtect("b.residual_rr_upper95"),
-		", smoothed_smr=", nullProtect("b.smoothed_smr"),
-		", smoothed_smr_lower95=", nullProtect("b.smoothed_smr_lower95"),
-		", smoothed_smr_upper95=", nullProtect("b.smoothed_smr_upper95"), sep="\n")
-	
+		"smoothed_relative_risk=", convertSqlNansToNulls("b.smoothed_relative_risk"),
+		", posterior_probability=", convertSqlNansToNulls("b.posterior_probability"),
+		", posterior_probability_upper95=", convertSqlNansToNulls("b.posterior_probability_upper95"),
+		", posterior_probability_lower95=", convertSqlNansToNulls("b.posterior_probability_lower95"),
+		", residual_relative_risk=", convertSqlNansToNulls("b.residual_relative_risk"),
+		", residual_rr_lower95=", convertSqlNansToNulls("b.residual_rr_lower95"),
+		", residual_rr_upper95=", convertSqlNansToNulls("b.residual_rr_upper95"),
+		", smoothed_smr=", convertSqlNansToNulls("b.smoothed_smr"),
+		", smoothed_smr_lower95=", convertSqlNansToNulls("b.smoothed_smr_lower95"),
+		", smoothed_smr_upper95=", convertSqlNansToNulls("b.smoothed_smr_upper95"), sep="\n")
+
 	if (db_driver_prefix == "jdbc:postgresql") {
 		updateStmtPart2 <- paste0(updateStmtPart1,
 			" FROM ", temporarySmoothedResultsTableName, " b WHERE ",
@@ -347,7 +362,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 			"a.inv_id=b.inv_id AND ",
 			"a.genders=b.genders ", sep="\n")
 	}
-	
+
 	if (studyType == "riskAnalysis") { # No area id
 		if (db_driver_prefix == "jdbc:postgresql") {
 			updateMapTableSQLQuery <- updateStmtPart2;
@@ -366,7 +381,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 				updateMapTableSQLQuery <- paste0(updateStmtPart2,
 							" AND CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))")
 			}
-		} 
+		}
 		else {
 			if (db_driver_prefix == "jdbc:postgresql") {
 				updateMapTableSQLQuery <- paste0(updateStmtPart2, " AND a.area_id=b.area_id")		}
@@ -381,8 +396,8 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 
 	lerrorTrace<-capture.output({
 		res <- tryCatch({
-				withErrorTracing({  
-					dbSendUpdate(connection, updateMapTableSQLQuery) 
+				withErrorTracing({
+					dbSendUpdate(connection, updateMapTableSQLQuery)
 				})
 			},
 			warning=function(w) {
@@ -396,7 +411,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 				cat(err, sep="")
 				exitValue <<- 1
 			}, finally=function() {
-	
+
 				if (is.null(res)) {
 					cat(paste("QUERY FAILED! SQL> ", updateMapTableSQLQuery,
 					"; res: ", res, "\n"), sep="")
@@ -432,11 +447,6 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 	return(lerrorTrace);
 } # End of updateMapTableFromSmoothedResultsTable()
 
-nullProtect <- function(col) {
-
-	protectedCol <- paste("CASE WHEN", col, " = 'NAN' THEN NULL ELSE", col, "END")
-	return(protectedCol)
-}
 
 ##================================================================================
 ##FUNCTION: dropTemporaryTable
@@ -484,57 +494,70 @@ insertHomogeneityResults <- function(homogData) {
   # Save data frame to csv file for debugging
   #
   if (dumpFramesToCsv == TRUE) {
-    cat(paste0("Saving data frame to: ", temporaryHomogFileName, "\n"), sep="")
-    write.csv(homogData, file=temporaryHomogFileName)
+	cat(paste0("Saving data frame to: ", temporaryHomogFileName, "\n"), sep="")
+	write.csv(homogData, file=temporaryHomogFileName)
   }
   
   
   #Insert 3 rows, M,F,Both
   for (i in 1:3)
   {
-     selHomog <- paste0("select * FROM rif40.t_rif40_homogeneity WHERE inv_id =", homogData$inv_id[i]," AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj), " and genders = ", homogData$gender[i], sep="")
-     homogExists <- tryCatch(doQuery(selHomog),
-     warning=function(w) {
-       cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
-       exitValue <<- 1
-     },
-     error=function(e) {
-       cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
-       exitValue <<- 1
-     })
-     numberOfRows <- nrow(homogExists)
+	 selHomog <- paste0(
+	 	"select * FROM rif40.t_rif40_homogeneity WHERE inv_id =", homogData$inv_id[i],
+	 	" AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj),
+	 	" and genders = ", homogData$gender[i], sep="")
+	 homogExists <- tryCatch(doQuery(selHomog),
+	 warning=function(w) {
+	   cat(paste("JDBC UNABLE TO SELECT FROM t_rif40_homogeneity! ", w, "\n"), sep="")
+	   exitValue <<- 1
+	 },
+	 error=function(e) {
+	   cat(paste("JDBC ERROR SELECTING FROM t_rif40_homogeneity! ", geterrmessage(), "\n"), sep="")
+	   exitValue <<- 1
+	 })
+	 numberOfRows <- nrow(homogExists)
 
-     if (numberOfRows == 0) {
-     
-      insertStmt <- paste("INSERT INTO rif40.t_rif40_homogeneity(inv_id, study_id, adjusted, genders) VALUES (",
-                                     homogData$inv_id[i],",",homogData$study_id[i],",",as.integer(adj),",",homogData$gender[i],");")
-      res <- tryCatch({
-                withErrorTracing({ dbSendUpdate(connection, insertStmt) })
-             },warning=function(w) {
-                cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
-                exitValue <<- 1
-              },
-            error=function(e) {
-              cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
-              exitValue <<- 1
-            })
-    }
-    
-    # Finally update the record which should now exist
-    updateStmt <- paste("UPDATE rif40.t_rif40_homogeneity SET username=\'" , userID,"\', homogeneity_dof=", homogData$df[i],
-                        ", homogeneity_chi2=", homogData$chisqHomog[i], ", homogeneity_p=", homogData$pValHomog[i], ", explt5=",homogData$bandsLT5[i],
-                        " WHERE inv_id =", homogData$inv_id[i], " AND study_id=", homogData$study_id[i], " and adjusted = ", as.integer(adj), 
-                        " and genders = ", homogData$gender[i], ";\n", sep="") 
-            res <- tryCatch({
-              withErrorTracing({ dbSendUpdate(connection, updateStmt) })
-            },warning=function(w) {
-              cat(paste("JDBC UNABLE TO FETCH! ", w, "\n"), sep="")
-              exitValue <<- 1
-            },
-            error=function(e) {
-              cat(paste("JDBC ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
-              exitValue <<- 1
-            })
+	 if (numberOfRows == 0) {
+	 
+	  insertStmt <- paste(
+	  	"INSERT INTO rif40.t_rif40_homogeneity(inv_id, study_id, adjusted, genders) VALUES (",
+	  		homogData$inv_id[i], ",", homogData$study_id[i], ",", as.integer(adj), ",",
+	  		homogData$gender[i],");")
+	  res <- tryCatch({
+				withErrorTracing({ dbSendUpdate(connection, insertStmt) })
+			 },warning=function(w) {
+				cat(paste("JDBC UNABLE TO INSERT INTO t_rif40_homogeneity! ", w, "\n"), sep="")
+				exitValue <<- 1
+			  },
+			error=function(e) {
+			  cat(paste("JDBC ERROR INSERTING INTO t_rif40_homogeneity! ", geterrmessage(), "\n"),
+			  sep="")
+			  exitValue <<- 1
+			})
+	}
+	
+	# Finally update the record which should now exist
+	updateStmt <- paste("UPDATE rif40.t_rif40_homogeneity SET username = '" , userID,
+						"', homogeneity_dof = ", convertRNansToNulls(homogData$df[i]),
+						", homogeneity_chi2 = ", convertRNansToNulls(homogData$chisqHomog[i]),
+						", homogeneity_p = ", convertRNansToNulls(homogData$pValHomog[i]),
+						", linearity_chi2 = ", convertRNansToNulls(homogData$chisqLT[i]),
+						", linearity_p = ", convertRNansToNulls(homogData$pValLT[i]),
+						", explt5 = ", convertRNansToNulls(homogData$bandsLT5[i]),
+						" WHERE inv_id = ", homogData$inv_id[i],
+						" AND study_id = ", homogData$study_id[i],
+						" and adjusted = ", as.integer(adj),
+						" and genders = ", homogData$gender[i], ";\n", sep="") 
+			res <- tryCatch({
+			  withErrorTracing({ dbSendUpdate(connection, updateStmt) })
+			},warning=function(w) {
+			  cat(paste("JDBC UNABLE TO UPDATE t_rif40_homogeneity! ", w, "\n"), sep="")
+			  exitValue <<- 1
+			},
+			error=function(e) {
+			  cat(paste("JDBC ERROR UPDATING t_rif40_homogeneity! ", geterrmessage(), "\n"), sep="")
+			  exitValue <<- 1
+			})
   }
   return(exitValue);
 } # End of updateMapTableFromSmoothedResultsTable()

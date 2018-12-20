@@ -363,11 +363,47 @@ angular.module("RIF")
 							else {
 								taxTerms[i].taxonomy = "UNK";
 							}
+/* Handle spurious ranges that break t_rif40_inv_conditions CONSTRAINT max_condition_ck 
+   'CHECK (predefined_group_name IS NULL AND max_condition IS NOT NULL AND min_condition IS NOT NULL AND max_condition::text <> min_condition::text OR 
+           predefined_group_name IS NULL AND max_condition IS NULL OR predefined_group_name IS NOT NULL)'
+ 
+ +124.2: [DEBUG] [rifc-dsub-params.js] handleTextSearch res: {
+ "description": "\n\t\t\tMalignant neoplasm of breast\n\t\t",
+ "identifier": "C50-C50-icd10",
+ "label": "C50-C50",
+ "nameSpace": "icd10",
+ "parentTerm": {
+  "description": "\n\t\t\tMalignant neoplasms, stated or presumed to be primary, of specified sites, except of lymphoid, haematopoietic and related tissue\n\t\t",
+  "identifier": "C00-C75-icd10",
+  "label": "C00-C75",
+  "nameSpace": "icd10",
+  "parentTerm": {
+   "description": "\n\t\t\tMalignant neoplasms\n\t\t",
+   "identifier": "C00-C97-icd10",
+   "label": "C00-C97",
+   "nameSpace": "icd10",
+   "parentTerm": {
+    "description": "\n\t\t\tNeoplasms\n\t\t",
+    "identifier": "II-null",
+    "label": "II"
+   }
+  }
+ },
+ "taxonomy": "icd10"
+}
+*/							
+							var willBreakMaxConditionCk=false;
+							var a=taxTerms[i].label.split("-");
+							if (a.length=2 && a[0] == a[1]) {
+								willBreakMaxConditionCk=true;
+							}
 							
 							if (i == 0) {
 								AlertService.consoleDebug("[rifc-dsub-params.js] handleTextSearch res: " + JSON.stringify(taxTerms[i], null, 1));
 							}
-							if (taxTerms[i].taxonomy && taxTerms[i].taxonomy == 'null') {
+							if (taxTerms[i].taxonomy && taxTerms[i].taxonomy == 'null') { // Suppress
+							}
+							else if (willBreakMaxConditionCk) { // Suppress
 							}
 							else if (taxTerms[i] && taxTerms[i].label && taxTerms[i].identifier && taxTerms[i].description) {
 								myICD.push({
