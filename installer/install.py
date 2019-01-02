@@ -58,24 +58,27 @@ def main():
 
             # Run SQL scripts
             if settings.db_type == "pg":
-                db_script = settings.script_root / "Postgres" / "production" / \
-                            "db_create.sql"
+                db_script = (settings.script_root / "Postgres" / "production" / "db_create.sql")
             else:
-                # Assumes both that it's SQL Server, and that we're running on
-                # Windows. Linux versions of SQLServer exist, but we'll deal
-                # with them later if necessary.
-                db_script = settings.script_root / "SQLserver" / "installation" / \
-                            "rebuild_all.bat"
+                # Assumes both that it's SQL Server, and that we're
+                # running on Windows. Linux versions of SQLServer
+                # exist, but we'll deal with them later if necessary.
+                db_script = (settings.script_root / "SQLserver" / "installation" / "rebuild_all.bat")
 
                 print("About to run {}; switching to {}".format(
                     db_script, db_script.parent))
 
-                result = subprocess.run([str(db_script)],
-                                        cwd=db_script.parent)
+            result = subprocess.run([str(db_script)],
+                                    cwd=db_script.parent)
 
-            # Deploy WAR files
-            for f in get_war_files(settings):
-                shutil.copy(f, settings.cat_home / "webapps")
+			if result.returncode == 0:
+				# Deploy WAR files
+				for f in get_war_files(settings):
+					shutil.copy(f, settings.cat_home / "webapps")
+				else:
+					print("Something went wrong with creating the "
+						  "database. \n\tErrors: {}\n\tOutput: {}"
+						  .format(result.stdout, result.stderr))
 
 # enddef main()
 
