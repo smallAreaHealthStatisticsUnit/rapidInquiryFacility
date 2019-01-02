@@ -77,8 +77,9 @@ def main():
                     shutil.copy(f, settings.cat_home / "webapps")
                 else:
                     print("Something went wrong with creating the "
-                          "database. \n\tErrors: {}\n\tOutput: {}"
-                          .format(result.stdout, result.stderr))
+                          "database. \n\tErrors: {}"
+                          .format(result.stderr))
+                    print("Database not created")
 
 # enddef main()
 
