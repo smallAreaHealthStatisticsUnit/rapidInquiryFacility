@@ -71,14 +71,14 @@ def main():
             result = subprocess.run([str(db_script)],
                                     cwd=db_script.parent)
 
-			if result.returncode == 0:
-				# Deploy WAR files
-				for f in get_war_files(settings):
-					shutil.copy(f, settings.cat_home / "webapps")
-				else:
-					print("Something went wrong with creating the "
-						  "database. \n\tErrors: {}\n\tOutput: {}"
-						  .format(result.stdout, result.stderr))
+            if result.returncode == 0:
+                # Deploy WAR files
+                for f in get_war_files(settings):
+                    shutil.copy(f, settings.cat_home / "webapps")
+                else:
+                    print("Something went wrong with creating the "
+                          "database. \n\tErrors: {}\n\tOutput: {}"
+                          .format(result.stdout, result.stderr))
 
 # enddef main()
 
