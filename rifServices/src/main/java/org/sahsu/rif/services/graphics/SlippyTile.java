@@ -11,9 +11,9 @@ import org.json.JSONArray;
  */
 public class SlippyTile {
 
-	private static Integer zoomlevel;
-	private static Integer x;
-	private static Integer y;
+	private Integer zoomlevel;
+	private Integer x;
+	private Integer y;
 		
 	/**
 	 * Constructor from x/y and zoomlevel
@@ -57,24 +57,26 @@ public class SlippyTile {
 	private SlippyTile(
 			final double lat, 
 			final double lon, 
-			final int zoomlevel) {
-		int x = (int)Math.floor( (lon + 180) / 360 * (1<<zoomlevel) ) ;
-		int y = (int)Math.floor( (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 
-				2 * (1<<zoomlevel) ) ;
-		if (x < 0) {
-			x=0;
+			final int newZoomlevel) {
+		int newX = (int)Math.floor( (lon + 180) / 360 * (1<<newZoomlevel) ) ;
+		int newY = (int)Math.floor( (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 
+				2 * (1<<newZoomlevel) ) ;
+		if (newX < 0) {
+			newX=0;
 		}
-		if (x >= (1<<zoomlevel)) {
-			x=((1<<zoomlevel)-1);
+		if (newX >= (1<<newZoomlevel)) {
+			newX=((1<<newZoomlevel)-1);
 		}
-		if (y < 0) {
-			y=0;
+		if (newY < 0) {
+			newY=0;
 		}
-		if (y >= (1<<zoomlevel)) {
-			y=((1<<zoomlevel)-1);
+		if (newY >= (1<<newZoomlevel)) {
+			newY=((1<<newZoomlevel)-1);
 		}
 
-		this.zoomlevel = zoomlevel;
+		this.zoomlevel = newZoomlevel;
+		this.x = newX;
+		this.y = newY;
 	}
 
 	/** 
@@ -87,11 +89,18 @@ public class SlippyTile {
 	public SlippyTile getParentTile() throws RIFTilesException {
 		double lon=toLongitude(); // minX
 		double lat=toLatitude(); // minY
-
+		int newZoomlevel=zoomlevel-1;
+		
 		if (zoomlevel < 1) {
 			throw new RIFTilesException(new Exception("Invalid zoomlevel (1-18): " + zoomlevel), null);
 		}
-		return new SlippyTile(lat, lon, zoomlevel-1);
+		SlippyTile parentTile = new SlippyTile(lat, lon, newZoomlevel);
+		
+		if (parentTile.getX() == x && parentTile.getY() == y && parentTile.getZoomlevel() == zoomlevel) {
+			throw new RIFTilesException(new Exception("Parent == child: " + parentTile.toString()), null);
+		}
+		
+		return parentTile;
 	}
 
 	/** 
