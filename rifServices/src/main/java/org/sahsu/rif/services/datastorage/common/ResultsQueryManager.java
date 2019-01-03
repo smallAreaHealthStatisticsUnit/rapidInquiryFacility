@@ -893,25 +893,26 @@ public class ResultsQueryManager extends BaseSQLManager {
 			geoLevelSelect.getName().toUpperCase(), slippyTile);
 		result=hmap.get("topoJSON");
 		try {
+			SlippyTile parentTile=null;
 			if (result == null) { // Not found
-				SlippyTile parentTile=null;
 				if (zoomlevel > 0) {
 					parentTile = slippyTile.getParentTile(); // Will raise RIFTilesException is no parent
 				}
 				String tileDoesNotExistError="Tile does not exist for geography: " + geography.getName().toUpperCase() +
 				   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + 
-				   "; slippyTile: " + slippyTile.toString() +
-				   "; parentTile: " + (parentTile != null ? parentTile.toString() : "no parent");
+				   "; slippyTile: " + slippyTile.toString() + lineSeparator + 
+				   "parentTile: " + (parentTile != null ? parentTile.toString() : "no parent");
 				throw new RIFTilesException(new Exception(tileDoesNotExistError), slippyTile);
 			}
-			
-			if (tileType.equals("topojson")) {		
-
+			else {
 				rifLogger.info(getClass(), "get tile for geography: " + geography.getName().toUpperCase() +
 										   "; tileType: " + tileType +
 										   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + 
 										   "; slippyTile: " + slippyTile.toString() +
-										   "; length: " + result.length());			
+										   "; length: " + result.length());	
+			}
+			
+			if (tileType.equals("topojson")) {		
 				return result;
 			}
 			else if (tileType.equals("geojson") || tileType.equals("png")) {	
@@ -933,6 +934,11 @@ public class ResultsQueryManager extends BaseSQLManager {
 						if (tileType.equals("png")) {	
 							result = rifPdfTiles.geoJson2png(tileGeoJson, geography.getName().toUpperCase(), slippyTile, 
 								geoLevelSelect.getName().toUpperCase());
+							if (result == null) {
+								throw new RIFServiceException(
+									RIFServiceError.JSON_PARSE_ERROR,
+									"Unable to generate " + geoLevelSelect.getName().toUpperCase() + " PNG tile");
+							}
 						}
 						else {
 							result = tileGeoJson.toString();
@@ -962,7 +968,15 @@ public class ResultsQueryManager extends BaseSQLManager {
 							JSONObject nullTileGeoJson = new JSONObject(rifTiles.getNullGeoJSONTile());
 							result = rifPdfTiles.geoJson2png(nullTileGeoJson, "NULL" /* Geography */, nullSlippyTile, "NULL" /* Geolevel name */);
 							
-							rifLogger.info(getClass(), "Generated NULL PNG tile");
+							if (result == null) {
+								throw new RIFServiceException(
+									RIFServiceError.JSON_PARSE_ERROR,
+									"Unable to generate NULL PNG tile");
+							}
+							else {
+								rifLogger.info(getClass(), "Generated NULL PNG tile");
+							}
+								
 						}
 						return result; // In base64
 					}
