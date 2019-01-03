@@ -75,11 +75,10 @@ def main():
                 # Deploy WAR files
                 for f in get_war_files(settings):
                     shutil.copy(f, settings.cat_home / "webapps")
-                else:
-                    print("Something went wrong with creating the "
-                          "database. \n\tErrors: {}"
-                          .format(result.stderr))
-                    print("Database not created")
+            else:
+                print("Something went wrong with creating the "
+                      "database. \n\tErrors: {}".format(result.stderr))
+                print("Database not created")
 
 # enddef main()
 
