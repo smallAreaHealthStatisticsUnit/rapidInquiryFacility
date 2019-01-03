@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -65,6 +66,54 @@ public class RIFPdfTiles {
 			throw new NullPointerException();
 		}
 	}
+
+	/** 
+	 * Create NULL PNG tile
+	 *
+	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
+	 *
+	 * @return PNG coded in base64, or null if not relevant (non 0/0/0 null tile)
+	 *
+	 * @throws RIFServiceException RIF error
+     */		
+	private String createNullTile(
+		final SlippyTile slippyTile) throws RIFServiceException {
+		String result;
+		try {
+			int w = 256;
+			int h = 256;
+			BufferedImage bufferedImage = new BufferedImage(w, h, 
+				BufferedImage.TYPE_INT_ARGB); // Allow transparency [will work for PNG as well!]
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			Graphics2D g2d = bufferedImage.createGraphics();
+			
+			g2d.setColor(new Color(0, 0, 0, 0)); // Transparent
+			g2d.fillRect(0, 0, w, h);
+			ImageIO.write(bufferedImage, "png", os);
+
+			rifTilesCache.cacheTile(null /* tileGeoJson */, os, "NULL", slippyTile, "NULL", "png");
+			result=Base64.getEncoder().encodeToString(os.toByteArray());
+			
+			g2d.dispose();
+			
+			return result;		
+		}
+		catch (Exception exception) {
+			try { // Write failing JSON to cache
+				File file=rifTilesCache.getCachedTileFile("NULL", slippyTile, "NULL", "json");	
+				if (file.exists()) {
+					file.delete();
+				}
+			}
+			catch (Exception cacheException) {
+				rifLogger.error(getClass(), "Failed to cache failing GeoJSON for NULL tile" +
+					"; slippyTile: " + slippyTile.getPathFileName() + " [Ignored]", cacheException);
+			}
+			throw new RIFServiceException(
+				RIFServiceError.TILE_GENERATE_GEOTOOLS_ERROR,
+				"NULL tile generation error: " + exception.getMessage(), exception);
+		}
+	}
 	
 	/** 
 	 * Convert geoJSON to transparent PNG tile, cropped to BBOX
@@ -77,7 +126,7 @@ public class RIFPdfTiles {
 	 * @param slippyTile 		SlippyTile (zoomlevel, x, y)
 	 * @param geoLevel 			geolevel as uppercase String
 	 *
-	 * @return PNG coded in base64
+	 * @return PNG coded in base64, or null if not relevant (non 0/0/0 null tile)
 	 *
 	 * @throws RIFServiceException RIF error
 	 * @throws JSONException Error manipulating JSON
@@ -98,11 +147,18 @@ public class RIFPdfTiles {
 			// Convert GeoJSON toFeatureCollection 	
 			FeatureCollection features = featureJSON.readFeatureCollection(is);
 			if (features.size() == 0) {
-				String tileGeoJsonStr = tileGeoJson.toString();
-				if (tileGeoJsonStr.length() > 300 ) {
-					tileGeoJsonStr = tileGeoJsonStr.substring(0, 300);
+				if (!(geography.equals("NULL") || geoLevel.equals("NULL"))) {
+					String tileGeoJsonStr = tileGeoJson.toString();
+					if (tileGeoJsonStr.length() > 300 ) {
+						tileGeoJsonStr = tileGeoJsonStr.substring(0, 300);
+					}
+					throw new JSONException("No features for tileGeoJson: " + tileGeoJsonStr +
+						"; geography: " + geography +
+						"; geoLevel: " + geoLevel);
 				}
-				throw new JSONException("No features for tileGeoJson: " + tileGeoJsonStr);
+				else {
+					return createNullTile(slippyTile);
+				}
 			}
 			// Style 
 			MapContent mapContent = new MapContent();
