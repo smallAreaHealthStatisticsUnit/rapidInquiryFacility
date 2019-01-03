@@ -71,7 +71,7 @@ def main():
             result = subprocess.run([str(db_script)],
                                     cwd=db_script.parent)
 
-            if result.returncode == 0:
+            if result.returncode is None or result.returncode == 0:
                 # Deploy WAR files
                 for f in get_war_files(settings):
                     shutil.copy(f, settings.cat_home / "webapps")
