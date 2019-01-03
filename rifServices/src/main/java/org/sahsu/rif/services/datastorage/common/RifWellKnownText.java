@@ -10,6 +10,7 @@ import org.json.JSONException;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
 import org.geotools.geometry.jts.Geometries;
 import org.geotools.geometry.jts.GeometryBuilder;
@@ -42,6 +43,7 @@ public class RifWellKnownText {
 	private static WKTReader reader = null;
 	private static GeometryBuilder geometryBuilder = null;
 	private static GeometryJSON geoJSONWriter = null;
+	private static Semaphore mutex = new Semaphore(1);
 	
 	public RifWellKnownText() { // constructor
 		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
@@ -81,6 +83,8 @@ public class RifWellKnownText {
 			int ignored=0;
 			
 			try {
+				mutex.acquire(); // Mutex lock reader to prevent bizarre parsing errors:
+								 // wktParseException: Unknown geometry type: LT (line 1) for geoLevel: MSOA2011; zoomlevel: 5; areaId: E02000001; wkt: MULTIPOLYGON(((-0.0852151666503289 51.5203350553905,-0.0833260460146139 51.5198194013493,-0.081758698673994 51.5207629385311,-0.0810528733815286 51.5219478456898,-0.0784683072370616 51.5215089911866,-0.0787278018298796 51.5210372225956,-0.079433627122345 51.5188429500797,-0.0780842552396912 51.51896
 				geometry = reader.read(wkt); // Geotools JTS
 				Geometries geomType = Geometries.get(geometry);
 				switch (geomType) {
@@ -167,7 +171,8 @@ public class RifWellKnownText {
 					"wktParseException: " + wktParseException.getMessage() + 
 					" for geoLevel: " + geoLevel +
 					"; zoomlevel: " + zoomlevel +
-					"; areaId: " + areaId, wktParseException);
+					"; areaId: " + areaId +
+					"; wkt: " + ((wkt.length() > 300) ? wkt.substring(0, 300): wkt), wktParseException);
 			}
 			catch (Exception exception) {
 				rifLogger.warning(getClass(), "non wktParseException: " + wkt);
@@ -175,8 +180,12 @@ public class RifWellKnownText {
 					"wktParseException: " + exception.getMessage() + 
 					" for geoLevel: " + geoLevel +
 					"; zoomlevel: " + zoomlevel +
-					"; areaId: " + areaId, exception);
-			}			
+					"; areaId: " + areaId +
+					"; wkt: " + ((wkt.length() > 300) ? wkt.substring(0, 300): wkt), exception);
+			}	
+			finally {
+				mutex.release();
+			}
 		}			
 		else {
 			throw new RIFServiceException(RIFServiceError.TILE_GENERATE_GEOTOOLS_ERROR, 
