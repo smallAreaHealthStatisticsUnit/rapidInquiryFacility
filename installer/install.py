@@ -6,6 +6,7 @@ Prerequisites: Tomcat; either PostgreSQL or Microsoft SQL Server; R
 
 """
 
+
 __author__ = "Martin McCallion"
 __email__ = "m.mccallion@imperial.ac.uk"
 
@@ -19,11 +20,17 @@ from configparser import ConfigParser, ExtendedInterpolation
 from distutils.util import strtobool
 from pathlib import Path
 
-all_settings = {"development_mode": "Development mode?",
-                "db_type": "Database type",
-                "script_home": "Directory for SQL scripts",
-                "tomcat_home": "Home directory for Tomcat",
-                "war_files_location": "Directory containing the WAR files",
+WAR_FILES_LOCATION = "war_files_location"
+TOMCAT_HOME = "tomcat_home"
+SCRIPT_HOME = "script_home"
+DB_TYPE = "db_type"
+DEVELOPMENT_MODE = "development_mode"
+
+all_settings = {DEVELOPMENT_MODE: "Development mode?",
+                DB_TYPE: "Database type",
+                SCRIPT_HOME: "Directory for SQL scripts",
+                TOMCAT_HOME: "Home directory for Tomcat",
+                WAR_FILES_LOCATION: "Directory containing the WAR files",
                 }
 
 # We have the default settings file in the current directory and the user's
@@ -104,23 +111,23 @@ def get_settings():
     user_parser.read(user_props)
 
     # Check if we're in development mode
-    reply = get_value_from_user("development_mode")
+    reply = get_value_from_user(DEVELOPMENT_MODE)
     dev_mode = strtobool(reply)
 
     # Database type and script root
-    db_type = get_value_from_user("db_type")
-    db_script_root = Path(get_value_from_user("script_home",
+    db_type = get_value_from_user(DB_TYPE)
+    db_script_root = Path(get_value_from_user(SCRIPT_HOME,
                                               is_path=True)).resolve()
 
     # Tomcat home: if it's not set we use the environment variable
-    tomcat_home = get_value_from_user("tomcat_home", is_path=True)
+    tomcat_home = get_value_from_user(TOMCAT_HOME, is_path=True)
 
     # In development we assume that this script is being run from installer/
     # under the project root. The root directory is thus one level up.
     if dev_mode:
         war_dir = Path.cwd().resolve().parent
     else:
-        war_dir = get_value_from_user("war_files_location", is_path=True)
+        war_dir = get_value_from_user(WAR_FILES_LOCATION, is_path=True)
 
     # Update the user's config file
     # user_config["key"] = "reply"
@@ -130,8 +137,8 @@ def get_settings():
 
     # Using a named tuple for the return value for simplicity of creation and
     # clarity of naming.
-    Settings = namedtuple("Settings", ["db_type", "script_root", "cat_home",
-                               "war_dir", "dev_mode"])
+    Settings = namedtuple("Settings", "db_type, script_root, cat_home, "
+                                      "war_dir, dev_mode")
     return Settings(db_type, db_script_root, tomcat_home, war_dir, dev_mode)
 
 
@@ -152,7 +159,7 @@ def get_value_from_user(key, is_path=False):
         reply = current_value
 
     # Special handling for Tomcat's home directory
-    if key == "tomcat_home":
+    if key == TOMCAT_HOME:
         # The second test below is to catch no value being given by the user
         while reply is None or reply.strip() == "":
             tomcat_home_str = os.getenv("CATALINA_HOME")
@@ -160,7 +167,7 @@ def get_value_from_user(key, is_path=False):
             # Make sure we have a value.
             if tomcat_home_str is None or tomcat_home_str.strip() == "":
                 print("CATALINA_HOME is not set in the environment and no value "
-                      "given for {}.".format(all_settings.get("tomcat_home")))
+                      "given for {}.".format(all_settings.get(TOMCAT_HOME)))
             else:
                 reply = tomcat_home_str
 
@@ -170,7 +177,7 @@ def get_value_from_user(key, is_path=False):
         returned_reply = reply.strip()
 
     # Update the user's config value
-    if key == "development_mode":
+    if key == DEVELOPMENT_MODE:
         # Just to make sure we get "True" or "False" in the file
         user_parser["DEFAULT"][key] = str(bool(reply))
     else:
@@ -202,76 +209,76 @@ def long_db_name(db):
     return "Microsoft SQL Server" if db.strip() == "ms" else "PostgreSQL"
 
 
-def check_arguments():
-    """Checks the command-line arguments, displaying the usage message if
-    there is a problem, or if requested.
-    """
-
-    parser = argparse.ArgumentParser(description="Install the RIF")
-    db_group = parser.add_mutually_exclusive_group()
-    db_group.add_argument("--ms", help="Database is Microsoft SQL Server",
-                          action="store_true")
-    db_group.add_argument("--pg", help="Database is PostgreSQL",
-                          action="store_true")
-    parser.add_argument("--home",
-                        help="The home directory for Tomcat. If not "
-                             "specified, the environment variable "
-                             "CATALINA_HOME will be used.")
-    parser.add_argument("--script-root",
-                        help="The directory containing the  scripts to build "
-                             "the database. If not specified the current "
-                             "directory will be used.",
-                        dest="scripts")
-    parser.add_argument("--warfiles-dir",
-                        help="Location of the WAR files for the application. If"
-                             " not specified the current directory will be "
-                             "used.",
-                        dest="wars")
-
-    args = parser.parse_args()
-
-    # Database
-    # ========
-    if not args.ms and not args.pg:
-        print("One of --ms or --pg must be specified to set the database type")
-        sys.exit(1)
-
-    db_type = "ms" if args.ms else "pg"
-
-    # Tomcat home
-    # ===========
-    # Use the home value if specified; if not we try CATALINA_HOME, and if
-    # that's not set then we exit with an error.
-    if args.home:
-        cat_home = args.home
-    else:
-        cat_home = os.getenv("CATALINA_HOME")
-
-    if cat_home is None or cat_home == '':
-        print("CATALINA_HOME is not set in the environment and no value "
-              "given for --home.")
-        sys.exit(1)
-
-    # Scripts
-    # =======
-    # Use the SQL script directory if given; otherwise assume it's the current
-    # directory
-    script_root = args.scripts
-    if not script_root:
-        script_root = "."
-
-    # Warfiles
-    # ========
-    war_dir = args.wars
-    if not war_dir:
-        war_dir = "."
-
-    # Using a named tuple for the return value for simplicity of creation and
-    # clarity of naming.
-    Args = namedtuple("Args", ["db_type", "script_root", "cat_home",
-                               "war_dir"])
-    return Args(db_type, str.strip(script_root), str.strip(cat_home),
-                str.strip(war_dir))
+# def check_arguments():
+#     """Checks the command-line arguments, displaying the usage message if
+#     there is a problem, or if requested.
+#     """
+#
+#     parser = argparse.ArgumentParser(description="Install the RIF")
+#     db_group = parser.add_mutually_exclusive_group()
+#     db_group.add_argument("--ms", help="Database is Microsoft SQL Server",
+#                           action="store_true")
+#     db_group.add_argument("--pg", help="Database is PostgreSQL",
+#                           action="store_true")
+#     parser.add_argument("--home",
+#                         help="The home directory for Tomcat. If not "
+#                              "specified, the environment variable "
+#                              "CATALINA_HOME will be used.")
+#     parser.add_argument("--script-root",
+#                         help="The directory containing the  scripts to build "
+#                              "the database. If not specified the current "
+#                              "directory will be used.",
+#                         dest="scripts")
+#     parser.add_argument("--warfiles-dir",
+#                         help="Location of the WAR files for the application. If"
+#                              " not specified the current directory will be "
+#                              "used.",
+#                         dest="wars")
+#
+#     args = parser.parse_args()
+#
+#     # Database
+#     # ========
+#     if not args.ms and not args.pg:
+#         print("One of --ms or --pg must be specified to set the database type")
+#         sys.exit(1)
+#
+#     db_type = "ms" if args.ms else "pg"
+#
+#     # Tomcat home
+#     # ===========
+#     # Use the home value if specified; if not we try CATALINA_HOME, and if
+#     # that's not set then we exit with an error.
+#     if args.home:
+#         cat_home = args.home
+#     else:
+#         cat_home = os.getenv("CATALINA_HOME")
+#
+#     if cat_home is None or cat_home == '':
+#         print("CATALINA_HOME is not set in the environment and no value "
+#               "given for --home.")
+#         sys.exit(1)
+#
+#     # Scripts
+#     # =======
+#     # Use the SQL script directory if given; otherwise assume it's the current
+#     # directory
+#     script_root = args.scripts
+#     if not script_root:
+#         script_root = "."
+#
+#     # Warfiles
+#     # ========
+#     war_dir = args.wars
+#     if not war_dir:
+#         war_dir = "."
+#
+#     # Using a named tuple for the return value for simplicity of creation and
+#     # clarity of naming.
+#     Args = namedtuple("Args", [DB_TYPE, "script_root", "cat_home",
+#                                "war_dir"])
+#     return Args(db_type, str.strip(script_root), str.strip(cat_home),
+#                 str.strip(war_dir))
 
 
 # I got this from https://stackoverflow.com/a/24583265/1517620
