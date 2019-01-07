@@ -36,8 +36,8 @@ all_settings = {DEVELOPMENT_MODE: "Development mode?",
                 }
 
 # We have the default settings file in the current directory and the user's
-# version in their home. We only user the [DEFAULT] section in each (for
-# now).
+# version in their home. We use the [MAIN] section in each for most of the
+# settings, and the database-specific ones and the [NOPROMPT ones
 default_parser = ConfigParser(allow_no_value=True,
                               interpolation=ExtendedInterpolation())
 user_parser = ConfigParser(allow_no_value=True,
@@ -52,14 +52,6 @@ def main():
     # This sends output to the specified file as well as stdout.
     with Logger("install.log"):
         settings = get_settings()
-
-
-
-
-        create_properties_file(settings)
-
-
-
 
         # prompt for go/no-go
         print("About to install with the following settings:"
@@ -200,9 +192,9 @@ def get_value_from_user(key, is_path=False):
     # Update the user's config value
     if key == DEVELOPMENT_MODE:
         # Just to make sure we get "True" or "False" in the file
-        user_parser["DEFAULT"][key] = str(bool(reply))
+        user_parser["MAIN"][key] = str(bool(reply))
     else:
-        user_parser["DEFAULT"][key] = str(returned_reply)
+        user_parser["MAIN"][key] = str(returned_reply)
     return returned_reply
 
 
@@ -227,7 +219,7 @@ def get_war_files(settings):
 
 def create_properties_file(settings):
     """Creates the RIF startup properties file."""
-    
+
     props_file = Path(settings.cat_home / "config" /
                       "RIFServiceStartupProperties.properties")
     short_db = short_db_name(settings.db_type)
@@ -247,7 +239,6 @@ def create_properties_file(settings):
 
             output_properties_file.writelines(
                 "database.{} = {}\n".format(key, value))
-
 
         output_properties_file.writelines(
             "extractDirectory = {}\n".format(str(settings.extract_dir)))
