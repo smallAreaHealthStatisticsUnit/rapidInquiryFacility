@@ -25,12 +25,14 @@ TOMCAT_HOME = "tomcat_home"
 SCRIPT_HOME = "script_home"
 DB_TYPE = "db_type"
 DEVELOPMENT_MODE = "development_mode"
+EXTRACT_DIRECTORY = "extract_directory"
 
 all_settings = {DEVELOPMENT_MODE: "Development mode?",
                 DB_TYPE: "Database type",
                 SCRIPT_HOME: "Directory for SQL scripts",
                 TOMCAT_HOME: "Home directory for Tomcat",
                 WAR_FILES_LOCATION: "Directory containing the WAR files",
+                EXTRACT_DIRECTORY: "Directory for files extracted by studies",
                 }
 
 # We have the default settings file in the current directory and the user's
@@ -40,14 +42,24 @@ default_parser = ConfigParser(allow_no_value=True,
                               interpolation=ExtendedInterpolation())
 user_parser = ConfigParser(allow_no_value=True,
                            interpolation=ExtendedInterpolation())
-default_config = default_parser["DEFAULT"]
-user_config = user_parser["DEFAULT"]
+default_parser.add_section("MAIN")
+default_config = default_parser["MAIN"]
+user_parser.add_section("MAIN")
+user_config = user_parser["MAIN"]
 
 def main():
 
     # This sends output to the specified file as well as stdout.
     with Logger("install.log"):
         settings = get_settings()
+
+
+
+
+        create_properties_file(settings)
+
+
+
 
         # prompt for go/no-go
         print("About to install with the following settings:"
@@ -56,21 +68,25 @@ def main():
               "\n\tScripts directory: {} "
               "\n\tTomcat home directory: {}"
               "\n\tWAR files directory: {}"
+              "\n\tExtract directory: {}"
                 .format(bool(settings.dev_mode),
-                      long_db_name(settings.db_type),
-                      settings.script_root,
-                      settings.cat_home,
-                      settings.war_dir))
+                        long_db_name(settings.db_type),
+                        settings.script_root,
+                        settings.cat_home,
+                        settings.war_dir,
+                        settings.extract_dir))
         if input("Continue? [No]: "):
 
             # Run SQL scripts
             if settings.db_type == "pg":
-                db_script = (settings.script_root / "Postgres" / "production" / "db_create.sql")
+                db_script = (settings.script_root / "Postgres" / "production"
+                             / "db_create.sql")
             else:
                 # Assumes both that it's SQL Server, and that we're
                 # running on Windows. Linux versions of SQLServer
                 # exist, but we'll deal with them later if necessary.
-                db_script = (settings.script_root / "SQLserver" / "installation" / "rebuild_all.bat")
+                db_script = (settings.script_root / "SQLserver" /
+                             "installation" / "rebuild_all.bat")
 
                 print("About to run {}; switching to {}".format(
                     db_script, db_script.parent))
@@ -78,16 +94,17 @@ def main():
             result = subprocess.run([str(db_script)],
                                     cwd=db_script.parent)
 
-            if result.returncode is None or result.returncode == 0:
-                # Deploy WAR files
-                for f in get_war_files(settings):
-                    shutil.copy(f, settings.cat_home / "webapps")
-            else:
+            if result.returncode is not None and result.returncode != 0:
                 print("Something went wrong with creating the "
                       "database. \n\tErrors: {}".format(result.stderr))
                 print("Database not created")
+            else:
+                # Deploy WAR files
+                for f in get_war_files(settings):
+                    shutil.copy(f, settings.cat_home / "webapps")
 
-# enddef main()
+                # Generate RIF startup properties file
+                create_properties_file(settings)
 
 
 def get_settings():
@@ -129,6 +146,8 @@ def get_settings():
     else:
         war_dir = get_value_from_user(WAR_FILES_LOCATION, is_path=True)
 
+    extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
+
     # Update the user's config file
     # user_config["key"] = "reply"
     # user_parser
@@ -138,8 +157,9 @@ def get_settings():
     # Using a named tuple for the return value for simplicity of creation and
     # clarity of naming.
     Settings = namedtuple("Settings", "db_type, script_root, cat_home, "
-                                      "war_dir, dev_mode")
-    return Settings(db_type, db_script_root, tomcat_home, war_dir, dev_mode)
+                                      "war_dir, dev_mode, extract_dir")
+    return Settings(db_type, db_script_root, tomcat_home, war_dir, dev_mode,
+                    extract_dir)
 
 
 def get_value_from_user(key, is_path=False):
@@ -150,7 +170,7 @@ def get_value_from_user(key, is_path=False):
     """
 
     current_value = ""
-    if key in user_config:
+    if user_config is not None and key in user_config:
         current_value = user_config[key]
     elif key in default_config:
         current_value = default_config[key]
@@ -166,8 +186,9 @@ def get_value_from_user(key, is_path=False):
 
             # Make sure we have a value.
             if tomcat_home_str is None or tomcat_home_str.strip() == "":
-                print("CATALINA_HOME is not set in the environment and no value "
-                      "given for {}.".format(all_settings.get(TOMCAT_HOME)))
+                print("CATALINA_HOME is not set in the environment and no "
+                      "value given for {}."
+                      .format(all_settings.get(TOMCAT_HOME)))
             else:
                 reply = tomcat_home_str
 
@@ -204,9 +225,47 @@ def get_war_files(settings):
     return war_files
 
 
+def create_properties_file(settings):
+    """Creates the RIF startup properties file."""
+    
+    props_file = Path(settings.cat_home / "config" /
+                      "RIFServiceStartupProperties.properties")
+    short_db = short_db_name(settings.db_type)
+    db_config = default_parser[short_db]
+
+    if short_db not in user_parser:
+        user_parser.add_section(short_db)
+    db_config_user = user_parser[short_db]
+
+    with props_file.open("w") as output_properties_file:
+        for key in db_config:
+            # Users can override by editing their user config file
+            if key in db_config_user:
+                value = db_config_user[key]
+            else:
+                value = db_config[key]
+
+            output_properties_file.writelines(
+                "database.{} = {}\n".format(key, value))
+
+
+        output_properties_file.writelines(
+            "extractDirectory = {}\n".format(str(settings.extract_dir)))
+
+        if "NOPROMPT" in default_parser:
+            unprompted_config = default_parser["NOPROMPT"]
+            for key in unprompted_config:
+                output_properties_file.writelines(
+                    "{} = {}\n".format(key, unprompted_config[key]))
+
+
 def long_db_name(db):
 
     return "Microsoft SQL Server" if db.strip() == "ms" else "PostgreSQL"
+
+def short_db_name(db):
+
+    return "MSSQL" if db.strip() == "ms" else "POSTGRES"
 
 
 # def check_arguments():
