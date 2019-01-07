@@ -220,7 +220,7 @@ def get_war_files(settings):
 def create_properties_file(settings):
     """Creates the RIF startup properties file."""
 
-    props_file = Path(settings.cat_home / "config" /
+    props_file = Path(settings.cat_home / "conf" /
                       "RIFServiceStartupProperties.properties")
     short_db = short_db_name(settings.db_type)
     db_config = default_parser[short_db]
