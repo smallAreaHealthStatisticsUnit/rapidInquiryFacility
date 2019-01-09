@@ -1,12 +1,11 @@
 package org.sahsu.taxonomyservices;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
+import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 
@@ -41,16 +40,14 @@ public class FederatedTaxonomyService {
 		return federatedTaxonomyService;
 	}
 	
-	public void initialise(final Path defaultResourceDirectoryPath)
-			throws RIFServiceException {
+	public void initialise() throws RIFServiceException {
 
 		// Prevent multiple threads from trying to initialise the service
 		if (!isInitialised && initialisationHasBegun.compareAndSet(false, true)) {
 
 			TaxonomyServiceConfigurationXMLReader reader =
 					new TaxonomyServiceConfigurationXMLReader();
-			List<TaxonomyServiceConfiguration> servicesList =
-					reader.readFile(defaultResourceDirectoryPath);
+			List<TaxonomyServiceConfiguration> servicesList = reader.readFile();
 			services = new TaxonomyServices(servicesList);
 			List<String> errorMessages = services.start();
 
@@ -64,15 +61,15 @@ public class FederatedTaxonomyService {
 		}
 	}
 	
-	public boolean isInitialised() {
+	boolean isInitialised() {
 		return isInitialised;
 	}
 	
 	private void checkFederatedServiceWorkingProperly() throws RIFServiceException {
 		
 		if (!isInitialised()) {
-			//The federated taxonomy service itself has not finished initialising
 
+			//The federated taxonomy service itself has not finished initialising
 			String errorMessage = GENERIC_MESSAGES.getMessage(
 					"federatedTaxonomyService.error.notInitialised");
 			throw new RIFServiceException(

@@ -209,7 +209,7 @@ public class RIFTaxonomyWebServiceResource {
 			//none of the taxonomy services will be ready because the
 			//federated service has not been initialised yet.
 			java.nio.file.Path fullPath = AppFile.getTaxonomyInstance(".").path();
-			federatedTaxonomyService.initialise(fullPath);								
+			federatedTaxonomyService.initialise();
 		}
 	}
 
