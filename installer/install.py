@@ -98,6 +98,12 @@ def main():
                 # Generate RIF startup properties file
                 create_properties_file(settings)
 
+                msg = "Installation complete."
+                if settings.db_type == "ms":
+                    msg += (" Remember to create an ODBC datasource as per "
+                            "the installation instructions, before running "
+                            "the RIF.")
+                print(msg)
 
 def get_settings():
     """Prompt the user for the installation settings.
