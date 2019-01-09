@@ -40,8 +40,10 @@ all_settings = {DEVELOPMENT_MODE: "Development mode?",
 # settings, and the database-specific ones and the [NOPROMPT ones
 default_parser = ConfigParser(allow_no_value=True,
                               interpolation=ExtendedInterpolation())
+default_parser.optionxform = str # Preserve case in keys
 user_parser = ConfigParser(allow_no_value=True,
                            interpolation=ExtendedInterpolation())
+user_parser.optionxform = str # Preserve case in keys
 default_parser.add_section("MAIN")
 default_config = default_parser["MAIN"]
 user_parser.add_section("MAIN")
