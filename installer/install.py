@@ -91,7 +91,7 @@ def main():
             # Run SQL scripts
             if settings.db_type == "pg":
                 db_script = (settings.script_root / "Postgres" / "production"
-                             / "db_create.sql")
+                             / "db_create.sh")
             else:
                 # Assumes both that it's SQL Server, and that we're
                 # running on Windows. Linux versions of SQLServer
