@@ -48,11 +48,18 @@ default_parser.add_section("MAIN")
 default_config = default_parser["MAIN"]
 user_parser.add_section("MAIN")
 user_config = user_parser["MAIN"]
+running_bundled = False
 
 def main():
 
     # This sends output to the specified file as well as stdout.
     with Logger("install.log"):
+
+        # Check for where we're running
+        global running_bundled
+        if getattr( sys, 'frozen', False ) :
+            running_bundled = True
+
         settings = get_settings()
 
         # prompt for go/no-go
@@ -127,14 +134,22 @@ def get_settings():
     default_parser.read(default_props)
     user_parser.read(user_props)
 
-    # Check if we're in development mode
-    reply = get_value_from_user(DEVELOPMENT_MODE)
-    dev_mode = strtobool(reply)
+    # Check if we're in development mode (but only if we're running
+    # from scripts)
+    global running_bundled
+    if running_bundled:
+        dev_mode = False
+    else:
+        reply = get_value_from_user(DEVELOPMENT_MODE)
+        dev_mode = strtobool(reply)
 
     # Database type and script root
     db_type = get_value_from_user(DB_TYPE)
-    db_script_root = Path(get_value_from_user(SCRIPT_HOME,
-                                              is_path=True)).resolve()
+    if running_bundled:
+        db_script_root = Path.cwd().resolve()
+    else:
+        db_script_root = Path(get_value_from_user(SCRIPT_HOME,
+                                                  is_path=True)).resolve()
 
     # Tomcat home: if it's not set we use the environment variable
     tomcat_home = get_value_from_user(TOMCAT_HOME, is_path=True)
@@ -144,7 +159,7 @@ def get_settings():
     if dev_mode:
         war_dir = Path.cwd().resolve().parent
     else:
-        war_dir = get_value_from_user(WAR_FILES_LOCATION, is_path=True)
+        war_dir = Path.cwd() / "warfiles"
 
     extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
@@ -230,6 +245,8 @@ def create_properties_file(settings):
 
     props_file = Path(settings.cat_home / "conf" /
                       "RIFServiceStartupProperties.properties")
+
+    # Get the settings from the appropriate sections of the ini file.
     short_db = short_db_name(settings.db_type)
     db_config = default_parser[short_db]
 

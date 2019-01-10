@@ -37,3 +37,8 @@ exe = EXE(pyz,
           upx=True,
           runtime_tmpdir=None,
           console=True )
+
+app = BUNDLE(exe,
+             name='rifInstaller.app',
+             icon=None,
+             bundle_identifier=None)
