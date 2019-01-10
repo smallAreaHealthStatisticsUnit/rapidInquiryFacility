@@ -49,16 +49,26 @@ default_config = default_parser["MAIN"]
 user_parser.add_section("MAIN")
 user_config = user_parser["MAIN"]
 running_bundled = False
+base_path = ""
 
 def main():
+
+    global running_bundled
+    global base_path
 
     # This sends output to the specified file as well as stdout.
     with Logger("install.log"):
 
         # Check for where we're running
-        global running_bundled
         if getattr( sys, 'frozen', False ) :
             running_bundled = True
+            try:
+                # PyInstaller bundles create a temp folder when run,
+                # and store its path in _MEIPASS. This feels like a hack,
+                # but it is the documented way to get at the bundled files.
+                base_path = sys._MEIPASS
+            except Exception:
+                base_path = os.path.abspath(".")
 
         settings = get_settings()
 
@@ -122,6 +132,7 @@ def get_settings():
     user has confirmed. If the file does not exist, we load the defaults from
     install.ini in the current directory.
     """
+    global running_bundled
 
     # Create the RIF home directory and properties file if they don't exist
     home_dir = Path.home()
@@ -129,14 +140,16 @@ def get_settings():
     rif_home.mkdir(parents=True, exist_ok=True)
     user_props = rif_home / "rifInstall.ini"
     user_props.touch(exist_ok=True)
-    default_props = Path.cwd() / "install.ini"
+    if running_bundled:
+        default_props = Path(base_path) / "install.ini"
+    else:
+        default_props = Path.cwd() / "install.ini"
 
     default_parser.read(default_props)
     user_parser.read(user_props)
 
     # Check if we're in development mode (but only if we're running
     # from scripts)
-    global running_bundled
     if running_bundled:
         dev_mode = False
     else:
@@ -146,7 +159,7 @@ def get_settings():
     # Database type and script root
     db_type = get_value_from_user(DB_TYPE)
     if running_bundled:
-        db_script_root = Path(".")
+        db_script_root = Path(base_path)
     else:
         db_script_root = Path(get_value_from_user(SCRIPT_HOME,
                                                   is_path=True)).resolve()
@@ -159,7 +172,7 @@ def get_settings():
     if dev_mode:
         war_dir = Path.cwd().resolve().parent
     else:
-        war_dir = Path("warfiles")
+        war_dir = Path(base_path) / "warfiles"
 
     extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
