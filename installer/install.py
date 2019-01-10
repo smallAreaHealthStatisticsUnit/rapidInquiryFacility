@@ -146,7 +146,7 @@ def get_settings():
     # Database type and script root
     db_type = get_value_from_user(DB_TYPE)
     if running_bundled:
-        db_script_root = Path.cwd().resolve()
+        db_script_root = Path(".")
     else:
         db_script_root = Path(get_value_from_user(SCRIPT_HOME,
                                                   is_path=True)).resolve()
@@ -159,7 +159,7 @@ def get_settings():
     if dev_mode:
         war_dir = Path.cwd().resolve().parent
     else:
-        war_dir = Path.cwd() / "warfiles"
+        war_dir = Path("warfiles")
 
     extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
