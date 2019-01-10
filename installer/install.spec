@@ -5,6 +5,7 @@ block_cipher = None
 added_files = [ ("../rifDatabase/SQLserver", "SQLserver"),
                 ("../rifDatabase/Postgres", "Postgres"),
                 ("../rifDatabase/GeospatialData", "GeospatialData"),
+                ("../rifDatabase/DataLoaderData", "DataLoaderData"),
                 ("../rifServices/target/rifServices.war", "warfiles"),
                 ("../taxonomyServices/target/taxonomies.war", "warfiles"),
                 ("../statsService/target/statistics.war", "warfiles"),
