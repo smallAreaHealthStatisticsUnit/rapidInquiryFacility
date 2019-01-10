@@ -2,4 +2,3 @@ __pycache__
 build
 cattest
 dist
-install.spec
