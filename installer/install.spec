@@ -2,7 +2,8 @@
 
 block_cipher = None
 
-added_files = [ ("../rifDatabase/SQLserver", "SQLserver"),
+added_files = [ ("install.ini", "."),
+                ("../rifDatabase/SQLserver", "SQLserver"),
                 ("../rifDatabase/Postgres", "Postgres"),
                 ("../rifDatabase/GeospatialData", "GeospatialData"),
                 ("../rifDatabase/DataLoaderData", "DataLoaderData"),

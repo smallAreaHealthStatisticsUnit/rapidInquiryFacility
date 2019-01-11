@@ -10,7 +10,6 @@ Prerequisites: Tomcat; either PostgreSQL or Microsoft SQL Server; R
 __author__ = "Martin McCallion"
 __email__ = "m.mccallion@imperial.ac.uk"
 
-import argparse
 import os
 import shutil
 import subprocess
@@ -44,34 +43,19 @@ default_parser.optionxform = str # Preserve case in keys
 user_parser = ConfigParser(allow_no_value=True,
                            interpolation=ExtendedInterpolation())
 user_parser.optionxform = str # Preserve case in keys
-default_parser.add_section("MAIN")
-default_parser.add_section("POSTGRES")
-default_parser.add_section("MSSQL")
-default_config = default_parser["MAIN"]
+default_config = ConfigParser()
+user_config = ConfigParser()
 
-user_parser.add_section("MAIN")
-user_config = user_parser["MAIN"]
 running_bundled = False
-base_path = ""
+user_props = Path()
+
 
 def main():
 
-    global running_bundled
-    global base_path
+    initialise_config()
 
     # This sends output to the specified file as well as stdout.
     with Logger("install.log"):
-
-        # Check for where we're running
-        if getattr( sys, 'frozen', False ) :
-            running_bundled = True
-            try:
-                # PyInstaller bundles create a temp folder when run,
-                # and store its path in _MEIPASS. This feels like a hack,
-                # but it is the documented way to get at the bundled files.
-                base_path = sys._MEIPASS
-            except Exception:
-                base_path = os.path.abspath(".")
 
         settings = get_settings()
 
@@ -127,6 +111,47 @@ def main():
                             "the RIF.")
                 print(msg)
 
+
+def initialise_config():
+    """Sets up the initial details, home directories, files, etc. """
+
+    global running_bundled
+    global base_path
+    global user_props
+    global default_config
+    global user_config
+
+    # Check for where we're running: if "frozen" is true, we're in a
+    # PyInstaller bundle; otherwise just a script.
+    running_bundled = getattr(sys, "frozen", False)
+    if running_bundled:
+        try:
+            # PyInstaller bundles create a temp folder when run,
+            # and store its path in _MEIPASS. This feels like a hack,
+            # but it is the documented way to get at the bundled files.
+            base_path = Path(sys._MEIPASS)
+        except Exception:
+            base_path = Path.cwd()
+    else:
+        base_path = Path.cwd()
+
+    # Create the RIF home directory and properties file if they don't exist,
+    #  and load them if they do.
+
+    print("Base path is {}".format(base_path))
+
+    home_dir = Path.home()
+    rif_home = home_dir / ".rif"
+    rif_home.mkdir(parents=True, exist_ok=True)
+    user_props = rif_home / "rifInstall.ini"
+    user_props.touch(exist_ok=True)
+    default_props = base_path / "install.ini"
+    default_parser.read(default_props)
+    user_parser.read(user_props)
+    default_config = default_parser["MAIN"]
+    user_config = user_parser["MAIN"]
+
+
 def get_settings():
     """Prompt the user for the installation settings.
 
@@ -135,21 +160,6 @@ def get_settings():
     user has confirmed. If the file does not exist, we load the defaults from
     install.ini in the current directory.
     """
-    global running_bundled
-
-    # Create the RIF home directory and properties file if they don't exist
-    home_dir = Path.home()
-    rif_home = home_dir / ".rif"
-    rif_home.mkdir(parents=True, exist_ok=True)
-    user_props = rif_home / "rifInstall.ini"
-    user_props.touch(exist_ok=True)
-    if running_bundled:
-        default_props = Path(base_path) / "install.ini"
-    else:
-        default_props = Path.cwd() / "install.ini"
-
-    default_parser.read(default_props)
-    user_parser.read(user_props)
 
     # Check if we're in development mode (but only if we're running
     # from scripts)
