@@ -45,7 +45,10 @@ user_parser = ConfigParser(allow_no_value=True,
                            interpolation=ExtendedInterpolation())
 user_parser.optionxform = str # Preserve case in keys
 default_parser.add_section("MAIN")
+default_parser.add_section("POSTGRES")
+default_parser.add_section("MSSQL")
 default_config = default_parser["MAIN"]
+
 user_parser.add_section("MAIN")
 user_config = user_parser["MAIN"]
 running_bundled = False
