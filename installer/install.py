@@ -83,12 +83,16 @@ def main():
                 # Assumes both that it's SQL Server, and that we're
                 # running on Windows. Linux versions of SQLServer
                 # exist, but we'll deal with them later if necessary.
+
+                # Some files need to have special permissions granted,
+                # or the database loading steps fail
+                set_special_db_permissions()
+
                 db_script = (settings.script_root / "SQLserver" /
                              "installation" / "rebuild_all.bat")
 
-                print("About to run {}; switching to {}".format(
-                    db_script, db_script.parent))
-
+            print("About to run {}; switching to {}".format(
+                db_script, db_script.parent))
             result = subprocess.run([str(db_script)],
                                     cwd=db_script.parent)
 
@@ -152,6 +156,21 @@ def initialise_config():
     user_config = user_parser["MAIN"]
 
 
+def set_special_db_permissions():
+    # import win32security
+    # import ntsecuritycon as con
+
+    geo_path = base_path / "GeospatialData" / "tileMaker"
+    backup_path = base_path / "SQLserver" / "production"
+    files_to_permit = [geo_path / "mssql_lookup_sahsu_grd_level1.csv",
+                       geo_path / "mssql_lookup_sahsu_grd_level2.csv",
+                       geo_path / "mssql_lookup_sahsu_grd_level3.csv",
+                       geo_path / "mssql_lookup_sahsu_grd_level4.csv",
+                       backup_path]
+    for f in files_to_permit:
+        os.chmod(f, 0o666) # Read/write for everyone. Doesn't do the job for
+        #  Windows, though.
+
 def get_settings():
     """Prompt the user for the installation settings.
 
@@ -172,7 +191,7 @@ def get_settings():
     # Database type and script root
     db_type = get_value_from_user(DB_TYPE)
     if running_bundled:
-        db_script_root = Path(base_path)
+        db_script_root = base_path
     else:
         db_script_root = Path(get_value_from_user(SCRIPT_HOME,
                                                   is_path=True)).resolve()
@@ -185,7 +204,7 @@ def get_settings():
     if dev_mode:
         war_dir = Path.cwd().resolve().parent
     else:
-        war_dir = Path(base_path) / "warfiles"
+        war_dir = base_path / "warfiles"
 
     extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
@@ -308,78 +327,6 @@ def long_db_name(db):
 def short_db_name(db):
 
     return "MSSQL" if db.strip() == "ms" else "POSTGRES"
-
-
-# def check_arguments():
-#     """Checks the command-line arguments, displaying the usage message if
-#     there is a problem, or if requested.
-#     """
-#
-#     parser = argparse.ArgumentParser(description="Install the RIF")
-#     db_group = parser.add_mutually_exclusive_group()
-#     db_group.add_argument("--ms", help="Database is Microsoft SQL Server",
-#                           action="store_true")
-#     db_group.add_argument("--pg", help="Database is PostgreSQL",
-#                           action="store_true")
-#     parser.add_argument("--home",
-#                         help="The home directory for Tomcat. If not "
-#                              "specified, the environment variable "
-#                              "CATALINA_HOME will be used.")
-#     parser.add_argument("--script-root",
-#                         help="The directory containing the  scripts to build "
-#                              "the database. If not specified the current "
-#                              "directory will be used.",
-#                         dest="scripts")
-#     parser.add_argument("--warfiles-dir",
-#                         help="Location of the WAR files for the application. If"
-#                              " not specified the current directory will be "
-#                              "used.",
-#                         dest="wars")
-#
-#     args = parser.parse_args()
-#
-#     # Database
-#     # ========
-#     if not args.ms and not args.pg:
-#         print("One of --ms or --pg must be specified to set the database type")
-#         sys.exit(1)
-#
-#     db_type = "ms" if args.ms else "pg"
-#
-#     # Tomcat home
-#     # ===========
-#     # Use the home value if specified; if not we try CATALINA_HOME, and if
-#     # that's not set then we exit with an error.
-#     if args.home:
-#         cat_home = args.home
-#     else:
-#         cat_home = os.getenv("CATALINA_HOME")
-#
-#     if cat_home is None or cat_home == '':
-#         print("CATALINA_HOME is not set in the environment and no value "
-#               "given for --home.")
-#         sys.exit(1)
-#
-#     # Scripts
-#     # =======
-#     # Use the SQL script directory if given; otherwise assume it's the current
-#     # directory
-#     script_root = args.scripts
-#     if not script_root:
-#         script_root = "."
-#
-#     # Warfiles
-#     # ========
-#     war_dir = args.wars
-#     if not war_dir:
-#         war_dir = "."
-#
-#     # Using a named tuple for the return value for simplicity of creation and
-#     # clarity of naming.
-#     Args = namedtuple("Args", [DB_TYPE, "script_root", "cat_home",
-#                                "war_dir"])
-#     return Args(db_type, str.strip(script_root), str.strip(cat_home),
-#                 str.strip(war_dir))
 
 
 # I got this from https://stackoverflow.com/a/24583265/1517620
