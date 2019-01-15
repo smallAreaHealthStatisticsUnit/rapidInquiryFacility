@@ -350,6 +350,7 @@ def get_windows_scripts(settings):
     scripts = [win_root / "installation" / "rebuild_all.bat"]
     alter_dir = win_root / "alter scripts"
     scripts.extend([f for f in alter_dir.iterdir() if f.is_file()])
+    return scripts
 
 
 def set_windows_permissions(file_name):
