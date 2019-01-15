@@ -92,7 +92,7 @@ def main():
             for s in db_scripts:
                 print("About to run {}; switching to {}".format(
                     s, s.parent))
-                result = subprocess.run([str(s)], cwd=s.parent)
+                result = subprocess.run([str(s)], cwd=s.parent, shell=True)
 
                 if result.returncode is not None and result.returncode != 0:
                     print("Something went wrong when running the {} script"
