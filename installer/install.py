@@ -6,7 +6,6 @@ Prerequisites: Tomcat; either PostgreSQL or Microsoft SQL Server; R
 
 """
 
-
 __author__ = "Martin McCallion"
 __email__ = "m.mccallion@imperial.ac.uk"
 
@@ -77,8 +76,8 @@ def main():
 
             # Run SQL scripts
             if settings.db_type == "pg":
-                db_script = (settings.script_root / "Postgres" / "production"
-                             / "db_create.sh")
+                db_scripts = [(settings.script_root / "Postgres" / "production"
+                             / "db_create.sh")]
             else:
                 # Assumes both that it's SQL Server, and that we're
                 # running on Windows. Linux versions of SQLServer
@@ -87,20 +86,22 @@ def main():
                 # Some files need to have special permissions granted,
                 # or the database loading steps fail
                 set_special_db_permissions()
+                db_scripts = get_windows_scripts(settings)
 
-                db_script = (settings.script_root / "SQLserver" /
-                             "installation" / "rebuild_all.bat")
+            db_created = False
+            for s in db_scripts:
+                print("About to run {}; switching to {}".format(
+                    s, s.parent))
+                result = subprocess.run([str(s)], cwd=s.parent)
 
-            print("About to run {}; switching to {}".format(
-                db_script, db_script.parent))
-            result = subprocess.run([str(db_script)],
-                                    cwd=db_script.parent)
+                if result.returncode is not None and result.returncode != 0:
+                    print("Something went wrong when running the {} script"
+                          "\n\tErrors: {}".format(s, result.stderr))
+                    print("Database creation not complete")
+                    break
+                db_created = True
 
-            if result.returncode is not None and result.returncode != 0:
-                print("Something went wrong with creating the "
-                      "database. \n\tErrors: {}".format(result.stderr))
-                print("Database not created")
-            else:
+            if db_created:
                 # Deploy WAR files
                 for f in get_war_files(settings):
                     shutil.copy(f, settings.cat_home / "webapps")
@@ -117,7 +118,7 @@ def main():
 
 
 def initialise_config():
-    """Sets up the initial details, home directories, files, etc. """
+    """Set up the initial details, home directories, files, etc. """
 
     global running_bundled
     global base_path
@@ -131,7 +132,7 @@ def initialise_config():
     if running_bundled:
         try:
             # PyInstaller bundles create a temp folder when run,
-            # and store its path in _MEIPASS. This feels like a hack,
+            # and stores its path in _MEIPASS. This feels like a hack,
             # but it is the documented way to get at the bundled files.
             base_path = Path(sys._MEIPASS)
         except Exception:
@@ -154,18 +155,6 @@ def initialise_config():
     user_parser.read(user_props)
     default_config = default_parser["MAIN"]
     user_config = user_parser["MAIN"]
-
-
-def set_special_db_permissions():
-    backup_path = base_path / "SQLserver" / "production"
-    geo_path = base_path / "GeospatialData" / "tileMaker"
-    data_loader_path = base_path / "DataLoaderData" / "SAHSULAND"
-    files_to_permit = [f for f in geo_path.glob("mssql_*") if f.is_file()]
-    files_to_permit.extend(f for f in data_loader_path.iterdir() if f.is_file())
-    files_to_permit.append(backup_path)
-    for f in files_to_permit:
-        print("Granting Windows permissions for {}".format(f))
-        set_windows_permissions(str(f))
 
 
 def get_settings():
@@ -220,7 +209,7 @@ def get_settings():
 
 
 def get_value_from_user(key, is_path=False):
-    """Gets a new value from the user, prompting with the current value
+    """Get a new value from the user, prompting with the current value
        from the config files if one exists.
        :param key: the setting being processed
        :param is_path: whether or not the setting is a path-like object
@@ -264,6 +253,8 @@ def get_value_from_user(key, is_path=False):
 
 
 def get_war_files(settings):
+    """Return a list of the WAR files to deploy"""
+
     if settings.dev_mode:
         war_files = [
             settings.war_dir / "rifServices" / "target" / "rifServices.war",
@@ -283,7 +274,7 @@ def get_war_files(settings):
 
 
 def create_properties_file(settings):
-    """Creates the RIF startup properties file."""
+    """Create the RIF startup properties file."""
 
     props_file = Path(settings.cat_home / "conf" /
                       "RIFServiceStartupProperties.properties")
@@ -327,10 +318,48 @@ def short_db_name(db):
     return "MSSQL" if db.strip() == "ms" else "POSTGRES"
 
 
-def set_windows_permissions(file_name):
-    """Grants all access for Everyone on the specifidd file. Code copied from
-       Stack Overflow: https://stackoverflow.com/a/43244697/1517620
+def set_special_db_permissions():
+    """Set special permissions that are needed for the Windows scripts to run.
+
+       Several scripts are used by the BULK LOAD SQL command, and the early
+       versions of this script failed because of not having permission to
+       read those scripts. The complexity is that the permission is needed
+       by the user that runs the SQL Server service, not the current user.
+       As a precaution we grant all permissions, and as we can't easily know
+       the user in question, we grant it to the special "Everyone" account.
+
+       Lastly one of the scripts creates a backup of the database, and the
+       same service user needs write access to the directory where that is
+       created.
     """
+    backup_path = base_path / "SQLserver" / "production"
+    geo_path = base_path / "GeospatialData" / "tileMaker"
+    data_loader_path = base_path / "DataLoaderData" / "SAHSULAND"
+    files_to_permit = [f for f in geo_path.glob("mssql_*") if f.is_file()]
+    files_to_permit.extend(f for f in data_loader_path.iterdir() if f.is_file())
+    files_to_permit.append(backup_path)
+    for f in files_to_permit:
+        print("Granting Windows permissions for {}".format(f))
+        set_windows_permissions(str(f))
+
+
+def get_windows_scripts(settings):
+    """Get the list of SQL scripts to run on the Windows platform."""
+
+    win_root = settings.script_root / "SQLserver"
+    scripts = [win_root / "installation" / "rebuild_all.bat"]
+    alter_dir = win_root / "alter scripts"
+    scripts.extend([f for f in alter_dir.iterdir() if f.is_file()])
+
+
+def set_windows_permissions(file_name):
+    """Grant all access for Everyone on the specified file.
+
+       Code copied from Stack Overflow:
+       https://stackoverflow.com/a/43244697/1517620
+    """
+    # These imports don't apply on Mac or Linux, but PyInstaller doesn't
+    # complain.
     import ntsecuritycon
     import win32security
 
@@ -355,10 +384,9 @@ def set_windows_permissions(file_name):
         None, None, dacl, None)
 
 
-# I got this from https://stackoverflow.com/a/24583265/1517620
 class Logger(object):
     """Lumberjack class - duplicates sys.stdout to a log file and it's okay."""
-    #source: https://stackoverflow.com/q/616645
+    # I got this from https://stackoverflow.com/a/24583265/1517620
 
     def __init__(self, filename="install.log", mode="ab", buff=0):
         self.stdout = sys.stdout
@@ -394,5 +422,4 @@ class Logger(object):
 
 
 if __name__ == "__main__":
-    # print("Initialising. Arguments are {}".format(sys.argv))
     sys.exit(main())
