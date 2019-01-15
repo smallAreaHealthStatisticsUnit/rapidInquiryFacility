@@ -157,19 +157,16 @@ def initialise_config():
 
 
 def set_special_db_permissions():
-    # import win32security
-    # import ntsecuritycon as con
-
-    geo_path = base_path / "GeospatialData" / "tileMaker"
     backup_path = base_path / "SQLserver" / "production"
-    files_to_permit = [geo_path / "mssql_lookup_sahsu_grd_level1.csv",
-                       geo_path / "mssql_lookup_sahsu_grd_level2.csv",
-                       geo_path / "mssql_lookup_sahsu_grd_level3.csv",
-                       geo_path / "mssql_lookup_sahsu_grd_level4.csv",
-                       backup_path]
+    geo_path = base_path / "GeospatialData" / "tileMaker"
+    data_loader_path = base_path / "DataLoaderData" / "SAHSULAND"
+    files_to_permit = [f for f in geo_path.glob("mssql_*") if f.is_file()]
+    files_to_permit.extend(f for f in data_loader_path.iterdir() if f.is_file())
+    files_to_permit.append(backup_path)
     for f in files_to_permit:
-        os.chmod(f, 0o666) # Read/write for everyone. Doesn't do the job for
-        #  Windows, though.
+        print("Granting Windows permissions for {}".format(f))
+        set_windows_permissions(str(f))
+
 
 def get_settings():
     """Prompt the user for the installation settings.
@@ -324,9 +321,38 @@ def long_db_name(db):
 
     return "Microsoft SQL Server" if db.strip() == "ms" else "PostgreSQL"
 
+
 def short_db_name(db):
 
     return "MSSQL" if db.strip() == "ms" else "POSTGRES"
+
+
+def set_windows_permissions(file_name):
+    """Grants all access for Everyone on the specifidd file. Code copied from
+       Stack Overflow: https://stackoverflow.com/a/43244697/1517620
+    """
+    import ntsecuritycon
+    import win32security
+
+    entries = [{'AccessMode': win32security.GRANT_ACCESS,
+                'AccessPermissions': 0,
+                'Inheritance': win32security.CONTAINER_INHERIT_ACE |
+                               win32security.OBJECT_INHERIT_ACE,
+                'Trustee': {'TrusteeType': win32security.TRUSTEE_IS_USER,
+                            'TrusteeForm': win32security.TRUSTEE_IS_NAME,
+                            'Identifier': ''}}]
+
+    entries[0]['AccessPermissions'] = ntsecuritycon.GENERIC_ALL
+    entries[0]['Trustee']['Identifier'] = "Everyone"
+
+    sd = win32security.GetNamedSecurityInfo(file_name, win32security.SE_FILE_OBJECT,
+            win32security.DACL_SECURITY_INFORMATION)
+    dacl = sd.GetSecurityDescriptorDacl()
+    dacl.SetEntriesInAcl(entries)
+    win32security.SetNamedSecurityInfo(file_name, win32security.SE_FILE_OBJECT,
+        win32security.DACL_SECURITY_INFORMATION |
+        win32security.UNPROTECTED_DACL_SECURITY_INFORMATION,
+        None, None, dacl, None)
 
 
 # I got this from https://stackoverflow.com/a/24583265/1517620
