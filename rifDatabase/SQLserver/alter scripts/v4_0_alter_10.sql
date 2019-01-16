@@ -567,7 +567,7 @@ IF OBJECT_ID('rif40.t_rif40_homogeneity', 'U') IS NULL BEGIN
 		  explt5  double precision,      			    			-- the number of bands in the study which have an expected number of cases less than 1 
 		  CONSTRAINT t_rif40_homogeneity_pk PRIMARY KEY (study_id, inv_id, adjusted, genders),
 		  CONSTRAINT t_rif40_homogeneity_si_fk FOREIGN KEY (study_id, inv_id)
-			  REFERENCES t_rif40_investigations (study_id, inv_id),
+			  REFERENCES rif40.t_rif40_investigations (study_id, inv_id),
 		  CONSTRAINT adjusted_ck CHECK (adjusted BETWEEN 0 AND 1),
 		  CONSTRAINT genders_ck CHECK (genders BETWEEN 1 AND 3)
 		);
@@ -717,7 +717,7 @@ IF IndexProperty(Object_Id('rif40.rif40_health_study_themes'), 'rif40_health_stu
 GO
 
 IF IndexProperty(Object_Id('rif40.rif40_outcome_groups'), 'rif40_outcome_groups_desc', 'IndexId') IS NULL BEGIN
-	UPDATE rif40_outcome_groups 
+	UPDATE rif40.rif40_outcome_groups
 	   SET outcome_group_description = 'SAHSULAND Single ICD'
 	 WHERE outcome_group_name = 'SAHSULAND_ICD' AND outcome_group_description = 'Single ICD';
 	CREATE UNIQUE INDEX rif40_outcome_groups_desc ON rif40.rif40_outcome_groups(outcome_group_description);
@@ -775,9 +775,9 @@ ALTER TABLE rif40.rif40_geographies ADD CONSTRAINT map_background_ck CHECK (map_
 		'HikeBike HikeBike','HikeBike HillShading','NASAGIBS ViirsEarthAtNight2012','OSM UK Postcodes','Code-Point Open UK Postcodes'));
 GO
 		
-UPDATE rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND' AND map_background IS NULL;
+UPDATE rif40.rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND' AND map_background IS NULL;
 GO
-UPDATE rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND' AND map_background IS NOT NULL;
+UPDATE rif40.rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND' AND map_background IS NOT NULL;
 GO
 
 :r ..\sahsuland_dev\rif40\table_triggers\t_rif40_studies_trigger.sql
