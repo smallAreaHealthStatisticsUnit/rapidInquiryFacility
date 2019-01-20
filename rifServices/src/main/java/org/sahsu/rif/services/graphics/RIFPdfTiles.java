@@ -6,9 +6,16 @@ import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.datastorage.common.RIFTilesCache;
 
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Geometry;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.opengis.feature.Feature;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.Geometries;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
@@ -174,6 +181,54 @@ public class RIFPdfTiles {
 					bboxJson.getDouble(3) /* yMax: North */,
 					DefaultGeographicCRS.WGS84
 				);	
+				
+			// Intersect featureCollection with bounding box
+			Polygon mask = JTS.toGeometry(bounds);
+			FeatureIterator iterator=features.features();
+			boolean intersects=false;
+			try {
+				while (iterator.hasNext()) {
+					Feature feature = iterator.next();
+					Geometry geometry = (Geometry)feature.getDefaultGeometryProperty().getValue();
+					Geometries geomType = Geometries.get(geometry);
+					switch (geomType) {
+						case POLYGON: 
+							Polygon polygon = (Polygon)geometry;
+							if (polygon != null &&
+								polygon.isValid() && 
+								polygon.intersects(mask)) {
+								intersects=true;
+							}
+							break;
+						case MULTIPOLYGON:
+							MultiPolygon multipolygon=(MultiPolygon)geometry; 
+							if (multipolygon != null &&
+								multipolygon.isValid() && 
+								multipolygon.intersects(mask)) {
+								intersects=true;
+							}
+							break;
+					default: // Anything else should already have been removed by RifWellKnownText.createGeometryFromWkt()
+						rifLogger.info(getClass(), "Unsupported Geometry: \"" + geomType.toString() + 
+							"\" for geoLevel: " + geoLevel +
+							"; slippyTile: " + slippyTile.getPathFileName() +
+							"; tileGeoJson " + tileGeoJson.toString());
+						throw new RIFServiceException(RIFServiceError.TILE_GENERATE_GEOTOOLS_ERROR, 
+							"Unsupported Geometry: \"" + geomType.toString() + 
+							"\" for geoLevel: " + geoLevel +
+							"; slippyTile: " + slippyTile.getPathFileName());
+					}
+					if (intersects) {
+						break;
+					}
+				}
+			}
+			finally {
+				iterator.close();
+			}
+			if (!intersects) {
+				return createNullTile(slippyTile);
+			}
 
 			MapViewport mapViewport = mapContent.getViewport();
 	//		mapViewport.setMatchingAspectRatio(true);

@@ -311,14 +311,20 @@ public class RIFTiles  extends BaseSQLManager {
 				"getTileMakerTiles",
 				getMapTileTableQueryFormatter,
 				geography);
-
+		if (sqlQueryText == null) {
+			throw new SQLException("sqlQueryText is null");
+		}
 		//For tile table name
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		String tileTable = null;
 		String geometryTable = null;
 		try {
-			statement = connection.prepareStatement(getMapTileTableQueryFormatter.generateQuery());
+			String sqlStmt=getMapTileTableQueryFormatter.generateQuery();
+			if (sqlStmt == null) {
+				throw new SQLException("getMapTileTableQueryFormatter.generateQuery() returned null for: " + sqlQueryText);
+			}
+			statement = connection.prepareStatement(sqlStmt);
 			statement.setString(1, geography);
 
 			resultSet = statement.executeQuery();

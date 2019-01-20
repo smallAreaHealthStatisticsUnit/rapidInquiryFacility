@@ -895,14 +895,45 @@ public class ResultsQueryManager extends BaseSQLManager {
 		try {
 			SlippyTile parentTile=null;
 			if (result == null) { // Not found
-				if (zoomlevel > 0) {
+				if (slippyTile.getZoomlevel() > 0) {
 					parentTile = slippyTile.getParentTile(); // Will raise RIFTilesException is no parent
 				}
-				String tileDoesNotExistError="Tile does not exist for geography: " + geography.getName().toUpperCase() +
-				   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + 
-				   "; slippyTile: " + slippyTile.toString() + lineSeparator + 
-				   "parentTile: " + (parentTile != null ? parentTile.toString() : "no parent");
-				throw new RIFTilesException(new Exception(tileDoesNotExistError), slippyTile);
+				
+				if (tileType.equals("topojson") || parentTile == null) {	
+					String tileDoesNotExistError="Tile does not exist for geography: " + geography.getName().toUpperCase() +
+					   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + 
+					   "; slippyTile: " + slippyTile.toString() + lineSeparator + 
+					   "parentTile: " + (parentTile != null ? parentTile.toString() : "no parent");
+					throw new RIFTilesException(new Exception(tileDoesNotExistError), slippyTile);
+				}
+				else { // Find valid parent with topoJSON
+					do {
+						hmap = rifTiles.getTopoJsonTile(connection, geography.getName().toUpperCase(), 
+							geoLevelSelect.getName().toUpperCase(), parentTile);
+						result=hmap.get("topoJSON");
+						if (result == null) { // Not found
+							if (parentTile != null && parentTile.getZoomlevel() > 0) {
+								parentTile = parentTile.getParentTile(); // Will raise RIFTilesException is no parent
+							}	
+							else {
+								parentTile=null;
+							}	
+						}						
+					} while (result == null && parentTile != null);
+							
+					if (result == null) { // Not found
+							String tileDoesNotExistError="Tile does not exist for geography: " + geography.getName().toUpperCase() +
+							   "; geolevel: " + geoLevelSelect.getName().toUpperCase() + 
+							   "; slippyTile: " + slippyTile.toString() + lineSeparator + 
+							   "parentTile: " + (parentTile != null ? parentTile.toString() : "no parent");
+							throw new RIFTilesException(new Exception(tileDoesNotExistError), slippyTile);
+					}
+					else {
+						rifLogger.info(getClass(), "Using parentTile: " + parentTile.toString() +
+						   "; for slippyTile: " + slippyTile.toString() +
+						   "; length: " + result.length());
+					}
+				}
 			}
 			else {
 				rifLogger.info(getClass(), "get tile for geography: " + geography.getName().toUpperCase() +
