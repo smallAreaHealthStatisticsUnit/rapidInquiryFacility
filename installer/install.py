@@ -393,7 +393,7 @@ def normalise_path_separators(p):
     """Convert any single or double Windows backslashes ('\') into single
        slashes ('/')
     """
-    return re.sub("\\+", "/", str(p))
+    return re.sub(r"\\", "/", str(p))
 
 
 class Logger(object):
