@@ -25,14 +25,15 @@ SCRIPT_HOME = "script_home"
 DB_TYPE = "db_type"
 DEVELOPMENT_MODE = "development_mode"
 EXTRACT_DIRECTORY = "extract_directory"
+SECTION_MAIN = "MAIN"
 
-all_settings = {DEVELOPMENT_MODE: "Development mode?",
-                DB_TYPE: "Database type",
-                SCRIPT_HOME: "Directory for SQL scripts",
-                TOMCAT_HOME: "Home directory for Tomcat",
-                WAR_FILES_LOCATION: "Directory containing the WAR files",
-                EXTRACT_DIRECTORY: "Directory for files extracted by studies",
-                }
+prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
+                  DB_TYPE: "Database type",
+                  SCRIPT_HOME: "Directory for SQL scripts",
+                  TOMCAT_HOME: "Home directory for Tomcat",
+                  WAR_FILES_LOCATION: "Directory containing the WAR files",
+                  EXTRACT_DIRECTORY: "Directory for files extracted by studies",
+                  }
 
 # We have the default settings file in the current directory and the user's
 # version in their home. We use the [MAIN] section in each for most of the
@@ -154,8 +155,10 @@ def initialise_config():
     default_props = base_path / "install.ini"
     default_parser.read(default_props)
     user_parser.read(user_props)
-    default_config = default_parser["MAIN"]
-    user_config = user_parser["MAIN"]
+    default_config = default_parser[SECTION_MAIN]
+    if SECTION_MAIN not in user_parser:
+        user_parser.add_section(SECTION_MAIN)
+    user_config = user_parser[SECTION_MAIN]
 
 
 def get_settings():
@@ -221,7 +224,7 @@ def get_value_from_user(key, is_path=False):
         current_value = user_config[key]
     elif key in default_config:
         current_value = default_config[key]
-    reply = input("{} [{}] ".format(all_settings.get(key), current_value))
+    reply = input("{} [{}] ".format(prompt_strings.get(key), current_value))
     if reply is None or reply.strip() == "":
         reply = current_value
 
@@ -235,7 +238,7 @@ def get_value_from_user(key, is_path=False):
             if tomcat_home_str is None or tomcat_home_str.strip() == "":
                 print("CATALINA_HOME is not set in the environment and no "
                       "value given for {}."
-                      .format(all_settings.get(TOMCAT_HOME)))
+                      .format(prompt_strings.get(TOMCAT_HOME)))
             else:
                 reply = tomcat_home_str
 
