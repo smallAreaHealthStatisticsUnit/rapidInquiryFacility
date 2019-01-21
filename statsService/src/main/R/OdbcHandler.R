@@ -311,8 +311,8 @@ saveDataFrameToDatabaseTable <- function(data) {
 				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "inv_id"))
 				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "adjusted"))
 				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "direct_standardisation"))
-			# }
-		)},
+			# })
+		},
 			warning=function(w) {
 				cat(paste("saveDataFrameToDatabaseTable() WARNING: ", w, "\n"), sep="")
 			},
