@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import sys
+import re
 from collections import namedtuple
 from configparser import ConfigParser, ExtendedInterpolation
 from distutils.util import strtobool
@@ -296,7 +297,8 @@ def create_properties_file(settings):
                 value = db_config[key]
 
             output_properties_file.writelines(
-                "database.{} = {}\n".format(key, value))
+                "database.{} = {}\n".format(key,
+                                            normalise_path_separators(value)))
 
         output_properties_file.writelines(
             "extractDirectory = {}\n".format(str(settings.extract_dir)))
@@ -383,6 +385,13 @@ def set_windows_permissions(file_name):
         win32security.DACL_SECURITY_INFORMATION |
         win32security.UNPROTECTED_DACL_SECURITY_INFORMATION,
         None, None, dacl, None)
+
+
+def normalise_path_separators(p):
+    """Convert any single or double Windows backslashes ('\') into single
+       slashes ('/')
+    """
+    return re.sub("\\+", "/", p)
 
 
 class Logger(object):
