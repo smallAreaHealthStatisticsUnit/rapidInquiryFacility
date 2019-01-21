@@ -300,11 +300,10 @@ def create_properties_file(settings):
                 value = db_config[key]
 
             output_properties_file.writelines(
-                "database.{} = {}\n".format(key,
-                                            normalise_path_separators(value)))
+                "database.{} = {}\n".format(key, value))
 
-        output_properties_file.writelines(
-            "extractDirectory = {}\n".format(str(settings.extract_dir)))
+        output_properties_file.writelines("extractDirectory = {}\n".format(
+            normalise_path_separators(settings.extract_dir)))
 
         if "NOPROMPT" in default_parser:
             unprompted_config = default_parser["NOPROMPT"]
@@ -394,7 +393,7 @@ def normalise_path_separators(p):
     """Convert any single or double Windows backslashes ('\') into single
        slashes ('/')
     """
-    return re.sub("\\+", "/", p)
+    return re.sub("\\+", "/", str(p))
 
 
 class Logger(object):
