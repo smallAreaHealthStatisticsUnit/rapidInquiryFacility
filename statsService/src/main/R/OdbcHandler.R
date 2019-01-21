@@ -280,7 +280,7 @@ saveDataFrameToDatabaseTable <- function(data) {
 #
 	cat(paste0("Creating temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
 		tryCatch({
-			withErrorTracing({
+			# withErrorTracing({
 				sqlDrop(connection, temporarySmoothedResultsTableName, errors = FALSE) # Ignore errors 
 				  
 				 if (db_driver_prefix == "jdbc:postgresql") {
@@ -311,7 +311,7 @@ saveDataFrameToDatabaseTable <- function(data) {
 				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "inv_id"))
 				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "adjusted"))
 				sqlQuery(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "direct_standardisation"))
-			}
+			# }
 		)},
 			warning=function(w) {
 				cat(paste("saveDataFrameToDatabaseTable() WARNING: ", w, "\n"), sep="")

@@ -100,7 +100,7 @@ runRSmoothingFunctions <- function() {
 #			cat(paste0("About to fetch extract table outside of the try", "\n"))
 #			data=fetchExtractTable()
 			tryCatch({
-					withErrorTracing({					
+					# withErrorTracing({
 #
 # extract the relevant Study data
 #
@@ -118,7 +118,7 @@ runRSmoothingFunctions <- function() {
 #
 						cat(paste0("About to smooth", "\n"))
 						result <- performSmoothingActivity(data, AdjRowset)
-					})
+					# })
 				},
 				warning=function(w) {		
 					cat(paste("callPerformSmoothingActivity() WARNING: ", w, "\n"), sep="")
@@ -284,7 +284,7 @@ runRRiskAnalFunctions <- function() {
 			#			data=fetchExtractTable()
 
 			tryCatch({
-				withErrorTracing({
+				# withErrorTracing({
 
 					#
 					# extract the relevant Study data
@@ -307,7 +307,7 @@ runRRiskAnalFunctions <- function() {
 					resultHomog <- performHomogAnal(resultBands)
 					resultHomog = data.frame(resultHomog)
 					
-				})
+				# })
 			},
 			warning=function(w) {		
 				cat(paste("callRiskAnal() WARNING: ", w, "\n"), sep="")
