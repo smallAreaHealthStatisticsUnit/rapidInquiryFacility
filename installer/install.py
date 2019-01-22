@@ -37,7 +37,7 @@ prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
 
 # We have the default settings file in the current directory and the user's
 # version in their home. We use the [MAIN] section in each for most of the
-# settings, and the database-specific ones and the [NOPROMPT ones
+# settings, and the database-specific ones and the [NOPROMPT] ones
 default_parser = ConfigParser(allow_no_value=True,
                               interpolation=ExtendedInterpolation())
 default_parser.optionxform = str # Preserve case in keys
@@ -52,6 +52,11 @@ user_props = Path()
 
 
 def main():
+
+    banner("WARNING: This will DELETE any existing database of the "
+           "name specified (default: Sahsuland). Proceed with caution.", 60)
+    if not go("Continue? [Default: No]: "):
+        return
 
     initialise_config()
 
@@ -74,7 +79,8 @@ def main():
                         settings.cat_home,
                         settings.war_dir,
                         settings.extract_dir))
-        if input("Continue? [No]: "):
+
+        if go("Continue? [No]: "):
 
             # Run SQL scripts
             if settings.db_type == "pg":
@@ -113,9 +119,10 @@ def main():
 
                 msg = "Installation complete."
                 if settings.db_type == "ms":
-                    msg += (" Remember to create an ODBC datasource as per "
+                    msg += ("\n\n\tRemember to create an ODBC datasource as "
+                            "per "
                             "the installation instructions, before running "
-                            "the RIF.")
+                            "the RIF.\n\n")
                 print(msg)
 
 
@@ -394,6 +401,65 @@ def normalise_path_separators(p):
        slashes ('/')
     """
     return re.sub(r"\\", "/", str(p))
+
+
+def banner(text, width=40):
+    """Prints the received text in a banner-style box"""
+
+    STARS = "".center(width, "*")
+    BLANK = "{}{}{}".format("*", "".center(width - 2), "*", )
+    usable_text_length = width - 4
+
+    print()
+    print(STARS)
+    print(BLANK)
+
+    # Initialise, then turn the text into a list of words, preserving its
+    # index value for later checking.
+    line_length = 0
+    line = ""
+    list_of_words = text.split(" ")
+    for index, s in enumerate(list_of_words):
+
+        # If the current word does not take us over the usable length,
+        # append it to the current line.
+        if line_length + 1 + len(s) <= usable_text_length:
+
+            # Handle the first word in a line differently from all the others
+            line = line + s if line == "" else line + " " + s
+            line_length = len(line)
+            ready_to_print = False
+        else:
+            ready_to_print = True
+
+        # If the above section completed a line; or if the current word is the
+        # last one; or if the current line plus the NEXT word will take us
+        # over the usable length; then print the line. Having printed,
+        # reset the initial values.
+        if (ready_to_print or
+                index == len(list_of_words) - 1 or
+                line_length + 1
+                + len(list_of_words[index + 1])
+                > usable_text_length):
+            print("* {} *".format(line.ljust(usable_text_length)))
+            line_length = 0
+            line = ""
+
+    print(BLANK)
+    print(STARS)
+    print()
+
+
+def go(message):
+    """Presents the received message as a prompt, allowing the user to
+       answer yes or no.
+    """
+
+    try:
+        answer = strtobool(input(message))
+    except ValueError:
+        answer = False
+    return answer
 
 
 class Logger(object):
