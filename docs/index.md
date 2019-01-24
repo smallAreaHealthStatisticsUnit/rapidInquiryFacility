@@ -35,3 +35,7 @@ The RIF has the following manuals:
 # For Developers
 
 Documents for developers [are here](development/).
+
+# 2019 Plans
+
+Plans for 2019 [are here](development/).
