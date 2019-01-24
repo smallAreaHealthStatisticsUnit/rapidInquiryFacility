@@ -8,7 +8,12 @@ title: 2019 Plans
 
 # Introduction
 
-[RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) or as a graphic: ![2019 RIF Roadmap]({{ site.baseurl }}/plans/2019_RIF_Roadmap.png)
+RIF Priorities for the first quarter of 2019 are:
+
+1. Make the RIF Usable within SAHSU;
+2. Improve the installation process
+
+See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello or as a graphic: ![2019 RIF Roadmap]({{ site.baseurl }}/plans/2019_RIF_Roadmap.png)
 
 # Bug Fixes
 
@@ -150,32 +155,76 @@ covariates and denominator data
   3. [Printing - issue #93](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/93);
   4. [Allow use of more fields - issue #94](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/94);
   5. [Changing resolution - issue #95](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/95);
-  6. [Additional items - issue #96}(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/96);
+  6. [Additional items - issue #96](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/96);
 * [Issue #85 local caching of basemaps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/85);
 
 ### Further making the RIF Usable within SAHSU
 
-* Issue #65 sort mapping info boxes;
-* Issue #46 exception handling requires improvement to make errors clearer to user and avoid multiple nested errors in the log;
-* Issue #123 improve search in taxonomies;
-* Issue #117 Add JavaDoc;
-* Issue #110 Re-start RIF services;
-* Issue #97 Add additional information to circles and shapes (number of intersections, distance to nearest source);
+* [Issue #65 sort mapping info boxes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/65);
+* [Issue #46 exception handling requires improvement to make errors clearer to user and avoid multiple nested errors in the log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/46);
+* [Issue #123 improve search in taxonomies](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/123);
+* [Issue #117 Add JavaDoc](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/117);
+* [Issue #110 Re-start RIF services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/110);
+* [Issue #97 Add additional information to circles and shapes such as number of intersections, distance to nearest source](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/97);
 
 ### Cluster Analysis
 
+** Issue to be created**
+
+Reference: Li G, Best N, Hansell AL, Ahmed I and Richardson S. 2012. 
+           BaySTDetect: detecting unusual temporal patterns in small area data via Bayesian model choice. 
+		   Biostatistics 13(4):695-710. DOI: 10.1093/biostatistics/kxs005.
+
+Used WinBugs; would require an R version.
+		   
 ### Investigate threading Issues in R service
+
+** Issue to be created**
+
+R service is single threaded. Possible options are:
+
+* Replace *RJava* with an alternative R/Java interface;
+* Support multiple remote R services in a pool of servers.
 
 ## Later
 
 ### Support New Interfaces
 
-* [Issue #82 BREEZE AERMOD / ISC and Wind roses](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/82)
-* [Issue #83 SATScan](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/83)
+* [Issue #82 Support New Interfaces](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/82)
+
+  New technical features will include 
+  
+  * Enhancement of flexibility by clearly defined XML interfaces, giving the RIF a batch mode for 
+    the first time and allowing for the export of the data into other tools. Statistical processing will be built in modular manner so it 
+    can be easily extended. The save/load study functionality is sufficient for a batch mode, although long term it would be good for 
+	regression testing;
+  * [BREEZE AERMOD / ISC](http://www.breeze-software.com/aermod/) air quality modelling system.;
+  * Wind roses;
+  * Multi-layer shapefiles;
+  * The ability to re-project shapefiles from National grid to WGS84 automatically.
+
+  BREEZE AERMOD / ISC and Wind roses are new input forms for risk analysis band selection. 
+
+* [Issue #83 SATScan](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/83).
+  Satscan and LinBUGS/WinBUGS be supported via the extract ZIP file - i.e. create a script to run them and produce worked examples. 
+  Satscan is available as an R package [rstatscan](https://www.satscan.org/rsatscan/rsatscan.html) but this calls statscan and 
+  therefore is limited to Windows only Tomcats. The R package [SpatialEpi](https://cran.r-project.org/web/packages/SpatialEpi/SpatialEpi.pdf) 
+  contains a function called *kulldorff*, which performs the purely spatial scan statistic with either the Poisson or 
+  Bernoulli probability model. The package also contains many other useful methods that are unrelated to scan statistics and not 
+  part of the SaTScan software.
 
 ### TileMaker Improvements
 
-* [Issue #91 Tilemaker updates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/91)
+* [Issue #91 Tilemaker updates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/91). TileMaker is currently 
+  working with some minor faults but needs to:
+  * Run the generated scripts. This requires the ability to log on and PSQL copy needs to be replaced to SQL COPY from STDIN/to 
+    STDOUT with STDIN/STOUT file handlers in Node.js;
+  * UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present) #79;
+  * GUI needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape than the 
+    TileMaker screen. Probably the best solution is to use Angular;
+  * Support for database logons;
+  * Needs to calculate geographic centroids using the database.
+
 * Convert Tile Maker to Java application; integrate to main RIF front end.
 
   This would be a longer term objective to fully integrate Tile manufacturing into the main RIF. It requires support for 
@@ -197,4 +246,12 @@ covariates and denominator data
 ### Generalise User Management
 
 * [Issue #102 Generalise user management](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/102)
-
+  This is to add documentation to the manuals for the use of:
+  * LDAP
+  * Kerberos/GSSAPI
+  This usually does not require a change to the front end or the middleware. Normally it is set up in the database, e.g. 
+  [LDAP Authentication](https://www.postgresql.org/docs/11/static/auth-ldap.html). SQL Server only supports username/password 
+  and windows (Kerberos). Kerberos in a browser requires GSSAPI as the authentication token has to move across the network. 
+  The private network used to use this - its is hard to setup, requires configuration of the browser and a Kerberos type 
+  connection in the Java which the Microsoft JDBC driver apparently support [Using Kerberos Integrated Authentication to 
+  connect to SQL Server](https://docs.microsoft.com/en-us/sql/connect/jdbc/using-kerberos-integrated-authentication-to-connect-to-sql-server?view=sql-server-2017) 
