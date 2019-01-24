@@ -13,7 +13,8 @@ RIF Priorities for the first quarter of 2019 are:
 1. Make the RIF Usable within SAHSU;
 2. Improve the installation process
 
-See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello or as a graphic: ![2019 RIF Roadmap]({{ site.baseurl }}/plans/2019_RIF_Roadmap.png)
+See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello or as a graphic: 
+![2019 RIF Roadmap]({{ site.baseurl }}/plans/2019_RIF_Roadmap.png)
 
 # Bug Fixes
 
@@ -59,7 +60,7 @@ See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello o
 
 * Issue #124 Multiple covariates (first part for March 2019);
 
-### Information 
+### Information Governance
 
 * [Issue #85 IG tool](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/85);
   The is carried out by a user with the *RIF_MANAGER* role
@@ -108,7 +109,7 @@ See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello o
   * Per user/role resolution restrictions;
   * Create restricted views of tables
 
-### Logging and AuditingGovernance
+### Logging and Auditing
 
 * [Issue #81 improve the audit trail](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/81);
   Add t_rif40_warnings/rif40_warnings table and view to contain warning messages on a study basis. Can be created by the 
@@ -118,7 +119,7 @@ See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello o
   * Missing years of numerator or denominator data;
   * Males/females not present when requested in numerator or denominator;
   * ICD codes not present when requested in numerator;
-  * Maljoin detection
+  * Mal-join detection (no rows/too many rows that break the primary key index)
   
   Add Java processing log, SQL statement and warnings logs to extract.
   
@@ -164,18 +165,23 @@ covariates and denominator data
 * [Issue #46 exception handling requires improvement to make errors clearer to user and avoid multiple nested errors in the log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/46);
 * [Issue #123 improve search in taxonomies](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/123);
 * [Issue #117 Add JavaDoc](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/117);
-* [Issue #110 Re-start RIF services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/110);
+* [Issue #110 Re-start RIF services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/110); This is
+  partially implemented as part of the PNG tiles and separate R service implementations. Logging is still an issue; see 
+  ({{ site.baseurl }}/plans/2019_Plans.html#logging-and-auditing)
 * [Issue #97 Add additional information to circles and shapes such as number of intersections, distance to nearest source](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/97);
+  This is mainly complete as of 24/1/2019; freehand circles do not support multiple intersections and support added for analysing multiple 
+  shapes in a group or individually 
 
 ### Cluster Analysis
 
-** Issue to be created**
+**Issue to be created**
 
-Reference: Li G, Best N, Hansell AL, Ahmed I and Richardson S. 2012. 
-           BaySTDetect: detecting unusual temporal patterns in small area data via Bayesian model choice. 
-		   Biostatistics 13(4):695-710. DOI: 10.1093/biostatistics/kxs005.
+Reference: 
+  Li G, Best N, Hansell AL, Ahmed I and Richardson S. 2012. 
+  BaySTDetect: detecting unusual temporal patterns in small area data via Bayesian model choice. 
+  Biostatistics 13(4):695-710. DOI: 10.1093/biostatistics/kxs005.
 
-Used WinBugs; would require an R version.
+The original code used WinBugs; would require an R version.
 		   
 ### Investigate threading Issues in R service
 
@@ -215,8 +221,9 @@ R service is single threaded. Possible options are:
 
 ### TileMaker Improvements
 
-* [Issue #91 Tilemaker updates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/91). TileMaker is currently 
-  working with some minor faults but needs to:
+* [Issue #91 Tilemaker updates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/91). 
+
+  TileMaker is currently working with some minor faults but needs to:
   * Run the generated scripts. This requires the ability to log on and PSQL copy needs to be replaced to SQL COPY from STDIN/to 
     STDOUT with STDIN/STOUT file handlers in Node.js;
   * UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present) #79;
@@ -232,7 +239,7 @@ R service is single threaded. Possible options are:
   
   * The database (SQL Server does not)
   * Geotools: no support for TopoJSON
-  * Use of [Node.js from with Java](https://eclipsesource.com/blogs/2016/07/20/running-node-js-on-the-jvm/). This requires J2V8 
+  * Use of [Node.js from within Java](https://eclipsesource.com/blogs/2016/07/20/running-node-js-on-the-jvm/). This requires [J2V8](https://eclipsesource.com/blogs/tutorials/getting-started-with-j2v8/) 
     and is probably the best option as it reuses the Node.js code  
 
 ### Performance Improvements
@@ -246,6 +253,7 @@ R service is single threaded. Possible options are:
 ### Generalise User Management
 
 * [Issue #102 Generalise user management](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/102)
+
   This is to add documentation to the manuals for the use of:
   * LDAP
   * Kerberos/GSSAPI
