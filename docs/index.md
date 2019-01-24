@@ -38,4 +38,4 @@ Documents for developers [are here](development/).
 
 # 2019 Plans
 
-Plans for 2019 [are here](plans/).
+Plans for 2019 [are here](plans/2019_Plans.html).
