@@ -184,7 +184,7 @@ BEGIN
 		ELSIF c2_rec.rolpassword = c2_rec.encrypted_passwd THEN
 			RAISE INFO 'db_create.sql() rif40 encrypted password="%"', c2_rec.encrypted_passwd;
 		ELSE
-			RAISE EXCEPTION 'db_create.sql() rif40 password set in rif40_database_install.bat="%" differs from database: "%"', 
+			RAISE EXCEPTION 'db_create.sql() rif40 password set in install script="%" differs from database: "%"',
 				c2_rec.encrypted_passwd, c2_rec.rolpassword;	
 		END IF;
 		password:=COALESCE(c2_rec.password, SUBSTR(CURRENT_SETTING('rif40.rif40_password'), 5));
@@ -200,11 +200,11 @@ BEGIN
 			
 	END IF;	
 --
--- Check postgres_password pareameter
+-- Check postgres_password parameter
 --
 	OPEN c1up('rif40.postgres_password');
 	FETCH c1up INTO c1_rec;
-	CLOSE c1up;	
+	CLOSE c1up;
 	IF UPPER(c1_rec.password) = 'XXXX' THEN
 		RAISE EXCEPTION 'db_create.sql() C209xx: No -v postgres_password=<postgres_password password> parameter';	
 	ELSE
@@ -212,6 +212,11 @@ BEGIN
 		FETCH c2up INTO c2_rec;
 		CLOSE c2up;
 --		
+
+
+	RAISE INFO 'All the passwords... %', c2_rec;
+
+
 		RAISE INFO 'db_create.sql() postgres password="%"', c2_rec.password;
 		IF c2_rec.rolpassword = c2_rec.encrypted_passwd THEN
 			RAISE INFO 'db_create.sql() postgres encrypted password="%"', c2_rec.encrypted_passwd;
@@ -220,8 +225,8 @@ BEGIN
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
 		ELSE
-			RAISE EXCEPTION 'db_create.sql() postgres password set in rif40_database_install.bat="%" differs from database: "%"', 
-				c2_rec.encrypted_passwd, c2_rec.rolpassword;	
+			RAISE EXCEPTION 'db_create.sql() postgres password set in install script="%" differs from database: "%". Unencrypted is %',
+				c2_rec.encrypted_passwd, c2_rec.rolpassword, CURRENT_SETTING('rif40.postgres_password');
 		END IF;
 	END IF;		
 --	
@@ -243,7 +248,6 @@ DECLARE
 	 	SELECT version() AS version, 
 		SUBSTR(version(), 12, 2)::NUMERIC as major_version, 
 		REPLACE(SUBSTR(version(), 16, position('on' IN version())-16), ' ', '0')::NUMERIC as minor_version;
-	c1_rec RECORD;
 --
 BEGIN
 	BEGIN

@@ -9,14 +9,17 @@ Prerequisites: Tomcat; either PostgreSQL or Microsoft SQL Server; R
 __author__ = "Martin McCallion"
 __email__ = "m.mccallion@imperial.ac.uk"
 
+import hashlib
 import os
+import platform
+import re
 import shutil
 import subprocess
 import sys
-import re
 from collections import namedtuple
 from configparser import ConfigParser, ExtendedInterpolation
 from distutils.util import strtobool
+from getpass import getpass
 from pathlib import Path
 
 WAR_FILES_LOCATION = "war_files_location"
@@ -26,6 +29,11 @@ DB_TYPE = "db_type"
 DEVELOPMENT_MODE = "development_mode"
 EXTRACT_DIRECTORY = "extract_directory"
 SECTION_MAIN = "MAIN"
+DATABASE_NAME = "database_name"
+DATABASE_USER = "db_user"
+DATABASE_PASSWORD = "db_password"
+RIF40_PASSWORD = "db_rif40_password"
+POSTGRES_PASSWORD = "db_pg_password"
 
 prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
                   DB_TYPE: "Database type",
@@ -33,6 +41,13 @@ prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
                   TOMCAT_HOME: "Home directory for Tomcat",
                   WAR_FILES_LOCATION: "Directory containing the WAR files",
                   EXTRACT_DIRECTORY: "Directory for files extracted by studies",
+                  DATABASE_NAME: "Name of the new database (default: "
+                                 "sahsuland)",
+                  DATABASE_USER: "User name for the new database (and the "
+                                 "RIF)",
+                  DATABASE_PASSWORD: "Password for the new user",
+                  RIF40_PASSWORD: "Password for the 'rif40' user",
+                  POSTGRES_PASSWORD: "Password for the 'postgres' user"
                   }
 
 # We have the default settings file in the current directory and the user's
@@ -54,7 +69,8 @@ user_props = Path()
 def main():
 
     banner("WARNING: This will DELETE any existing database of the "
-           "name specified (default: Sahsuland). Proceed with caution.", 60)
+           "name specified (default: Sahsuland).\n\n Proceed with caution.",
+           60)
     if not go("Continue? [Default: No]: "):
         return
 
@@ -84,8 +100,7 @@ def main():
 
             # Run SQL scripts
             if settings.db_type == "pg":
-                db_scripts = [(settings.script_root / "Postgres" / "production"
-                             / "db_create.sh")]
+                db_scripts = get_pg_scripts(settings)
             else:
                 # Assumes both that it's SQL Server, and that we're
                 # running on Windows. Linux versions of SQLServer
@@ -97,15 +112,23 @@ def main():
                 db_scripts = get_windows_scripts(settings)
 
             db_created = False
-            for s in db_scripts:
-                print("About to run {}; switching to {}".format(
-                    s, s.parent))
-                result = subprocess.run([str(s)], cwd=s.parent, shell=True)
+            for script, parent in db_scripts:
+                print("About to run {}; switching to {}".format(script,
+                                                                parent))
+                result = subprocess.run([str(script)], cwd=parent, shell=True)
 
                 if result.returncode is not None and result.returncode != 0:
-                    print("Something went wrong when running the {} script"
-                          "\n\tErrors: {}".format(s, result.stderr))
-                    print("Database creation not complete")
+                    db_created = False
+                    msg = """Something went wrong when running the script {} 
+                          
+                          Output from script: {}
+                          
+                          Errors from script: {} 
+                          
+                          
+                          Database creation failed"""
+                    banner(msg.format(script, result.stdout, result.stderr),
+                           120)
                     break
                 db_created = True
 
@@ -117,13 +140,11 @@ def main():
                 # Generate RIF startup properties file
                 create_properties_file(settings)
 
-                msg = "Installation complete."
+                banner("Installation complete.", 30)
                 if settings.db_type == "ms":
-                    msg += ("\n\n\tRemember to create an ODBC datasource as "
-                            "per "
-                            "the installation instructions, before running "
-                            "the RIF.\n\n")
-                print(msg)
+                    banner("Remember to create an ODBC datasource as "
+                           "per the installation instructions, before "
+                           "running the RIF.", 60)
 
 
 def initialise_config():
@@ -141,10 +162,10 @@ def initialise_config():
     if running_bundled:
         try:
             # PyInstaller bundles create a temp folder when run,
-            # and stores its path in _MEIPASS. This feels like a hack,
+            # and store its path in _MEIPASS. This feels like a hack,
             # but it is the documented way to get at the bundled files.
             base_path = Path(sys._MEIPASS)
-        except Exception:
+        except OSError | TypeError | RuntimeError:
             base_path = Path.cwd()
     else:
         base_path = Path.cwd()
@@ -205,6 +226,14 @@ def get_settings():
 
     extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
+    # For now the next few are only for Postgres
+    if db_type == "pg":
+        db_name = get_value_from_user(DATABASE_NAME)
+        db_user = get_value_from_user(DATABASE_USER)
+        db_pass = get_password_from_user(DATABASE_PASSWORD)
+        rif40_pass = get_password_from_user(RIF40_PASSWORD)
+        postgres_pass = get_password_from_user(POSTGRES_PASSWORD, False)
+
     # Update the user's config file
     # user_config["key"] = "reply"
     # user_parser
@@ -214,9 +243,12 @@ def get_settings():
     # Using a named tuple for the return value for simplicity of creation and
     # clarity of naming.
     Settings = namedtuple("Settings", "db_type, script_root, cat_home, "
-                                      "war_dir, dev_mode, extract_dir")
+                                      "war_dir, dev_mode, extract_dir, "
+                                      "db_name, db_user, db_pass, "
+                                      "rif40_pass, postgres_pass")
     return Settings(db_type, db_script_root, tomcat_home, war_dir, dev_mode,
-                    extract_dir)
+                    extract_dir, db_name, db_user, db_pass, rif40_pass,
+                    postgres_pass)
 
 
 def get_value_from_user(key, is_path=False):
@@ -262,6 +294,24 @@ def get_value_from_user(key, is_path=False):
         user_parser["MAIN"][key] = str(returned_reply)
     return returned_reply
 
+
+def get_password_from_user(key, confirm=True):
+    """Get a password from the user, with suitable prompting, hidden input,
+       and the standard confirmation dialogue.
+    """
+
+    p1 = "x"
+    p2 = "y"
+    while p1.strip() != p2.strip():
+        print()
+        p1 = getpass(prompt_strings.get(key))
+        if not confirm:
+            return p1
+        p2 = getpass("Confirm password")
+        if p1.strip() != p2.strip():
+            print()
+            print("Passwords do not match")
+    return p1
 
 def get_war_files(settings):
     """Return a list of the WAR files to deploy"""
@@ -329,6 +379,91 @@ def short_db_name(db):
     return "MSSQL" if db.strip() == "ms" else "POSTGRES"
 
 
+def get_pg_scripts(settings):
+    """Get the list of scripts to run for a Postgres installation.
+
+       We return a tuple containing the script as a string, and a Path
+       object representing the parent directory of the script.
+    """
+
+    script_template = """psql --username=postgres --dbname=postgres \
+        --host=localhost --no-password --echo-queries --pset=pager=off \
+        --variable=testuser={} \
+        --variable=newdb={} \
+        --variable=newpw={} \
+        --variable=verbosity=terse 
+        --variable=debug_level=1 \
+        --variable=echo=all \
+        --variable=postgres_password={} \
+        --variable=rif40_password={} \
+        --variable=tablespace_dir= \
+        --variable=pghost=localhost \
+        --variable=os={} \
+        --file={}"""
+
+    creation_sql = (settings.script_root / "Postgres" / "production" /
+                   "db_create.sql")
+    main_script = create_postgres_script(settings, script_template,
+                                         creation_sql)
+    alter10 = (settings.script_root / "Postgres" / "psql_scripts" /
+               "alter_scripts" / "v4_0_alter_10.sql")
+    alter10_script = create_postgres_script(settings, script_template, alter10)
+    alter11 = (settings.script_root / "Postgres" / "psql_scripts" /
+               "alter_scripts" / "v4_0_alter_11.sql")
+    alter11_script = create_postgres_script(settings, script_template, alter11)
+    scripts = [(main_script, creation_sql.parent),
+               (alter10_script, alter10.parent),
+               (alter11_script, alter11.parent)]
+    return scripts
+
+
+def create_postgres_script(settings, template, script_path):
+    """Create the full runnable form of a script for PostgreSQL, from a
+    template."""
+
+    script = template.format(settings.db_user,
+                             settings.db_name,
+                             settings.db_pass,
+                             settings.postgres_pass,
+                             settings.rif40_pass,
+                             friendly_system(),
+                             script_path)
+    return script
+
+
+def encrypt_password(user, pwd):
+    """Create and return a hashed password, suitable for psql use."""
+
+    if pwd is None or pwd.strip() == "":
+        return ""
+    password_string = pwd.strip() + user.strip()
+    encoded = "md5" + hashlib.md5(password_string.encode("utf-8")).hexdigest()
+    print("--- String {} encoded as {}".format(password_string, encoded))
+    return encoded
+
+
+def get_windows_scripts(settings):
+    """Get the list of SQL scripts to run on the Windows platform."""
+
+    win_root = settings.script_root / "SQLserver"
+    main_script = win_root / "installation" / "rebuild_all.bat"
+    scripts = [(str(main()), main_script.parent)]
+    alter_script = win_root / "alter scripts" / "run_alter_scripts.bat"
+    scripts.append((str(alter_script), alter_script.parent))
+    return scripts
+
+
+def friendly_system():
+    """Get the system name in a form that includes a sensible value for the
+       Mac.
+    """
+
+    s = platform.system()
+    if s.lower() == "darwin":
+        s = "macos"
+
+    return s
+
 def set_special_db_permissions():
     """Set special permissions that are needed for the Windows scripts to run.
 
@@ -352,16 +487,6 @@ def set_special_db_permissions():
     for f in files_to_permit:
         print("Granting Windows permissions for {}".format(f))
         set_windows_permissions(str(f))
-
-
-def get_windows_scripts(settings):
-    """Get the list of SQL scripts to run on the Windows platform."""
-
-    win_root = settings.script_root / "SQLserver"
-    scripts = [win_root / "installation" / "rebuild_all.bat"]
-    alter_script = win_root / "alter scripts" / "run_alter_scripts.bat"
-    scripts.append(alter_script)
-    return scripts
 
 
 def set_windows_permissions(file_name):
@@ -404,7 +529,7 @@ def normalise_path_separators(p):
 
 
 def banner(text, width=40):
-    """Prints the received text in a banner-style box"""
+    """Print the received text in a banner-style box"""
 
     STARS = "".center(width, "*")
     BLANK = "{}{}{}".format("*", "".center(width - 2), "*", )
@@ -414,16 +539,26 @@ def banner(text, width=40):
     print(STARS)
     print(BLANK)
 
-    # Initialise, then turn the text into a list of words, preserving its
+    # Remove extra spaces but NOT newlines, and split on remaining spaces.
+    # This is to let the caller include line breaks.
+    list_of_words = []
+    for l in re.sub("  +", " ", text).split("\n"):
+        line_as_list = l.split()
+        list_of_words.extend(line_as_list)
+        list_of_words.append("\n")
+
+    # Initialise, then iterate over the list of words, preserving its
     # index value for later checking.
     line_length = 0
     line = ""
-    list_of_words = text.split(" ")
     for index, s in enumerate(list_of_words):
 
         # If the current word does not take us over the usable length,
-        # append it to the current line.
-        if line_length + 1 + len(s) <= usable_text_length:
+        # append it to the current line. But first check for it being a
+        # newline.
+        if s == "\n":
+            ready_to_print = True
+        elif line_length + 1 + len(s) <= usable_text_length:
 
             # Handle the first word in a line differently from all the others
             line = line + s if line == "" else line + " " + s
@@ -438,8 +573,7 @@ def banner(text, width=40):
         # reset the initial values.
         if (ready_to_print or
                 index == len(list_of_words) - 1 or
-                line_length + 1
-                + len(list_of_words[index + 1])
+                line_length + 1 + len(list_of_words[index + 1])
                 > usable_text_length):
             print("* {} *".format(line.ljust(usable_text_length)))
             line_length = 0
@@ -451,7 +585,7 @@ def banner(text, width=40):
 
 
 def go(message):
-    """Presents the received message as a prompt, allowing the user to
+    """Present the received message as a prompt, allowing the user to
        answer yes or no.
     """
 
