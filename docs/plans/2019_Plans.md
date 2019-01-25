@@ -56,9 +56,8 @@ See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello o
 These are a priority for end of February 2019, in priority order:
 
 * [Issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
-* [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for March 2019). 
-  This will be implemented this in two stages:
-
+* [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
+  March 2019). This will be implemented this in two stages:
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
     (this reduce resource risk). Multiple additional covariates available in the extract.
   * Full multiple covariate support;
@@ -96,10 +95,12 @@ These are not:
 
 ## Next (Q2-Q4 2019)
 
+This is likely to change to adapt to funder requirements.
+
 ### Support Multiple Covariates
 
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for March 2019);
-  See above.
+  See above. This will focus on the statistical support.
   
 ### Information Governance
 
@@ -255,11 +256,9 @@ covariates and denominator data
 
 Reference: 
 
-  Li G, Best N, Hansell AL, Ahmed I and Richardson S. 2012. 
-  
-  BaySTDetect: detecting unusual temporal patterns in small area data via Bayesian model choice. 
-  
-  Biostatistics 13(4):695-710. DOI: 10.1093/biostatistics/kxs005.
+*  Li G, Best N, Hansell AL, Ahmed I and Richardson S. 2012. 
+   BaySTDetect: detecting unusual temporal patterns in small area data via Bayesian model choice. 
+   Biostatistics 13(4):695-710. DOI: 10.1093/biostatistics/kxs005.
 
 The original code used WinBugs; would require an R version.
 		   
@@ -420,3 +419,18 @@ R service is single threaded. Possible options are:
 * [Issue #113 refresh logs you off](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113). When the user refreshes 
   angular goes to state 0 which effectively logs you off. State 0 needs to ask the database if the user (saved as a cookie) is still 
   logged on the session will resume in state1 (study submission screen).
+* [Issue #130 Risk analysis fault/issues (branch: risk-analysis-fixes-2)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/130). 
+  1. Multiple Health outcomes produces errors
+  2. Health outcome may require a geography change - if it is wrong you get:
+     ```
+     ERROR: No health data for theme "SAHSU land cancer incidence example data", geography "EWS2011". 
+     ERROR: Could not retrieve your project information from the database: unable to get numerator/denominator pair 
+     ```
+  3. Using add by postcode produces errors on its own, but works;
+  4. Errors if nonsensical exposure bands are selected;
+  5. Clear does not work after restore from file;
+  6. Adding a point produces errors after restore from file;
+  7. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
+  8. Load list from text file loads OK but does not display correctly;
+  9. Need a file type filter when loading JSON files;
+  10. Zip shapefile load to be able to cope with projections other than 4326 (e.g. local grid).
