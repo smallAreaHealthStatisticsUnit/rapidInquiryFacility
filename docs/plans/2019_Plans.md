@@ -20,15 +20,51 @@ See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello o
 
 ## High priority
 
-* SQL Server SAHSU Database not linked to geography;
+* [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two).;
 
 ## To be allocated - low priority
 
-* Issue #79 Unicode area names (SQL Server only);
-* Issue #75 IE support;
-* Issue #57 front end mapping synchronisation (map auto draw disabled, #issue #67 print state support depends);
-* Issue #56 error loading studty from database generated JSON;
-* Issue #113 refresh logs you off;.
+* [Issue #79 TileMaker Unicode area names](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79) - SQL Server 
+  only. Some examples from the US geography in Puerto Rico:
+
+  * Postgres works fine. Previous fix to NVARCHAR(1000) has worked. SQL Server is still wrong. Problems is therefore in the SQL Server 
+    database. Effects database, hopefully not the various Java/Javascript drivers. 
+
+    Postgres (correct):
+    ```
+    sahsuland=> SELECT areaname from lookup_cb_2014_us_county_500k where cb_2014_us_county_500k = '01804540';
+      areaname
+    ------------
+     Río Grande
+    (1 row)
+    ```
+    ![postgres rio grande](https://user-images.githubusercontent.com/6932261/45544396-128c3980-b80f-11e8-8939-0a386b6dcc24.PNG)
+    
+    SQL Server (wrong):
+    ```
+    1> SELECT areaname from rif_data.lookup_cb_2014_us_county_500k where cb_2014_us_county_500k = '01804540';
+    2> go
+    areaname                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    R+-ío Grande                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+    
+    (1 rows affected)
+    ```
+    ![sql server rio grande](https://user-images.githubusercontent.com/6932261/45543945-dad0c200-b80d-11e8-85c9-5f9497bd1256.PNG).
+	The columns are all NVARCHAR(1000) all the way back to the initial load table. They indicates an issue with *BULK INSERT* the 
+	SQL Server load command [Use Unicode Character Format to Import or Export Data](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/use-unicode-character-format-to-import-or-export-data-sql-server?view=sql-server-2017):;
+* [Issue #75 IE support - IE only works in debug mode](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/75). This is caused by 
+  ```console.log```, ```console.debug``` calls not testing if the browser is open. Most RIF and library code is safe; believed to be the 
+  proj4.js Javascript library (http://proj4js.org/);
+* [Issue #57 front end mapping synchronisation (map auto draw disabled](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/57), 
+  #issue #67 print state support depends). This is cause by the map being rendered before the Choropleth map is setup in the Choroscope 
+  service. Work around is to do this manually using the setup icon.;
+* [Issue #56 error loading study from database generated JSON](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/56). Error 
+  loading study from database via middleware generated file; **ERROR: Could not set study state: No comparison area polygons:** this is 
+  caused by no area_ids in the database generated JSON;
+* [Issue #113 refresh logs you off](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113). When the user refreshes 
+  angular goes to state 0 which effectively logs you off. State 0 needs to ask the database if the user (saved as a cookie) is still 
+  logged on the session will resume in state1 (study submission screen).
 
 # Enhancements
 
@@ -49,25 +85,29 @@ This is a priority for end of February 2019.
 
 These are a priority for end of February 2019
 
-* [Issue #? risk analysis maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/?);
-* [Issue #126 Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126);
+* [Issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
+* [Issue #126 Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). Functionality is already
+  in place, need to confirm that SQL Server works and both ports perform acceptably. Note that this is not considered suitable for denominator
+  or covariate data;
 
 These are not:
 
 * [Issue #68 risk analysis selection at high resolution does not work acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/68):
   * PNG tile support in test;
-  * [Mouseover support required](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66) (so you can see the area names) - issue #66;
-* [Issue #121 Add priors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121);
+  * [Issue #66 Mouseover support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66) (so you can see 
+    the area names). Reference: (https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd);
+* [Issue #121 Add prior sensitivity analysis](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121);
 * [Issue #67](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/67) print state support for saving user print selection;
 * [Issue #118 extend PNG tile support to mapping](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/118). Adds the ability to use tiles instead of GeoJSON in the front end, Currently only 
   integrated to the when load a large area study from a JSON file.
 
   For geolevels with more than 5000 areas the RIF middleware can auto generate PNG tiles on startup. Tiles are then cached;
-* [Issue #80 optimise performance on large datasets](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/80);
 
 ### Improve the Installation Process
 
-* [Issue #118 Improve the installation process](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/118);
+* [Issue #115 Improve the installation process](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/115). There 
+  should be as few manual interactions as possible. Preferably none, though obviously the user giving details at the start is fine. A 
+  middleware installer executable would be excellent;
 
 ## Next (Q2-Q4 2019)
 
@@ -299,11 +339,18 @@ R service is single threaded. Possible options are:
 
 ### Performance Improvements
 
-* Partitioning support in data loading
-* Parallel Queries
-* Tuning manual
-* Front end tuning
-* Parallelise R
+* [Issue #80 optimise performance on large datasets](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/80). 
+  This work is envisaged to require:
+
+  * Use of partitioning for Health data (especially denominators);
+  * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that 
+    partition elimination occurs so that the database only fetches the years of data actually required by the study, indexes 
+	are not disabled and the query plan remains structurally the same;
+  * Partitioning support in data loading
+  * Parallel Queries
+  * Tuning manual
+  * Front end tuning
+  * Parallelise R
 
 ### Generalise User Management
 
@@ -318,3 +365,23 @@ R service is single threaded. Possible options are:
   The private network used to use this - its is hard to setup, requires configuration of the browser and a Kerberos type 
   connection in the Java which the Microsoft JDBC driver apparently support [Using Kerberos Integrated Authentication to 
   connect to SQL Server](https://docs.microsoft.com/en-us/sql/connect/jdbc/using-kerberos-integrated-authentication-to-connect-to-sql-server?view=sql-server-2017) 
+
+# Potential Additional Functionality
+
+## CDC
+
+* Loading of local data extracts and covariates directly into the RIF; e.g. you could load the SEER data directly into the RIF in a single 
+  operation with no other data required other than the geography;
+
+## PHE
+
+* Encrypted data extract ZIP files;
+* Prevention of any data download from the RIF except via the encrypted data extract ZIP files. Currently the RIF displays data in 
+  tables populated by REST calls, if the user is authorised by information governance they can be downloaded or copied from the screen. 
+  They would be prevented even if information governance permits so the only method to download the data is via the encrypted data extract. 
+  The RIF front end uses [UI-Grid](http://ui-grid.info/) for tabular data and this support selection and export controls (i.e. they can 
+  be disabled). Disabling web browser copy everywhere is likely to be difficult and a satisfactory solution may not be possible. 
+
+## SAHSU
+
+* Health Atlas Integration. Map data from the RIF could be exported as tiles in GeoJSON, TopoJSON or PNG format for use in a Health Atlas.
