@@ -10,82 +10,67 @@ title: 2019 Plans
 
 RIF Priorities for the first quarter of 2019 are:
 
-1. Make the RIF Usable within SAHSU;
-2. Improve the installation process
+1. Make the RIF Usable within SAHSU [PH; in priority order];
+   * [Risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
+   * [Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124). One primary 
+      covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
+     (this reduce resource risk). Multiple additional covariates available in the extract;
+   * [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
+     Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
+     * Individual site analysis;
+     * Pooled analysis (1 or more groups of sites). Groups would be defined from a categorisation variable in the shapefile. Would require 
+	   changes to:
+       * Shapefile load screen and controller;
+       * JSON study definition format;  
+       * Study extract and result tables;
+	   * R risk analysis code.
+   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). 
+  
+2. Improve the installation process [MM]
 
+3. One high priority bug. [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). 
+   SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two). Postgres is 
+   fully functional [PH];
+
+For the rest of 2019 the focus is currently expected to be on:
+
+* Fully multiple covariate support;
+* Information governance;
+* Data loading;
+* Logging and auditing;
+* Data extract improvements;
+* Cluster analysis;
+* R scalability.
+   
+This is likely to change to adapt to funder requirements.
+   
 See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello or as a graphic: 
 ![2019 RIF Roadmap]({{ site.baseurl }}/plans/2019_RIF_Roadmap.png)
-
-# Bug Fixes
-
-## High priority
-
-* [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two).;
-
-## To be allocated - low priority
-
-* [Issue #79 TileMaker Unicode area names](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79) - SQL Server 
-  only. Some examples from the US geography in Puerto Rico:
-
-  * Postgres works fine. Previous fix to NVARCHAR(1000) has worked. SQL Server is still wrong. Problems is therefore in the SQL Server 
-    database. Effects database, hopefully not the various Java/Javascript drivers. 
-
-    Postgres (correct):
-    ```
-    sahsuland=> SELECT areaname from lookup_cb_2014_us_county_500k where cb_2014_us_county_500k = '01804540';
-      areaname
-    ------------
-     Río Grande
-    (1 row)
-    ```
-    ![postgres rio grande](https://user-images.githubusercontent.com/6932261/45544396-128c3980-b80f-11e8-8939-0a386b6dcc24.PNG)
-    
-    SQL Server (wrong):
-    ```
-    1> SELECT areaname from rif_data.lookup_cb_2014_us_county_500k where cb_2014_us_county_500k = '01804540';
-    2> go
-    areaname                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    R+-ío Grande                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-    
-    (1 rows affected)
-    ```
-    ![sql server rio grande](https://user-images.githubusercontent.com/6932261/45543945-dad0c200-b80d-11e8-85c9-5f9497bd1256.PNG).
-	The columns are all NVARCHAR(1000) all the way back to the initial load table. They indicates an issue with *BULK INSERT* the 
-	SQL Server load command [Use Unicode Character Format to Import or Export Data](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/use-unicode-character-format-to-import-or-export-data-sql-server?view=sql-server-2017):;
-* [Issue #75 IE support - IE only works in debug mode](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/75). This is caused by 
-  ```console.log```, ```console.debug``` calls not testing if the browser is open. Most RIF and library code is safe; believed to be the 
-  proj4.js Javascript library (http://proj4js.org/);
-* [Issue #57 front end mapping synchronisation (map auto draw disabled](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/57), 
-  #issue #67 print state support depends). This is cause by the map being rendered before the Choropleth map is setup in the Choroscope 
-  service. Work around is to do this manually using the setup icon.;
-* [Issue #56 error loading study from database generated JSON](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/56). Error 
-  loading study from database via middleware generated file; **ERROR: Could not set study state: No comparison area polygons:** this is 
-  caused by no area_ids in the database generated JSON;
-* [Issue #113 refresh logs you off](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113). When the user refreshes 
-  angular goes to state 0 which effectively logs you off. State 0 needs to ask the database if the user (saved as a cookie) is still 
-  logged on the session will resume in state1 (study submission screen).
 
 # Enhancements
 
 ## Now (Q1 2019)
+  
+### Make the RIF Usable within SAHSU
 
-### Additional Covariates
+These are a priority for end of February 2019, in priority order:
 
+* [Issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for March 2019). 
   This will be implemented this in two stages:
 
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
     (this reduce resource risk). Multiple additional covariates available in the extract.
   * Full multiple covariate support;
-  
-This is a priority for end of February 2019.
-  
-### Make the RIF Usable within SAHSU
-
-These are a priority for end of February 2019
-
-* [Issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
+* [Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
+  Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
+  * Individual site analysis;
+  * Pooled analysis (1 or more groups of sites). Groups would be defined from a categorisation variable in the shapefile. Would require 
+    changes to:
+    * Shapefile load screen and controller;
+    * JSON study definition format;  
+    * Study extract and result tables;
+	* R risk analysis code.
 * [Issue #126 Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). Functionality is already
   in place, need to confirm that SQL Server works and both ports perform acceptably. Note that this is not considered suitable for denominator
   or covariate data;
@@ -95,7 +80,7 @@ These are not:
 * [Issue #68 risk analysis selection at high resolution does not work acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/68):
   * PNG tile support in test;
   * [Issue #66 Mouseover support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66) (so you can see 
-    the area names). Reference: (https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd);
+    the area names). Reference: [https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3d](https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd);
 * [Issue #121 Add prior sensitivity analysis](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121);
 * [Issue #67](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/67) print state support for saving user print selection;
 * [Issue #118 extend PNG tile support to mapping](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/118). Adds the ability to use tiles instead of GeoJSON in the front end, Currently only 
@@ -385,3 +370,53 @@ R service is single threaded. Possible options are:
 ## SAHSU
 
 * Health Atlas Integration. Map data from the RIF could be exported as tiles in GeoJSON, TopoJSON or PNG format for use in a Health Atlas.
+
+# Bug Fixes
+
+## High priority
+
+* [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two).;
+
+## To be allocated - low priority
+
+* [Issue #79 TileMaker Unicode area names](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79) - SQL Server 
+  only. Some examples from the US geography in Puerto Rico:
+
+  * Postgres works fine. Previous fix to NVARCHAR(1000) has worked. SQL Server is still wrong. Problems is therefore in the SQL Server 
+    database. Effects database, hopefully not the various Java/Javascript drivers. 
+
+    Postgres (correct):
+    ```
+    sahsuland=> SELECT areaname from lookup_cb_2014_us_county_500k where cb_2014_us_county_500k = '01804540';
+      areaname
+    ------------
+     Río Grande
+    (1 row)
+    ```
+    
+    SQL Server (wrong):
+    ```
+    1> SELECT areaname from rif_data.lookup_cb_2014_us_county_500k where cb_2014_us_county_500k = '01804540';
+    2> go
+    areaname                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    R+-ío Grande                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+    
+    (1 rows affected)
+    ```
+    ![sql server rio grande](https://user-images.githubusercontent.com/6932261/45543945-dad0c200-b80d-11e8-85c9-5f9497bd1256.PNG)
+	
+	The columns are all NVARCHAR(1000) all the way back to the initial load table. They indicates an issue with *BULK INSERT* the 
+	SQL Server load command [Use Unicode Character Format to Import or Export Data](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/use-unicode-character-format-to-import-or-export-data-sql-server?view=sql-server-2017):;
+* [Issue #75 IE support - IE only works in debug mode](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/75). This is caused by 
+  ```console.log```, ```console.debug``` calls not testing if the browser is open. Most RIF and library code is safe; believed to be the 
+  proj4.js Javascript library [http://proj4js.org/](http://proj4js.org/);
+* [Issue #57 front end mapping synchronisation (map auto draw disabled](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/57), 
+  [issue #67 print state support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/75) depends. This is caused by the map being rendered before the Choropleth map is setup in the Choroscope 
+  service. Work around is to do this manually using the setup icon.;
+* [Issue #56 error loading study from database generated JSON](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/56). Error 
+  loading study from database via middleware generated file; **ERROR: Could not set study state: No comparison area polygons:** this is 
+  caused by no area_ids in the database generated JSON;
+* [Issue #113 refresh logs you off](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113). When the user refreshes 
+  angular goes to state 0 which effectively logs you off. State 0 needs to ask the database if the user (saved as a cookie) is still 
+  logged on the session will resume in state1 (study submission screen).
