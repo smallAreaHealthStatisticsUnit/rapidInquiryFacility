@@ -55,7 +55,18 @@ See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello o
 
 These are a priority for end of February 2019, in priority order:
 
-* [Issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
+* [Issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). These will 
+  replace the posterior probability J curve and the frequency count the FP defined D3 charts displaying the homogeneity data.
+
+  This will be based on the visible displays in the RIF 3.2, for point source exposures (minimum displayed dataset to include 
+  observed counts, expected counts, relative risk, trend test for each site, and adjusted by region with heterogeneity testing and 
+  meta-analysis function. The content and layout should be discussed with FP:
+  * Covariate loss report [button which opens a popup window]:
+    ![Covariate data loss RIF 3.2 popups]({{ site.baseurl }}/plans/Covariate data loss RIF 3.2 popups.png)
+  * RIF 3.2 risk analysis results [replacement for the frequency count]:
+    ![RIF 3.2 risk analysis results]({{ site.baseurl }}/plans/RIF 3.2 risk analysis results.png)
+  * RIF 3.2 risk analysis graph [replacement for the posterior probability J curve]:
+    ![RIF 3.2 risk analysis graph]({{ site.baseurl }}/plansRIF 3.2 risk analysis graph.png);
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
   March 2019). This will be implemented this in two stages:
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
