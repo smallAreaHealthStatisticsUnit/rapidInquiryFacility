@@ -66,7 +66,7 @@ These are a priority for end of February 2019, in priority order:
   * RIF 3.2 risk analysis results [replacement for the frequency count]:
     ![RIF 3.2 risk analysis results]({{ site.baseurl }}/plans/RIF 3.2 risk analysis results.png)
   * RIF 3.2 risk analysis graph [replacement for the posterior probability J curve]:
-    ![RIF 3.2 risk analysis graph]({{ site.baseurl }}/plansRIF 3.2 risk analysis graph.png);
+    ![RIF 3.2 risk analysis graph]({{ site.baseurl }}/plans/RIF 3.2 risk analysis graph.png);
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
   March 2019). This will be implemented this in two stages:
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
