@@ -61,12 +61,38 @@ These are a priority for end of February 2019, in priority order:
   This will be based on the visible displays in the RIF 3.2, for point source exposures (minimum displayed dataset to include 
   observed counts, expected counts, relative risk, trend test for each site, and adjusted by region with heterogeneity testing and 
   meta-analysis function. The content and layout should be discussed with FP:
-  * Covariate loss report [button which opens a popup window]:
+  * Covariate loss report. [This will be added to study summary report (the (i) button in the data viewer. Study summary is currently 
+    broken:
     ![Covariate data loss RIF 3.2 popups]({{ site.baseurl }}/plans/Covariate data loss RIF 3.2 popups.png)
   * RIF 3.2 risk analysis results [replacement for the frequency count]:
     ![RIF 3.2 risk analysis results]({{ site.baseurl }}/plans/RIF 3.2 risk analysis results.png)
   * RIF 3.2 risk analysis graph [replacement for the posterior probability J curve]:
-    ![RIF 3.2 risk analysis graph]({{ site.baseurl }}/plans/RIF 3.2 risk analysis graph.png);
+    ![RIF 3.2 risk analysis graph]({{ site.baseurl }}/plans/RIF 3.2 risk analysis graph.png).
+	
+  Study summary error appears to be a porting fault and is trivial to fix (rif40 schema is missing):
+  ```
+  11:19:09.860 [http-nio-8080-exec-6] ERROR org.sahsu.rif.generic.util.CommonLogger : [org.sahsu.rif.services.datastorage.common.SmoothedResultManager]:
+  SmoothedResultManager.getHealthCodesForProcessedStudy error
+  getMessage:          SQLServerException: Invalid object name 'rif40_inv_conditions'.
+  getRootCauseMessage: SQLServerException: Invalid object name 'rif40_inv_conditions'.
+  getThrowableCount:   1
+  getRootCauseStackTrace >>>
+  com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_inv_conditions'.
+  	at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:259)
+  	at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1547)
+  	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:548)
+  	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:479)
+  	at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7344)
+  	at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:2713)
+  	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:224)
+  	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:204)
+  	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:401)
+  	at org.sahsu.rif.services.datastorage.common.SmoothedResultManager.getHealthCodesForProcessedStudy(SmoothedResultManager.java:387)
+  	at org.sahsu.rif.services.datastorage.common.StudyRetrievalService.getHealthCodesForProcessedStudy(StudyRetrievalService.java:834)
+  	at org.sahsu.rif.services.rest.StudyResultRetrievalServiceResource.getHealthCodesForProcessedStudy(StudyResultRetrievalServiceResource.java:697)
+  	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)`
+  ```
+	
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
   March 2019). This will be implemented this in two stages:
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
