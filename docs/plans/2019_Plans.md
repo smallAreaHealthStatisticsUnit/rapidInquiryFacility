@@ -353,10 +353,23 @@ R service is single threaded. Possible options are:
   This would be a longer term objective to fully integrate Tile manufacturing into the main RIF. It requires support for 
   simplification and TopoJSON generation in one of:
   
-  * The database (SQL Server does not)
-  * Geotools: no support for TopoJSON
+  * The database (SQL Server does not);
+  * Geotools: no support for TopoJSON;
   * Use of [Node.js from within Java](https://eclipsesource.com/blogs/2016/07/20/running-node-js-on-the-jvm/). This requires [J2V8](https://eclipsesource.com/blogs/tutorials/getting-started-with-j2v8/) 
-    and is probably the best option as it reuses the Node.js code  
+    and is probably the best option as it reuses the Node.js code;
+	
+  To be in the hierarchy the intersection code insert_hierarchy.sql selects the intersection with the largest intersection by area for 
+  each (higher resolution). This eliminates duplicates and picks the most likely intersection on the basis of area. There are two 
+  possible reasons for this failure:
+  * An intersection was not found. Visually this appears to be the case;
+  * The area is zero. This seems unlikely and would need to be tested in SQL.
+	
+  Currently the hierarchy intersector intersects by the largest area; so where there is an overlap the correct area is chosen. However missing
+  intersctions, typically missing Islands (e.g. Lidingö Kommun does not intersect: https://en.wikipedia.org/wiki/Liding%C3%B6 Stockholm county) or
+  reclaimed ground (e.g. Cardiff docks COAs W00010161 and W00010143 are missing from the LSOA intersction). These have to be fixed by hand 
+  by inserting the correct intersction; an algorithm to pick the nearest shape by centroid is required.
+  
+  ![Cardiff docks COA issue]({{ site.baseurl }}/rifNodeServices/cardiff_COA_issue2.png)
 
 ### Performance Improvements
 
