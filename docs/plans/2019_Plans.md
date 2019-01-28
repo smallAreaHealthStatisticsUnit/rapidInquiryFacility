@@ -371,6 +371,10 @@ R service is single threaded. Possible options are:
   
   ![Cardiff docks COA issue]({{ site.baseurl }}/rifNodeServices/cardiff_COA_issue2.png)
 
+   Gottröra parish in STOCKHOLM (a level3) is not included because the level4 area includes two level3's and the neighbour was picked as 
+   it was bigger, so was deleted. This has to be the only action when this occurs and is likely to cause issues with geocoded data where
+   of course both level3's can be used. Fixed by deleting the smaller parish. This can be logically detected and added to the processing.
+   
 ### Performance Improvements
 
 * [Issue #80 optimise performance on large datasets](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/80). 
