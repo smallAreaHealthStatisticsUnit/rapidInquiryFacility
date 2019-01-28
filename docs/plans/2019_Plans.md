@@ -10,71 +10,134 @@ title: 2019 Plans
 
 RIF Priorities for the first quarter of 2019 are:
 
-1. Make the RIF Usable within SAHSU;
-2. Improve the installation process
+1. Make the RIF Usable within SAHSU [PH; in priority order];
+   * [Risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
+   * [Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124). One primary 
+      covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
+     (this reduce resource risk). Multiple additional covariates available in the extract;
+   * [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
+     Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
+     * Individual site analysis;
+     * Pooled analysis (1 or more groups of sites). Groups would be defined from a categorisation variable in the shapefile. Would require 
+	   changes to:
+       * Shapefile load screen and controller;
+       * JSON study definition format;  
+       * Study extract and result tables;
+	   * R risk analysis code.
+   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). 
+  
+2. Improve the installation process [MM]
 
+3. One high priority bug. [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). 
+   SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two). Postgres is 
+   fully functional [PH];
+
+For the rest of 2019 the focus is currently expected to be on:
+
+* Fully multiple covariate support;
+* Information governance;
+* Data loading;
+* Logging and auditing;
+* Data extract improvements;
+* Cluster analysis;
+* R scalability.
+   
+This is likely to change to adapt to funder requirements.
+   
 See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello or as a graphic: 
 ![2019 RIF Roadmap]({{ site.baseurl }}/plans/2019_RIF_Roadmap.png)
-
-# Bug Fixes
-
-## High priority
-
-* SQL Server SAHSU Database not linked to geography;
-
-## To be allocated - low priority
-
-* Issue #79 Unicode area names (SQL Server only);
-* Issue #75 IE support;
-* Issue #57 front end mapping synchronisation (map auto draw disabled, #issue #67 print state support depends);
-* Issue #56 error loading studty from database generated JSON;
-* Issue #113 refresh logs you off;.
 
 # Enhancements
 
 ## Now (Q1 2019)
-
-### Additional Covariates
-
-* [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for March 2019). 
-  This will be implemented this in two stages:
-
-  * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
-    (this reduce resource risk). Multiple additional covariates available in the extract.
-  * Full multiple covariate support;
-  
-This is a priority for end of February 2019.
   
 ### Make the RIF Usable within SAHSU
 
-These are a priority for end of February 2019
+These are a priority for end of February 2019, in priority order:
 
-* [Issue #? risk analysis maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/?);
-* [Issue #126 Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126);
+* [Issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). These will 
+  replace the posterior probability J curve and the frequency count the FP defined D3 charts displaying the homogeneity data.
+
+  This will be based on the visible displays in the RIF 3.2, for point source exposures (minimum displayed dataset to include 
+  observed counts, expected counts, relative risk, trend test for each site, and adjusted by region with heterogeneity testing and 
+  meta-analysis function. The content and layout should be discussed with FP:
+  * Covariate loss report. [This will be added to study summary report (the (i) button in the data viewer. Study summary is currently 
+    broken:
+    ![Covariate data loss RIF 3.2 popups]({{ site.baseurl }}/plans/Covariate data loss RIF 3.2 popups.png)
+  * RIF 3.2 risk analysis results [replacement for the frequency count]:
+    ![RIF 3.2 risk analysis results]({{ site.baseurl }}/plans/RIF 3.2 risk analysis results.png)
+  * RIF 3.2 risk analysis graph [replacement for the posterior probability J curve]:
+    ![RIF 3.2 risk analysis graph]({{ site.baseurl }}/plans/RIF 3.2 risk analysis graph.png).
+	
+  Study summary error appears to be a porting fault and is trivial to fix (rif40 schema is missing):
+  ```
+  11:19:09.860 [http-nio-8080-exec-6] ERROR org.sahsu.rif.generic.util.CommonLogger : [org.sahsu.rif.services.datastorage.common.SmoothedResultManager]:
+  SmoothedResultManager.getHealthCodesForProcessedStudy error
+  getMessage:          SQLServerException: Invalid object name 'rif40_inv_conditions'.
+  getRootCauseMessage: SQLServerException: Invalid object name 'rif40_inv_conditions'.
+  getThrowableCount:   1
+  getRootCauseStackTrace >>>
+  com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_inv_conditions'.
+  	at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:259)
+  	at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1547)
+  	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:548)
+  	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:479)
+  	at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7344)
+  	at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:2713)
+  	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:224)
+  	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:204)
+  	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:401)
+  	at org.sahsu.rif.services.datastorage.common.SmoothedResultManager.getHealthCodesForProcessedStudy(SmoothedResultManager.java:387)
+  	at org.sahsu.rif.services.datastorage.common.StudyRetrievalService.getHealthCodesForProcessedStudy(StudyRetrievalService.java:834)
+  	at org.sahsu.rif.services.rest.StudyResultRetrievalServiceResource.getHealthCodesForProcessedStudy(StudyResultRetrievalServiceResource.java:697)
+  	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)`
+  ```
+	
+* [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
+  March 2019). This will be implemented this in two stages:
+  * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
+    (this reduce resource risk). Multiple additional covariates available in the extract.
+  * Full multiple covariate support;
+* [Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
+  Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
+  * Individual site analysis;
+  * Pooled analysis (1 or more groups of sites). Groups would be defined from a categorisation variable in the shapefile. Would require 
+    changes to:
+    * Shapefile load screen and controller;
+    * JSON study definition format;  
+    * Study extract and result tables;
+	* R risk analysis code.
+* [Issue #126 Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). Functionality is already
+  in place, need to confirm that SQL Server works and both ports perform acceptably. Note that this is not considered suitable for denominator
+  or covariate data;
 
 These are not:
 
 * [Issue #68 risk analysis selection at high resolution does not work acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/68):
   * PNG tile support in test;
-  * [Mouseover support required](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66) (so you can see the area names) - issue #66;
-* [Issue #121 Add priors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121);
+  * [Issue #66 Mouseover support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66) (so you can see 
+    the area names). Reference: [https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3d](https://gist.github.com/perliedman/84ce01954a1a43252d1b917ec925b3dd);
+* [Issue #121 Add prior sensitivity analysis](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121);
 * [Issue #67](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/67) print state support for saving user print selection;
 * [Issue #118 extend PNG tile support to mapping](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/118). Adds the ability to use tiles instead of GeoJSON in the front end, Currently only 
   integrated to the when load a large area study from a JSON file.
 
   For geolevels with more than 5000 areas the RIF middleware can auto generate PNG tiles on startup. Tiles are then cached;
-* [Issue #80 optimise performance on large datasets](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/80);
 
 ### Improve the Installation Process
 
-* [Issue #118 Improve the installation process](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/118);
+* [Issue #115 Improve the installation process](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/115). There 
+  should be as few manual interactions as possible. Preferably none, though obviously the user giving details at the start is fine. A 
+  middleware installer executable would be excellent;
 
 ## Next (Q2-Q4 2019)
+
+This is likely to change to adapt to funder requirements.
 
 ### Support Multiple Covariates
 
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for March 2019);
-  See above.
+  See above. This will focus on the statistical support.
   
 ### Information Governance
 
@@ -230,11 +293,9 @@ covariates and denominator data
 
 Reference: 
 
-  Li G, Best N, Hansell AL, Ahmed I and Richardson S. 2012. 
-  
-  BaySTDetect: detecting unusual temporal patterns in small area data via Bayesian model choice. 
-  
-  Biostatistics 13(4):695-710. DOI: 10.1093/biostatistics/kxs005.
+*  Li G, Best N, Hansell AL, Ahmed I and Richardson S. 2012. 
+   BaySTDetect: detecting unusual temporal patterns in small area data via Bayesian model choice. 
+   Biostatistics 13(4):695-710. DOI: 10.1093/biostatistics/kxs005.
 
 The original code used WinBugs; would require an R version.
 		   
@@ -292,18 +353,38 @@ R service is single threaded. Possible options are:
   This would be a longer term objective to fully integrate Tile manufacturing into the main RIF. It requires support for 
   simplification and TopoJSON generation in one of:
   
-  * The database (SQL Server does not)
-  * Geotools: no support for TopoJSON
+  * The database (SQL Server does not);
+  * Geotools: no support for TopoJSON;
   * Use of [Node.js from within Java](https://eclipsesource.com/blogs/2016/07/20/running-node-js-on-the-jvm/). This requires [J2V8](https://eclipsesource.com/blogs/tutorials/getting-started-with-j2v8/) 
-    and is probably the best option as it reuses the Node.js code  
+    and is probably the best option as it reuses the Node.js code;
+	
+  To be in the hierarchy the intersection code insert_hierarchy.sql selects the intersection with the largest intersection by area for 
+  each (higher resolution). This eliminates duplicates and picks the most likely intersection on the basis of area. There are two 
+  possible reasons for this failure:
+  * An intersection was not found. Visually this appears to be the case;
+  * The area is zero. This seems unlikely and would need to be tested in SQL.
+	
+  Currently the hierarchy intersector intersects by the largest area; so where there is an overlap the correct area is chosen. However missing
+  intersctions, typically missing Islands (e.g. Lidingö Kommun does not intersect: https://en.wikipedia.org/wiki/Liding%C3%B6 Stockholm county) or
+  reclaimed ground (e.g. Cardiff docks COAs W00010161 and W00010143 are missing from the LSOA intersction). These have to be fixed by hand 
+  by inserting the correct intersction; an algorithm to pick the nearest shape by centroid is required.
+  
+  ![Cardiff docks COA issue]({{ site.baseurl }}/rifNodeServices/cardiff_COA_issue2.png)
 
 ### Performance Improvements
 
-* Partitioning support in data loading
-* Parallel Queries
-* Tuning manual
-* Front end tuning
-* Parallelise R
+* [Issue #80 optimise performance on large datasets](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/80). 
+  This work is envisaged to require:
+
+  * Use of partitioning for Health data (especially denominators);
+  * Potential for the tuning of extraction SQL, especially on SQL Server. If partitioning is used it is essential to verify that 
+    partition elimination occurs so that the database only fetches the years of data actually required by the study, indexes 
+	are not disabled and the query plan remains structurally the same;
+  * Partitioning support in data loading
+  * Parallel Queries
+  * Tuning manual
+  * Front end tuning
+  * Parallelise R
 
 ### Generalise User Management
 
@@ -318,3 +399,88 @@ R service is single threaded. Possible options are:
   The private network used to use this - its is hard to setup, requires configuration of the browser and a Kerberos type 
   connection in the Java which the Microsoft JDBC driver apparently support [Using Kerberos Integrated Authentication to 
   connect to SQL Server](https://docs.microsoft.com/en-us/sql/connect/jdbc/using-kerberos-integrated-authentication-to-connect-to-sql-server?view=sql-server-2017) 
+
+# Potential Additional Functionality
+
+## CDC
+
+* Loading of local data extracts and covariates directly into the RIF; e.g. you could load the SEER data directly into the RIF in a single 
+  operation with no other data required other than the geography;
+
+## PHE
+
+* Encrypted data extract ZIP files;
+* Prevention of any data download from the RIF except via the encrypted data extract ZIP files. Currently the RIF displays data in 
+  tables populated by REST calls, if the user is authorised by information governance they can be downloaded or copied from the screen. 
+  They would be prevented even if information governance permits so the only method to download the data is via the encrypted data extract. 
+  The RIF front end uses [UI-Grid](http://ui-grid.info/) for tabular data and this support selection and export controls (i.e. they can 
+  be disabled). Disabling web browser copy everywhere is likely to be difficult and a satisfactory solution may not be possible. 
+
+## SAHSU
+
+* Health Atlas Integration. Map data from the RIF could be exported as tiles in GeoJSON, TopoJSON or PNG format for use in a Health Atlas.
+
+# Bug Fixes
+
+## High priority
+
+* [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two).;
+
+## To be allocated - low priority
+
+* [Issue #79 TileMaker Unicode area names](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/79) - SQL Server 
+  only. Some examples from the US geography in Puerto Rico:
+
+  * Postgres works fine. Previous fix to NVARCHAR(1000) has worked. SQL Server is still wrong. Problems is therefore in the SQL Server 
+    database. Effects database, hopefully not the various Java/Javascript drivers. 
+
+    Postgres (correct):
+    ```
+    sahsuland=> SELECT areaname from lookup_cb_2014_us_county_500k where cb_2014_us_county_500k = '01804540';
+      areaname
+    ------------
+     Río Grande
+    (1 row)
+    ```
+    
+    SQL Server (wrong):
+    ```
+    1> SELECT areaname from rif_data.lookup_cb_2014_us_county_500k where cb_2014_us_county_500k = '01804540';
+    2> go
+    areaname                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    R+-ío Grande                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+    
+    (1 rows affected)
+    ```
+    ![sql server rio grande](https://user-images.githubusercontent.com/6932261/45543945-dad0c200-b80d-11e8-85c9-5f9497bd1256.PNG)
+	
+	The columns are all NVARCHAR(1000) all the way back to the initial load table. They indicates an issue with *BULK INSERT* the 
+	SQL Server load command [Use Unicode Character Format to Import or Export Data](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/use-unicode-character-format-to-import-or-export-data-sql-server?view=sql-server-2017):;
+* [Issue #75 IE support - IE only works in debug mode](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/75). This is caused by 
+  ```console.log```, ```console.debug``` calls not testing if the browser is open. Most RIF and library code is safe; believed to be the 
+  proj4.js Javascript library [http://proj4js.org/](http://proj4js.org/);
+* [Issue #57 front end mapping synchronisation (map auto draw disabled](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/57), 
+  [issue #67 print state support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/75) depends. This is caused by the map being rendered before the Choropleth map is setup in the Choroscope 
+  service. Work around is to do this manually using the setup icon.;
+* [Issue #56 error loading study from database generated JSON](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/56). Error 
+  loading study from database via middleware generated file; **ERROR: Could not set study state: No comparison area polygons:** this is 
+  caused by no area_ids in the database generated JSON;
+* [Issue #113 refresh logs you off](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113). When the user refreshes 
+  angular goes to state 0 which effectively logs you off. State 0 needs to ask the database if the user (saved as a cookie) is still 
+  logged on the session will resume in state1 (study submission screen).
+* [Issue #130 Risk analysis fault/issues (branch: risk-analysis-fixes-2)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/130). 
+  1. Multiple Health outcomes produces errors
+  2. Health outcome may require a geography change - if it is wrong you get:
+     ```
+     ERROR: No health data for theme "SAHSU land cancer incidence example data", geography "EWS2011". 
+     ERROR: Could not retrieve your project information from the database: unable to get numerator/denominator pair 
+     ```
+  3. Using add by postcode produces errors on its own, but works;
+  4. Errors if nonsensical exposure bands are selected;
+  5. Clear does not work after restore from file;
+  6. Adding a point produces errors after restore from file;
+  7. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
+  8. Load list from text file loads OK but does not display correctly;
+  9. Need a file type filter when loading JSON files;
+  10. Zip shapefile load to be able to cope with projections other than 4326 (e.g. local grid).
