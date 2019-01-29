@@ -92,6 +92,26 @@ These are a priority for end of February 2019, in priority order:
   	at org.sahsu.rif.services.rest.StudyResultRetrievalServiceResource.getHealthCodesForProcessedStudy(StudyResultRetrievalServiceResource.java:697)
   	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)`
   ```
+  Tasks:
+
+  * Modify front end to support new D3 graphs;
+  * Create a new REST middleware service *getHomegeneity* to return the rif40_homegeneity data for the study with parameters: username 
+    and studyID. I to 3 JSON records expected containing:
+    * genders
+    * homogeneity_dof
+    * homogeneity_chi2
+    * homogeneity_p
+    * linearity_chi2
+    * linearity_p
+    * explt5;
+  * Fix study summary report;
+  * Create a new REST middleware service *getCovariateLossReport* to return the covariate loss report; this will *LEFT OUTER JOIN* the 
+    numerator and covariate tables, filter by the study and comparison areas respectively, and filter the covariates the max and min 
+	ranges defined for the covariate to produce:
+	* Study or Comparision areas (S or C);
+	* Number of areas at mapping (covariate table) geolevel;
+	* Number of areas that join the numerator to the study or Comparision area for the study defined year and age sex group range;
+	* Number of areas that join the covaite to the study or Comparision area for defined coviate max/min limits;
 	
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
   March 2019). This will be implemented this in two stages:
@@ -369,7 +389,7 @@ R service is single threaded. Possible options are:
   reclaimed ground (e.g. Cardiff docks COAs W00010161 and W00010143 are missing from the LSOA intersction). These have to be fixed by hand 
   by inserting the correct intersction; an algorithm to pick the nearest shape by centroid is required.
   
-  ![Cardiff docks COA issue]({{ site.baseurl }}/rifNodeServices/cardiff_COA_issue2.png)
+  ![Cardiff docks COA issue]({{ site.baseurl }}/rifNodeServices/cardiff_COA_issue2.png){:width="100%"}
 
    Gottröra parish in STOCKHOLM (a level3) is not included because the level4 area includes two level3's and the neighbour was picked as 
    it was bigger, so was deleted. This has to be the only action when this occurs and is likely to cause issues with geocoded data where
