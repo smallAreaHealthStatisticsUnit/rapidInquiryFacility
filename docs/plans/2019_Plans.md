@@ -97,7 +97,7 @@ These are a priority for end of February 2019, in priority order:
   Tasks:
 
   * Modify front end to support new D3 graphs and the covariate loss report;
-  * Create a new REST middleware service *getHomegeneity* to return the rif40_homegeneity data for the study with parameters: username 
+  * Create a new REST middleware service *getHomogeneity* to return the rif40_homegeneity data for the study with parameters: username 
     and studyID. I to 3 JSON records expected containing:
     * genders
     * homogeneity_dof
@@ -334,6 +334,10 @@ Support for geographies would require the tileMaker functionality to be moved in
 * [Issue #97 Add additional information to circles and shapes such as number of intersections, distance to nearest source](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/97);
   This is mainly complete as of 24/1/2019; freehand circles do not support multiple intersections and support added for analysing multiple 
   shapes in a group or individually 
+
+### Add Prior sensistivity analysis 
+  
+*  [Issue #121 Add Prior sensistivity analysis](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121)
 
 ### Cluster Analysis
 
