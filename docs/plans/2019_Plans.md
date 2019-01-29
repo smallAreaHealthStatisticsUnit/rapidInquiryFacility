@@ -11,8 +11,8 @@ title: 2019 Plans
 RIF Priorities for the first quarter of 2019 are:
 
 1. Make the RIF Usable within SAHSU [PH; in priority order];
-   * [Risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
-   * [Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124). One primary 
+   * [Risk analysis specific D3 graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
+   * [Multiple (used in statistical calculations) and additional (for use outside of the RIF) covariate support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124). One primary 
       covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
      (this reduce resource risk). Multiple additional covariates available in the extract;
    * [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
@@ -24,7 +24,9 @@ RIF Priorities for the first quarter of 2019 are:
        * JSON study definition format;  
        * Study extract and result tables;
 	   * R risk analysis code.
-   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). 
+   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). IF access to remove 
+     numerator data in Oracle.
+ 
   
 2. Improve the installation process [MM]
 
@@ -34,7 +36,7 @@ RIF Priorities for the first quarter of 2019 are:
 
 For the rest of 2019 the focus is currently expected to be on:
 
-* Fully multiple covariate support;
+* Full multiple covariate support;
 * Information governance;
 * Data loading;
 * Logging and auditing;
@@ -181,7 +183,7 @@ This is likely to change to adapt to funder requirements.
   * Add new users;
   * Manage table permissions (grant SELECT on table/view to role
   * Add new roles, manage what users have what role, including rif_manager;
-  * Display user view of privileges. An Oracle example is: [Pete Finnigan find_all_privs.sql](http://www.petefinnigan.com/find_all_privs.sql)
+  * Display per user view of privileges. An Oracle example is: [Pete Finnigan find_all_privs.sql](http://www.petefinnigan.com/find_all_privs.sql)
     ```
 	SQL> @find_all_privs.sql 
     FIND_ALL_PRIVS: Release 1.3.0.0.0 - Production - (http://www.petefinnigan.com) 
@@ -252,15 +254,24 @@ This is likely to change to adapt to funder requirements.
 [Data loader tools - issues #84](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/84)
 
 A new simple loading tool that is part of the main RIF web application that just loads data in a predefined format directly 
-into the database. It would be able to:
+into the database. The tool would be a "Data Loading" tab on the main RIF screen, visible only the users with the *rif_manager* role.
+It would have four new icons similar to the tree focused on:
+* Geographies;
+* Denominator data;
+* Covariates;
+* Numerator data;
 
+It would be able to:
 * Convert age and sex to AGE_SEX_GROUP;
-* Add additional required geography fields as long as the highest resolution is provided;
+* Add additional required geography fields to data as long as the highest resolution is provided;
 * Verify the defined primary key;
 * Partition and index
 
 Longer term the data loader tool could support more formats, e.g. typical SAHSU study extracts or CDC datasets and the loading of 
-covariates and denominator data
+covariates and denominator data.
+
+Support for geographies would require the tileMaker functionality to be moved into the RIF - see below and 
+[Issue #91 Tilemaker updates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/91).
 
 ### Data Extract Improvements
 
