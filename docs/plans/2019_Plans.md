@@ -492,7 +492,7 @@ R service is single threaded. Possible options are:
     
     (1 rows affected)
     ```
-    ![sql server rio grande](https://user-images.githubusercontent.com/6932261/45543945-dad0c200-b80d-11e8-85c9-5f9497bd1256.PNG)
+    ![sql server rio grande](https://user-images.githubusercontent.com/6932261/45543945-dad0c200-b80d-11e8-85c9-5f9497bd1256.PNG){:width="100%"}
 	
 	The columns are all NVARCHAR(1000) all the way back to the initial load table. They indicates an issue with *BULK INSERT* the 
 	SQL Server load command [Use Unicode Character Format to Import or Export Data](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/use-unicode-character-format-to-import-or-export-data-sql-server?view=sql-server-2017):;
