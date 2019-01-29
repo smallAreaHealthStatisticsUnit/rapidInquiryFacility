@@ -84,7 +84,9 @@ public class RIFPdfTiles {
 	 * @throws RIFServiceException RIF error
      */		
 	private String createNullTile(
-		final SlippyTile slippyTile) throws RIFServiceException {
+		final SlippyTile slippyTile,
+		final String geography,
+		final String geoLevel) throws RIFServiceException {
 		String result;
 		try {
 			int w = 256;
@@ -100,7 +102,8 @@ public class RIFPdfTiles {
 
 			rifTilesCache.cacheTile(null /* tileGeoJson */, os, "NULL", slippyTile, "NULL", "png");
 			result=Base64.getEncoder().encodeToString(os.toByteArray());
-			
+		
+			rifTilesCache.cacheTile(null /* tileGeoJson */, os, geography, slippyTile, geoLevel, "png");	
 			g2d.dispose();
 			
 			return result;		
@@ -164,7 +167,7 @@ public class RIFPdfTiles {
 						"; geoLevel: " + geoLevel);
 				}
 				else {
-					return createNullTile(slippyTile);
+					return createNullTile(slippyTile, "NULL", "NULL");
 				}
 			}
 			// Style 
@@ -226,8 +229,9 @@ public class RIFPdfTiles {
 			finally {
 				iterator.close();
 			}
+			
 			if (!intersects) {
-				return createNullTile(slippyTile);
+				return createNullTile(slippyTile, geography.toLowerCase(), geoLevel.toLowerCase()); // And cache
 			}
 
 			MapViewport mapViewport = mapContent.getViewport();
