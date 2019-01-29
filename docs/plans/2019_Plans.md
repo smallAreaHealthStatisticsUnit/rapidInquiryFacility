@@ -94,7 +94,7 @@ These are a priority for end of February 2019, in priority order:
   ```
   Tasks:
 
-  * Modify front end to support new D3 graphs;
+  * Modify front end to support new D3 graphs and the covariate loss report;
   * Create a new REST middleware service *getHomegeneity* to return the rif40_homegeneity data for the study with parameters: username 
     and studyID. I to 3 JSON records expected containing:
     * genders
@@ -109,15 +109,30 @@ These are a priority for end of February 2019, in priority order:
     numerator and covariate tables, filter by the study and comparison areas respectively, and filter the covariates the max and min 
 	ranges defined for the covariate to produce:
 	* Study or Comparision areas (S or C);
+	* Covariate name;
 	* Number of areas at mapping (covariate table) geolevel;
 	* Number of areas that join the numerator to the study or Comparision area for the study defined year and age sex group range;
 	* Number of areas that join the covaite to the study or Comparision area for defined coviate max/min limits;
-	
+  REST parameters: username and studyID, returns two x number of covariates records for a risk analysis study using covariates; 
+  otherwise an error; 	
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
   March 2019). This will be implemented this in two stages:
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
     (this reduce resource risk). Multiple additional covariates available in the extract.
   * Full multiple covariate support;
+  Tasks, stage one (one primary covariate, multiple additional covariates):
+  * Create table/view pair *t_rif40_inv_additional_covariates/rif40_inv_additional_covariates*;
+  * Add support for additional covariates to the investigations screen and to the JSON study defintion in the front end;
+  * Middleware support for additional covariates as a) objects, b) JSON study defintion c) database and d) extract reports;
+  * Add support for additional covariates in Postgres and SQL Server study extraction SQL;
+  * Confirm additional covariates appear in the extract and in the data viewer extract table;
+  Tasks, stage two (multiple covariates):
+  * Add support for multiple covariates to the investigations screen and to the JSON study defintion in the front end;
+  * Middleware support for multiple covariates as a) objects, b) JSON study defintion c) database and d) extract reports;
+  * Add support for multiple covariates in Postgres and SQL Server study extraction SQL;
+  * Add support for multiple covariates in the R code;
+  * Confirm multiple covariates appear in the extract and in the data viewer extract table;
+  
 * [Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
   Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
   * Individual site analysis;
