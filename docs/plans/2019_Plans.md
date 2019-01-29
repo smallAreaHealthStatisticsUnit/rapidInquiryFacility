@@ -122,12 +122,14 @@ These are a priority for end of February 2019, in priority order:
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
     (this reduce resource risk). Multiple additional covariates available in the extract.
   * Full multiple covariate support;
+  
   Tasks, stage one (one primary covariate, multiple additional covariates):
   * Create table/view pair *t_rif40_inv_additional_covariates/rif40_inv_additional_covariates*;
   * Add support for additional covariates to the investigations screen and to the JSON study defintion in the front end;
   * Middleware support for additional covariates as a) objects, b) JSON study defintion c) database and d) extract reports;
   * Add support for additional covariates in Postgres and SQL Server study extraction SQL;
   * Confirm additional covariates appear in the extract and in the data viewer extract table;
+  
   Tasks, stage two (multiple covariates):
   * Add support for multiple covariates to the investigations screen and to the JSON study defintion in the front end;
   * Middleware support for multiple covariates as a) objects, b) JSON study defintion c) database and d) extract reports;
