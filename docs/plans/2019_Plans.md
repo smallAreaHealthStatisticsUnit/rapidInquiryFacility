@@ -11,8 +11,8 @@ title: 2019 Plans
 RIF Priorities for the first quarter of 2019 are:
 
 1. Make the RIF Usable within SAHSU [PH; in priority order];
-   * [Risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
-   * [Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124). One primary 
+   * [Risk analysis specific D3 graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
+   * [Multiple (used in statistical calculations) and additional (for use outside of the RIF) covariate support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124). One primary 
       covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
      (this reduce resource risk). Multiple additional covariates available in the extract;
    * [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
@@ -24,7 +24,9 @@ RIF Priorities for the first quarter of 2019 are:
        * JSON study definition format;  
        * Study extract and result tables;
 	   * R risk analysis code.
-   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). 
+   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). IF access to remove 
+     numerator data in Oracle.
+ 
   
 2. Improve the installation process [MM]
 
@@ -34,7 +36,7 @@ RIF Priorities for the first quarter of 2019 are:
 
 For the rest of 2019 the focus is currently expected to be on:
 
-* Fully multiple covariate support;
+* Full multiple covariate support;
 * Information governance;
 * Data loading;
 * Logging and auditing;
@@ -92,12 +94,49 @@ These are a priority for end of February 2019, in priority order:
   	at org.sahsu.rif.services.rest.StudyResultRetrievalServiceResource.getHealthCodesForProcessedStudy(StudyResultRetrievalServiceResource.java:697)
   	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)`
   ```
-	
+  Tasks:
+
+  * Modify front end to support new D3 graphs and the covariate loss report;
+  * Create a new REST middleware service *getHomogeneity* to return the rif40_homegeneity data for the study with parameters: username 
+    and studyID. I to 3 JSON records expected containing:
+    * genders
+    * homogeneity_dof
+    * homogeneity_chi2
+    * homogeneity_p
+    * linearity_chi2
+    * linearity_p
+    * explt5;
+  * Fix study summary report;
+  * Create a new REST middleware service *getCovariateLossReport* to return the covariate loss report; this will *LEFT OUTER JOIN* the 
+    numerator and covariate tables, filter by the study and comparison areas respectively, and filter the covariates the max and min 
+	ranges defined for the covariate to produce:
+	* Study or Comparision areas (S or C);
+	* Covariate name;
+	* Number of areas at mapping (covariate table) geolevel;
+	* Number of areas that join the numerator to the study or Comparision area for the study defined year and age sex group range;
+	* Number of areas that join the covaite to the study or Comparision area for defined coviate max/min limits;
+  REST parameters: username and studyID, returns two x number of covariates records for a risk analysis study using covariates; 
+  otherwise an error; 	
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
   March 2019). This will be implemented this in two stages:
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
     (this reduce resource risk). Multiple additional covariates available in the extract.
   * Full multiple covariate support;
+  
+  Tasks, stage one (one primary covariate, multiple additional covariates):
+  * Create table/view pair *t_rif40_inv_additional_covariates/rif40_inv_additional_covariates*;
+  * Add support for additional covariates to the investigations screen and to the JSON study defintion in the front end;
+  * Middleware support for additional covariates as a) objects, b) JSON study defintion c) database and d) extract reports;
+  * Add support for additional covariates in Postgres and SQL Server study extraction SQL;
+  * Confirm additional covariates appear in the extract and in the data viewer extract table;
+  
+  Tasks, stage two (multiple covariates):
+  * Add support for multiple covariates to the investigations screen and to the JSON study defintion in the front end;
+  * Middleware support for multiple covariates as a) objects, b) JSON study defintion c) database and d) extract reports;
+  * Add support for multiple covariates in Postgres and SQL Server study extraction SQL;
+  * Add support for multiple covariates in the R code;
+  * Confirm multiple covariates appear in the extract and in the data viewer extract table;
+  
 * [Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
   Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
   * Individual site analysis;
@@ -146,7 +185,7 @@ This is likely to change to adapt to funder requirements.
   * Add new users;
   * Manage table permissions (grant SELECT on table/view to role
   * Add new roles, manage what users have what role, including rif_manager;
-  * Display user view of privileges. An Oracle example is: [Pete Finnigan find_all_privs.sql](http://www.petefinnigan.com/find_all_privs.sql)
+  * Display per user view of privileges. An Oracle example is: [Pete Finnigan find_all_privs.sql](http://www.petefinnigan.com/find_all_privs.sql)
     ```
 	SQL> @find_all_privs.sql 
     FIND_ALL_PRIVS: Release 1.3.0.0.0 - Production - (http://www.petefinnigan.com) 
@@ -217,15 +256,24 @@ This is likely to change to adapt to funder requirements.
 [Data loader tools - issues #84](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/84)
 
 A new simple loading tool that is part of the main RIF web application that just loads data in a predefined format directly 
-into the database. It would be able to:
+into the database. The tool would be a "Data Loading" tab on the main RIF screen, visible only the users with the *rif_manager* role.
+It would have four new icons similar to the tree focused on:
+* Geographies;
+* Denominator data;
+* Covariates;
+* Numerator data;
 
+It would be able to:
 * Convert age and sex to AGE_SEX_GROUP;
-* Add additional required geography fields as long as the highest resolution is provided;
+* Add additional required geography fields to data as long as the highest resolution is provided;
 * Verify the defined primary key;
 * Partition and index
 
 Longer term the data loader tool could support more formats, e.g. typical SAHSU study extracts or CDC datasets and the loading of 
-covariates and denominator data
+covariates and denominator data.
+
+Support for geographies would require the tileMaker functionality to be moved into the RIF - see below and 
+[Issue #91 Tilemaker updates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/91).
 
 ### Data Extract Improvements
 
@@ -286,6 +334,10 @@ covariates and denominator data
 * [Issue #97 Add additional information to circles and shapes such as number of intersections, distance to nearest source](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/97);
   This is mainly complete as of 24/1/2019; freehand circles do not support multiple intersections and support added for analysing multiple 
   shapes in a group or individually 
+
+### Add Prior sensistivity analysis 
+  
+*  [Issue #121 Add Prior sensistivity analysis](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121)
 
 ### Cluster Analysis
 
@@ -369,8 +421,12 @@ R service is single threaded. Possible options are:
   reclaimed ground (e.g. Cardiff docks COAs W00010161 and W00010143 are missing from the LSOA intersction). These have to be fixed by hand 
   by inserting the correct intersction; an algorithm to pick the nearest shape by centroid is required.
   
-  ![Cardiff docks COA issue]({{ site.baseurl }}/rifNodeServices/cardiff_COA_issue2.png)
+  ![Cardiff docks COA issue]({{ site.baseurl }}/rifNodeServices/cardiff_COA_issue2.png){:width="100%"}
 
+   Gottröra parish in STOCKHOLM (a level3) is not included because the level4 area includes two level3's and the neighbour was picked as 
+   it was bigger, so was deleted. This has to be the only action when this occurs and is likely to cause issues with geocoded data where
+   of course both level3's can be used. Fixed by deleting the smaller parish. This can be logically detected and added to the processing.
+   
 ### Performance Improvements
 
 * [Issue #80 optimise performance on large datasets](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/80). 
@@ -453,7 +509,7 @@ R service is single threaded. Possible options are:
     
     (1 rows affected)
     ```
-    ![sql server rio grande](https://user-images.githubusercontent.com/6932261/45543945-dad0c200-b80d-11e8-85c9-5f9497bd1256.PNG)
+    ![sql server rio grande](https://user-images.githubusercontent.com/6932261/45543945-dad0c200-b80d-11e8-85c9-5f9497bd1256.PNG){:width="100%"}
 	
 	The columns are all NVARCHAR(1000) all the way back to the initial load table. They indicates an issue with *BULK INSERT* the 
 	SQL Server load command [Use Unicode Character Format to Import or Export Data](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/use-unicode-character-format-to-import-or-export-data-sql-server?view=sql-server-2017):;

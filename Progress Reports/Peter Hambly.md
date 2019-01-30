@@ -3381,7 +3381,14 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 
 ### 21st to 25th January 2019
 
-* RIF meeting
+* RIF meeting;
 * 2019 plans;
 * Swedish geography build;
 * IG training.
+
+### 28th January to 1st February
+
+* Plan [issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
+  March 2019) and [issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). 
+* RIF meeting;
+* Create branch [risk_analysis_d3_graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/risk_analysis_d3_graphs);
