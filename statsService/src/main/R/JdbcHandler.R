@@ -245,8 +245,8 @@ saveDataFrameToDatabaseTable <- function(data) {
 				dbSendUpdate(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName,
 					"genders"))
 				cat(paste("Created indices on temporary table\n"), sep="")
-			# }
-		)},
+			# })
+			},
 			warning=function(w) {
 				cat(paste("saveDataFrameToDatabaseTable() WARNING: ", w, "\n"), sep="")
 			},

@@ -78,7 +78,7 @@ BEGIN;
 --
 -- 1. Support for Postgres 10 partitioning
 --
-\i ../../PLpgsql/rif40_trg_pkg/trigger_fct_rif40_tables_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_rif40_tables_checks.sql
 
 --
 -- 2. Intersection counting (study areas only)	
@@ -575,9 +575,9 @@ COMMENT ON TRIGGER trg_rif40_studies ON rif40_studies IS 'INSTEAD OF trigger for
 --
 -- 4. Add intersection counting and exposure value support to extracts
 --
-\i ../../PLpgsql/rif40_sql_pkg/rif40_startup.sql
-\i ../../PLpgsql/rif40_sm_pkg/rif40_create_extract.sql
-\i ../../PLpgsql/rif40_sm_pkg/rif40_create_insert_statement.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_startup.sql
+\i ../PLpgsql/rif40_sm_pkg/rif40_create_extract.sql
+\i ../PLpgsql/rif40_sm_pkg/rif40_create_insert_statement.sql
 
 --
 -- 5. View rif40_exposure_values

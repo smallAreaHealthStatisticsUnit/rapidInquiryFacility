@@ -52,7 +52,7 @@ prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
 
 # We have the default settings file in the current directory and the user's
 # version in their home. We use the [MAIN] section in each for most of the
-# settings, and the database-specific ones and the [NOPROMPT] ones
+# settings, and the database-specific ones and the [NOPROMPT] one.
 default_parser = ConfigParser(allow_no_value=True,
                               interpolation=ExtendedInterpolation())
 default_parser.optionxform = str # Preserve case in keys
@@ -115,7 +115,8 @@ def main():
             for script, parent in db_scripts:
                 print("About to run {}; switching to {}".format(script,
                                                                 parent))
-                result = subprocess.run([str(script)], cwd=parent, shell=True)
+                result = subprocess.run(script.split(), cwd=parent,
+                                        stderr=subprocess.STDOUT)
 
                 if result.returncode is not None and result.returncode != 0:
                     db_created = False
@@ -282,7 +283,7 @@ def get_value_from_user(key, is_path=False):
                 reply = tomcat_home_str
 
     if is_path:
-        returned_reply = Path(reply.strip()).resolve()
+        returned_reply = Path(reply.strip()).expanduser().resolve()
     else:
         returned_reply = reply.strip()
 
@@ -382,11 +383,11 @@ def short_db_name(db):
 def get_pg_scripts(settings):
     """Get the list of scripts to run for a Postgres installation.
 
-       We return a tuple containing the script as a string, and a Path
-       object representing the parent directory of the script.
+       We return a list of tuples, each containing the script as a string,
+       and a Path object representing the parent directory of the script.
     """
 
-    script_template = """psql --username=postgres --dbname=postgres \
+    script_template = """psql --username={} --dbname={} \
         --host=localhost --no-password --echo-queries --pset=pager=off \
         --variable=testuser={} \
         --variable=newdb={} \
@@ -399,35 +400,113 @@ def get_pg_scripts(settings):
         --variable=tablespace_dir= \
         --variable=pghost=localhost \
         --variable=os={} \
+        --variable=use_plr=N \
+        --variable=create_sahsuland_only=N \
         --file={}"""
 
-    creation_sql = (settings.script_root / "Postgres" / "production" /
-                   "db_create.sql")
-    main_script = create_postgres_script(settings, script_template,
-                                         creation_sql)
-    alter10 = (settings.script_root / "Postgres" / "psql_scripts" /
-               "alter_scripts" / "v4_0_alter_10.sql")
-    alter10_script = create_postgres_script(settings, script_template, alter10)
-    alter11 = (settings.script_root / "Postgres" / "psql_scripts" /
-               "alter_scripts" / "v4_0_alter_11.sql")
-    alter11_script = create_postgres_script(settings, script_template, alter11)
-    scripts = [(main_script, creation_sql.parent),
-               (alter10_script, alter10.parent),
-               (alter11_script, alter11.parent)]
-    return scripts
+    dump_template = """pg_dump -U {} -w -F custom -Z 9 -T '*x_uk*' -T \
+        '*.x_ew01*' -v -f ../install/sahsuland_dev.dump {}"""
+
+    restore_template = """pg_restore -d sahsuland -U postgres -v \
+        ../install/sahsuland_dev.dump"""
+
+    script_root = settings.script_root / "Postgres" / "psql_scripts"
+
+    main_script = format_postgres_script(settings, script_template,
+                                         script_root, "db_create.sql")
+    sahsuland_script = format_postgres_script(settings, script_template,
+                                              script_root,
+                                              "v4_0_create_sahsuland.sql",
+                                              user="rif40",
+                                              db="sahsuland_dev")
+    dump_script = format_postgres_script(settings, dump_template,
+                                         script_root, "", db="sahsuland_dev")
+    restore_script = format_postgres_script(settings, restore_template,
+                                            script_root, "", db="sahsuland")
+    alter1_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_1.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter2_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_2.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter3_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_3.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter4_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_4.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter5_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_5.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter6_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_6.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter7_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_7.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter8_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_8.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter9_script = format_postgres_script(settings, script_template,
+                                           script_root / "alter_scripts",
+                                           "v4_0_alter_9.sql",
+                                           user="rif40",
+                                           db="sahsuland")
+    alter10_script = format_postgres_script(settings, script_template,
+                                            script_root / "alter_scripts",
+                                            "v4_0_alter_10.sql",
+                                            user="rif40",
+                                            db="sahsuland")
+    alter11_script = format_postgres_script(settings, script_template,
+                                            script_root / "alter_scripts",
+                                            "v4_0_alter_11.sql",
+                                            user="rif40",
+                                            db="sahsuland")
+
+    return [(s, script_root) for s in [main_script, sahsuland_script,
+                                       dump_script, restore_script,
+                                       alter1_script, alter2_script,
+                                       #alter3_script,
+                                       #alter4_script,
+                                       alter5_script,
+                                       #alter6_script,
+                                       alter7_script, alter8_script,
+                                       alter9_script, alter10_script,
+                                       alter11_script]
+            ]
 
 
-def create_postgres_script(settings, template, script_path):
+def format_postgres_script(settings, template, script_root, script_name,
+                           user=None, db=None):
     """Create the full runnable form of a script for PostgreSQL, from a
     template."""
 
-    script = template.format(settings.db_user,
+    script = template.format("postgres" if user is None else user,
+                             "postgres" if db is None else db,
+                             settings.db_user,
                              settings.db_name,
                              settings.db_pass,
-                             settings.postgres_pass,
-                             settings.rif40_pass,
+                             encrypt_password("postgres",
+                                              settings.postgres_pass),
+                             encrypt_password("rif40",settings.rif40_pass),
                              friendly_system(),
-                             script_path)
+                             script_root / script_name)
     return script
 
 
@@ -555,10 +634,13 @@ def banner(text, width=40):
 
         # If the current word does not take us over the usable length,
         # append it to the current line. But first check for it being a
-        # newline.
+        # newline. Also: if the current "word" is longer than the usable
+        # line length (as happens in the case of some file paths) we just
+        # print it. It'll be ugly, but that's better than losing the output.
         if s == "\n":
             ready_to_print = True
-        elif line_length + 1 + len(s) <= usable_text_length:
+        elif (line_length + 1 + len(s) <= usable_text_length
+              or len(s) > usable_text_length):
 
             # Handle the first word in a line differently from all the others
             line = line + s if line == "" else line + " " + s
@@ -624,11 +706,11 @@ class Logger(object):
         os.fsync(self.file.fileno())
 
     def close(self):
-        if self.stdout != None:
+        if self.stdout is not None:
             sys.stdout = self.stdout
             self.stdout = None
 
-        if self.file != None:
+        if self.file is not None:
             self.file.close()
             self.file = None
 

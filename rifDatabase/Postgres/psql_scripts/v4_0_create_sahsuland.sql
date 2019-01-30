@@ -18,17 +18,17 @@
 --
 -- Copyright:
 --
--- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
--- that rapidly addresses epidemiological and public health questions using 
--- routinely collected health and population data and generates standardised 
--- rates and relative risks for any given health outcome, for specified age 
+-- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU
+-- that rapidly addresses epidemiological and public health questions using
+-- routinely collected health and population data and generates standardised
+-- rates and relative risks for any given health outcome, for specified age
 -- and year ranges, for any given geographical area.
 --
 -- Copyright 2014 Imperial College London, developed by the Small Area
--- Health Statistics Unit. The work of the Small Area Health Statistics Unit 
--- is funded by the Public Health England as part of the MRC-PHE Centre for 
--- Environment and Health. Funding for this project has also been received 
--- from the Centers for Disease Control and Prevention.  
+-- Health Statistics Unit. The work of the Small Area Health Statistics Unit
+-- is funded by the Public Health England as part of the MRC-PHE Centre for
+-- Environment and Health. Funding for this project has also been received
+-- from the Centers for Disease Control and Prevention.
 --
 -- This file is part of the Rapid Inquiry Facility (RIF) project.
 -- RIF is free software: you can redistribute it and/or modify
@@ -42,8 +42,8 @@
 -- GNU Lesser General Public License for more details.
 --
 -- You should have received a copy of the GNU Lesser General Public License
--- along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
--- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+-- along with RIF. If not, see <http://www.gnu.org/licenses/>; or write
+-- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 -- Boston, MA 02110-1301 USA
 --
 -- Author:
@@ -62,9 +62,9 @@
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'User check: %', user;
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;
 	END IF;
 END;
 $$;
@@ -75,9 +75,9 @@ $$;
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF current_database() = 'sahsuland_dev' THEN
-		RAISE INFO 'Database check: %', current_database();	
+		RAISE INFO 'Database check: %', current_database();
 	ELSE
-		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
+		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();
 	END IF;
 END;
 $$;
@@ -92,7 +92,8 @@ BEGIN;
 --
 -- Drop all objects
 --
-\i ../psql_scripts/v4_0_drop_rif40.sql
+\! pwd
+\i v4_0_drop_rif40.sql
 
 --
 -- Check no objects left
@@ -133,14 +134,14 @@ $$;
 
 --
 -- Test user account
--- 
+--
 \set ntestuser '''XXXX':testuser''''
 SET rif40.testuser TO :ntestuser;
 DO LANGUAGE plpgsql $$
 DECLARE
-	c1 CURSOR FOR 
+	c1 CURSOR FOR
 		SELECT CURRENT_SETTING('rif40.testuser') AS testuser;
-	c2 CURSOR(l_usename VARCHAR) FOR 
+	c2 CURSOR(l_usename VARCHAR) FOR
 		SELECT * FROM pg_user WHERE usename = l_usename;
 	c1_rec RECORD;
 	c2_rec RECORD;
@@ -152,7 +153,7 @@ BEGIN
 -- Test parameter
 --
 	IF c1_rec.testuser IN ('XXXX', 'XXXX:testuser') THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';
 	ELSE
 		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
 	END IF;
@@ -163,13 +164,13 @@ BEGIN
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
 	IF c2_rec.usename IS NULL THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
+		RAISE EXCEPTION 'db_create.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));
 	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
 		RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
 	ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
 		RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
 	ELSE
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;
 	END IF;
 --
 END;
@@ -188,7 +189,7 @@ $$;
 --
 -- Create schema
 --
-\i ../psql_scripts/v4_0_postgres_tables.sql 
+\i ../psql_scripts/v4_0_postgres_tables.sql
 
 --
 -- Add DDL control views (RIF40_TABLES_AND_VIEWS, RIF40_COLUMNS , RIF40_TRIGGERS) [actually tables on postgres]
@@ -301,7 +302,7 @@ VALUES(
 
 --
 -- Load SAHSULAND data sufficent for an empty database
--- 
+--
 \i ../sahsuland/v4_0_postgres_sahsuland_empty_imports.sql
 
 --
@@ -315,8 +316,8 @@ VALUES(
 --\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
 
 --
--- Load SAHSULAND data 
--- 
+-- Load SAHSULAND data
+--
 --\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
 
 \set VERBOSITY terse
@@ -325,9 +326,9 @@ VALUES(
 --
 DO LANGUAGE plpgsql $$
 DECLARE
-	c1 CURSOR FOR 
+	c1 CURSOR FOR
 		SELECT * FROM pg_user
- 		 WHERE usename != 'postgres' 
+ 		 WHERE usename != 'postgres'
 		   AND (pg_has_role(usename, 'rif_user', 'MEMBER') OR pg_has_role(usename, 'rif_manager', 'MEMBER'));
 --
 	c1_rec RECORD;
@@ -343,7 +344,7 @@ $$;
 
 --
 -- EW01 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
--- 
+--
 --\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
 --
 -- UK91 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
@@ -402,15 +403,15 @@ $$;
 \set VERBOSITY default
 
 --
--- Create sequences. 
+-- Create sequences.
 --
-CREATE SEQUENCE "rif40_inv_id_seq"; 
+CREATE SEQUENCE "rif40_inv_id_seq";
 CREATE SEQUENCE "rif40_study_id_seq";
 COMMENT ON SEQUENCE rif40_inv_id_seq IS 'Used as sequence for unique study index: study_id; auto populated.';
 COMMENT ON SEQUENCE rif40_study_id_seq IS 'Used as sequence for unique study index: study_id; auto populated.';
 
 --
--- Set columns to use defaults. 
+-- Set columns to use defaults.
 --
 ALTER TABLE t_rif40_studies ALTER COLUMN study_id SET DEFAULT NEXTVAL('rif40_study_id_seq')::INTEGER;
 ALTER TABLE t_rif40_investigations ALTER COLUMN inv_id SET DEFAULT NEXTVAL('rif40_inv_id_seq')::INTEGER;
@@ -422,7 +423,7 @@ DECLARE
 	c1 CURSOR FOR /* All tables with study_id, inv_id foreign key columns apart from t_rif40_investigations */
 		SELECT a.tablename, b.attname AS columnname
 		  FROM pg_tables a, pg_attribute b, pg_class c
-		 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname = 'rif40') 
+		 WHERE c.relowner IN (SELECT oid FROM pg_roles WHERE rolname = 'rif40')
 		   AND c.oid = b.attrelid
 		   AND b.attname IN ('study_id', 'inv_id')
 		   AND a.tablename NOT IN ('t_rif40_investigations', 't_rif40_studies')
@@ -447,9 +448,9 @@ $$;
 
 \set VERBOSITY default
 
--- 
+--
 -- Load shapefiles - now moved to GIS schema; and run as gis
--- 
+--
 -- \i ../shapefiles/shapefiles.sql
 
 --
@@ -510,11 +511,11 @@ $$;
 -- Check all have been built
 --
 WITH t AS (	/* Existing triggers */
-	SELECT tgname AS trigger_name, 
+	SELECT tgname AS trigger_name,
 	       c.relname,
 	       n2.nspname||'.'||p.proname||rif40_sql_pkg.rif40_get_function_arg_types(p.proargtypes) AS function_name
  	  FROM pg_views v, pg_class c, pg_trigger b, pg_proc p, pg_namespace n2
-	 WHERE b.tgrelid        = c.oid				
+	 WHERE b.tgrelid        = c.oid
            AND NOT b.tgisinternal				/* Ignore constraints */
 	   AND b.tgfoid         = p.oid				/* Trigger function */
 	   AND n2.oid           = p.pronamespace		/* Function schema */
@@ -537,11 +538,11 @@ DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
 		WITH t AS (	/* Existing triggers */
-			SELECT tgname AS trigger_name, 
+			SELECT tgname AS trigger_name,
 			       c.relname,
 			       n2.nspname||'.'||p.proname||rif40_sql_pkg.rif40_get_function_arg_types(p.proargtypes) AS function_name
 		 	  FROM pg_views v, pg_class c, pg_trigger b, pg_proc p, pg_namespace n2
-			 WHERE b.tgrelid        = c.oid				
+			 WHERE b.tgrelid        = c.oid
 		           AND NOT b.tgisinternal				/* Ignore constraints */
 			   AND b.tgfoid         = p.oid				/* Trigger function */
 			   AND n2.oid           = p.pronamespace		/* Function schema */
@@ -580,7 +581,7 @@ $$;
 --
 -- Additional view comments
 --
-\i ../psql_scripts/v4_0_rif40_additional_view_comments.sql 
+\i ../psql_scripts/v4_0_rif40_additional_view_comments.sql
 
 --
 -- Non SAHSU specific user schema

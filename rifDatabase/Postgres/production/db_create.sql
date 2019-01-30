@@ -212,11 +212,6 @@ BEGIN
 		FETCH c2up INTO c2_rec;
 		CLOSE c2up;
 --		
-
-
-	RAISE INFO 'All the passwords... %', c2_rec;
-
-
 		RAISE INFO 'db_create.sql() postgres password="%"', c2_rec.password;
 		IF c2_rec.rolpassword = c2_rec.encrypted_passwd THEN
 			RAISE INFO 'db_create.sql() postgres encrypted password="%"', c2_rec.encrypted_passwd;
@@ -244,10 +239,6 @@ DECLARE
 	 	SELECT version() AS version,
 	 	current_setting('server_version_num')::NUMERIC as numeric_version;
 	c1_rec RECORD;
-	c1a CURSOR FOR
-	 	SELECT version() AS version, 
-		SUBSTR(version(), 12, 2)::NUMERIC as major_version, 
-		REPLACE(SUBSTR(version(), 16, position('on' IN version())-16), ' ', '0')::NUMERIC as minor_version;
 --
 BEGIN
 	BEGIN

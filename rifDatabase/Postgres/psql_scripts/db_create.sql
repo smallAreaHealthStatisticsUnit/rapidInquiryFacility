@@ -76,9 +76,9 @@ $$;
 --
 -- Encrypted postgres and rif40 user passwords
 --
-\set npassword '''XXXX':encrypted_postgres_password''''
+\set npassword '''XXXX':postgres_password''''
 SET rif40.encrypted_postgres_password TO :npassword;
-\set npassword '''XXXX':encrypted_rif40_password''''
+\set npassword '''XXXX':rif40_password''''
 SET rif40.encrypted_rif40_password TO :npassword;
 
 --
@@ -117,7 +117,7 @@ BEGIN
 		ELSIF c2_rec.passwd = SUBSTR(c1_rec.password, 5) THEN
 			RAISE INFO 'db_create.sql() rif40 encrypted password="%"', SUBSTR(c1_rec.password, 5);
 		ELSE
-			RAISE EXCEPTION 'db_create.sql() rif40 encrypted password set in makefile="%" differs from database: "%', 
+			RAISE EXCEPTION 'db_create.sql() rif40 encrypted password set by install script="%" differs from database: "%',
 				SUBSTR(c1_rec.password, 5), c2_rec.passwd;	
 		END IF;
 	END IF;	
@@ -136,7 +136,7 @@ BEGIN
 		IF c2_rec.passwd = SUBSTR(c1_rec.password, 5) THEN
 			RAISE INFO 'db_create.sql() postgres encrypted password="%"', SUBSTR(c1_rec.password, 5);
 		ELSE
-			RAISE EXCEPTION 'db_create.sql() postgres encrypted password set in makefile="%" differs from database: "%', 
+			RAISE EXCEPTION 'db_create.sql() postgres encrypted password set by install script="%" differs from database: "%',
 				SUBSTR(c1_rec.password, 5), c2_rec.passwd;	
 		END IF;
 	END IF;		
@@ -146,8 +146,8 @@ BEGIN
 END;
 $$;
 
-SET rif40.encrypted_postgres_password TO :encrypted_postgres_password;
-SET rif40.encrypted_rif40_password TO :encrypted_rif40_password;
+SET rif40.encrypted_postgres_password TO :postgres_password;
+SET rif40.encrypted_rif40_password TO :rif40_password;
 
 --
 -- Check DB version
@@ -210,7 +210,7 @@ BEGIN
 	CLOSE c1;
 --
 	IF UPPER(c1_rec.use_plr) = 'XXXX' THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v use_plr=<use_plr> parameter';	
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v use_plr=<use_plr> parameter';
 	ELSE
 		RAISE INFO 'db_create.sql() postgres use_plr="%"', SUBSTR(c1_rec.use_plr, 5);
 	END IF;
@@ -239,7 +239,7 @@ BEGIN
 	CLOSE c1;
 --
 	IF UPPER(c1_rec.create_sahsuland_only) = 'XXXX' THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v create_sahsuland_only=<create_sahsuland_only> parameter';	
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v create_sahsuland_only=<create_sahsuland_only> parameter';
 	ELSE
 		RAISE INFO 'db_create.sql() postgres create_sahsuland_only="%"', SUBSTR(c1_rec.create_sahsuland_only, 5);
 	END IF;
@@ -669,7 +669,7 @@ END;
 --
 -- Location of SAHSULAND tablespace
 --
-\set nsahsuland_tablespace_dir '''XXXX':sahsuland_tablespace_dir''''
+\set nsahsuland_tablespace_dir '''XXXX':tablespace_dir''''
 SET rif40.sahsuland_tablespace_dir TO :nsahsuland_tablespace_dir;
 SET rif40.os TO :os;
 
@@ -702,7 +702,7 @@ BEGIN
 -- '
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
-	ELSIF CURRENT_SETTING('rif40.os') IN ('linux', 'darwin') THEN
+	ELSIF CURRENT_SETTING('rif40.os') IN ('linux', 'darwin', 'macos') THEN
 		RAISE INFO 'db_create.sql() Windows postgres sahsuland_tablespace_dir="%"', 
 				SUBSTR(c1_rec.sahsuland_tablespace_dir, 5);
 		sql_stmt:='SET rif40.sahsuland_tablespace_dir TO '''||
@@ -847,7 +847,7 @@ BEGIN;
 --
 -- Check user is postgres on sahsuland
 --
-\set ECHO OFF
+\set ECHO none
 SET rif40.use_plr TO :use_plr;
 SET rif40.testuser TO :ntestuser;
 DO LANGUAGE plpgsql $$
@@ -919,7 +919,7 @@ BEGIN;
 --
 -- Check user is postgres on sahsuland_empty
 --
-\set ECHO OFF
+\set ECHO none
 SET rif40.use_plr TO :use_plr;
 SET rif40.testuser TO :ntestuser;
 DO LANGUAGE plpgsql $$
@@ -1071,7 +1071,7 @@ BEGIN;
 --
 -- Check user is postgres on sahsuland_dev
 --
-\set ECHO OFF
+\set ECHO none
 SET rif40.use_plr TO :use_plr;
 SET rif40.testuser TO :ntestuser;
 DO LANGUAGE plpgsql $$
