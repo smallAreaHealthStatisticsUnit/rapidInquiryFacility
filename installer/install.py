@@ -233,7 +233,14 @@ def get_settings():
         db_user = get_value_from_user(DATABASE_USER)
         db_pass = get_password_from_user(DATABASE_PASSWORD)
         rif40_pass = get_password_from_user(RIF40_PASSWORD)
-        postgres_pass = get_password_from_user(POSTGRES_PASSWORD, False)
+        postgres_pass = get_password_from_user(POSTGRES_PASSWORD,
+                                               confirm=False)
+    else:
+        db_name = ""
+        db_user = ""
+        db_pass = ""
+        rif40_pass = ""
+        postgres_pass = ""
 
     # Update the user's config file
     # user_config["key"] = "reply"
