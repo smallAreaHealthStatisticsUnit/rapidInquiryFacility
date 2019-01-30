@@ -533,7 +533,7 @@ def get_windows_scripts(settings):
 
     win_root = settings.script_root / "SQLserver"
     main_script = win_root / "installation" / "rebuild_all.bat"
-    scripts = [(str(main()), main_script.parent)]
+    scripts = [(str(main_script), main_script.parent)]
     alter_script = win_root / "alter scripts" / "run_alter_scripts.bat"
     scripts.append((str(alter_script), alter_script.parent))
     return scripts
