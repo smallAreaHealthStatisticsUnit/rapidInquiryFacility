@@ -16,6 +16,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from collections import namedtuple
 from configparser import ConfigParser, ExtendedInterpolation
 from distutils.util import strtobool
@@ -101,6 +102,7 @@ def main():
             # Run SQL scripts
             if settings.db_type == "pg":
                 db_scripts = get_pg_scripts(settings)
+                save_pg_passwords(settings)
             else:
                 # Assumes both that it's SQL Server, and that we're
                 # running on Windows. Linux versions of SQLServer
@@ -528,6 +530,52 @@ def encrypt_password(user, pwd):
     return encoded
 
 
+def save_pg_passwords(settings):
+    """Save the captured passwords to the .pgpass or pgpass.conf file."""
+
+    if platform.system() == "Windows":
+        pass_file = Path(os.environ["APPDATA"]) / "postgresql" / "pgpass.conf"
+    else:
+        pass_file = Path().home() / ".pgpass"
+
+    line = "{}:{}:{}:{}\n"
+
+    pass_file_content = "".join(
+        [line.format("localhost", "5432", settings.db_name, "postgres",
+                     settings.postgres_pass),
+         line.format("localhost", "5432", settings.db_name, "rif40",
+                     settings.rif40_pass),
+         line.format("localhost", "5432", settings.db_name,
+                     settings.db_user, settings.db_pass)
+        ])
+
+    # If the password file doesn't exist we just create it. But if it does,
+    # we make a backup copy of the original before creating the new one.
+    if pass_file.exists():
+        pass_file.rename(create_backup_file(pass_file))
+
+    with pass_file.open("w"):
+        pass_file.write_text(pass_file_content)
+
+    # On Posix systems the file needs to be only readable by the user,
+    # or Postgres will not use it. This has no effect on Windows, but the
+    # same restriction does not apply there.
+    pass_file.chmod(0o600)
+
+
+def create_backup_file(file):
+    """Create a timestamped, uniquely-named backup version of the received
+       file
+    """
+
+    while True:
+        backup_file_name = "{}.{}.bak".format(file.name,
+                                           time.strftime("%Y-%m-%d-%H-%M-%S"))
+        backup_file = Path(file.parent) / backup_file_name
+        if not backup_file.exists():
+            return backup_file
+
+
 def get_windows_scripts(settings):
     """Get the list of SQL scripts to run on the Windows platform."""
 
@@ -549,6 +597,7 @@ def friendly_system():
         s = "macos"
 
     return s
+
 
 def set_special_db_permissions():
     """Set special permissions that are needed for the Windows scripts to run.
