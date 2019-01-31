@@ -231,12 +231,12 @@ def get_settings():
 
     # For now the next few are only for Postgres
     if db_type == "pg":
-        db_name = get_value_from_user(DATABASE_NAME)
-        db_user = get_value_from_user(DATABASE_USER)
-        db_pass = get_password_from_user(DATABASE_PASSWORD)
-        rif40_pass = get_password_from_user(RIF40_PASSWORD)
+        db_name = get_value_from_user(DATABASE_NAME).strip()
+        db_user = get_value_from_user(DATABASE_USER).strip()
+        db_pass = get_password_from_user(DATABASE_PASSWORD).strip()
+        rif40_pass = get_password_from_user(RIF40_PASSWORD).strip()
         postgres_pass = get_password_from_user(POSTGRES_PASSWORD,
-                                               confirm=False)
+                                               confirm=False).strip()
     else:
         db_name = ""
         db_user = ""
@@ -510,7 +510,7 @@ def format_postgres_script(settings, template, script_root, script_name,
                              "postgres" if db is None else db,
                              settings.db_user,
                              settings.db_name,
-                             encrypt_password(settings.db_user, 
+                             encrypt_password(settings.db_user,
                                               settings.db_pass),
                              encrypt_password("postgres",
                                               settings.postgres_pass),
