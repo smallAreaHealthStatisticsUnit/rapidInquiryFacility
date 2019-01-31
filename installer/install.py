@@ -510,10 +510,11 @@ def format_postgres_script(settings, template, script_root, script_name,
                              "postgres" if db is None else db,
                              settings.db_user,
                              settings.db_name,
-                             settings.db_pass,
+                             encrypt_password(settings.db_user, 
+                                              settings.db_pass),
                              encrypt_password("postgres",
                                               settings.postgres_pass),
-                             encrypt_password("rif40",settings.rif40_pass),
+                             encrypt_password("rif40", settings.rif40_pass),
                              friendly_system(),
                              script_root / script_name)
     return script
