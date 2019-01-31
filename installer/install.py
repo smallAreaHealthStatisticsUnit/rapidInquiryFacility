@@ -537,7 +537,7 @@ def save_pg_passwords(settings):
     else:
         pass_file = Path().home() / ".pgpass"
 
-    line = "{}:{}:{}:{}\n"
+    line = "{}:{}:{}:{}:{}\n"
 
     pass_file_content = "".join(
         [line.format("localhost", "5432", "*", "postgres",
