@@ -526,7 +526,6 @@ def encrypt_password(user, pwd):
         return ""
     password_string = pwd.strip() + user.strip()
     encoded = "md5" + hashlib.md5(password_string.encode("utf-8")).hexdigest()
-    print("--- String {} encoded as {}".format(password_string, encoded))
     return encoded
 
 
@@ -541,7 +540,7 @@ def save_pg_passwords(settings):
     line = "{}:{}:{}:{}\n"
 
     pass_file_content = "".join(
-        [line.format("localhost", "5432", settings.db_name, "postgres",
+        [line.format("localhost", "5432", "*", "postgres",
                      settings.postgres_pass),
          line.format("localhost", "5432", settings.db_name, "rif40",
                      settings.rif40_pass),
