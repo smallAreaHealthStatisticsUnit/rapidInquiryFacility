@@ -17,7 +17,8 @@ import shutil
 import subprocess
 import sys
 import time
-from collections import namedtuple
+from namedlist import namedlist
+#from collections import namedtuple
 from configparser import ConfigParser, ExtendedInterpolation
 from distutils.util import strtobool
 from getpass import getpass
@@ -174,7 +175,7 @@ def initialise_config():
         base_path = Path.cwd()
 
     # Create the RIF home directory and properties file if they don't exist,
-    #  and load them if they do.
+    # and load them if they do.
 
     print("Base path is {}".format(base_path))
 
@@ -201,48 +202,55 @@ def get_settings():
     install.ini in the current directory.
     """
 
+    # Using a named list for the return value for simplicity of creation
+    # and clarity of naming.
+    Settings = namedlist("Settings", "db_type, script_root, cat_home, "
+                                      "war_dir, dev_mode, extract_dir, "
+                                      "db_name, db_user, db_pass, "
+                                      "db_owner_name, db_owner_pass, "
+                                      "db_superuser_name, db_superuser_pass",
+                         default="")
+
+    props = Settings()
+
     # Check if we're in development mode (but only if we're running
     # from scripts)
     if running_bundled:
-        dev_mode = False
+        props.dev_mode = False
     else:
         reply = get_value_from_user(DEVELOPMENT_MODE)
-        dev_mode = strtobool(reply)
+        props.dev_mode = strtobool(reply)
 
     # Database type and script root
-    db_type = get_value_from_user(DB_TYPE)
+    props.db_type = get_value_from_user(DB_TYPE)
     if running_bundled:
-        db_script_root = base_path
+        props.script_root = base_path
     else:
-        db_script_root = Path(get_value_from_user(SCRIPT_HOME,
+        props.script_root = Path(get_value_from_user(SCRIPT_HOME,
                                                   is_path=True)).resolve()
 
     # Tomcat home: if it's not set we use the environment variable
-    tomcat_home = get_value_from_user(TOMCAT_HOME, is_path=True)
+    props.cat_home = get_value_from_user(TOMCAT_HOME, is_path=True)
 
     # In development we assume that this script is being run from installer/
     # under the project root. The root directory is thus one level up.
-    if dev_mode:
-        war_dir = Path.cwd().resolve().parent
+    if props.dev_mode:
+        props.war_dir = Path.cwd().resolve().parent
     else:
-        war_dir = base_path / "warfiles"
+        props.war_dir = base_path / "warfiles"
 
-    extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
+    props.extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
     # For now the next few are only for Postgres
-    if db_type == "pg":
-        db_name = get_value_from_user(DATABASE_NAME).strip()
-        db_user = get_value_from_user(DATABASE_USER).strip()
-        db_pass = get_password_from_user(DATABASE_PASSWORD).strip()
-        rif40_pass = get_password_from_user(RIF40_PASSWORD).strip()
-        postgres_pass = get_password_from_user(POSTGRES_PASSWORD,
+    if props.db_type == "pg":
+        props.db_name = get_value_from_user(DATABASE_NAME).strip()
+        props.db_user = get_value_from_user(DATABASE_USER).strip()
+        props.db_pass = get_password_from_user(DATABASE_PASSWORD).strip()
+        props.db_owner_name = "rif40"
+        props.db_owner_pass = get_password_from_user(RIF40_PASSWORD).strip()
+        props.db_superuser_name = "postgres"
+        props.db_superuser_pass = get_password_from_user(POSTGRES_PASSWORD,
                                                confirm=False).strip()
-    else:
-        db_name = ""
-        db_user = ""
-        db_pass = ""
-        rif40_pass = ""
-        postgres_pass = ""
 
     # Update the user's config file
     # user_config["key"] = "reply"
@@ -250,15 +258,10 @@ def get_settings():
     props_file = open(user_props, "w")
     user_parser.write(props_file)
 
-    # Using a named tuple for the return value for simplicity of creation and
-    # clarity of naming.
-    Settings = namedtuple("Settings", "db_type, script_root, cat_home, "
-                                      "war_dir, dev_mode, extract_dir, "
-                                      "db_name, db_user, db_pass, "
-                                      "rif40_pass, postgres_pass")
-    return Settings(db_type, db_script_root, tomcat_home, war_dir, dev_mode,
-                    extract_dir, db_name, db_user, db_pass, rif40_pass,
-                    postgres_pass)
+
+    print("Settings: {}".format(props))
+
+    return props
 
 
 def get_value_from_user(key, is_path=False):
@@ -426,8 +429,8 @@ def get_pg_scripts(settings):
     sahsuland_script = format_postgres_script(settings, script_template,
                                               script_root,
                                               "v4_0_create_sahsuland.sql",
-                                              user="rif40",
-                                              db="sahsuland_dev")
+                                              db="sahsuland_dev",
+                                              user=settings.db_owner_name)
     dump_script = format_postgres_script(settings, dump_template,
                                          script_root, "", db="sahsuland_dev")
     restore_script = format_postgres_script(settings, restore_template,
@@ -435,58 +438,58 @@ def get_pg_scripts(settings):
     alter1_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_1.sql",
-                                           user="rif40",
-                                           db="sahsuland")
+                                           db="sahsuland",
+                                           user=settings.db_owner_name)
     alter2_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_2.sql",
-                                           user="rif40",
-                                           db="sahsuland")
+                                           db="sahsuland",
+                                           user=settings.db_owner_name)
     alter3_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_3.sql",
-                                           user="rif40",
-                                           db="sahsuland")
+                                           db="sahsuland",
+                                           user=settings.db_owner_name)
     alter4_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_4.sql",
-                                           user="rif40",
-                                           db="sahsuland")
+                                           db="sahsuland",
+                                           user=settings.db_owner_name)
     alter5_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_5.sql",
-                                           user="rif40",
-                                           db="sahsuland")
+                                           db="sahsuland",
+                                           user=settings.db_owner_name)
     alter6_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_6.sql",
-                                           user="rif40",
+                                           user=settings.db_owner_name,
                                            db="sahsuland")
     alter7_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_7.sql",
-                                           user="rif40",
-                                           db="sahsuland")
+                                           db="sahsuland",
+                                           user=settings.db_owner_name)
     alter8_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_8.sql",
-                                           user="rif40",
-                                           db="sahsuland")
+                                           db="sahsuland",
+                                           user=settings.db_owner_name)
     alter9_script = format_postgres_script(settings, script_template,
                                            script_root / "alter_scripts",
                                            "v4_0_alter_9.sql",
-                                           user="rif40",
-                                           db="sahsuland")
+                                           db="sahsuland",
+                                           user=settings.db_owner_name)
     alter10_script = format_postgres_script(settings, script_template,
                                             script_root / "alter_scripts",
                                             "v4_0_alter_10.sql",
-                                            user="rif40",
-                                            db="sahsuland")
+                                            db="sahsuland",
+                                            user=settings.db_owner_name)
     alter11_script = format_postgres_script(settings, script_template,
                                             script_root / "alter_scripts",
                                             "v4_0_alter_11.sql",
-                                            user="rif40",
-                                            db="sahsuland")
+                                            db="sahsuland",
+                                            user=settings.db_owner_name)
 
     return [(s, script_root) for s in [main_script, sahsuland_script,
                                        dump_script, restore_script,
@@ -506,15 +509,17 @@ def format_postgres_script(settings, template, script_root, script_name,
     """Create the full runnable form of a script for PostgreSQL, from a
     template."""
 
-    script = template.format("postgres" if user is None else user,
-                             "postgres" if db is None else db,
+    script = template.format(settings.db_superuser_name if user is None else
+                             user,
+                             settings.db_superuser_name if db is None else db,
                              settings.db_user,
                              settings.db_name,
                              encrypt_password(settings.db_user,
                                               settings.db_pass),
-                             encrypt_password("postgres",
-                                              settings.postgres_pass),
-                             encrypt_password("rif40", settings.rif40_pass),
+                             encrypt_password(settings.db_superuser_name,
+                                              settings.db_superuser_pass),
+                             encrypt_password(settings.db_owner_name,
+                                              settings.db_owner_pass),
                              friendly_system(),
                              script_root / script_name)
     return script
@@ -540,14 +545,26 @@ def save_pg_passwords(settings):
 
     line = "{}:{}:{}:{}:{}\n"
 
-    pass_file_content = "".join(
-        [line.format("localhost", "5432", "*", "postgres",
-                     settings.postgres_pass),
-         line.format("localhost", "5432", settings.db_name, "rif40",
-                     settings.rif40_pass),
-         line.format("localhost", "5432", settings.db_name,
-                     settings.db_user, settings.db_pass)
-        ])
+    pass_file_lines = [line.format("localhost", "5432", "*",
+                                   settings.db_superuser_name,
+                                   settings.db_superuser_pass)]
+    for db in ["sahsuland", "sahsuland_dev", "sahsuland_empty"]:
+        pass_file_lines.append(line.format("localhost", "5432", db,
+                                           settings.db_owner_name,
+                                           settings.db_owner_pass))
+        pass_file_lines.append(line.format("localhost", "5432", db,
+                                           settings.db_user,
+                                           settings.db_pass))
+    if settings.db_name != "sahsuland":
+        pass_file_lines.append(line.format("localhost", "5432",
+                                           settings.db_name,
+                                           settings.db_owner_name,
+                                           settings.db_owner_pass))
+        pass_file_lines.append(line.format("localhost", "5432",
+                                           settings.db_name,
+                                           settings.db_user,
+                                           settings.db_user_pass))
+    pass_file_content = "".join(pass_file_lines)
 
     # If the password file doesn't exist we just create it. But if it does,
     # we make a backup copy of the original before creating the new one.
@@ -666,18 +683,18 @@ def normalise_path_separators(p):
 def banner(text, width=40):
     """Print the received text in a banner-style box"""
 
-    STARS = "".center(width, "*")
-    BLANK = "{}{}{}".format("*", "".center(width - 2), "*", )
+    stars = "".center(width, "*")
+    blank = "{}{}{}".format("*", "".center(width - 2), "*", )
     usable_text_length = width - 4
 
     print()
-    print(STARS)
-    print(BLANK)
+    print(stars)
+    print(blank)
 
     # Remove extra spaces but NOT newlines, and split on remaining spaces.
     # This is to let the caller include line breaks.
     list_of_words = []
-    for l in re.sub("  +", " ", text).split("\n"):
+    for l in re.sub(" {2}", " ", text).split("\n"):
         line_as_list = l.split()
         list_of_words.extend(line_as_list)
         list_of_words.append("\n")
@@ -717,8 +734,8 @@ def banner(text, width=40):
             line_length = 0
             line = ""
 
-    print(BLANK)
-    print(STARS)
+    print(blank)
+    print(stars)
     print()
 
 

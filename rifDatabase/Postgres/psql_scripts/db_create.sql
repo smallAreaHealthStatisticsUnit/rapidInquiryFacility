@@ -570,8 +570,10 @@ $$;
 -- Test user account
 -- 
 \set ntestuser '''XXXX':testuser''''
+\echo ntestuser
 SET rif40.testuser TO :ntestuser;
-\set ntestpassword '''XXXX':testpassword''''
+\set ntestpassword '''XXXX':newpw''''
+\echo ntestpassword
 SET rif40.testpassword TO :ntestpassword;
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -596,6 +598,7 @@ BEGIN
 		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
 	ELSE
 		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
+		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testpassword;
 	END IF;
 	u_name:=LOWER(SUBSTR(CURRENT_SETTING('rif40.testuser'), 5));
 --
@@ -610,12 +613,20 @@ BEGIN
 			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||LOWER(SUBSTR(c1_rec.testpassword, 5))||'''';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
-	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
-		RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
-	ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
-		RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
 	ELSE
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+	    RAISE INFO 'db_create.sql() RIF schema user % exists; changing password to encrypted',
+	        c2_rec.usename::VARCHAR;
+		sql_stmt:='ALTER USER '||c2_rec.usename||' ENCRYPTED PASSWORD  '''||LOWER(SUBSTR(c1_rec.testpassword, 5))||'''';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+
+	    IF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
+		    RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
+	    ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
+		    RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
+	    ELSE
+		    RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;
+	    END IF;
 	END IF;
 --
 	sql_stmt:='GRANT CONNECT ON DATABASE postgres to '||u_name;
@@ -647,11 +658,9 @@ END;
 \echo *****************************************************************************************************
 --
 \set ECHO all
-\c postgres :testuser :pghost
+\c sahsuland :testuser :pghost
 \echo "Try to connect as rif40. This will fail if if the password file is not setup correctly"
-\c postgres rif40 :pghost
-\echo "Try to connect as notarifuser. This will fail if if the password file is not setup correctly"
-\c postgres notarifuser :pghost
+\c sahsuland rif40 :pghost
 \echo "Try to re-connect as postgres. This will fail if if the password file is not setup correctly"
 -- Re-connect as postgres
 \c postgres postgres :pghost
@@ -1071,7 +1080,7 @@ BEGIN;
 --
 -- Check user is postgres on sahsuland_dev
 --
-\set ECHO none
+--\set ECHO none
 SET rif40.use_plr TO :use_plr;
 SET rif40.testuser TO :ntestuser;
 DO LANGUAGE plpgsql $$
