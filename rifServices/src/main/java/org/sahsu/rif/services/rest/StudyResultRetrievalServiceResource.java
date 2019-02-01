@@ -477,6 +477,30 @@ public class StudyResultRetrievalServiceResource extends WebService {
 		
 	@GET
 	@Produces({"application/json"})
+	@Path("/getHomogeneity")
+	public Response getHomogeneity(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID
+			) { 
+
+		return super.getHomogeneity(servletRequest, userID, studyID);
+	}	
+	
+	@GET
+	@Produces({"application/json"})
+	@Path("/getCovariateLossReport")
+	public Response getCovariateLossReport(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID
+			) { 
+
+		return super.getCovariateLossReport(servletRequest, userID, studyID);
+	}		
+	
+	@GET
+	@Produces({"application/json"})
 	@Path("/getSelectState")
 	public Response getSelectState(
 			@Context HttpServletRequest servletRequest,

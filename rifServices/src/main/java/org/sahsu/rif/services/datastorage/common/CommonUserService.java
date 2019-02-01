@@ -1040,6 +1040,166 @@ public class CommonUserService implements UserService {
 		}	
 					
 	@Override
+	public String getHomogeneity(
+			final User _user,
+			final String studyID)
+					throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getHomogeneity",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getHomogeneity",
+					"studyID",
+					studyID);
+				
+				//Check for security violations
+				validateUser(user);
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getHomogeneity", 
+					"studyID", 
+					studyID);		
+				
+				//Check for security violations
+				validateUser(user);
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.getHomogeneity",
+						user.getUserID(),
+						user.getIPAddress(),
+						studyID);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getHomogeneity(
+						connection,
+						studyID);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getHomogeneity",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}	
+				
+	@Override
+	public String getCovariateLossReport(
+			final User _user,
+			final String studyID)
+					throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getCovariateLossReport",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getCovariateLossReport",
+					"studyID",
+					studyID);
+				
+				//Check for security violations
+				validateUser(user);
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getCovariateLossReport", 
+					"studyID", 
+					studyID);		
+				
+				//Check for security violations
+				validateUser(user);
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.getCovariateLossReport",
+						user.getUserID(),
+						user.getIPAddress(),
+						studyID);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getCovariateLossReport(
+						connection,
+						studyID);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getCovariateLossReport",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}	
+				
+	@Override
 	public String getSelectState(
 			final User _user,
 			final String studyID)
@@ -1118,7 +1278,7 @@ public class CommonUserService implements UserService {
 
 			return result;	
 		}	
-					
+						
 	@Override
 	public String getPrintState(
 			final User _user,

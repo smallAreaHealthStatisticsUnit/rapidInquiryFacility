@@ -43,6 +43,13 @@ public interface SQLManager {
 			String queryName,
 			int[] params)
 				throws Exception;
+				
+	CachedRowSetImpl createCachedRowSet(
+			Connection connection,
+			QueryFormatter queryFormatter,
+			String queryName,
+			String[] params)
+				throws Exception;
 	
 	String getColumnFromResultSet(
 			CachedRowSetImpl cachedRowSet,

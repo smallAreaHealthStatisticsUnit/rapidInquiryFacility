@@ -184,6 +184,51 @@ public class BaseSQLManager implements SQLManager {
 			final Connection connection,
 			QueryFormatter queryFormatter,
 			final String queryName,
+			final String[] params)
+				throws Exception {
+			
+		CachedRowSetImpl cachedRowSet=null;	
+		ResultSet resultSet;
+		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
+		try {
+			for (int i=0; i < params.length; i++) {
+				statement.setString((i+1), params[i]);	
+			}
+			logSQLQuery(queryName, queryFormatter, params);	
+			resultSet = statement.executeQuery();
+			 // create CachedRowSet and populate
+			cachedRowSet = new CachedRowSetImpl();
+			cachedRowSet.populate(resultSet);
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + queryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			closeStatement(statement);
+		}
+		
+		return cachedRowSet;			
+	}
+	
+	/** 
+	 * Create cached row set from AbstractSQLQueryFormatter.
+	 * No checks 0,1 or 1+ rows returned
+	 * 
+	 * @param connection,
+	 * @param queryFormatter,
+	 * @param queryName,
+	 * @param params
+	 *
+	 * @return CachedRowSetImpl cached row set
+	 */
+	@Override
+	public CachedRowSetImpl createCachedRowSet(
+			final Connection connection,
+			QueryFormatter queryFormatter,
+			final String queryName,
 			final int[] params)
 				throws Exception {
 			
