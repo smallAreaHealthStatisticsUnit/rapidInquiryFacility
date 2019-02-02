@@ -211,6 +211,9 @@ public class ResultsQueryManager extends BaseSQLManager {
 	 * 			"missingstudynumeratorcovariatecount": 198,
 	 * 			"studyorcomparison": "S",
 	 * 			"missingstudydenominatorcovariatecount": 305656,
+	 *		    "covariatetablename": "COVAR_SAHSULAND_COVARIATES4",
+	 *	   	    "agesexgroupfilter": "age_sex_group BETWEEN 100 AND 221",
+	 *		    "icdfilter": "icd LIKE 'C33%' AND icd LIKE 'C340%' AND icd LIKE 'C341%' AND icd LIKE 'C342%' AND icd LIKE 'C343%' AND icd LIKE 'C348%' AND icd LIKE 'C349%' AND icd LIKE '1620%' AND icd LIKE '1622%' AND icd LIKE '1623%' AND icd LIKE '1624%' AND icd LIKE '1625%' AND icd LIKE '1628%' AND icd LIKE '1629%',
 	 * 			"studynumeratorcount": 1088
 	 * 		}
 	 * 	],
@@ -232,6 +235,9 @@ public class ResultsQueryManager extends BaseSQLManager {
 	 * 			"studyorcomparison": "C",
 	 * 			"missingstudydenominatorcovariatecount": 2888240,
 	 * 			"missingYears": "0",
+	 *		    "covariatetablename": "COVAR_SAHSULAND_COVARIATES4",
+	 *	   	    "agesexgroupfilter": "age_sex_group BETWEEN 100 AND 221",
+	 *		    "icdfilter": "icd LIKE 'C33%' AND icd LIKE 'C340%' AND icd LIKE 'C341%' AND icd LIKE 'C342%' AND icd LIKE 'C343%' AND icd LIKE 'C348%' AND icd LIKE 'C349%' AND icd LIKE '1620%' AND icd LIKE '1622%' AND icd LIKE '1623%' AND icd LIKE '1624%' AND icd LIKE '1625%' AND icd LIKE '1628%' AND icd LIKE '1629%',
 	 * 			"comparisondenominatorcount": 2.1073598E7
 	 * 		}
 	 * 	]

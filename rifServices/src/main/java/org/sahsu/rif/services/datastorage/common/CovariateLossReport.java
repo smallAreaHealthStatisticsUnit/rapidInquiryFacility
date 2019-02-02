@@ -44,9 +44,6 @@ public class CovariateLossReport extends BaseSQLManager {
      *
      * To do:
      * - Numerator checks (validate extract numerator counts)
-     * - Covariate filter
-     * - Age sex group filter
-     * - ICD filter
      *
      * Check result set column names capitalisation on SQL server
      *
@@ -89,6 +86,8 @@ public class CovariateLossReport extends BaseSQLManager {
                     exception);
         }
 
+        String icdFilter=createIcdFilter(connection, studyID);
+        
         try {
             String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
             String comparisonGeolevelName=getColumnFromResultSet(rif40Studies, "comparison_geolevel_name");
@@ -220,7 +219,8 @@ public class CovariateLossReport extends BaseSQLManager {
                                 covariateTableName,
                                 extractTable,
                                 investigationMinAgeSexGroup,
-                                investigationMaxAgeSexGroup);
+                                investigationMaxAgeSexGroup,
+                                icdFilter);
                 getCovariateLossReportHash.put("S: " + covariateName, getStudyCovariateLossReportQueryFormatter);
                 SQLGeneralQueryFormatter getComparisonCovariateLossReportQueryFormatter =
                         generateCovariateAreaCovariateLossReportQueryFormatter(
@@ -239,7 +239,8 @@ public class CovariateLossReport extends BaseSQLManager {
                                 covariateTableName,
                                 extractTable,
                                 investigationMinAgeSexGroup,
-                                investigationMaxAgeSexGroup);
+                                investigationMaxAgeSexGroup,
+                                icdFilter);
                 getCovariateLossReportHash.put("C: " + covariateName, getComparisonCovariateLossReportQueryFormatter);
             } while (rif40Covariates.next());
 
@@ -258,7 +259,65 @@ public class CovariateLossReport extends BaseSQLManager {
 
         return getCovariateLossReportHash;
     }
+    
+    /**
+     * Create ICD filter
+     *
+     * @param connection			JDBC Connection
+     * @param studyID				studyID string
+     *     
+     * @return String
+     */
+    private String createIcdFilter(
+        final Connection connection,
+        final String studyID) throws RIFServiceException {
 
+        String icdFilter = null;
+        CachedRowSetImpl rif40InvConditions = null;
+        try {
+            rif40InvConditions=getRifViewData(connection, false /* column is a String */, "study_id", studyID, "rif40_inv_conditions",
+                    "condition");
+        } catch(Exception exception) {
+            //Record original exception, throw sanitised, human-readable version
+            String errorMessage
+                    = RIFServiceMessages.getMessage(
+                    "sqlResultsQueryManager.unableToGetRifViewData",
+                    studyID);
+            throw new RIFServiceException(
+                    RIFServiceError.DATABASE_QUERY_FAILED,
+                    errorMessage,
+                    exception);
+        }    
+
+        try {
+            if (!rif40InvConditions.next()) {
+                throw new Exception("rif40Covariates ResultSet(): expected 1+ rows, got none");
+            }
+            
+            do {
+                if (icdFilter == null) {
+                    icdFilter = rif40InvConditions.getString(1).replaceAll("\'", "''") /* escape DB 's */;
+                }
+                else {
+                    icdFilter+=" AND " + rif40InvConditions.getString(1).replaceAll("\'", "''") /* escape DB 's */;
+                }
+            } while (rif40InvConditions.next());
+        }
+        catch(Exception exception) {
+            //Record original exception, throw sanitised, human-readable version
+            String errorMessage
+                    = RIFServiceMessages.getMessage(
+                    "sqlResultsQueryManager.unableToFetchRifViewData",
+                    studyID);
+            throw new RIFServiceException(
+                    RIFServiceError.DATABASE_QUERY_FAILED,
+                    errorMessage,
+                    exception);
+        }
+        
+        return icdFilter;
+    }
+    
     /**
      * Generate Study Area Covariate Loss Report Query Formatter
      * <p>
@@ -271,6 +330,7 @@ public class CovariateLossReport extends BaseSQLManager {
      * ), study_summary AS (
      * 		SELECT 'SES' AS covariateName, 							-* RIF40_INV_COVARIATES covariate_name *-
      *             'COVAR_SAHSULAND_COVARIATES4' AS covariateTableName,
+	 *  	       'age_sex_group BETWEEN 100 AND 221' As ageSexGroupFilter,
      * 			   COUNT(DISTINCT(b.year)) AS extractYears,
      *	 		   MIN(b.year) AS extractMinYear,
      * 			   MAX(b.year) AS extractMaxYear,
@@ -328,6 +388,7 @@ public class CovariateLossReport extends BaseSQLManager {
      * @param extractTable				extractTable extract table name
      * @param investigationMinAgeSexGroup	Derived AGE_SEX_GROUP field min range
      * @param investigationMaxAgeSexGroup	Derived AGE_SEX_GROUP field max range
+     * @param icdFilter                 ICD code filter
      *
      * @return SQLGeneralQueryFormatter
      */
@@ -346,7 +407,8 @@ public class CovariateLossReport extends BaseSQLManager {
             final String covariateTableName,
             final String extractTable,
             final int investigationMinAgeSexGroup,
-            final int investigationMaxAgeSexGroup) {
+            final int investigationMaxAgeSexGroup,
+            final String icdFilter) {
 
         SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 
@@ -358,6 +420,9 @@ public class CovariateLossReport extends BaseSQLManager {
         queryFormatter.addQueryLine(0, "	SELECT '" + covariateName + "' AS covariateName, 			/* RIF40_INV_COVARIATES covariate_name */");
         queryFormatter.addQueryLine(0, "		   '" + covariateTableName + "' AS covariateTableName,");
         queryFormatter.addQueryLine(0, "		   b.study_or_comparison AS studyOrComparison,");
+        queryFormatter.addQueryLine(0, "		   'age_sex_group BETWEEN " + 
+            investigationMinAgeSexGroup + " AND " + investigationMaxAgeSexGroup + "' As ageSexGroupFilter,");
+        queryFormatter.addQueryLine(0, "		   '" + icdFilter + "' AS icdFilter,");
         queryFormatter.addQueryLine(0, "		   COUNT(DISTINCT(b.year)) AS extractYears,");
         queryFormatter.addQueryLine(0, "		   MIN(b.year) AS extractMinYear,");
         queryFormatter.addQueryLine(0, "		   MAX(b.year) AS extractMaxYear,");
@@ -414,6 +479,7 @@ public class CovariateLossReport extends BaseSQLManager {
      * ), comparison_summary AS (
      *      SELECT 'SES' AS covariateName, 							/- RIF40_INV_COVARIATES covariate_name -/
      *             'COVAR_SAHSULAND_COVARIATES4' AS covariateTableName,
+	 *  	       'age_sex_group BETWEEN 100 AND 221' As ageSexGroupFilter,
      * 		       COUNT(DISTINCT(b.year)) AS extractYears,
      * 		       MIN(b.year) AS extractMinYear,
      * 		       MAX(b.year) AS extractMaxYear,
@@ -470,6 +536,7 @@ public class CovariateLossReport extends BaseSQLManager {
      * @param extractTable				extractTable extract table name
      * @param investigationMinAgeSexGroup	Derived AGE_SEX_GROUP field min range
      * @param investigationMaxAgeSexGroup	Derived AGE_SEX_GROUP field max range
+     * @param icdFilter                 ICD code filter
      *
      * @return SQLGeneralQueryFormatter
      */
@@ -489,7 +556,8 @@ public class CovariateLossReport extends BaseSQLManager {
             final String covariateTableName,
             final String extractTable,
             final int investigationMinAgeSexGroup,
-            final int investigationMaxAgeSexGroup) {
+            final int investigationMaxAgeSexGroup,
+            final String icdFilter) {
 
         SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 
@@ -501,6 +569,11 @@ public class CovariateLossReport extends BaseSQLManager {
         queryFormatter.addQueryLine(0, "	SELECT '" + covariateName + "' AS covariateName, 			/* RIF40_INV_COVARIATES covariate_name */");
         queryFormatter.addQueryLine(0, "		   '" + covariateTableName + "' AS covariateTableName,");
         queryFormatter.addQueryLine(0, "		   b.study_or_comparison AS studyOrComparison,");
+        queryFormatter.addQueryLine(0, "		   'age_sex_group BETWEEN " + 
+            investigationMinAgeSexGroup + " AND " + investigationMaxAgeSexGroup + "' As ageSexGroupFilter,");
+        queryFormatter.addQueryLine(0, "		   'CASE WHEN b." + covariateName.toLowerCase() +
+                " BETWEEN ''" + minValue + "'' AND ''" + maxValue + "''' AS covariateFilter,");
+        queryFormatter.addQueryLine(0, "		   '" + icdFilter + "' AS icdFilter,");
         queryFormatter.addQueryLine(0, "		   COUNT(DISTINCT(b.year)) AS extractYears,");
         queryFormatter.addQueryLine(0, "		   MIN(b.year) AS extractMinYear,");
         queryFormatter.addQueryLine(0, "		   MAX(b.year) AS extractMaxYear,");
@@ -543,5 +616,5 @@ public class CovariateLossReport extends BaseSQLManager {
 
         return queryFormatter;
     }
-
+    
 }
