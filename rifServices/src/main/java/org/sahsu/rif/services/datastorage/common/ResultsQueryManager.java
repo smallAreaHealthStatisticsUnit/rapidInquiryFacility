@@ -192,46 +192,50 @@ public class ResultsQueryManager extends BaseSQLManager {
      * Returns two x number of covariates records for a risk analysis study using covariates; otherwise raise an error;
 	 *
 	 * Returned JSON:
-{
-	"S": [{
-			"missingyears": "0",
-			"extractminyear": "1995",
-			"studydenominatorcount": 1622176,
-			"misingstudynumeratorcovariatecount": -16434,
-			"extractyears": "2",
-			"denominatorminyear": 1995,
-			"missingstudydenominatorareas": "0",
-			"missingdenominator": 0,
-			"missingstudycovariateareas": "21",
-			"denominatormaxyear": 1996,
-			"extractmaxyear": "1996",
-			"covariate_name": "SES",
-			"studymappinggeolevelareas": "82",
-			"studyorcomparison": "S",
-			"missingstudydenominatorcovariatecount": 289024,
-			"studynumeratorcount": 1088
-		}
-	],
-	"C": [{
-			"comparisonnumeratorcount": 12892,
-			"missingyears": "0",
-			"extractminyear": "1995",
-			"missingcomparisondenominatorareas": "0",
-			"misingstudynumeratorcovariatecount": 666,
-			"extractyears": "2",
-			"denominatorminyear": 1995,
-			"missingdenominator": 0,
-			"missingstudycovariateareas": "0",
-			"denominatormaxyear": 1996,
-			"comparisonmappinggeolevelareas": "1",
-			"extractmaxyear": "1996",
-			"covariate_name": "SES",
-			"studyorcomparison": "C",
-			"missingstudydenominatorcovariatecount": 2887448,
-			"comparisondenominatorcount": 2.1073598E7
-		}
-	]
-}
+	 * {
+	 * 	"S": [{
+	 * 			"missingyears": "0",
+	 * 			"covariateTableDescription": "socio-economic status",
+	 * 			"extractminyear": "1995",
+	 * 			"studydenominatorcount": 1622176,
+	 * 			"extractyears": "2",
+	 * 			"denominatorminyear": 1995,
+	 * 			"missingstudydenominatorareas": "0",
+	 * 			"missingdenominator": 0,
+	 * 			"missingstudycovariateareas": "21",
+	 * 			"denominatormaxyear": 1996,
+	 * 			"extractmaxyear": "1996",
+	 * 			"covariatetablename": "COVAR_SAHSULAND_COVARIATES4",
+	 * 			"studymappinggeolevelareas": "82",
+	 * 			"covariatename": "SES",
+	 * 			"missingstudynumeratorcovariatecount": 198,
+	 * 			"studyorcomparison": "S",
+	 * 			"missingstudydenominatorcovariatecount": 305656,
+	 * 			"studynumeratorcount": 1088
+	 * 		}
+	 * 	],
+	 * 	"C": [{
+	 * 			"comparisonnumeratorcount": 12892,
+	 * 			"covariateTableDescription": "socio-economic status",
+	 * 			"extractminyear": "1995",
+	 * 			"missingcomparisondenominatorareas": "0",
+	 * 			"extractyears": "2",
+	 * 			"denominatorMaxYear": 1996,
+	 * 			"missingstudycovariateareas": "0",
+	 * 			"denominatorMinYear": 1995,
+	 * 			"missingDenominator": 0,
+	 * 			"comparisonmappinggeolevelareas": "1",
+	 * 			"extractmaxyear": "1996",
+	 * 			"covariatetablename": "COVAR_SAHSULAND_COVARIATES4",
+	 * 			"covariatename": "SES",
+	 * 			"missingstudynumeratorcovariatecount": 1458,
+	 * 			"studyorcomparison": "C",
+	 * 			"missingstudydenominatorcovariatecount": 2888240,
+	 * 			"missingYears": "0",
+	 * 			"comparisondenominatorcount": 2.1073598E7
+	 * 		}
+	 * 	]
+	 * }
 	 * </p>
 	 *
 	 * @param connection			JDBC Connection
@@ -324,6 +328,30 @@ public class ResultsQueryManager extends BaseSQLManager {
 							covariate.put(name, value);
 						}
 					} /* End of for column loop */
+
+                    try {
+                        String covariateName=covariate.getString("covariatename");
+                        String covariateTableName=covariate.getString("covariatetablename");
+                        String covariateTableDescription=null;
+                        if (covariateName != null && covariateTableName != null) {
+                            covariateTableDescription=getColumnComment(connection, "rif_data", 
+                                covariateTableName.toLowerCase(), covariateName.toLowerCase());
+                            if (covariateTableDescription != null) {
+                                covariate.put("covariateTableDescription", covariateTableDescription);
+                            }
+                        }
+                        else {
+                            throw new RIFServiceException(
+                                RIFServiceError.DATABASE_QUERY_FAILED,
+                                "NULL covariateName or covariateTableName; covariate: " + covariate.toString());
+                        }
+                    }
+                    catch (Exception exception) {
+                        throw new RIFServiceException(
+                            RIFServiceError.DATABASE_QUERY_FAILED,
+                                "JSON/Database error in covariateTableDescription; covariate: " + covariate.toString(),
+                                exception);
+                    }
 					
 					if (studyOrComparison == null) {
 						throw new RIFServiceException(

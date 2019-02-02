@@ -329,6 +329,103 @@ public class BaseSQLManager implements SQLManager {
 		return columnValue;
 	}
 
+	/*
+	 * Fetch RIF view data for study/table
+	 *
+	 * @param: connection 		Connection,
+	 * @param: columnsAreString Boolean,
+	 * @param: columnName1 		String,
+	 * @param: columnValue1 	String,
+	 * @param: columnName2 		String,
+	 * @param: columnValue2 	String,
+	 * @param: tableName 		String,
+	 * @param: columnList 		String
+	 *
+	 * @returns: CachedRowSetImpl
+	 */
+	@Override
+	public CachedRowSetImpl getRifViewData(
+			final Connection connection,
+			final boolean columnsAreString,
+			final String columnName1,
+			final String columnValue1,
+			final String columnName2,
+			final String columnValue2,
+			final String tableName,
+			final String columnList)
+			throws Exception {
+		SQLGeneralQueryFormatter rifViewDataQueryFormatter = new SQLGeneralQueryFormatter();			
+		CachedRowSetImpl cachedRowSet;
+		
+		rifViewDataQueryFormatter.addQueryLine(0, "SELECT " + columnList);
+		rifViewDataQueryFormatter.addQueryLine(0, "  FROM rif40." + tableName.toLowerCase());
+		rifViewDataQueryFormatter.addQueryLine(0, " WHERE " + columnName1 + " = ?");
+		rifViewDataQueryFormatter.addQueryLine(0, "   AND " + columnName2 + " = ?");
+		if (columnsAreString) {
+			String[] params = new String[2];
+			params[0]=columnValue1;
+			params[1]=columnValue2;
+			
+			cachedRowSet = createCachedRowSet(connection, rifViewDataQueryFormatter,
+				"getRifViewData", params);
+		}
+		else {
+			int[] params = new int[2];
+			params[0]=Integer.parseInt(columnValue1);
+			params[1]=Integer.parseInt(columnValue2);
+			
+			cachedRowSet = createCachedRowSet(connection, rifViewDataQueryFormatter,
+				"getRifViewData", params);
+		}
+		
+		return cachedRowSet;
+	}
+
+	/*
+	 * Fetch RIF view data for study/table
+	 *
+	 * @param: connection 		Connection,
+	 * @param: columnsAreString Boolean,
+	 * @param: columnName1 		String,
+	 * @param: columnValue1 	String,
+	 * @param: tableName 		String,
+	 * @param: columnList 		String
+	 *
+	 * @returns: CachedRowSetImpl
+	 */	
+	@Override
+	public CachedRowSetImpl getRifViewData(
+			final Connection connection,
+			final boolean columnsAreString,
+			final String columnName1,
+			final String columnValue1,
+			final String tableName,
+			final String columnList)
+			throws Exception {
+		SQLGeneralQueryFormatter rifViewDataQueryFormatter = new SQLGeneralQueryFormatter();			
+		CachedRowSetImpl cachedRowSet;
+		
+		rifViewDataQueryFormatter.addQueryLine(0, "SELECT " + columnList);
+		rifViewDataQueryFormatter.addQueryLine(0, "  FROM rif40." + tableName.toLowerCase());
+		rifViewDataQueryFormatter.addQueryLine(0, " WHERE " + columnName1 + " = ?");
+		if (columnsAreString) {
+			String[] params = new String[1];
+			params[0]=columnValue1;
+			
+			cachedRowSet = createCachedRowSet(connection, rifViewDataQueryFormatter,
+				"getRifViewData", params);
+		}
+		else {
+			int[] params = new int[1];
+			params[0]=Integer.parseInt(columnValue1);
+			
+			cachedRowSet = createCachedRowSet(connection, rifViewDataQueryFormatter,
+				"getRifViewData", params);
+		} 
+		
+		return cachedRowSet;
+	}
+	
 	/**
 	 * Get column comment from data dictionary
 	 *

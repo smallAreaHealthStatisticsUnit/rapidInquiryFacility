@@ -66,7 +66,27 @@ public interface SQLManager {
 	String getColumnComment(Connection connection,
 			String schemaName, String tableName, String columnName)
 			throws Exception;
-	
+			
+	CachedRowSetImpl getRifViewData(
+			final Connection connection,
+			final boolean columnsAreString,
+			final String columnName1,
+			final String columnValue1,
+			final String tableName,
+			final String columnList)
+			throws Exception;
+			
+	CachedRowSetImpl getRifViewData(
+			final Connection connection,
+			final boolean columnsAreString,
+			final String columnName1,
+			final String columnValue1,
+			final String columnName2,
+			final String columnValue2,
+			final String tableName,
+			final String columnList)
+			throws Exception;
+			
 	void enableDatabaseDebugMessages(
 			Connection connection)
 		throws RIFServiceException;
