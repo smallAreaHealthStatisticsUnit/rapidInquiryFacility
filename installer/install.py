@@ -17,9 +17,8 @@ import shutil
 import subprocess
 import sys
 import time
-from namedlist import namedlist
-#from collections import namedtuple
 from configparser import ConfigParser, ExtendedInterpolation
+from dataclasses import dataclass
 from distutils.util import strtobool
 from getpass import getpass
 from pathlib import Path
@@ -202,54 +201,45 @@ def get_settings():
     install.ini in the current directory.
     """
 
-    # Using a named list for the return value for simplicity of creation
-    # and clarity of naming.
-    Settings = namedlist("Settings", "db_type, script_root, cat_home, "
-                                      "war_dir, dev_mode, extract_dir, "
-                                      "db_name, db_user, db_pass, "
-                                      "db_owner_name, db_owner_pass, "
-                                      "db_superuser_name, db_superuser_pass",
-                         default="")
-
-    props = Settings()
+    settings = Settings()
 
     # Check if we're in development mode (but only if we're running
     # from scripts)
     if running_bundled:
-        props.dev_mode = False
+        settings.dev_mode = False
     else:
         reply = get_value_from_user(DEVELOPMENT_MODE)
-        props.dev_mode = strtobool(reply)
+        settings.dev_mode = strtobool(reply)
 
     # Database type and script root
-    props.db_type = get_value_from_user(DB_TYPE)
+    settings.db_type = get_value_from_user(DB_TYPE)
     if running_bundled:
-        props.script_root = base_path
+        settings.script_root = base_path
     else:
-        props.script_root = Path(get_value_from_user(SCRIPT_HOME,
+        settings.script_root = Path(get_value_from_user(SCRIPT_HOME,
                                                   is_path=True)).resolve()
 
     # Tomcat home: if it's not set we use the environment variable
-    props.cat_home = get_value_from_user(TOMCAT_HOME, is_path=True)
+    settings.cat_home = get_value_from_user(TOMCAT_HOME, is_path=True)
 
     # In development we assume that this script is being run from installer/
     # under the project root. The root directory is thus one level up.
-    if props.dev_mode:
-        props.war_dir = Path.cwd().resolve().parent
+    if settings.dev_mode:
+        settings.war_dir = Path.cwd().resolve().parent
     else:
-        props.war_dir = base_path / "warfiles"
+        settings.war_dir = base_path / "warfiles"
 
-    props.extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
+    settings.extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
     # For now the next few are only for Postgres
-    if props.db_type == "pg":
-        props.db_name = get_value_from_user(DATABASE_NAME).strip()
-        props.db_user = get_value_from_user(DATABASE_USER).strip()
-        props.db_pass = get_password_from_user(DATABASE_PASSWORD).strip()
-        props.db_owner_name = "rif40"
-        props.db_owner_pass = get_password_from_user(RIF40_PASSWORD).strip()
-        props.db_superuser_name = "postgres"
-        props.db_superuser_pass = get_password_from_user(POSTGRES_PASSWORD,
+    if settings.db_type == "pg":
+        settings.db_name = get_value_from_user(DATABASE_NAME).strip()
+        settings.db_user = get_value_from_user(DATABASE_USER).strip()
+        settings.db_pass = get_password_from_user(DATABASE_PASSWORD).strip()
+        settings.db_owner_name = "rif40"
+        settings.db_owner_pass = get_password_from_user(RIF40_PASSWORD).strip()
+        settings.db_superuser_name = "postgres"
+        settings.db_superuser_pass = get_password_from_user(POSTGRES_PASSWORD,
                                                confirm=False).strip()
 
     # Update the user's config file
@@ -259,9 +249,9 @@ def get_settings():
     user_parser.write(props_file)
 
 
-    print("Settings: {}".format(props))
+    print("Settings: {}".format(settings))
 
-    return props
+    return settings
 
 
 def get_value_from_user(key, is_path=False):
@@ -750,6 +740,26 @@ def go(message):
         answer = False
     return answer
 
+
+@dataclass
+class Settings():
+    """The settings values for the RIF installation process."""
+
+    pass
+
+    db_type: str = ""
+    script_root: Path = Path()
+    cat_home: Path = Path()
+    war_dir: Path = Path()
+    dev_mode: bool = False
+    extract_dir: Path = Path()
+    db_name: str = ""
+    db_user: str = ""
+    db_pass: str = ""
+    db_owner_name: str = ""
+    db_owner_pass: str = ""
+    db_superuser_name: str = ""
+    db_superuser_pass: str = ""
 
 class Logger(object):
     """Lumberjack class - duplicates sys.stdout to a log file and it's okay."""
