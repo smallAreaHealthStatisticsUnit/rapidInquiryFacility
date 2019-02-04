@@ -75,7 +75,7 @@ BEGIN
             RAISE;
 	END;
 	--
-	IF c1_rec.numeric_version < 10000 THEN
+	IF c1_rec.numeric_version < 100000 THEN
 		RAISE INFO 'Not running trigger_fct_rif40_tables_checks.sql on Postgres version %',
 			c1_rec.version::VARCHAR;
 		RETURN;
