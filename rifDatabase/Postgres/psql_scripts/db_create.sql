@@ -658,9 +658,9 @@ END;
 \echo *****************************************************************************************************
 --
 \set ECHO all
-\c sahsuland :testuser :pghost
+\c postgres :testuser :pghost
 \echo "Try to connect as rif40. This will fail if if the password file is not setup correctly"
-\c sahsuland rif40 :pghost
+\c postgres rif40 :pghost
 \echo "Try to re-connect as postgres. This will fail if if the password file is not setup correctly"
 -- Re-connect as postgres
 \c postgres postgres :pghost

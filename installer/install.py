@@ -548,7 +548,7 @@ def save_pg_passwords(settings):
     pass_file_lines = [line.format("localhost", "5432", "*",
                                    settings.db_superuser_name,
                                    settings.db_superuser_pass)]
-    for db in ["sahsuland", "sahsuland_dev", "sahsuland_empty"]:
+    for db in ["sahsuland", "sahsuland_dev", "sahsuland_empty", "postgres"]:
         pass_file_lines.append(line.format("localhost", "5432", db,
                                            settings.db_owner_name,
                                            settings.db_owner_pass))
