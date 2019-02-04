@@ -61,7 +61,8 @@
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
-	 	SELECT current_setting('server_version_num')::NUMERIC as numeric_version;
+	 	SELECT version() AS version,
+	 	current_setting('server_version_num')::NUMERIC as numeric_version;
 	c1_rec RECORD;
 --
 BEGIN
