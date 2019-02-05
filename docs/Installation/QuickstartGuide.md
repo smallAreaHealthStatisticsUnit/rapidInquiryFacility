@@ -3,45 +3,44 @@ layout: default
 title: "Installing the RIF: Quickstart Guide"
 ---
 
+This describes the simplest way to get and install a brand-new copy or the RIF. It is suitable for all simple installations. For more complex situations, or for upgrading an existing installation, see the full [Installation Guide](InstallationGuide).
+
 ## Prerequisites
 
-Before installing the Rapid Inquiry Facility you mus have the following installed:
+Before installing the Rapid Inquiry Facility you must have the following installed:
 
 1. A database. PostgreSQL and Microsoft SQL Server are supported.
 2. Apache Tomcat.
 
 Assuming those are installed and you have administrative rights on the machine on which you are installing, proceed as follows.
 
-## Getting the RIF
+## Getting the Installer
 
-### Prebuilt WARs and scripts
+Download a RIF installer from the [GitHub site](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility). We recommend always getting the latest version available from the [Releases tab](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/releases).
 
-Download the database dumps for your platform from...
+For Windows save `rifInstaller.exe`. For Mac it's `rifInstaller`.
 
-Download the three `WAR` files from...
+## Running the Installer
 
-### Directly from GitHub
+You should run the installer from the command line. We don't recommend running it by double-clicking the icon in Windows Exporer or the Finder. It will run, but when it completes you won't see the output to know whether it completed successfully.
 
-This assumes you have the following command-line tools installed: `git`, Maven (the `mvn` command).
+On Windows, select _Command Prompt_ from the Start menu. Right-click on the icon and select "Run as administrator". Answer "Yes" to the confirmation dialog.
 
-Clone the repository:
+On Mac launch the _Terminal_ app.
 
-```
-git clone https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility.git
-```
-
-Build:
+In either case use the `cd` command to move to the folder to which you saved the installer above. On Windows type:
 
 ```
-mvn clean install
+rifInstaller.exe
 ```
 
+On Mac you might have to make it executable first:
 
+```
+chmod +x rifInstaller
+./rifInstaller
+```
 
-- Database
-	- PostgreSQL
-	- SQL Server
-- Tomcat
-	- Deploying the WARs
-- Configuration
+## Responding to the Prompts
 
+Next you have to respond to a series of prompts. The first is to select the database type.
