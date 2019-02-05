@@ -70,6 +70,16 @@ The ``.spec`` file is a configuration file that tells PyInstaller what files to 
 
 The executable will be created in the ``dist`` subdirectory.
 
+If the ``pyinstaller`` command is not found, you will have to edit your ``PATH`` environment variable to include its location, or specify the full path to it. On Windows 10 it will be somewhere like::
+
+	C:\Users\<user-name>\AppData\Local\Programs\Python\Python37\Scripts\pyinstaller.exe
+
+while on Mac it might be at::
+
+	/usr/local/bin/pyinstaller
+
+But you will have to identify the correct location for your own system.
+
 Multiple Platforms
 ------------------
 
