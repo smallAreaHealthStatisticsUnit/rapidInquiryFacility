@@ -293,7 +293,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 						String name = rsmd.getColumnName(i); 
 						String value = resultSet1.getString(i);
 						String columnType = rsmd.getColumnTypeName(i);
-						if (name.equals("studyorcomparison")) {
+						if (name.equals("study_or_comparison")) {
 							studyOrComparison=value;
 						}
 						
@@ -305,7 +305,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 								 columnType.equals("smallint"))) {
 							try { // Use normal decimal formatting - will cause confusion with coordinates
 								Long longVal=Long.parseLong(resultSet1.getString(i));
-								covariate.put(name, longVal);
+								covariate.put(jsonCapitalise(name), longVal);
 							}
 							catch (Exception exception) {	
 								throw new RIFServiceException(
@@ -321,7 +321,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 								 columnType.equals("numeric"))) {
 							try { // Ditto
 								Double doubleVal=Double.parseDouble(resultSet1.getString(i));
-								covariate.put(name, doubleVal);
+								covariate.put(jsonCapitalise(name), doubleVal);
 							}
 							catch (Exception exception) {
 								throw new RIFServiceException(
@@ -331,13 +331,13 @@ public class ResultsQueryManager extends BaseSQLManager {
 							}
 						}
 						else {
-							covariate.put(name, value);
+							covariate.put(jsonCapitalise(name), value);
 						}
 					} /* End of for column loop */
 
                     try {
-                        String covariateName=covariate.getString("covariatename");
-                        String covariateTableName=covariate.getString("covariatetablename");
+                        String covariateName=covariate.getString("covariateName");
+                        String covariateTableName=covariate.getString("covariateTableName");
                         String covariateTableDescription=null;
                         if (covariateName != null && covariateTableName != null) {
                             covariateTableDescription=getColumnComment(connection, "rif_data", 
@@ -396,7 +396,29 @@ public class ResultsQueryManager extends BaseSQLManager {
 		result=covariateLossReportJson.toString();
 		return result;
 	}		
-		
+	
+	/** 
+	 * Convert database style names to JSON style, e.g. study_or_comparison becomes studyOrComparison
+     *
+	 * @param name				DB name string
+	 *
+	 * @return JSONObject style name as a string
+     */
+    private String jsonCapitalise(String name) {
+        
+        String rval = "";
+        for (int i=0; i < name.length(); i++) {
+            if (name.charAt(i) == '_') {
+                rval+=Character.toString(name.charAt(i+1)).toUpperCase();
+                i++;
+            }
+            else {
+                rval+=Character.toString(name.charAt(i));
+            }
+        }
+        return rval;
+    }
+    
 	/** 
 	 * Get the rif40_homogeneity data for a study
 	 * <p>	 

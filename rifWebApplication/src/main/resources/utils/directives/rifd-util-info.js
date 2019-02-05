@@ -183,7 +183,8 @@ angular.module("RIF")
                                             '<section>Submitted By:</section>' + _getAttr(res.data[0][0]) +
                                             '<section>Date:</section>' + _getAttr(res.data[0][3]) +
                                             '<section>Study Name:</section>' + _getAttr(res.data[0][1]) +
-                                            '<section>Study Description: "TODO: not returned from DB"</section>' + _getAttr(res.data[0][2]) +
+                                            '<section>Study Description:</section>' + _getAttr(res.data[0][2] || 
+                                                "<em>TODO: not returned from DB</em>") +
                                             '<section>Geography:</section>' + _getAttr(res.data[0][4]) +
                                             '<section>Study Type:</section>' + _getAttr(res.data[0][5]);
 
@@ -197,7 +198,7 @@ angular.module("RIF")
 
                                     //Investigations
                                     project += '<header>Investigations</header>';
-                                    project += '<section>Health Theme:</section>' + _getAttr("TODO: not returned from DB") +
+                                    project += '<section>Health Theme:</section><em>' + _getAttr("TODO: not returned from DB") + '</em>' + 
                                             '<section>Numerator Table:</section>' + _getAttr(res.data[0][19]) +
                                             '<section>Denominator Table:</section>' + _getAttr(res.data[0][7]);
 
@@ -329,7 +330,7 @@ angular.module("RIF")
                                                         }
                                                     }
                                                     homogeneityTable+='<td  class="info-table" align="center">' + 
-                                                        (homogeneityDescriptions[homogeneityAttr] || "No description") + 
+                                                        _getAttr(homogeneityDescriptions[homogeneityAttr] || "No description") + 
                                                         '</td>';
                                                     for (var j=0; j<gendersList.length; j++) {
                                                         var genderAttr=gendersList[j];
@@ -402,24 +403,24 @@ angular.module("RIF")
                                 return '</br><section class="info-caution">&#9888;&nbsp;' + message + '</section>';
                             }
                             function buildCovariateLossReport(res) {
-                                if (res.data.S && res.data.S[0] && res.data.S[0].covariatename) {
+                                if (res.data.S && res.data.S[0] && res.data.S[0].covariateName) {
                                    
-                                    scope.covariateType = res.data.S[0].covariatename;
+                                    scope.covariateType = res.data.S[0].covariateName;
                                     scope.covariateDescription = res.data.S[0].covariateTableDescription; 
                                     for (var i=0; i<res.data.S.length; i++) {
-                                        scope.covariateList.push(res.data.S[i].covariatename);
-                                        scope.covariateDescriptions[res.data.S[i].covariatename] =
+                                        scope.covariateList.push(res.data.S[i].covariateName);
+                                        scope.covariateDescriptions[res.data.S[i].covariateName] =
                                             res.data.S[i].covariateTableDescription;
                                         if (i == 0) {
-                                            scope.showCovariateLossCovariate[res.data.S[i].covariatename] = true;
+                                            scope.showCovariateLossCovariate[res.data.S[i].covariateName] = true;
                                         }
                                         else {
-                                            scope.showCovariateLossCovariate[res.data.S[i].covariatename] = false;
+                                            scope.showCovariateLossCovariate[res.data.S[i].covariateName] = false;
                                         }
                                         covariateLossReportHtml+='<div ng-show="showCovariateLossCovariate[' + 
-                                            res.data.S[i].covariatename + ']">';
+                                            res.data.S[i].covariateName + ']">';
                                         covariateLossReportHtml+="<section><header>" +
-                                            res.data.S[i].covariatename + ": " + res.data.S[i].covariateTableDescription;
+                                            res.data.S[i].covariateName + ": " + res.data.S[i].covariateTableDescription;
                                             '</header><table class="info-table"><tr>' +
                                             "<th colspan='2'>Numerator</th>"+
                                             "<th>&nbsp;</th>" +
@@ -452,10 +453,10 @@ angular.module("RIF")
                   
                             function roundTo3DecimalPlaces(attr) {
                                 if (isNaN(attr)) {
-                                    return attr;
+                                    return _getAttr(attr);
                                 }
                                 else {
-                                    return Math.round(attr * 1000) / 1000;
+                                    return '<attr>' + Math.round(attr * 1000) / 1000 + '</attr></br>';
                                 }
                             }
                            
