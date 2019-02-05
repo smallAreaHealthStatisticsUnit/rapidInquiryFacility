@@ -376,8 +376,8 @@ processCommandLineArguments <- function() {
       } else if (grepl('riskAnal', parametersDataFrame[i, 1]) == TRUE){
         riskAnal <<- parametersDataFrame[i, 2]
       } else if (grepl('covariateName', parametersDataFrame[i, 1]) == TRUE){
-	    names.adj <<- c(toupper(parametersDataFrame[i, 2]))
-        if (names.adj[1] != "NONE") {
+	    names.adj <<- unlist(strsplit(c(toupper(parametersDataFrame[i, 2])), split = ','))
+	    if (names.adj[1] != "NONE") {
            adj <<- TRUE
         } else {
 		   adj <<- FALSE

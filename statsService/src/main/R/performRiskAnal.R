@@ -66,10 +66,20 @@ FindAdjustNoArea=function(cADJRATESNoArea, StoCcomp){
   return(RES)
 }
 
-conc=function(xd){xd=as.character(xd)
-res=c(xd)
-if (length(xd)>1){for (i in 2:length(xd)){res=paste(res,xd[i],sep='-')}}
-return(res)}
+conc=function(x)
+{
+  x=as.character(x)
+  res=c(x)
+  if (length(x)>1)
+  {
+    res = c(x[1])
+    for (i in 2:length(x))
+    {
+      res=paste(res,x[i],sep='-')
+    }
+  }
+  return(res)
+}
 
 # The function that does all the work
 performBandAnal <- function(data) {
