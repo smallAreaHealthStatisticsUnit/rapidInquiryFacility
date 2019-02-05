@@ -9,11 +9,15 @@ Overview
 
 The RIF Installer is a Python script. It is packaged into binary executables for various platforms using the ``PyInstaller`` package.
 
-You can run the script directly, simply by entering the command::
+You can run the script directly, simply by entering the command:
+
+.. highlightlang::
 
 	python installer.py
 	
-on Windows, or just::
+on Windows, or just:
+
+.. highlightlang::
 
 	./install.py 
 	
@@ -45,11 +49,15 @@ You will need the command-line Maven tool to build the RIF
 The RIF
 ~~~~~~~
 
-You must also have the RIF checked out and built. To check it out::
+You must also have the RIF checked out and built. To check it out:
+
+.. highlightlang::
 
 	clone https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility.git
 
-And build with::
+And build with:
+
+.. highlightlang::
 	
 	cd rapidInquiryFacility
 	mvn clean install
@@ -58,11 +66,15 @@ And build with::
 Building the Executables
 ------------------------
 
-To create the installers, Go to the ``installer``` directory, under ``rapidInquiryFacility``::
+To create the installers, Go to the ``installer`` directory, under ``rapidInquiryFacility``:
+
+.. highlightlang::
 
 	cd installer
 
-Then run::
+Then run:
+
+.. highlightlang::
 
 	PyInstaller install.spec
 	
@@ -70,11 +82,15 @@ The ``.spec`` file is a configuration file that tells PyInstaller what files to 
 
 The executable will be created in the ``dist`` subdirectory.
 
-If the ``pyinstaller`` command is not found, you will have to edit your ``PATH`` environment variable to include its location, or specify the full path to it. On Windows 10 it will be somewhere like::
+If the ``pyinstaller`` command is not found, you will have to edit your ``PATH`` environment variable to include its location, or specify the full path to it. On Windows 10 it will be somewhere like:
+
+.. highlightlang::
 
 	C:\Users\<user-name>\AppData\Local\Programs\Python\Python37\Scripts\pyinstaller.exe
 
-while on Mac it might be at::
+while on Mac it might be at:
+
+.. highlightlang::
 
 	/usr/local/bin/pyinstaller
 
