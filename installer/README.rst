@@ -11,13 +11,13 @@ The RIF Installer is a Python script. It is packaged into binary executables for
 
 You can run the script directly, simply by entering the command:
 
-.. highlightlang::
+.. code-block::
 
 	python installer.py
 	
 on Windows, or just:
 
-.. highlightlang::
+.. code-block::
 
 	./install.py 
 	
@@ -51,13 +51,13 @@ The RIF
 
 You must also have the RIF checked out and built. To check it out:
 
-.. highlightlang::
+.. code-block::
 
 	clone https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility.git
 
 And build with:
 
-.. highlightlang::
+.. code-block::
 	
 	cd rapidInquiryFacility
 	mvn clean install
@@ -68,13 +68,13 @@ Building the Executables
 
 To create the installers, Go to the ``installer`` directory, under ``rapidInquiryFacility``:
 
-.. highlightlang::
+.. code-block::
 
 	cd installer
 
 Then run:
 
-.. highlightlang::
+.. code-block::
 
 	PyInstaller install.spec
 	
@@ -84,13 +84,13 @@ The executable will be created in the ``dist`` subdirectory.
 
 If the ``pyinstaller`` command is not found, you will have to edit your ``PATH`` environment variable to include its location, or specify the full path to it. On Windows 10 it will be somewhere like:
 
-.. highlightlang::
+.. code-block::
 
 	C:\Users\<user-name>\AppData\Local\Programs\Python\Python37\Scripts\pyinstaller.exe
 
 while on Mac it might be at:
 
-.. highlightlang::
+.. code-block::
 
 	/usr/local/bin/pyinstaller
 
