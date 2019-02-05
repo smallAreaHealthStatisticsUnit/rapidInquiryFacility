@@ -622,6 +622,22 @@
     overflow: hidden;
 }
 
+.info-caution {
+    font-size: 2em !important;
+    color: #ff0000 !important;
+    font-weight: bold !important;
+    text-transform: capitalize !important;
+    margin: 2px !important;
+}
+
+.info-header {
+    font-size: 1.6em !important;
+    font-weight: italic !important;
+    text-transform: capitalize !important;
+}
+.info-table {
+    font-size: 1.2em !important;
+}
 
 #exposureSelect {
     width: 150px;

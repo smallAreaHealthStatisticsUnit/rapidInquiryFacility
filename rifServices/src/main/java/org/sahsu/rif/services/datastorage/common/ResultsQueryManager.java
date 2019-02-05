@@ -401,29 +401,34 @@ public class ResultsQueryManager extends BaseSQLManager {
 	 * Get the rif40_homogeneity data for a study
 	 * <p>	 
 	 * Returned JSON:
-	 * "females": {
-	 * 		"linearityP": 0,
-	 * 		"linearityChi2": 0,
-	 * 		"explt5": 0,
-	 * 		"homogeneityDof": 2,
-	 * 		"homogeneityP": 1.95058679437527E-4,
-	 * 		"homogeneityChi2": 17.084420248951
-	 * 	},
-	 * 	"males": {
-	 * 		"linearityP": 0,
-	 * 		"linearityChi2": 0,
-	 * 		"explt5": 0,
-	 * 		"homogeneityDof": 2,
-	 * 		"homogeneityP": 0.178163986654135,
-	 * 		"homogeneityChi2": 3.45010175892807
-	 * 	},
-	 * 	"both": {
-	 * 		"linearityP": 0,
-	 * 		"linearityChi2": 0,
-	 * 		"explt5": 0,
-	 * 		"homogeneityDof": 2,
-	 * 		"homogeneityP": 0.00337359835580779,
-	 * 		"homogeneityChi2": 11.3835506858045
+	 * "adjusted": {
+	 *      "females": {
+	 * 	    	"linearityP": 0,
+	 * 	    	"linearityChi2": 0,
+	 * 	    	"explt5": 0,
+	 * 	    	"homogeneityDof": 2,
+	 * 	    	"homogeneityP": 1.95058679437527E-4,
+	 * 	    	"homogeneityChi2": 17.084420248951
+	 * 	    },
+	 * 	    "males": {
+	 * 	    	"linearityP": 0,
+	 * 	    	"linearityChi2": 0,
+	 * 	    	"explt5": 0,
+	 * 	    	"homogeneityDof": 2,
+	 * 	    	"homogeneityP": 0.178163986654135,
+	 * 	    	"homogeneityChi2": 3.45010175892807
+	 * 	    },
+	 * 	    "both": {
+	 * 	    	"linearityP": 0,
+	 * 	    	"linearityChi2": 0,
+	 * 	    	"explt5": 0,
+	 * 	    	"homogeneityDof": 2,
+	 * 	    	"homogeneityP": 0.00337359835580779,
+	 * 	    	"homogeneityChi2": 11.3835506858045
+	 *      }
+	 * },
+	 * "unadjusted": {
+     * ...
 	 * }
 	 * </p>
 	 *
@@ -453,6 +458,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 		getHomogeneityQueryFormatter1.addSelectField("linearity_chi2");
 		getHomogeneityQueryFormatter1.addSelectField("linearity_p");
 		getHomogeneityQueryFormatter1.addSelectField("explt5");
+		getHomogeneityQueryFormatter1.addSelectField("adjusted");
 		
 		getHomogeneityQueryFormatter1.addFromTable("rif40_homogeneity");
 		getHomogeneityQueryFormatter1.addWhereParameter("study_id");
@@ -468,11 +474,13 @@ public class ResultsQueryManager extends BaseSQLManager {
 			resultSet1 = statement1.executeQuery();
 		
 			JSONObject homogeneity = new JSONObject();
+			JSONObject adjusted = new JSONObject();
+			JSONObject unadjusted = new JSONObject();
 			for (int i=0; i<3; i++) {
-				if (!resultSet1.next()) {
+				if (!resultSet1.next() || i >= 6) {
 					throw new RIFServiceException(
 						RIFServiceError.DATABASE_QUERY_FAILED,
-						"getHomogeneity query 1; expected 3 rows, got " + i + " for study_id: " + studyID);
+						"getHomogeneity query 1; expected 3-6 rows, got " + i + " for study_id: " + studyID);
 				}
 				int genders = resultSet1.getInt(1);
 				double homogeneityDof = resultSet1.getDouble(2);
@@ -481,6 +489,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 				double linearityChi2 = resultSet1.getDouble(5);
 				double linearityP = resultSet1.getDouble(6);
 				double explt5 = resultSet1.getDouble(7);
+				int adjustedValue = resultSet1.getInt(8);
 				
 				JSONObject homogeneityItem = new JSONObject();
 				homogeneityItem.put("homogeneityDof", homogeneityDof);
@@ -489,27 +498,53 @@ public class ResultsQueryManager extends BaseSQLManager {
 				homogeneityItem.put("linearityChi2", linearityChi2);
 				homogeneityItem.put("linearityP", linearityP);
 				homogeneityItem.put("explt5", explt5);
-				if (genders == 1) {
-					homogeneity.put("males", homogeneityItem);
-				}
-				else if (genders == 2) {
-					homogeneity.put("females", homogeneityItem);
-				}
-				else if (genders == 3) {
-					homogeneity.put("both", homogeneityItem);
-				}
-				else {
-					String errorMessage
-							= RIFServiceMessages.getMessage(
-							"sqlResultsQueryManager.invalidHomogeneityGender",
-							Integer.toString(genders),
-							studyID);
-					throw new RIFServiceException(
-							RIFServiceError.DATABASE_QUERY_FAILED,
-							errorMessage);			
-				}
+                if (adjustedValue == 1) {
+                    if (genders == 1) {
+                        adjusted.put("males", homogeneityItem);
+                    }
+                    else if (genders == 2) {
+                        adjusted.put("females", homogeneityItem);
+                    }
+                    else if (genders == 3) {
+                        adjusted.put("both", homogeneityItem);
+                    }
+                    else {
+                        String errorMessage
+                                = RIFServiceMessages.getMessage(
+                                "sqlResultsQueryManager.invalidHomogeneityGender",
+                                Integer.toString(genders),
+                                studyID);
+                        throw new RIFServiceException(
+                                RIFServiceError.DATABASE_QUERY_FAILED,
+                                errorMessage);			
+                    }
+                }
+                else {
+
+                    if (genders == 1) {
+                        unadjusted.put("males", homogeneityItem);
+                    }
+                    else if (genders == 2) {
+                        unadjusted.put("females", homogeneityItem);
+                    }
+                    else if (genders == 3) {
+                        unadjusted.put("both", homogeneityItem);
+                    }
+                    else {
+                        String errorMessage
+                                = RIFServiceMessages.getMessage(
+                                "sqlResultsQueryManager.invalidHomogeneityGender",
+                                Integer.toString(genders),
+                                studyID);
+                        throw new RIFServiceException(
+                                RIFServiceError.DATABASE_QUERY_FAILED,
+                                errorMessage);			
+                    }
+                }                    
 			}
-			
+			homogeneity.put("adjusted", adjusted);
+			homogeneity.put("unadjusted", unadjusted);
+            
 			connection.commit();
 			result=homogeneity.toString();	
 			

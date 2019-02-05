@@ -40,12 +40,38 @@ HTML partial for study info
     <div class="msettings">
         <div class="msettings-ct">
             <div class="msettings-header">
-                <h2>Study Summary</h2>
+                <h2>{{reportTitle}}</h2>
                 <a class="modal_close" ng-click="close()"></a>
             </div>
             <div class='modalContainer'>
-                <div class="modelViewer">
-                    <p ng-bind-html="summary"></p>
+                <div class="modelViewer">  
+                    <div>
+                        <div  class='styleUnderline dropdowns availablesWrapper'>
+                            <select type="text" ng-model="reportType" id='report' class='dropdownSelect' ng-options="s for s in reportList" ng-change="reportChange(reportType)">
+                            </select>
+                            <div id='reportAvailables' class='availables'></div>
+                            <div class="dropDownLabel">
+                                <md-tooltip md-direction="right" md-delay="1000">{{reportDescription}}</md-tooltip>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-show="showSummary">
+                        <p ng-bind-html="summary"></p>
+                    </div>
+                    <div ng-show="showCovariateLossReport">
+                        <div  class='styleUnderline dropdowns availablesWrapper'>
+                            <select type="text" ng-model="covariateType" id='covariate' class='dropdownSelect' ng-options="s for s in covariateList" ng-change="covariateChange(covariateType)">
+                            </select>
+                            <div id='covariateAvailables' class='availables'></div>
+                            <div class="dropDownLabel">
+                                <md-tooltip md-direction="right" md-delay="1000">{{covariateDescription}}</md-tooltip>
+                            </div>
+                        </div>
+                        <p ng-bind-html="covariateLossReport"></p>
+                    </div>
+                    <div ng-show="showHomogeneityTests">
+                        <p ng-bind-html="homogeneityTests"></p>
+                    </div>
                 </div>                
             </div>
         </div>
