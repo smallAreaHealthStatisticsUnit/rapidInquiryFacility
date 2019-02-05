@@ -133,6 +133,7 @@ docs/tileMaker.html
 **/.jekyll-metadata
 **/.sass-cache
 **/_site
+**/_plugins
 docs/RIF_Data_Loader_Manual.pdf
 docs/RIF_v40_Manual.pdf
 docs/source-documents/~$F v4 0 Manual.docx
