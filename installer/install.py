@@ -37,7 +37,7 @@ RIF40_PASSWORD = "db_rif40_password"
 POSTGRES_PASSWORD = "db_pg_password"
 
 prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
-                  DB_TYPE: "Database type",
+                  DB_TYPE: "Database type (pg or ms)",
                   SCRIPT_HOME: "Directory for SQL scripts",
                   TOMCAT_HOME: "Home directory for Tomcat",
                   WAR_FILES_LOCATION: "Directory containing the WAR files",
