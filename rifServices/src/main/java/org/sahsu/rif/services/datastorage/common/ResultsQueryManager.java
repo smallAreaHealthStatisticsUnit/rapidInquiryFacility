@@ -264,8 +264,6 @@ public class ResultsQueryManager extends BaseSQLManager {
 			covariateLossReport.getSelectQueryFormatters(connection, studyID);
 			
 		JSONObject covariateLossReportJson = new JSONObject();
-		JSONArray studyJson = new JSONArray();
-		JSONArray comparisonJson = new JSONArray();
 		
 		for (String key : getCovariateLossReportHash.keySet()) {
 			PreparedStatement statement1 = null;
@@ -287,7 +285,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 					ResultSetMetaData rsmd = resultSet1.getMetaData();
 					int columnCount = rsmd.getColumnCount();
 					// The column count starts from 1
-					JSONObject covariate = new JSONObject();
+                    JSONObject studyOrComparisonCovariate = new JSONObject();
 					String studyOrComparison = null;
 					for (int i = 1; i <= columnCount; i++ ) {
 						String name = rsmd.getColumnName(i); 
@@ -305,7 +303,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 								 columnType.equals("smallint"))) {
 							try { // Use normal decimal formatting - will cause confusion with coordinates
 								Long longVal=Long.parseLong(resultSet1.getString(i));
-								covariate.put(jsonCapitalise(name), longVal);
+								studyOrComparisonCovariate.put(jsonCapitalise(name), longVal);
 							}
 							catch (Exception exception) {	
 								throw new RIFServiceException(
@@ -321,7 +319,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 								 columnType.equals("numeric"))) {
 							try { // Ditto
 								Double doubleVal=Double.parseDouble(resultSet1.getString(i));
-								covariate.put(jsonCapitalise(name), doubleVal);
+								studyOrComparisonCovariate.put(jsonCapitalise(name), doubleVal);
 							}
 							catch (Exception exception) {
 								throw new RIFServiceException(
@@ -331,55 +329,60 @@ public class ResultsQueryManager extends BaseSQLManager {
 							}
 						}
 						else {
-							covariate.put(jsonCapitalise(name), value);
+							studyOrComparisonCovariate.put(jsonCapitalise(name), value);
 						}
 					} /* End of for column loop */
 
+                    String covariateName;
                     try {
-                        String covariateName=covariate.getString("covariateName");
-                        String covariateTableName=covariate.getString("covariateTableName");
+                        covariateName=studyOrComparisonCovariate.getString("covariateName");
+                        String covariateTableName=studyOrComparisonCovariate.getString("covariateTableName");
                         String covariateTableDescription=null;
                         if (covariateName != null && covariateTableName != null) {
                             covariateTableDescription=getColumnComment(connection, "rif_data", 
                                 covariateTableName.toLowerCase(), covariateName.toLowerCase());
                             if (covariateTableDescription != null) {
-                                covariate.put("covariateTableDescription", covariateTableDescription);
+                                studyOrComparisonCovariate.put("covariateTableDescription", covariateTableDescription);
                             }
                         }
                         else {
                             throw new RIFServiceException(
                                 RIFServiceError.DATABASE_QUERY_FAILED,
-                                "NULL covariateName or covariateTableName; covariate: " + covariate.toString());
+                                "NULL covariateName or covariateTableName; covariate: " + studyOrComparisonCovariate.toString());
                         }
                     }
                     catch (Exception exception) {
                         throw new RIFServiceException(
                             RIFServiceError.DATABASE_QUERY_FAILED,
-                                "JSON/Database error in covariateTableDescription; covariate: " + covariate.toString(),
+                                "JSON/Database error in covariateTableDescription; covariate: " + studyOrComparisonCovariate.toString(),
                                 exception);
                     }
 					
 					if (studyOrComparison == null) {
 						throw new RIFServiceException(
 							RIFServiceError.DATABASE_QUERY_FAILED,
-							"NULL studyOrComparison; covariate: " + covariate.toString());
-					}
-					else if (studyOrComparison.equals("S")) {
-						studyJson.put(covariate);
-					}
-					else if (studyOrComparison.equals("C")) {
-						comparisonJson.put(covariate);
+							"NULL studyOrComparison; covariate: " + studyOrComparisonCovariate.toString());
 					}
 					else {
-						throw new RIFServiceException(
-							RIFServiceError.DATABASE_QUERY_FAILED,
-							"Invalid studyOrComparison: " + studyOrComparison);
-					}					
+                        JSONObject covariate;
+                        if (covariateLossReportJson.has(covariateName)) {
+                            covariate = covariateLossReportJson.getJSONObject(covariateName);
+                        }
+                        else {
+                            covariate = new JSONObject();
+                            covariateLossReportJson.put(covariateName, covariate);
+                        }
+                        if (covariate.has(studyOrComparison)) {
+                            throw new RIFServiceException(
+                                RIFServiceError.DATABASE_QUERY_FAILED,
+                                "covariate has \"" + studyOrComparison + "\": " + covariate.toString());
+                        }
+                        else {
+                            covariate.put(studyOrComparison, studyOrComparisonCovariate);
+                        }
+                    }                        
 				} while (resultSet1.next()); /* Covariate S/C areas list */
-
-				covariateLossReportJson.put("S", studyJson);
-				covariateLossReportJson.put("C", comparisonJson);
-				
+                
 				connection.commit();
 			} catch(RIFServiceException rifServiceException) {
 				throw rifServiceException;
@@ -396,28 +399,6 @@ public class ResultsQueryManager extends BaseSQLManager {
 		result=covariateLossReportJson.toString();
 		return result;
 	}		
-	
-	/** 
-	 * Convert database style names to JSON style, e.g. study_or_comparison becomes studyOrComparison
-     *
-	 * @param name				DB name string
-	 *
-	 * @return JSONObject style name as a string
-     */
-    private String jsonCapitalise(String name) {
-        
-        String rval = "";
-        for (int i=0; i < name.length(); i++) {
-            if (name.charAt(i) == '_') {
-                rval+=Character.toString(name.charAt(i+1)).toUpperCase();
-                i++;
-            }
-            else {
-                rval+=Character.toString(name.charAt(i));
-            }
-        }
-        return rval;
-    }
     
 	/** 
 	 * Get the rif40_homogeneity data for a study

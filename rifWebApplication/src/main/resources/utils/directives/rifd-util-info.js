@@ -403,24 +403,25 @@ angular.module("RIF")
                                 return '</br><section class="info-caution">&#9888;&nbsp;' + message + '</section>';
                             }
                             function buildCovariateLossReport(res) {
-                                if (res.data.S && res.data.S[0] && res.data.S[0].covariateName) {
-                                   
-                                    scope.covariateType = res.data.S[0].covariateName;
-                                    scope.covariateDescription = res.data.S[0].covariateTableDescription; 
-                                    for (var i=0; i<res.data.S.length; i++) {
-                                        scope.covariateList.push(res.data.S[i].covariateName);
-                                        scope.covariateDescriptions[res.data.S[i].covariateName] =
-                                            res.data.S[i].covariateTableDescription;
+                                var covariateLossReportValid=false;
+                                var i=0;
+                                for (key in res.data) {
+                                    scope.covariateType=key;
+                                    if (res.data[key] && res.data[key].S && res.data[key].C) {
+                                        covariateLossReportValid=true;
+                                        scope.covariateList.push(key);
+                                        scope.covariateDescriptions[key] =
+                                            res.data[key].S.covariateTableDescription;
                                         if (i == 0) {
-                                            scope.showCovariateLossCovariate[res.data.S[i].covariateName] = true;
+                                            scope.showCovariateLossCovariate[key] = true;
                                         }
                                         else {
-                                            scope.showCovariateLossCovariate[res.data.S[i].covariateName] = false;
+                                            scope.showCovariateLossCovariate[key] = false;
                                         }
                                         covariateLossReportHtml+='<div ng-show="showCovariateLossCovariate[' + 
-                                            res.data.S[i].covariateName + ']">';
+                                            key + ']">';
                                         covariateLossReportHtml+="<section><header>" +
-                                            res.data.S[i].covariateName + ": " + res.data.S[i].covariateTableDescription;
+                                            key + ": " + res.data[key].S.covariateTableDescription;
                                             '</header><table class="info-table"><tr>' +
                                             "<th colspan='2'>Numerator</th>"+
                                             "<th>&nbsp;</th>" +
@@ -434,15 +435,20 @@ angular.module("RIF")
                                             "<td>Comparison area</td>" +
                                             "</tr>";
                                         covariateLossReportHtml+="</table></section>";
-                                        covariateLossReportHtml+="<section><pre>" + JSON.stringify(res.data.S[i], null, 2) +
+                                        covariateLossReportHtml+="<section><pre>" + JSON.stringify(res.data[key], null, 2) +
                                             "</pre></section></div>";
+                                    }     
+                                    else {
+                                        covariateLossReportValid=false;
                                     }
                                     
                                     scope.covariateLossReport = $sce.trustAsHtml(
                                         cautionMessage("This Information is a work in progress (RIF developers)") + 
                                         covariateLossReportHtml);
-                                }       
-                                else {
+                                    i++;
+                                }  
+                                
+                                if (!covariateLossReportValid) {
                                     scope.covariateLossReport = $sce.trustAsHtml(
                                         cautionMessage("No covariates were used by this study") + 
                                         covariateLossReportHtml);

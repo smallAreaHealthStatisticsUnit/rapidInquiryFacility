@@ -30,7 +30,9 @@ public interface SQLManager {
 			Connection connection,
 			QueryFormatter queryFormatter)
 		throws SQLException;
-	
+        
+	String jsonCapitalise(String name);
+     
 	CachedRowSetImpl createCachedRowSet(
 			Connection connection,
 			QueryFormatter queryFormatter,

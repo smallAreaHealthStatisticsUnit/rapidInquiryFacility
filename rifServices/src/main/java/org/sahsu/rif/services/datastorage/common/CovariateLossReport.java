@@ -322,155 +322,6 @@ public class CovariateLossReport extends BaseSQLManager {
     }
     
     /**
-     * Generate Study Area Covariate Loss Report Query Formatter
-     * <p>
-     * Example SQL>
-     *
-     * WITH study_areas AS (
-     * 	SELECT area_id
-     * 	  FROM rif40.rif40_study_areas
-     * 	 WHERE study_id = 563
-     * ), study_summary AS (
-     * 		SELECT 'SES' AS covariateName, 							-* RIF40_INV_COVARIATES covariate_name *-
-     *             'COVAR_SAHSULAND_COVARIATES4' AS covariateTableName,
-	 *  	       'age_sex_group BETWEEN 100 AND 221' As ageSexGroupFilter,
-     * 			   COUNT(DISTINCT(b.year)) AS extractYears,
-     *	 		   MIN(b.year) AS extractMinYear,
-     * 			   MAX(b.year) AS extractMaxYear,
-     * 			   COUNT(DISTINCT(a.area_id)) AS studyMappingGeolevelAreas, 
-     *	 		   COUNT(DISTINCT(a.area_id))-COUNT(DISTINCT(b.area_id)) AS missingStudyDenominatorAreas,  
-     *	 		   SUM(b.my_new_investigation) AS studyNumeratorCount, 	-* RIF40_INVESTIGATION inv_name *-
-     *	 		   SUM(b.total_pop) AS studyDenominatorCount,  
-     *	 		   COUNT(DISTINCT(a.area_id))-COUNT(DISTINCT(CASE WHEN b.ses BETWEEN '1' AND '5' THEN b.area_id ELSE NULL END)) AS missingStudyCovariateAreas,
-     *	 		   SUM(b.total_pop)-SUM(CASE WHEN b.ses BETWEEN '1' AND '5' THEN b.total_pop ELSE 0 END) AS missingStudyDenominatorCovariateCount,  
-     *	 		   SUM(b.my_new_investigation)-SUM(CASE WHEN b.ses BETWEEN '1' AND '5' THEN b.my_new_investigation ELSE 0 END) AS missingStudyNumeratorCovariateCount 
-     * 	 FROM study_areas a 
-     * 			LEFT OUTER JOIN rif_studies.s563_extract b ON 
-     * 				(a.area_id = b.area_id AND b.study_or_comparison = 'S')
-     *      GROUP BY b.study_or_comparison
-     * ), study_denominator_check AS (
-     * 		SELECT COUNT(DISTINCT(d1.year)) AS years,
-     * 			   MIN(d1.year) AS minYear,
-     * 			   MAX(d1.year) AS maxYear,
-     * 			   SUM(COALESCE(d1.total, 0)) AS totalPop			-* RIF40_TABLES total_field *-
-     * 		  FROM rif40_study_areas s, pop_sahsuland_pop d1 	
-     * 			LEFT OUTER JOIN covar_sahsuland_covariates4 c1 ON (	-* Covariates *-
-     * 					d1.sahsu_grd_level4 = c1.sahsu_grd_level4	-* RIF40_INV_COVARIATES study geolevel name *-
-     * 				AND d1.age_sex_group BETWEEN 100 AND 221        -* Derived AGE_SEX_GROUP field range *-
-     * 				AND c1.year = d1.year)
-     * 		 WHERE d1.year BETWEEN 1995	AND 1996					-* investigation year filter *-
-     * 		   AND s.area_id  = d1.sahsu_grd_level4	
-     * 		   AND s.area_id  IS NOT NULL							-* Exclude NULL geolevel *-
-	 *	       AND d1.age_sex_group BETWEEN 21 AND 0                -* RIF40_INVESTIGATION age group *-
-     * 		   AND s.study_id = 563									-* Current study ID *-
-     * )
-     * SELECT a.*, 
-     *        b.years-a.extractYears AS missingYears,
-     * 	   b.totalPop-a.studyDenominatorCount AS missingDenominator,
-     * 	   b.minYear AS denominatorMinYear,
-     * 	   b.maxYear AS denominatorMaxYear
-     *   FROM study_summary a, study_denominator_check b;
-     *
-     *  covariate_name | extractyears | extractminyear | extractmaxyear | studymappinggeolevelareas | missingstudydenominatorareas | studynumeratorcount | studydenominatorcount | missingstudycovariateareas | missingstudydenominatorcovariatecount | misingstudynumeratorcovariatecount | missingyears | missingdenominator | denominatorminyear | denominatormaxyear
-     * ----------------+--------------+----------------+----------------+---------------------------+------------------------------+---------------------+-----------------------+----------------------------+---------------------------------------+------------------------------------+--------------+--------------------+--------------------+--------------------
-     *  SES            |            1 |           1996 |           1996 |                       889 |                            0 |                4230 |               7048116 |                          0 |                                     0 |                                  0 |            1 |            7026120 |               1995 |               1996
-     * (1 row)
-     *
-     * @param studyID					studyID string
-     * @param covariateName				RIF40_INV_COVARIATES covariate name
-     * @param minValue					RIF40_INV_COVARIATES covariate minimum Value
-     * @param maxValue					RIF40_INV_COVARIATES covariate maximum Value
-     * @param invName					RIF40_INVESTIGATIONS investigation name
-     * @param denomTab					RIF40_STUDIES denominator table name
-     * @param denomTabTotalField		RIF40_TABLES denominator total field name
-     * @param studyGeolevelName			RIF40_INV_COVARIATES study geolevel name
-     * @param denomTabASGField			RIF40_TABLES denominator age sex group field name
-     * @param investigationYearStart	RIF40_INVESTIGATIONS year start
-     * @param investigationYearStop		RIF40_INVESTIGATIONS year stop
-     * @param covariateTableName		RIF40_GEOEVELS covariate table name
-     * @param extractTable				extractTable extract table name
-     * @param investigationMinAgeSexGroup	Derived AGE_SEX_GROUP field min range
-     * @param investigationMaxAgeSexGroup	Derived AGE_SEX_GROUP field max range
-     * @param icdFilter                 ICD code filter
-     *
-     * @return SQLGeneralQueryFormatter
-     */
-    private SQLGeneralQueryFormatter DELETEMEgenerateStudyAreaCovariateLossReportQueryFormatter(
-            final String studyID,
-            final String covariateName,
-            final double minValue,
-            final double maxValue,
-            final String invName,
-            final String denomTab,
-            final String denomTabTotalField,
-            final String studyGeolevelName,
-            final String denomTabASGField,
-            final int investigationYearStart,
-            final int investigationYearStop,
-            final String covariateTableName,
-            final String extractTable,
-            final int investigationMinAgeSexGroup,
-            final int investigationMaxAgeSexGroup,
-            final String icdFilter) {
-
-        SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-
-        queryFormatter.addQueryLine(0, "WITH study_areas AS (");
-        queryFormatter.addQueryLine(0, "	SELECT area_id");
-        queryFormatter.addQueryLine(0, "	  FROM rif40.rif40_study_areas");
-        queryFormatter.addQueryLine(0, "	 WHERE study_id = " + studyID);
-        queryFormatter.addQueryLine(0, "), study_summary AS (");
-        queryFormatter.addQueryLine(0, "	SELECT '" + covariateName + "' AS covariateName, 			/* RIF40_INV_COVARIATES covariate_name */");
-        queryFormatter.addQueryLine(0, "		   '" + covariateTableName + "' AS covariateTableName,");
-        queryFormatter.addQueryLine(0, "		   b.study_or_comparison AS studyOrComparison,");
-        queryFormatter.addQueryLine(0, "		   'age_sex_group BETWEEN " + 
-            investigationMinAgeSexGroup + " AND " + investigationMaxAgeSexGroup + "' As ageSexGroupFilter,");
-        queryFormatter.addQueryLine(0, "		   '" + icdFilter + "' AS icdFilter,");
-        queryFormatter.addQueryLine(0, "		   COUNT(DISTINCT(b.year)) AS extractYears,");
-        queryFormatter.addQueryLine(0, "		   MIN(b.year) AS extractMinYear,");
-        queryFormatter.addQueryLine(0, "		   MAX(b.year) AS extractMaxYear,");
-        queryFormatter.addQueryLine(0, "		   COUNT(DISTINCT(a.area_id)) AS studyMappingGeolevelAreas,");
-        queryFormatter.addQueryLine(0, "		   COUNT(DISTINCT(a.area_id))-COUNT(DISTINCT(b.area_id)) AS missingStudyDenominatorAreas,");
-        queryFormatter.addQueryLine(0, "		   SUM(b." + invName + ") AS studyNumeratorCount, 	/* RIF40_INVESTIGATION inv_name */");
-        queryFormatter.addQueryLine(0, "		   SUM(b.total_pop) AS studyDenominatorCount,");
-        queryFormatter.addQueryLine(0, "		   COUNT(DISTINCT(a.area_id))-COUNT(DISTINCT(CASE WHEN b." + covariateName.toLowerCase() +
-                " BETWEEN '" + minValue + "' AND '" + maxValue + "' THEN b.area_id ELSE NULL END)) AS missingStudyCovariateAreas,");
-        queryFormatter.addQueryLine(0, "		   SUM(b.total_pop)-SUM(CASE WHEN b." + covariateName.toLowerCase() +
-                " BETWEEN '" + minValue + "' AND '" + maxValue + "' THEN b.total_pop ELSE 0 END) AS missingStudyDenominatorCovariateCount,  ");
-        queryFormatter.addQueryLine(0, "		   SUM(b." + invName + ")-SUM(CASE WHEN b." + covariateName.toLowerCase() +
-                " BETWEEN '" + minValue + "' AND '" + maxValue + "' THEN b." + invName + " ELSE 0 END) AS missingStudyNumeratorCovariateCount");
-        queryFormatter.addQueryLine(0, "	  FROM study_areas a ");
-        queryFormatter.addQueryLine(0, "			LEFT OUTER JOIN rif_studies." + extractTable.toLowerCase() + " b ON");
-        queryFormatter.addQueryLine(0, "				(a.area_id = b.area_id AND b.study_or_comparison = 'S')");
-        queryFormatter.addQueryLine(0, "     GROUP BY b.study_or_comparison");
-        queryFormatter.addQueryLine(0, "), study_denominator_check AS (");
-        queryFormatter.addQueryLine(0, "	SELECT COUNT(DISTINCT(d1.year)) AS years,");
-        queryFormatter.addQueryLine(0, "			   MIN(d1.year) AS minYear,");
-        queryFormatter.addQueryLine(0, "			   MAX(d1.year) AS maxYear,");
-        queryFormatter.addQueryLine(0, "			   SUM(COALESCE(d1." + denomTabTotalField.toLowerCase() + ", 0)) AS totalPop			/* RIF40_TABLES total_field */");
-        queryFormatter.addQueryLine(0, "		  FROM rif40.rif40_study_areas s, rif_data." + denomTab.toLowerCase() + " d1");
-        queryFormatter.addQueryLine(0, "			LEFT OUTER JOIN rif_data." + covariateTableName.toLowerCase() + " c1 ON (	/* Covariates */");
-        queryFormatter.addQueryLine(0, "					d1." + studyGeolevelName.toLowerCase() + " = c1." + studyGeolevelName.toLowerCase() + "	/* RIF40_INV_COVARIATES study geolevel name */");
-        queryFormatter.addQueryLine(0, "				AND d1.age_sex_group BETWEEN " + 
-            investigationMinAgeSexGroup + " AND " + investigationMaxAgeSexGroup + "         /* Derived AGE_SEX_GROUP field range */");
-        queryFormatter.addQueryLine(0, "				AND c1.year = d1.year)");
-        queryFormatter.addQueryLine(0, "		 WHERE d1.year BETWEEN " + investigationYearStart + " AND " + investigationYearStop + "					/* investigation year filter */");
-        queryFormatter.addQueryLine(0, "		   AND s.area_id  = d1." + studyGeolevelName.toLowerCase() + "	");
-        queryFormatter.addQueryLine(0, "		   AND s.area_id  IS NOT NULL							/* Exclude NULL geolevel */");
-        queryFormatter.addQueryLine(0, "		   AND s.study_id = " + studyID + "							/* Current study ID */");
-        queryFormatter.addQueryLine(0, ")");
-        queryFormatter.addQueryLine(0, "SELECT a.*,");
-        queryFormatter.addQueryLine(0, "       b.years-a.extractYears AS missingYears,");
-        queryFormatter.addQueryLine(0, "	   b.totalPop-a.studyDenominatorCount AS missingDenominator,");
-        queryFormatter.addQueryLine(0, "	   b.minYear AS denominatorMinYear,");
-        queryFormatter.addQueryLine(0, "	   b.maxYear AS denominatorMaxYear");
-        queryFormatter.addQueryLine(0, "  FROM study_summary a, study_denominator_check b;");
-
-        return queryFormatter;
-    }
-
-
-    /**
      * Generate Covariate Loss Report Query Formatter
      * <p>
      * Example SQL>
@@ -610,34 +461,29 @@ public class CovariateLossReport extends BaseSQLManager {
         queryFormatter.addQueryLine(0, "			   SUM(COALESCE(d1." + denomTabTotalField.toLowerCase() + ", 0)) " +
             "AS total_pop			/* RIF40_TABLES total_field */");
         if (studyOrComparison == "S") {
-            queryFormatter.addQueryLine(0, "		  FROM rif40.rif40_comparison_areas s, rif_data." + denomTab.toLowerCase() + " d1");       
+            queryFormatter.addQueryLine(0, "		  FROM rif40.rif40_study_areas s, rif_data." + denomTab.toLowerCase() + " d1");       
         }
         else {		
-            queryFormatter.addQueryLine(0, "		  FROM rif40.rif40_study_areas s, rif_data." + denomTab.toLowerCase() + " d1");
+            queryFormatter.addQueryLine(0, "		  FROM rif40.rif40_comparison_areas s, rif_data." + denomTab.toLowerCase() + " d1");
         }
         queryFormatter.addQueryLine(0, "			LEFT OUTER JOIN rif_data." + covariateTableName.toLowerCase() + 
             " c1 ON (	/* Covariates */");
-        if (studyOrComparison == "S") {
-            queryFormatter.addQueryLine(0, "					d1." + studyGeolevelName.toLowerCase() + 
-                " = c1." + studyGeolevelName.toLowerCase() + "	/* RIF40_INV_COVARIATES study geolevel name */");
-        }
-        else {
-            queryFormatter.addQueryLine(0, "					d1." + comparisonGeolevelName.toLowerCase() + 
-                " = c1." + comparisonGeolevelName.toLowerCase() + "	/* RIF40_INV_COVARIATES study geolevel name */");
-        }
+        // Covariate join ALWAYS at study geolevel name
+        queryFormatter.addQueryLine(0, "					d1." + studyGeolevelName.toLowerCase() + 
+            " = c1." + studyGeolevelName.toLowerCase() + "	/* RIF40_INV_COVARIATES study geolevel name */");
         queryFormatter.addQueryLine(0, "				AND d1.age_sex_group BETWEEN " + 
             investigationMinAgeSexGroup + " AND " + investigationMaxAgeSexGroup + "         /* Derived AGE_SEX_GROUP field range */");
         queryFormatter.addQueryLine(0, "				AND c1.year = d1.year)");
         queryFormatter.addQueryLine(0, "		 WHERE d1.year BETWEEN " + investigationYearStart + " AND " + investigationYearStop + 
                "/* investigation year filter */");
-         
- //       if (studyOrComparison == "S") {
-            queryFormatter.addQueryLine(0, "		   AND s.area_id  = d1." + studyGeolevelName.toLowerCase() + "	");        
-//        }
-//        else {
+        if (studyOrComparison == "S") {
+            queryFormatter.addQueryLine(0, "		   AND s.area_id  = d1." + studyGeolevelName.toLowerCase() + 
+                "					/* study geolevel join: RIF40_INV_COVARIATES study geolevel name */");        
+        }
+        else {
             queryFormatter.addQueryLine(0, "		   AND s.area_id  = d1." + comparisonGeolevelName.toLowerCase() + 
                 "					/* Comparison geolevel join: RIF40_INVESTIGATIONS comparison_geolevel_name */");
-//        }
+        }
         queryFormatter.addQueryLine(0, "		   AND s.area_id  IS NOT NULL							/* Exclude NULL geolevel */");
         queryFormatter.addQueryLine(0, "		   AND s.study_id = " + studyID + "								/* Current study ID */");
         queryFormatter.addQueryLine(0, ")");

@@ -501,6 +501,29 @@ public class BaseSQLManager implements SQLManager {
 		return columnComment;
 	}
 	
+	/** 
+	 * Convert database style names to JSON style, e.g. study_or_comparison becomes studyOrComparison
+     *
+	 * @param name				DB name string
+	 *
+	 * @return JSONObject style name as a string
+     */
+	@Override
+    public String jsonCapitalise(String name) {
+        
+        String rval = "";
+        for (int i=0; i < name.length(); i++) {
+            if (name.charAt(i) == '_') {
+                rval+=Character.toString(name.charAt(i+1)).toUpperCase();
+                i++;
+            }
+            else {
+                rval+=Character.toString(name.charAt(i));
+            }
+        }
+        return rval;
+    }
+	
 	@Override
 	public void enableDatabaseDebugMessages(final Connection connection)
 			throws RIFServiceException {
