@@ -638,7 +638,25 @@
 .info-table {
     font-size: 1.2em !important;
 }
+circle {
+  fill: #ff6600;
+}
 
+.homogeneityChart-error-line {
+  stroke: #b30059;
+  stroke-dasharray: 2,2;
+}
+
+.homogeneityChart-error-cap {
+  stroke: #b30059;
+  stroke-width: 2px;
+  stroke-type: solid;
+}
+
+.homogeneityChart-bg {
+   fill: #fff0e6;
+}
+ 
 #exposureSelect {
     width: 150px;
     margin-top: 5px;

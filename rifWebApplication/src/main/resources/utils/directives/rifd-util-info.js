@@ -118,7 +118,8 @@ angular.module("RIF")
                             scope.hasCovariates=false;
                             scope.studyType="Disease Mapping";
                             scope.showCovariateLossCovariate = {};
-                        
+                            scope.hSplit1 = 100;
+                            
                             if (scope.myMaps) {
                                 scope.mapType=scope.myMaps[0]; // E.g. viewermap
                             }
@@ -355,6 +356,12 @@ angular.module("RIF")
                                                     AlertService.consoleDebug("[rifd-util-info.js] no Homogeneity Table: " + 
                                                         JSON.stringify(res.data, null, 2));
                                                 }
+                                                
+                                                var d3data=d3HomogeneityChart();
+                                                
+                                                homogeneityTestsHtml+=  "<section><pre>" + JSON.stringify(d3data, null, 2) +
+                                                    "</pre></section><header>d3 Homogeneity Chart</header>";
+                                            
                                                 AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + homogeneityTestsHtml);
                                                 scope.homogeneityTests = $sce.trustAsHtml(
                                                     cautionMessage("This Information is a work in progress as the unadjusted values are missing (RIF developers)") + 
@@ -445,6 +452,9 @@ angular.module("RIF")
                                     scope.covariateLossReport = $sce.trustAsHtml(
                                         cautionMessage("This Information is a work in progress (RIF developers)") + 
                                         covariateLossReportHtml);
+
+
+                                     
                                     i++;
                                 }  
                                 
@@ -465,7 +475,246 @@ angular.module("RIF")
                                     return '<attr>' + Math.round(attr * 1000) / 1000 + '</attr></br>';
                                 }
                             }
-                           
+    
+                            function d3HomogeneityChart() {
+//                                    var tooltip = d3.select("body").append("div")
+//                                        .attr("class", "tooltip")
+//                                        .style("visibility", "hidden");
+
+                                    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+                                        width = 960 - margin.left - margin.right,
+                                        height = 500 - margin.top - margin.bottom;
+/* Need new REST call
+1> SELECT genders, band_id, adjusted, observed, expected, lower95, upper95, relative_risk FROM rif_studies.s193_map;
+2> go
+band_id    adjusted observed                                 expected                                 lower95                                  upper95                                  relative_risk
+---------- -------- ---------------------------------------- ---------------------------------------- ---------------------------------------- ---------------------------------------- ----------------------------------------
+         1        1                               836.000000                               878.177373                                  .889578                                 1.018741                                  .951972
+         1        1                               442.000000                               471.964956                                  .853148                                 1.028018                                  .936510
+         1        1                              1278.000000                              1353.429654                                  .893890                                  .997484                                  .944268
+         2        1                              4840.000000                              4964.536076                                  .947832                                 1.002772                                  .974915
+         2        1                              2632.000000                              2621.799539                                  .966261                                 1.042986                                 1.003891
+         2        1                              7472.000000                              7575.446185                                  .964231                                 1.008965                                  .986345
+
+(6 rows affected)
+ 
+WITH b AS (
+    SELECT band_id, MAX(exposure_value) As max_exposure_value
+      FROM s55_extract
+     GROUP BY band_id
+), a AS (
+    SELECT genders, a.band_id, adjusted, observed, expected, lower95, upper95, relative_risk, b.max_exposure_value
+      FROM s55_map a, b
+     WHERE a.band_id = b.band_id
+)
+SELECT JSON_AGG(a) FROM a;
+
+  */
+                                    var data= [{ // x is max_exposure_value, y is relative_risk, e is upper95
+ 		"genders": 1,
+ 		"band_id": 1,
+ 		"adjusted": 1,
+ 		"observed": 122,
+ 		"expected": 134.614918177067,
+ 		"lower95": 0.758928839190033,
+ 		"upper95": 1.08226153160508,
+ 		"relative_risk": 0.906288854549734,
+ 		"max_exposure_value": 72
+ 	}, {
+ 		"genders": 2,
+ 		"band_id": 1,
+ 		"adjusted": 1,
+ 		"observed": 80,
+ 		"expected": 69.225522543931,
+ 		"lower95": 0.916353134795538,
+ 		"upper95": 1.4382979182895,
+ 		"relative_risk": 1.15564313652138,
+ 		"max_exposure_value": 72
+ 	}, {
+ 		"genders": 3,
+ 		"band_id": 1,
+ 		"adjusted": 1,
+ 		"observed": 202,
+ 		"expected": 203.56522154764,
+ 		"lower95": 0.864482796580928,
+ 		"upper95": 1.13904063929265,
+ 		"relative_risk": 0.992310957953723,
+ 		"max_exposure_value": 72
+ 	}, {
+ 		"genders": 1,
+ 		"band_id": 2,
+ 		"adjusted": 1,
+ 		"observed": 154,
+ 		"expected": 160.986693034749,
+ 		"lower95": 0.816841334381448,
+ 		"upper95": 1.12027276266715,
+ 		"relative_risk": 0.956600804059993,
+ 		"max_exposure_value": 66
+ 	}, {
+ 		"genders": 2,
+ 		"band_id": 2,
+ 		"adjusted": 1,
+ 		"observed": 56,
+ 		"expected": 87.6085630538271,
+ 		"lower95": 0.48285004008843,
+ 		"upper95": 0.830063357652665,
+ 		"relative_risk": 0.639206922793533,
+ 		"max_exposure_value": 66
+ 	}, {
+ 		"genders": 3,
+ 		"band_id": 2,
+ 		"adjusted": 1,
+ 		"observed": 210,
+ 		"expected": 249.66589886741,
+ 		"lower95": 0.734717697589835,
+ 		"upper95": 0.962940900563699,
+ 		"relative_risk": 0.841124082033824,
+ 		"max_exposure_value": 66
+ 	}, {
+ 		"genders": 1,
+ 		"band_id": 3,
+ 		"adjusted": 1,
+ 		"observed": 428,
+ 		"expected": 398.740546340158,
+ 		"lower95": 0.976356077183336,
+ 		"upper95": 1.18004482604304,
+ 		"relative_risk": 1.07337967991568,
+ 		"max_exposure_value": 60
+ 	}, {
+ 		"genders": 2,
+ 		"band_id": 3,
+ 		"adjusted": 1,
+ 		"observed": 248,
+ 		"expected": 215.487326637354,
+ 		"lower95": 1.01619628358071,
+ 		"upper95": 1.3034137340007,
+ 		"relative_risk": 1.15087974717586,
+ 		"max_exposure_value": 60
+ 	}, {
+ 		"genders": 3,
+ 		"band_id": 3,
+ 		"adjusted": 1,
+ 		"observed": 676,
+ 		"expected": 617.567300476479,
+ 		"lower95": 1.01513378274594,
+ 		"upper95": 1.18032478276612,
+ 		"relative_risk": 1.09461754124358,
+ 		"max_exposure_value": 60
+ 	}
+ ];
+                                    AlertService.consoleDebug("[rifd-util-info.js] homogeneityChart data: " + JSON.stringify(data, null, 1));
+                                    var xScale = d3.scaleLinear()
+                                             .range([0, width])
+                                             .domain([0, d3.max(data, function(d) { return d.max_exposure_value; })]).nice();
+                                             
+                                    var yScale = d3.scaleLinear()
+                                       .range([height, 0])
+                                       .domain([0, d3.max(data, function(d) { return d.relative_risk; })]).nice();
+
+                                    var xAxis = d3.axisBottom(xScale).ticks(12),
+                                       yAxis = d3.axisLeft(yScale).ticks(12 * height / width);
+
+                                    let line = d3.line()
+                                        .x(function(d) {
+                                        return xScale(d.max_exposure_value);
+                                      })
+                                      .y(function(d) {
+                                        return yScale(d.relative_risk);
+                                      });
+
+                                    var svg = d3.select("#homogeneityChart").append("svg")
+                                        .attr("width", width + margin.left + margin.right)
+                                        .attr("height", height + margin.top + margin.bottom)
+                                      .append("g")
+                                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                                        
+                                    svg.append("g").append("rect").
+                                        attr("width", width).attr("height", height).attr("class", "homogeneityChart-bg");
+
+                                    // Add Axis labels
+                                    svg.append("g").attr("class", "axis axis--x")
+                                    .attr("transform", "translate(" + 0 + "," + height + ")")
+                                    .call(xAxis);
+
+                                    svg.append("g").attr("class", "axis axis--y").call(yAxis);
+
+                                    // Add Error Line
+                                    svg.append("g").selectAll("line")
+                                        .data(data).enter()
+                                      .append("line")
+                                      .attr("class", "homogeneityChart-error-line")
+                                      .attr("x1", function(d) {
+                                        return xScale(d.max_exposure_value);
+                                      })
+                                      .attr("y1", function(d) {
+                                        return yScale(d.upper95);
+                                      })
+                                      .attr("x2", function(d) {
+                                        return xScale(d.max_exposure_value);
+                                      })
+                                      .attr("y2", function(d) {
+                                        return yScale(d.lower95);
+                                      });
+
+                                    // Add Error Top Cap
+                                    svg.append("g").selectAll("line")
+                                        .data(data).enter()
+                                      .append("line")
+                                      .attr("class", "homogeneityChart-error-cap")
+                                      .attr("x1", function(d) {
+                                        return xScale(d.max_exposure_value) - 4;
+                                      })
+                                      .attr("y1", function(d) {
+                                        return yScale(d.upper95);
+                                      })
+                                      .attr("x2", function(d) {
+                                        return xScale(d.max_exposure_value) + 4;
+                                      })
+                                      .attr("y2", function(d) {
+                                        return yScale(d.upper95);
+                                      });
+                                      
+                                     // Add Error Bottom Cap
+                                    svg.append("g").selectAll("line")
+                                        .data(data).enter()
+                                      .append("line")
+                                      .attr("class", "error-cap")
+                                      .attr("x1", function(d) {
+                                        return xScale(d.max_exposure_value) - 4;
+                                      })
+                                      .attr("y1", function(d) {
+                                        return yScale(d.lower95);
+                                      })
+                                      .attr("x2", function(d) {
+                                        return xScale(d.max_exposure_value) + 4;
+                                      })
+                                      .attr("y2", function(d) {
+                                        return yScale(d.lower95);
+                                      });
+                                      
+                                    // Add Scatter Points
+                                    svg.append("g").attr("class", "scatter")
+                                    .selectAll("circle")
+                                    .data(data).enter()
+                                    .append("circle")
+                                    .attr("cx", function(d) {
+                                      return xScale(d.max_exposure_value);
+                                    })
+                                    .attr("cy", function(d) {
+                                      return yScale(d.relative_risk);
+                                    })
+                                    .attr("r", 4);
+/*                                    .on("mouseover", function(d){
+                                        return tooltip.html(d.relative_risk.toFixed(3) + " &plusmn; " + d.upper95.toFixed(3))
+                                            .style("visibility", "visible")
+                                          .style("top", (event.pageY-17)+"px").style("left",(event.pageX+25)+"px");
+                                     })
+                                    .on("mouseout", function(){
+                                        return tooltip.style("visibility", "hidden");
+                                     });  */
+                                return data;
+                            }               
+                            
                             var modalInstance = $uibModal.open({
                                 animation: true,
                                 templateUrl: 'utils/partials/rifp-util-info.html',
