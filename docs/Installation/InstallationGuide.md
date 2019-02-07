@@ -14,9 +14,9 @@ Below we describe some details and differences in the various options for using 
 
 ## Using the Python Script Directly
 
-The recommended way to run the installer is via the binary executable for your platform, as described in the [Quickstart Guide](QuickstartGuide) . That is the best solution for most people. But if you are installing on a platform for which we don't provide a binary, or have special requirements, or are a developer, you can run the underlying Python script directly.
+The recommended way to run the installer is via the binary executable for your platform, as described in the [Quickstart Guide](QuickstartGuide) . That is the best solution for most people. But if you are installing on a platform for which there is no binary, or you have special requirements, or are a developer, you can run the underlying Python script directly.
 
-You will need to have Python 3.7+ installed. The script was originally developed against 3.7.1. Other 3.x versions may work, but they have not been tested.
+You will need to have Python 3.7+ installed. The script was originally developed against 3.7.1.
 
 ### Prerequisites
 
@@ -58,30 +58,41 @@ cd installer
 
 ## Answering the Prompts
 
+Whichever way you run the installer, you will see a series of prompts. These tables have some details about them.
+
+**Common:**
+
+| Prompt                                   | Meaning                                                         | Responses                                             | Notes
+| ---------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------
+| Continue?                                | Start the installation?                                         | y/n                                                   | Pressing Enter with no value will stop the process
+| Development mode?                        | Is this installation running in a development environment       | y/n                                                   | Not shown when running the binary executable
+| Database type (pg or ms                  | Which database platform?                                        | 'pg' for PostgreSQL, or 'ms' for Microsoft SQL Server |
+| Directory for SQL scripts                | Where are the SQL scripts that are needed for the installation? | A directory path                                      | Not shown when running the binary executable
+| Home directory for Tomcat                | The base directory used by Apache Tomcat                        | Leave blank if CATALINA_HOME is set                   | Defaults to the value of the CATALINA_HOME environment variable. Used to specify where the WAR files will be deployed to.
+| Directory for files extracted by studies | The RIF extracts files to this directory in normal use          | A directory to which the user has write permissions   |
+
+**When the database is Postgres:**
+
+| Prompt                                       | Meaning                                             | Responses                                                                                             | Notes
+| -------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -----------------------------------------------------------------------------------------------------
+| Name of the new database                     | The name of the database that is to be created      | Leave blank for the default of sahsuland, or provide a name                                           |
+| User name for the new database (and the RIF) |                                                     | The desired user name                                                                                 | This will be created in Postgres or SQL Server, and it is the name you will use to log in to the RIF.
+| Password for the new user                    | New password                                        |                                                                                                       | This is repeated for confimation
+| Password for the 'rif40' user                | New or existing password                            | If the user 'rif40' does not exist, it will be created. If it does exist, give the existing password. | The user 'rif40' will be created if it does not exist. This is repeated for confirmation.
+| Password for the 'postgres' user             | Existing password                                   | The password for the 'postgres' user, which is the administrator.                                     | You will have created this when you installed Postgres
+| Continue?                                    | Last chance to quit before the database scripts run | y/n                                                                                                   |
+
+**When the database is SQL Server (note that these are shown after some SQL script output appears):**
+
+| Prompt                                 | Meaning                                             | Responses           | Notes
+| -------------------------------------- | --------------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------
+| Continue?                              | Last chance to quit before the database scripts run | y/n                 |
+| New user [default peter]:              |                                                     | A username          |
+| New user password [default Peter!@$~]: |                                                     | The user's password | You don't get a second prompt to confirm, but the password is shown in clear text
+| Press any key to continue . . .        |                                                     |                     |
+| Press any key to continue . . .        |                                                     |                     |
 
 
-
-### Prebuilt WARs and scripts
-
-Download the database dumps for your platform from...
-
-Download the three `WAR` files from...
-
-### Directly from GitHub
-
-This assumes you have the following command-line tools installed: `git`, Maven (the `mvn` command).
-
-Clone the repository:
-
-```
-git clone https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility.git
-```
-
-Build:
-
-```
-mvn clean install
-```
 
 
 

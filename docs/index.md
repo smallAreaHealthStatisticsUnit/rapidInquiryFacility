@@ -15,9 +15,11 @@ An overview of the RIF, along with details of its purpose and its creators  [can
 The RIF is licensed under the [GNU LESSER GENERAL PUBLIC LICENSE](https://www.gnu.org/licenses/lgpl-3.0.en.html) and is freely available
 from the [RIF GitHub](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/) repository.
 
-# Building and installation
+# Installing the RIF
 
-[See this document](introduction/building-and-installation) for details on how to build and install the RIF.
+The RIF [Quickstart Guide](/Installation/QuickstartGuide) will get most users up and running. For more detailed instructions see the [Installation Guide](/Installation/InstallationGuide).
+
+For really fine detail about everything that happens, see the older [Building and Installing the RIF](/introduction/building-and-installation) section.
 
 # Other Manuals
 

@@ -9,8 +9,9 @@ This is the simplest way to get and install a brand-new copy of the Rapid Inquir
 
 Before installing the RIF you must have the following installed:
 
-* A database. The RIF supports PostgreSQL and Microsoft SQL Server.
-* Apache Tomcat.
+* A database. The RIF can use either [PostgreSQL](https://www.postgresql.org) or [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-2017) (only on Windows).
+* [Apache Tomcat](https://tomcat.apache.org).
+* [R](https://www.r-project.org).
 
 You must also have administrative rights on the machine on which you are installing.
 

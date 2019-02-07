@@ -12,9 +12,12 @@ added_files = [ ("install.ini", "."),
                 ("../statsService/target/statistics.war", "warfiles"),
                 ("../rifWebApplication/target/RIF40.war", "warfiles")
             ]
-# separate installer name for Linux
+# Separate installer names for the different platforms
 import platform
-installer_name = "rifInstaller_linux" if platform.system() == "Linux" else "rifInstaller"
+installer_names = {"Linux": "rifInstaller_linux",
+                   "Darwin": "rifInstaller_mac",
+                   "Windows": "rifInstaller"}
+installer_name = installer_names[platform.system()]
 
 a = Analysis(['install.py'],
             pathex=['.'],
@@ -44,7 +47,7 @@ exe = EXE(pyz,
           runtime_tmpdir=None,
           console=True )
 
-app = BUNDLE(exe,
-             name='rifInstaller.app',
-             icon=None,
-             bundle_identifier=None)
+#app = BUNDLE(exe,
+#             name='rifInstaller.app',
+#             icon=None,
+#             bundle_identifier=None)
