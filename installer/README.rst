@@ -39,6 +39,7 @@ You must have Python installed, and available from the command line. We develope
 You will also need to install several Python modules using Pip. Run ``pip install <package-name>`` for each of the following packages:
 
 * ``PyInstaller``
+* ``dataclasses``
 * ``pywin32`` (on Windows)
 
 Maven

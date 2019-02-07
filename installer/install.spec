@@ -12,6 +12,9 @@ added_files = [ ("install.ini", "."),
                 ("../statsService/target/statistics.war", "warfiles"),
                 ("../rifWebApplication/target/RIF40.war", "warfiles")
             ]
+# separate installer name for Linux
+import platform
+installer_name = "rifInstaller_linux" if platform.system() == "Linux" else "rifInstaller"
 
 a = Analysis(['install.py'],
             pathex=['.'],
@@ -33,7 +36,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='rifInstaller',
+          name=installer_name,
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

@@ -18,7 +18,7 @@ You must also have administrative rights on the machine on which you are install
 
 Download a RIF installer from the [GitHub site](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility). We recommend always getting the latest version available from the [Releases tab](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/releases).
 
-For Windows, save `rifInstaller.exe` to the machine you are installing on. For Mac you'll want `rifInstaller`.
+For Windows, save `rifInstaller.exe` to the machine you are installing on. For Mac you'll want `rifInstaller`. For Linux it's `rifInstaller_linux`.
 
 ## Warning
 
@@ -39,7 +39,7 @@ rifInstaller.exe
 ```
 and press Enter.
 
-On Mac you might have to make it executable first:
+On Mac and Linux you might have to make it executable first:
 
 ```
 chmod +x rifInstaller
