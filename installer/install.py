@@ -281,6 +281,7 @@ def get_value_from_user(key, is_path=False):
                 print("CATALINA_HOME is not set in the environment and no "
                       "value given for {}."
                       .format(prompt_strings.get(TOMCAT_HOME)))
+                reply = input("{} [{}] ".format(prompt_strings.get(key), current_value))
             else:
                 reply = tomcat_home_str
 
@@ -760,6 +761,7 @@ class Settings():
     db_owner_pass: str = ""
     db_superuser_name: str = ""
     db_superuser_pass: str = ""
+
 
 class Logger(object):
     """Lumberjack class - duplicates sys.stdout to a log file and it's okay."""
