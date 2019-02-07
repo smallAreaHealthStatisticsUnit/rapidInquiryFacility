@@ -71,8 +71,18 @@ HTML partial for study info
                     </div>
                     <div ng-show="showHomogeneityTests">
                         <p ng-bind-html="homogeneityTests"></p>
-                        
-                        <div id="homogeneityChart">
+                        <div  class="styleUnderline dropdowns availablesWrapper">
+                            <select type="text" ng-model="gendersName" id="gender" class="dropdownSelect" ng-options="s for s in gendersList" ng-change="d3HomogeneityChartChange(gendersName)">
+                            </select>
+                            <div id="genderAvailables" class="availables"></div>
+                            <div class="dropDownLabel">
+                                <md-tooltip md-direction="right" md-delay="1000">{{genderDescription}}</md-tooltip>
+                            </div>
+                        </div>
+                        <p ng-bind-html="homogeneityChartHeader"></p>
+                        <div id="homogeneityTooltip">
+							<div id="homogeneityChart">
+							</div>
                         </div>
                     </div>
                 </div>                

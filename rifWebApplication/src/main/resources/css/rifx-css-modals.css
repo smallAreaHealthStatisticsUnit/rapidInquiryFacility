@@ -636,10 +636,28 @@
     text-transform: capitalize !important;
 }
 .info-table {
-    font-size: 1.2em !important;
+    font-size: 1.1em !important;
+    font-weight: bold !important;
+	padding-left: 10px !important;
+	padding-right: 10px !important;
+
+    width: -moz-calc(100% - 90px);
+    /* WebKit */
+
+    width: -webkit-calc(100% - 90px);
+    /* Opera */
+
+    width: -o-calc(100% - 90px);
+    /* Standard */
+
+    width: calc(100% - 90px);
 }
+
 circle {
   fill: #ff6600;
+}
+
+.homogeneityChart {;
 }
 
 .homogeneityChart-error-line {
@@ -657,6 +675,27 @@ circle {
    fill: #fff0e6;
 }
  
+.homogeneityChart-tooltip {
+  position: absolute;
+  height: auto;
+  width: auto;
+  padding: 15px;
+  background: #660033;
+  color: white;
+  font-family: Monospace, Serif;
+  }
+
+.homogeneityChart-tooltip:after {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    right: 100%; /* To the left of the tooltip */
+    margin-top: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent #660033 transparent transparent;
+}
+
 #exposureSelect {
     width: 150px;
     margin-top: 5px;
