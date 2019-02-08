@@ -76,16 +76,25 @@ angular.module("RIF")
                                     scope.showSummary=true;
                                     scope.showCovariateLossReport=false;
                                     scope.showHomogeneityTests=false;
+									scope.showHomogeneityCharts=false;
                                 }
                                 else if (scope.reportType == "Covariate Loss Report") {
                                     scope.showSummary=false;
                                     scope.showCovariateLossReport=true;
                                     scope.showHomogeneityTests=false;
+									scope.showHomogeneityCharts=false;
                                 }
                                 else if (scope.reportType == "Homogeneity Tests") {
                                     scope.showSummary=false;
                                     scope.showCovariateLossReport=false;
                                     scope.showHomogeneityTests=true;
+									scope.showHomogeneityCharts=false;
+                                }
+                                else if (scope.reportType == "Homogeneity Charts") {
+                                    scope.showSummary=false;
+                                    scope.showCovariateLossReport=false;
+                                    scope.showHomogeneityTests=false;
+									scope.showHomogeneityCharts=true;
                                 }
                             }
                             else {
@@ -93,6 +102,7 @@ angular.module("RIF")
                                 scope.showSummary=true;
                                 scope.showCovariateLossReport=false;
                                 scope.showHomogeneityTests=false;
+									scope.showHomogeneityCharts=false;
                             }
                             scope.reportTitle='Study ' + scope.reportType;
                             scope.reportDescription=scope.reportTitle;
@@ -118,6 +128,7 @@ angular.module("RIF")
 										rval="males and females";
 										break;
 								}
+								return rval;
 							}          		
 							
 							/* Questions: 
@@ -404,6 +415,7 @@ SELECT JSON_AGG(a) FROM a;
                             scope.showSummary=true;
                             scope.showCovariateLossReport=false;
                             scope.showHomogeneityTests=false;
+							scope.showHomogeneityCharts=false;
                             scope.covariateList = [];
                             scope.covariateType = null;
                             scope.covariateDescription = null;
@@ -433,7 +445,7 @@ SELECT JSON_AGG(a) FROM a;
                                 if (scope.mapDefs.riskAnalysisDescription) {
                                     scope.studyType=scope.mapDefs.riskAnalysisDescription;
                                 }
-                                scope.reportList = ["Summary", "Covariate Loss Report", "Homogeneity Tests"];
+                                scope.reportList = ["Summary", "Covariate Loss Report", "Homogeneity Tests", "Homogeneity Charts"];
                             }
                             else {
                                 scope.reportList = ["Summary", "Covariate Loss Report"];
@@ -448,7 +460,10 @@ SELECT JSON_AGG(a) FROM a;
                             scope.homogeneityTests = '<header class="info-header">Fetching Study Homogeneity Tests for ' + scope.studyType.toLowerCase() + " study " + 
                                ((scope.mapDefs && scope.mapDefs.study_id) ? scope.mapDefs.study_id : "Unknown") + 
                                 '...</header>';
-                            
+                            scope.homogeneityChartHeader = '<header class="info-header">Fetching Study Homogeneity Charts for ' + scope.studyType.toLowerCase() + " study " + 
+                               ((scope.mapDefs && scope.mapDefs.study_id) ? scope.mapDefs.study_id : "Unknown") + 
+                                '...</header>';
+								
                             var homogeneityTestsHtml = '<header>Homogeneity Tests &ndash; ' + 
                                 ((scope.mapDefs && scope.mapDefs.riskAnalysisDescription) ? scope.mapDefs.riskAnalysisDescription : "No risk analysis description") +
                                 ' &ndash; ' +
