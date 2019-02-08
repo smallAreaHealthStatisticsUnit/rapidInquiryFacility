@@ -595,17 +595,17 @@ SELECT JSON_AGG(a) FROM a;
                                 
                                                 var homogeneityTable = '<table class="info-table"><tr>' +
                                              /*       '<th colspan="3" class="info-table">Unadjusted</th>' */
-                                                    '<th align="center" class="info-table">Statistic</th>' +
+                                                    '<th align="left" class="info-table">Statistic</th>' +
                                                     '<th colspan="3" class="info-table">Adjusted</th>'+
                                                     '</tr>' +
                                                     '<tr>' +
-                                            /*        '<td class="info-table">Males</td>' +
-                                                    '<td class="info-table">Females</td>' +
-                                                    '<td class="info-table">Both</td>' + */
-                                                    '<td class="info-table"></td>' +
-                                                    '<td class="info-table">Males</td>' +
-                                                    '<td class="info-table">Females</td>' +
-                                                    '<td class="info-table">Both</td>' +
+                                            /*        '<th align="left" class="info-table">Males</th>' +
+                                                    '<th align="left" class="info-table">Females</th>' +
+                                                    '<th align="left" class="info-table">Both</th>' + */
+                                                    '<th align="left" class="info-table"></th>' +
+                                                    '<th align="left" class="info-table">Males</th>' +
+                                                    '<th align="left" class="info-table">Females</th>' +
+                                                    '<th align="left" class="info-table">Both</th>' +
                                                     '</tr>';
                                                 var homogeneityList = ["linearityP", "linearityChi2", "explt5", "homogeneityDof", 
                                                 "homogeneityP", "homogeneityChi2"];
@@ -738,11 +738,29 @@ SELECT JSON_AGG(a) FROM a;
       */
                                 var fieldColumnList = [
                                 {
+                                        description: "Total",
+                                        studyNumerator: "numeratorCount",
+                                        studyDenominator: "denominatorCount",
+                                        comparisonNumerator: "numeratorCount",
+                                        comparisonDenominator: "denominatorCount",
+                                }, {
+                                        description: "Number Excluded",
+                                        studyNumerator: "missingNumeratorCovariateCount",
+                                        studyDenominator: "missingDenominatorCovariateCount",
+                                        comparisonNumerator: "missingNumeratorCovariateCount",
+                                        comparisonDenominator: "missingDenominatorCovariateCount",
+                                }, {
+                                        description: "% excluded",
+                                        studyNumerator: "missingNumeratorCovariatePct",
+                                        studyDenominator: "missingDenominatorCovariatePct",
+                                        comparisonNumerator: "missingNumeratorCovariatePct",
+                                        comparisonDenominator: "missingDenominatorCovariatePct",
+                                }, {
                                         description: "Database Table",
-                                        studyNumerator: "numeratorTable",
-                                        studyDenominator: "denominatorTable",
-                                        comparisonNumerator: "numeratorTable",
-                                        comparisonDenominator: "denominatorTable",
+                                        studyNumerator: "numeratorTableName",
+                                        studyDenominator: "denominatorTableName",
+                                        comparisonNumerator: "numeratorTableName",
+                                        comparisonDenominator: "denominatorTableName",
                                 }, {
                                         description: "Covariate Table",
                                         studyNumerator: "covariateTableName",
@@ -755,24 +773,6 @@ SELECT JSON_AGG(a) FROM a;
                                         studyDenominator: "covariateFilter",
                                         comparisonNumerator: "covariateFilter",
                                         comparisonDenominator: "covariateFilter",
-                                }, {
-                                        description: "Number Excluded",
-                                        studyNumerator: "missingNumeratorCovariateCount",
-                                        studyDenominator: "missingDenominatorCovariateCount",
-                                        comparisonNumerator: "missingNumeratorCovariateCount",
-                                        comparisonDenominator: "missingDenominatorCovariateCount",
-                                }, {
-                                        description: "Total",
-                                        studyNumerator: "numeratorCount",
-                                        studyDenominator: "denominatorCount",
-                                        comparisonNumerator: "numeratorCount",
-                                        comparisonDenominator: "denominatorCount",
-                                }, {
-                                        description: "% excluded",
-                                        studyNumerator: "missingNumeratorCovariatePct",
-                                        studyDenominator: "missingDenominatorCovariatePct",
-                                        comparisonNumerator: "missingNumeratorCovariatePct",
-                                        comparisonDenominator: "missingDenominatorCovariatePct",
                                 }, {
                                         description: "ICD filter",
                                         studyNumerator: "icdFilter",
@@ -811,11 +811,11 @@ SELECT JSON_AGG(a) FROM a;
                                             '<th class="info-table" colspan="2">Denominator</th>' +
                                             '</tr>' +
                                             '<tr>' +
-                                            '<td class="info-table">Study area</td>' +
-                                            '<td class="info-table">Comparison area</td>' +
-                                            '<td>&nbsp;</td>' +
-                                            '<td class="info-table">Study area</td>' +
-                                            '<td class="info-table">Comparison area</td>' +
+                                            '<th class="info-table">Study area</th>' +
+                                            '<th class="info-table">Comparison area</th>' +
+                                            '<th>&nbsp;</th>' +
+                                            '<th class="info-table">Study area</th>' +
+                                            '<th class="info-table">Comparison area</th>' +
                                             '</tr>';
                                         for (var k=0; k<fieldColumnList.length; k++) {
                                             if (fieldColumnList[k] && fieldColumnList[k].description) {
@@ -825,25 +825,21 @@ SELECT JSON_AGG(a) FROM a;
                                                     res.data[key].S[fieldColumnList[k].studyNumerator] ==
                                                                 res.data[key].C[fieldColumnList[k].comparisonNumerator]) {
                                                     scope.covariateHtml[key] += 
-                                                        '<td class="info-table" colspan="2" align="center">' +
-                                                            (
-                                                                (fieldColumnList[k].comparisonNumerator && res.data[key].C[fieldColumnList[k].comparisonNumerator]) ?
-                                                                _getAttr(res.data[key].S[fieldColumnList[k].comparisonNumerator]) : 
-                                                                (fieldColumnList[k].comparisonNumerator || '')
-                                                            ) + '</td>';
+                                                        '<td class="info-table" colspan="2" align="center">' + 
+                                                        _getAttr(res.data[key].S[fieldColumnList[k].studyNumerator]) + '</td>';
                                                 }
                                                 else {               
                                                     scope.covariateHtml[key] += '<tr>' +
-                                                        '<td class="info-table">' +
+                                                        '<td class="info-table" align="center">' +
                                                             (
                                                                 (fieldColumnList[k].studyNumerator && res.data[key].S[fieldColumnList[k].studyNumerator]) ?
                                                                 _getAttr(res.data[key].S[fieldColumnList[k].studyNumerator]) : 
                                                                 (fieldColumnList[k].studyNumerator || '')
                                                             ) + '</td>' +
-                                                        '<td class="info-table">' +
+                                                        '<td class="info-table" align="center">' +
                                                             (
                                                                 (fieldColumnList[k].comparisonNumerator && res.data[key].C[fieldColumnList[k].comparisonNumerator]) ?
-                                                                _getAttr(res.data[key].S[fieldColumnList[k].comparisonNumerator]) : 
+                                                                _getAttr(res.data[key].C[fieldColumnList[k].comparisonNumerator]) : 
                                                                 (fieldColumnList[k].comparisonNumerator || '')
                                                             ) + '</td>';
                                                 }
@@ -855,25 +851,23 @@ SELECT JSON_AGG(a) FROM a;
                                                                 res.data[key].C[fieldColumnList[k].comparisonDenominator]) {
                                                     scope.covariateHtml[key] += 
                                                         '<td class="info-table" colspan="2" align="center">' +
-                                                            (
-                                                                (fieldColumnList[k].comparisonDenominator && res.data[key].C[fieldColumnList[k].comparisonDenominator]) ?
-                                                                _getAttr(res.data[key].S[fieldColumnList[k].comparisonDenominator]) : 
-                                                                (fieldColumnList[k].comparisonDenominator || '')
-                                                            ) + '</td>' +
+                                                        _getAttr(res.data[key].C[fieldColumnList[k].comparisonDenominator]) + '</td>' +
                                                         '</tr>';  
                                                 }
                                                 else {
                                                     scope.covariateHtml[key] += 
-                                                        '<td class="info-table">' +
+                                                        '<td class="info-table" align="center">' +
                                                             (
-                                                                (fieldColumnList[k].studyDenominator && res.data[key].S[fieldColumnList[k].studyDenominator]) ?
+                                                                (fieldColumnList[k].studyDenominator && 
+                                                                 res.data[key].S[fieldColumnList[k].studyDenominator]) ?
                                                                 _getAttr(res.data[key].S[fieldColumnList[k].studyDenominator]) : 
                                                                 (fieldColumnList[k].studyDenominator || '')
                                                             ) + '</td>' +
-                                                        '<td class="info-table">' +
+                                                        '<td class="info-table" align="center">' +
                                                             (
-                                                                (fieldColumnList[k].comparisonDenominator && res.data[key].C[fieldColumnList[k].comparisonDenominator]) ?
-                                                                _getAttr(res.data[key].S[fieldColumnList[k].comparisonDenominator]) : 
+                                                                (fieldColumnList[k].comparisonDenominator && 
+                                                                 res.data[key].C[fieldColumnList[k].comparisonDenominator]) ?
+                                                                _getAttr(res.data[key].C[fieldColumnList[k].comparisonDenominator]) : 
                                                                 (fieldColumnList[k].comparisonDenominator || '')
                                                             ) + '</td>' +
                                                         '</tr>';

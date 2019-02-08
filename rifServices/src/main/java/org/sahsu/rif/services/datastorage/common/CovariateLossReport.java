@@ -62,7 +62,7 @@ public class CovariateLossReport extends BaseSQLManager {
         CachedRowSetImpl rif40Studies;
         CachedRowSetImpl rif40Investigations;
         CachedRowSetImpl rif40Covariates;
-//		CachedRowSetImpl rif40TablesNumerTab;
+		CachedRowSetImpl rif40TablesNumerTab;
         CachedRowSetImpl rif40TablesDenomTab;
 
         try {
@@ -103,23 +103,23 @@ public class CovariateLossReport extends BaseSQLManager {
             String invName=getColumnFromResultSet(rif40Investigations, "inv_name");
 // 
 // No numerator checks as yet 
-//			String numerTab=getColumnFromResultSet(rif40Investigations, "numer_tab");
-//			if (numerTab == null) {
-//				throw new Exception("numerTab is NULL");
-//			}	
+//
+			String numerTab=getColumnFromResultSet(rif40Investigations, "numer_tab");
+			if (numerTab == null) {
+				throw new Exception("numerTab is NULL");
+			}	
             if (denomTab == null) {
                 throw new Exception("denomTab is NULL");
             }
-//			rif40TablesNumerTab=getRifViewData(connection, true /* column is a String */, "table_name", numerTab, "rif40_tables",
-//				"total_field, age_sex_group_field_name");
-//				// Assumes one study at present
+			rif40TablesNumerTab=getRifViewData(connection, true /* column is a String */, "table_name", numerTab, "rif40_tables",
+				"total_field, age_sex_group_field_name");
             rif40TablesDenomTab=getRifViewData(connection, true /* column is a String */, "table_name", denomTab, "rif40_tables",
                     "total_field, age_sex_group_field_name");
             // Assumes one study at present
             String denomTabTotalField=getColumnFromResultSet(rif40TablesDenomTab, "total_field");
-//			String numerTabTotalField=getColumnFromResultSet(rif40TablesNumerTab, "total_field");
+			String numerTabTotalField=getColumnFromResultSet(rif40TablesNumerTab, "total_field");
             String denomTabASGField=getColumnFromResultSet(rif40TablesDenomTab, "age_sex_group_field_name");
-//			String numerTabASGField=getColumnFromResultSet(rif40TablesNumerTab, "age_sex_group_field_name");
+			String numerTabASGField=getColumnFromResultSet(rif40TablesNumerTab, "age_sex_group_field_name");
 
             if (invName == null) {
                 throw new Exception("invName is NULL");
@@ -211,6 +211,7 @@ public class CovariateLossReport extends BaseSQLManager {
                                 minValue,
                                 maxValue,
                                 invName,
+                                numerTab,
                                 denomTab,
                                 denomTabTotalField,
                                 studyGeolevelName,
@@ -232,6 +233,7 @@ public class CovariateLossReport extends BaseSQLManager {
                                 minValue,
                                 maxValue,
                                 invName,
+                                numerTab,
                                 denomTab,
                                 denomTabTotalField,
                                 studyGeolevelName,
@@ -402,6 +404,7 @@ public class CovariateLossReport extends BaseSQLManager {
             final double minValue,
             final double maxValue,
             final String invName,
+            final String numerTab,
             final String denomTab,
             final String denomTabTotalField,
             final String studyGeolevelName,
@@ -430,6 +433,8 @@ public class CovariateLossReport extends BaseSQLManager {
         queryFormatter.addQueryLine(0, "	SELECT '" + covariateName + 
             "' AS covariate_name, 			/* RIF40_INV_COVARIATES covariate_name */");
         queryFormatter.addQueryLine(0, "		   '" + covariateTableName + "' AS covariate_table_name,");
+        queryFormatter.addQueryLine(0, "		   '" + denomTab + "' AS denominator_table_name,");
+        queryFormatter.addQueryLine(0, "		   '" + numerTab + "' AS numerator_table_name,");
         queryFormatter.addQueryLine(0, "		   b.study_or_comparison,");
         queryFormatter.addQueryLine(0, "		   'age_sex_group BETWEEN " + 
             investigationMinAgeSexGroup + " AND " + investigationMaxAgeSexGroup + "' As age_sex_group_filter,");
@@ -447,6 +452,8 @@ public class CovariateLossReport extends BaseSQLManager {
                 " BETWEEN '" + minValue + "' AND '" + maxValue + "' THEN b.area_id ELSE NULL END)) AS missing_covariate_areas,");
         queryFormatter.addQueryLine(0, "		   SUM(b.total_pop)-SUM(CASE WHEN b." + covariateName.toLowerCase() +
                 " BETWEEN '" + minValue + "' AND '" + maxValue + "' THEN b.total_pop ELSE 0 END) AS missing_denominator_covariate_count,");
+        queryFormatter.addQueryLine(0, "		   100*(SUM(b.total_pop)-SUM(CASE WHEN b." + covariateName.toLowerCase() +
+                " BETWEEN '" + minValue + "' AND '" + maxValue + "' THEN b.total_pop ELSE 0 END))/SUM(b.total_pop) AS missing_denominator_covariate_pct,");
         queryFormatter.addQueryLine(0, "		   SUM(b." + invName.toLowerCase() + ")-SUM(CASE WHEN b." + covariateName.toLowerCase() +
                 " BETWEEN '" + minValue + "' AND '" + maxValue + "' THEN b." + invName.toLowerCase() + " ELSE 0 END) " +
                  "AS missing_numerator_covariate_count");
@@ -490,6 +497,9 @@ public class CovariateLossReport extends BaseSQLManager {
         queryFormatter.addQueryLine(0, "SELECT a.*,");
         queryFormatter.addQueryLine(0, "       b.years-a.extract_years AS missing_years,");
         queryFormatter.addQueryLine(0, "	   b.total_pop-a.denominator_count AS missing_denominator,");
+        queryFormatter.addQueryLine(0, "	   'N/A' AS missing_numerator,");
+        queryFormatter.addQueryLine(0, "	   'N/A' AS missing_numerator_covariate_count,");
+        queryFormatter.addQueryLine(0, "	   'N/A' AS missing_numerator_covariate_pct,");
         queryFormatter.addQueryLine(0, "	   b.denominator_min_year,");
         queryFormatter.addQueryLine(0, "	   b.denominator_max_year");
         queryFormatter.addQueryLine(0, "  FROM summary a, denominator_check b;");

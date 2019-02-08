@@ -303,7 +303,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 								 columnType.equals("smallint"))) {
 							try { // Use normal decimal formatting - will cause confusion with coordinates
 								Long longVal=Long.parseLong(resultSet1.getString(i));
-								studyOrComparisonCovariate.put(jsonCapitalise(name), longVal);
+								studyOrComparisonCovariate.put(jsonCapitalise(name), String.valueOf(longVal));
 							}
 							catch (Exception exception) {	
 								throw new RIFServiceException(
@@ -319,7 +319,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 								 columnType.equals("numeric"))) {
 							try { // Ditto
 								Double doubleVal=Double.parseDouble(resultSet1.getString(i));
-								studyOrComparisonCovariate.put(jsonCapitalise(name), doubleVal);
+								studyOrComparisonCovariate.put(jsonCapitalise(name), String.valueOf(doubleVal));
 							}
 							catch (Exception exception) {
 								throw new RIFServiceException(
