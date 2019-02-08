@@ -8,7 +8,7 @@ See the [Quickstart Guide](QuickstartGuide) for the basic steps. This document h
 
 The older [Building and Installing the RIF](/introduction/building-and-installation) document goes into painstaking detail about the various options. You shouldn't normally need that, but the information is there if you do.
 
-For most installations you can just run the appropriate installer for your platform: `rifInstaller.exe` for Windows; `rifInstaller` for Mac; or `rifInstaller_linux` for Linux.
+For most installations you can just run the appropriate installer for your platform: `rifInstaller.exe` for Windows; `rifInstaller_mac` for Mac; or `rifInstaller_linux` for Linux.
 
 Below we describe some details and differences in the various options for using the installers.
 

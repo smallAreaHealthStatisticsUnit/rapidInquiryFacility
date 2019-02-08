@@ -8,8 +8,7 @@ title: RIF Web Application and Middleware Installation
 
 # Installation Prerequisites
 
-These instructions are to install and setup the RIF middleware and web application (front end) and are for Windows Apache Tomcat. Linux Tomcat
-will be very similar. It is assumed that the installer knows how to:
+These instructions are to install and setup the RIF middleware and web application (front end) and are for Windows Apache Tomcat. Linux Tomcat will be very similar. It is assumed that the installer knows how to:
 
 * Modify Windows file permissions
 * Set environment variables; check settings; setup up the executable and library search paths
@@ -99,7 +98,7 @@ This makes Tomcat Java upgrade proof; but this may have unintended effects if:
 
 This is suitable for laptops and developers with no access from other machines. Download and install Tomcat; make sure your firewall blocks
 port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in
-[Securing Tomcat]({{ site.baseurl }}/rifWebApplication/rifWebApplication#securing-tomcat).
+[Securing Tomcat]({{ site.baseurl }}/Installation/rifWebApplication#securing-tomcat).
 
 ### Apache Tomcat for internet use
 
@@ -117,7 +116,7 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Complete Tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web
   services will not work [The web services will fail to start on the first user logon if it is not set]; see:
-  [RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services-crash-on-logon).
+  [RIF Services crash on logon]({{ site.baseurl }}/Installation/rifWebApplication#rif-services-crash-on-logon).
 - If *CATALINA_HOME* is *C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.5* you have installed the 32 bit version of Java.
   Remove Tomcat and Java and re-install a 64 bit Java (unless you are on a really old 32 bit only Machine...)
 
@@ -689,7 +688,7 @@ Debugging logging faults:
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
 	</RollingFile>
-    <RollingFile name="STATISTICSLOGGER" 
+    <RollingFile name="STATISTICSLOGGER"
 				 filePattern="${logdir}/StatisticsLogger.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
@@ -697,7 +696,7 @@ Debugging logging faults:
 		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
-    </RollingFile>	
+    </RollingFile>
     <RollingFile name="OTHER"
 				 filePattern="${logdir}/Other.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
@@ -767,22 +766,15 @@ Debugging logging faults:
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="STATISTICSLOGGER"/>
     </Logger>
-	
+
   </Loggers>
 </Configuration>
 ```
 
 ## R
 
-Download and install R: (https://cran.ma.imperial.ac.uk/bin/windows/base)
+See [Setup R](#setup-r)
 
-R is setup later in: [R setup]({{ site.baseurl }}/rifWebApplication/rifWebApplication#setup-r)
-
-As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64
-bit version
-
-Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*. Not: **C:\Program Files\R\R-3.4.4\bin**
-or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifWebApplication/rifWebApplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 # Building Web Services using Maven
 
@@ -1311,222 +1303,8 @@ This setup will support:
 
 ## Setup R
 
-**Note:** Much of the information below is specific to setting up on Windows. You can get information on setting up on a Mac -- which will also be helpful for setting up on other Unixes -- [here]({{ site.baseurl }}/rifWebApplication/R_setup_on_Mac).
-
-### R and Printing Output Directories
-
-Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults in *RIFServiceStartupProperties.properties* are:
-
-* Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
-* Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
-
-Grant appropriate read, write and execute access to these directories for Tomcat and SQL Server. Both normally run as the local administrator group: Administrators
-(e.g. DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
-
-### R ODBC
-
-This is only required for SQL Server ports of the RIF. All Postgres ports use R JDBC. We have been forced to use *RODBC* on SQL Server due to an *RJDBC* error:
-```
-saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data
-stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not
-a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is
-data of numeric type with scale greater than precision.
-```
-
-Create and test a system ODBC datasource
-
-* Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as Adminstrator" for the database in use
-* Use SQL Server Native Client version 11, 2011 version or later;
-  ![SQL Server ODBC Setup]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_sqlserver.png).
-
-  The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=SQLServer13```; so
-  the name is *SQLServer13*.
-
-  1. Choose server. Normally you have to type in the host name as discovery will be turned off by default. You may need append "tcp:" to the hostname to force the use of
-     TCP/IP:
-
-     ![SQL Server ODBC Setup 1]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup.png).
-
-  2. Set the connection type to SQL Server authentication using a login and password. Make sure you supply the login and password.
-
-	 ![SQL Server ODBC Setup 2]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup2.png).
-
-  3. Change the database to your database name (e.g. *sahsuland*)
-
-     ![SQL Server ODBC Setup 3]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup3.png).
-
-* If you cannot see a SQL Server database list (you will get an error when SQL server tries to build a list) or get SQL Server connection errors on test see:
-  [SQL Server ODBC Connection Errors]({{ site.baseurl }}/rifWebApplication/rifWebApplication#sql-server-odbc-connection-errors)
-
-* Make sure you test the ODBC connection using the RIF user username and password.!
-
-### R Packages
-
-Start *R* in an Administrator command window and run the following script:
-
-```R
-# CHECK & AUTO INSTALL MISSING PACKAGES
-packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "RJDBC", "MatrixModels", "rJava", "here")
-if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
-  install.packages(setdiff(packages, rownames(installed.packages())))
-}
-if (!require(INLA)) {
-	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
-}
-
-```
-
-* If R cannot be found, add it to the PATH and restart the administrator Window
-* If R asks if you want to use a personal library you are not running as Administrator, do *NOT* accept this.
-  The script will fail. These R libraries *NUST* be installed for all users.
-* R will ask for the nearest CRAN (R code archive); select one geographically near you (e.g. same country).
-* R output (version numbers will be higher as you always get the latest version):
-
-```
---- Please select a CRAN mirror for use in this session ---
-also installing the dependencies 'gtools', 'gdata', 'Rcpp', 'sp', 'LearnBayes', 'deldir', 'coda', 'gmodels', 'expm'
-
-
-  There are binary versions available but the source versions are later:
-       binary source needs_compilation
-deldir 0.1-12 0.1-14              TRUE
-spdep  0.6-12 0.6-13              TRUE
-
-Do you want to install from sources the packages which need compilation?
-y/n: if (!require(INLA)) {
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gtools_3.5.0.zip'
-Content type 'application/zip' length 144014 bytes (140 KB)
-downloaded 140 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gdata_2.17.0.zip'
-Content type 'application/zip' length 1178306 bytes (1.1 MB)
-downloaded 1.1 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/Rcpp_0.12.10.zip'
-Content type 'application/zip' length 3261850 bytes (3.1 MB)
-downloaded 3.1 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/sp_1.2-4.zip'
-Content type 'application/zip' length 1528674 bytes (1.5 MB)
-downloaded 1.5 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/LearnBayes_2.15.zip'
-Content type 'application/zip' length 1129565 bytes (1.1 MB)
-downloaded 1.1 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/deldir_0.1-12.zip'
-Content type 'application/zip' length 171603 bytes (167 KB)
-downloaded 167 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/coda_0.19-1.zip'
-Content type 'application/zip' length 201300 bytes (196 KB)
-downloaded 196 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gmodels_2.16.2.zip'
-Content type 'application/zip' length 73931 bytes (72 KB)
-downloaded 72 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/expm_0.999-2.zip'
-Content type 'application/zip' length 194188 bytes (189 KB)
-downloaded 189 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/plyr_1.8.4.zip'
-Content type 'application/zip' length 1121290 bytes (1.1 MB)
-downloaded 1.1 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/abind_1.4-5.zip'
-Content type 'application/zip' length 40002 bytes (39 KB)
-downloaded 39 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/maptools_0.9-2.zip'
-Content type 'application/zip' length 1818632 bytes (1.7 MB)
-downloaded 1.7 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/spdep_0.6-12.zip'
-Content type 'application/zip' length 3819364 bytes (3.6 MB)
-downloaded 3.6 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/RODBC_1.3-15.zip'
-Content type 'application/zip' length 829585 bytes (810 KB)
-downloaded 810 KB
-
-package 'gtools' successfully unpacked and MD5 sums checked
-package 'gdata' successfully unpacked and MD5 sums checked
-package 'Rcpp' successfully unpacked and MD5 sums checked
-package 'sp' successfully unpacked and MD5 sums checked
-package 'LearnBayes' successfully unpacked and MD5 sums checked
-package 'deldir' successfully unpacked and MD5 sums checked
-package 'coda' successfully unpacked and MD5 sums checked
-package 'gmodels' successfully unpacked and MD5 sums checked
-package 'expm' successfully unpacked and MD5 sums checked
-package 'plyr' successfully unpacked and MD5 sums checked
-package 'abind' successfully unpacked and MD5 sums checked
-package 'maptools' successfully unpacked and MD5 sums checked
-package 'spdep' successfully unpacked and MD5 sums checked
-package 'RODBC' successfully unpacked and MD5 sums checked
-
-The downloaded binary packages are in
-        C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
-> install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
-Warning: dependency 'MatrixModels' is not available
-trying URL 'https://www.math.ntnu.no/inla/R/stable/bin/windows/contrib/3.2/INLA_0.0-1485844051.zip'
-Content type 'application/zip' length 93004915 bytes (88.7 MB)
-downloaded 88.7 MB
-
-
-The downloaded binary packages are in
-        C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
-```
-
-### R Environment
-
-1. Add R_HOME, e.g. *C:\Program Files\R\R-3.4.4* to the environment
-
-2. Add the 64bit JRI native library location and the R_HOME bin\x64 directory to the path
-
-   To use R from Tomcat Java you will need to install JRI. Fortunately, JRI is now a part of rJava and is installed with it.
-   JRI will require its own native shared library which is already installed with rJava. To locate JRI installed with
-   rJava, use
-	```
-	> system.file("jri",package="rJava")
-	[1] "C:/Program Files/R/R-3.4.4/library/rJava/jri"
-	```
-   from inside of R [command-line]. Above command will give you a path. If you look in this directory you will see *i386*
-   and *x64* sub directories. In *x64* you will be able to find the 64 bit *libjri.so*
-   which is the shared library JRI is looking for.
-
-   This 32 or 64 bit subdirectory appended needs to be added to the path:
-   *C:\Program Files\R\R-3.4.4\library\rJava\jri\x64*. This ensures that file "x64\jri.dll"
-   is in java.library.path. If you have 64bit Java (as instructed previous) you will need to use the 64 bit version.
-
-   Just after user logon the middleware can print the JAVA LIBRARY PATH: *System.getProperty("java.library.path")*
-
-   As with Java and R, normally the 64 bit version is used.
-
-	```
-	JAVA LIBRARY PATH >>>
-	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\ProgramData\Ora
-	cle\Java\javapath;C:\Python27\;C:\Python27\Scripts;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\
-	Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\Intel(R) Man
-	agement Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R)
-	 Management Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\WiFi
-	\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Users\admin\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Fi
-	les (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\MinGW\msys\1.0\bin;C:\Program Files\PostgreSQL\9.5\bin;C:\Program Files\R
-	\R-3.2.3\bin\x64;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\110\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\1
-	20\Tools\Binn\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\Microsoft SQL Server\120\DTS\Binn\;C:\Program
-	Files (x86)\Microsoft SQL Server\120\Tools\Binn\ManagementStudio\;C:\Program Files (x86)\Microsoft SQL Server\120\DTS\Binn\;C:\Progr
-	am Files\nodejs\;C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\bin;C:\Program Files\R\R-3.4.0\bin;C:\Program Files
-	(x86)\Skype\Phone\;C:/Program Files/R/R-3.4.0/library/rJava/jri;.
-	```
-
-	* **RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES**
-	* [You can now start the rif]({{ site.baseurl }}/rifWebApplication/rifWebApplication#running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory
-	  *%CATALINA_HOME%\bin* as an Administrator.). The web services will fail to start on the first user logon if the R environment not setup correctly]; see:
-  [RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services-crash-on-logon).
-	* Then you can logon. See section 5
-	  [Running the RIF]({{ site.baseurl }}/rifWebApplication/rifWebApplication#running-the-rif)
-	  for logon instructions
-
+* [Setting up on Windows](/Installation/R_setup_on_Windows)
+* [Setting up on Mac](/Installation/R_setup_on_Mac).
 
 ## Common Setup Errors
 
@@ -1877,7 +1655,7 @@ In the case the initial size is 192M and the maximum heap size is 3040M. In the 
 increase this to a much larger value less than the maximum, at least 2048M. Restart the Tomcat service.
 =======
 In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
-increase this to a much larger value less than the maximum, at least 2048M. Tile generation can require large amounts of memory, UK census output area tiles 
+increase this to a much larger value less than the maximum, at least 2048M. Tile generation can require large amounts of memory, UK census output area tiles
 require 7G of memory. Restart the tomcat service.
 >>>>>>> master
 
@@ -1891,7 +1669,7 @@ Restarting the server using ```catalina.bat run``` and re-running the study resu
 
 See:
 
-* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifWebApplication/rifWebApplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/Installation/rifWebApplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 ### SQL Server ODBC Connection Errors
 
@@ -2143,7 +1921,7 @@ instructions if it is updated say to *RIF41*.
 * Stop Tomcat;
 * Change directory to *%CATALINA_HOME%\webapps*; rename RIF40 to RIF40.old;
 * Follow the instructions in
-  [installing the RIF Web Application]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-web-application)
+  [installing the RIF Web Application]({{ site.baseurl }}/Installation/rifWebApplication#rif-web-application)
   i.e. copy the replacement *RIF40.war* file into the *%CATALINA_HOME%\webapps\* directory;
 * Restore *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* if you have modified it;
 * When you are satisfied with the patch remove the RIF40.old directory in *%CATALINA_HOME%\webapps*.
@@ -2164,7 +1942,7 @@ See the database Management manual: [Patching](https://smallareahealthstatistics
 * Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices
   and taxonomyServices trees to .old;
 * Follow the instructions in
-  [installing the web services]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services).
+  [installing the web services]({{ site.baseurl }}/Installation/rifWebApplication#rif-services).
 <<<<<<< HEAD
   i.e. copy replacement *taxonomy.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start Tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
@@ -2199,7 +1977,7 @@ This has not been tested ans it has not been required. Files to be saved/restore
 ## R
 
 If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in
-[Setup R]({{ site.baseurl }}/rifWebApplication/rifWebApplication#setup-r).
+[Setup R]({{ site.baseurl }}/Installation/rifWebApplication#setup-r).
 Make absolutely sure the PATH and R_HOME are set correctly.
 
 Updating the packages can also be done (consult your statisticians first); on a private network you have two choices:
@@ -2434,13 +2212,13 @@ With:
 
 ### PNG Tile Generation
 
-For *geolevels* with more than 5000 areas the RIF middleware can auto generate PNG tiles on startup. If you do not do this the tiles 
+For *geolevels* with more than 5000 areas the RIF middleware can auto generate PNG tiles on startup. If you do not do this the tiles
 will be generated on the fly; this can take up to 60 seconds per tile for the most complex tiles with >200,000 areas. Tiles are then cached.
-To rebuild the cache delete the tiles scratchSpace directory: *c:\rifDemo\scratchSpace\scratchSpace\tiles\<my geography>* For UK 2011 
+To rebuild the cache delete the tiles scratchSpace directory: *c:\rifDemo\scratchSpace\scratchSpace\tiles\<my geography>* For UK 2011
 census geography this typically takes 10 to 20 minutes. You need to edit the *conf* directory *RIFServiceStartupProperties.properties*:
 ```
 #
-# Tile generator: set if you need automatic tile generation for geolevels with more than 5000 areas 
+# Tile generator: set if you need automatic tile generation for geolevels with more than 5000 areas
 # (see: disableMouseClicksAt in frontEndParameters.json5)
 #
 tileGeneratorUsername=<username>
@@ -2464,7 +2242,7 @@ Exception in thread "ajp-nio-8009-exec-3" Exception in thread "http-nio-8080-exe
 exceeded
 java.lang.OutOfMemoryError: GC overhead limit exceeded
 ```
- 
+
 ### Front End Logging
 
 Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.

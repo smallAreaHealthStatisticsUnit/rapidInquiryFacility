@@ -11,7 +11,7 @@ Before installing the RIF you must have the following installed:
 
 * A database. The RIF can use either [PostgreSQL](https://www.postgresql.org) or [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-2017) (only on Windows).
 * [Apache Tomcat](https://tomcat.apache.org).
-* [R](https://www.r-project.org).
+* [R](https://www.r-project.org). Getting this set up can be complex, so it has its own guides for [Windows](/Installation/R_setup_on_Windows) and [Mac](/Installation/R_setup_on_Mac).
 
 You must also have administrative rights on the machine on which you are installing.
 
@@ -19,7 +19,7 @@ You must also have administrative rights on the machine on which you are install
 
 Download a RIF installer from the [GitHub site](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility). We recommend always getting the latest version available from the [Releases tab](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/releases).
 
-For Windows, save `rifInstaller.exe` to the machine you are installing on. For Mac you'll want `rifInstaller`. For Linux it's `rifInstaller_linux`.
+For Windows, save `rifInstaller.exe` to the machine you are installing on. For Mac you'll want `rifInstaller_mac`. For Linux it's `rifInstaller_linux`.
 
 ## Warning
 
@@ -31,9 +31,9 @@ Run the installer from the command line. We don't recommend running it by double
 
 On Windows, open  the Start Menu. Right-click on  _Command Prompt_ and choose "Run as administrator". Answer "Yes" to the confirmation dialog.
 
-On Mac, open the _Terminal_ app.
+On Mac, open the _Terminal_ app. On Linux open a terminal.
 
-In either case use the `cd` command to move to the folder to which you saved the installer, above. Then on Windows type:
+In any case use the `cd` command to move to the folder to which you saved the installer, above. Then on Windows type:
 
 ```
 rifInstaller.exe
@@ -46,6 +46,8 @@ On Mac and Linux you might have to make it executable first:
 chmod +x rifInstaller
 ./rifInstaller
 ```
+
+where `rifInstaller` is the appropriate one for the platform.
 
 ## Responding to the Prompts
 
