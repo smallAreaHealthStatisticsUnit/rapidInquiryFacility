@@ -55,18 +55,12 @@ angular.module("RIF")
                         scope.covariateChange= function (covariateType) {
                             scope.covariateType = covariateType;
                             AlertService.consoleDebug("[rifd-util-info.js] covariateChange(): " + scope.covariateType);
-                            scope.showCovariateLossCovariate[scope.covariateType] = true;
-                            /* JS way;  also class="ng-hide"
-                            var id="utilInfo" + covariateType;
-                            var x = document.getElementById(id);
-                            if (x) {
-                                if (x.style.display === "none") {
-                                    x.style.display = "block";
-                                } 
-                                else {
-                                    x.style.display = "none";
-                                }
-                            } */
+
+                            var covariateLossReportHtml = '<header>Covariate Loss Report &ndash; ' + scope.headerInfo + '</header>' +
+                                scope.covariateHtml[covariateType];
+                            AlertService.consoleDebug("[rifd-util-info.js] covariateChange(): " + scope.covariateType +
+                                "HTML: " + covariateLossReportHtml);
+                            scope.covariateLossReport = $sce.trustAsHtml(covariateLossReportHtml);
                         }
                         scope.reportChange = function (reportType) {
                             scope.reportType = reportType;
@@ -111,8 +105,7 @@ angular.module("RIF")
 						scope.d3HomogeneityChartChange = function (gendersName) {
 							scope.gendersName=gendersName;
                             AlertService.consoleDebug("[rifd-util-info.js] d3HomogeneityChartChange(): " + scope.gendersName);
-							var homogeneityChartHtml="<section><header>d3 Homogeneity Chart: " + scope.gendersName + 
-								"</header></section>";
+							var homogeneityChartHtml='<header>Homogeneity Chart &ndash; ' + scope.headerInfo + '</header>';
 							scope.homogeneityChartHeader = $sce.trustAsHtml(homogeneityChartHtml);
 							
 							function gender2text(gender) {
@@ -133,7 +126,7 @@ angular.module("RIF")
 							
 							/* Questions: 
 							 * 1. Do we need to use band_id if max_exposure_value is undefined/null YES
-							 * 2. Would averge exposure value be better? YES
+							 * 2. Would average exposure value be better? YES
 							 * 3. Do we want a choice: max/min/average/median/band_id/distance from nearest source
 							 */
 							 
@@ -388,10 +381,10 @@ SELECT JSON_AGG(a) FROM a;
 										var matrix = this.getScreenCTM()
 											.translate(+ this.getAttribute("cx"), + this.getAttribute("cy"));
                                         return tooltip.html("Band " + d.band_id + " " +
-											gender2text(d.genders) + ": " + 
+											gender2text(d.genders) + "</br>" + 
 											d.relative_risk.toFixed(3) + 
-											" - " + d.lower95.toFixed(3) +
-											" + " + d.upper95.toFixed(3))
+											"&nbsp;[95% CI&nbsp;" + d.lower95.toFixed(3) +
+											"&ndash;" + d.upper95.toFixed(3) + "]")
                                             .style("visibility", "visible")
   //                                        .style("top", (event.pageY-17)+"px").
   //										.style("left",(event.pageX+25)+"px");
@@ -420,10 +413,9 @@ SELECT JSON_AGG(a) FROM a;
                             scope.covariateType = null;
                             scope.covariateDescription = null;
                             scope.covariateDescriptions = {};
+                            scope.covariateHtml = {};
                             scope.isRiskAnalysisStudy=false;
                             scope.hasCovariates=false;
-                            scope.studyType="Disease Mapping";
-                            scope.showCovariateLossCovariate = {};
                             scope.hSplit1 = 100;
                             scope.gendersName="males";
 							scope.gendersList = ['males', 'females', 'both'];
@@ -441,42 +433,44 @@ SELECT JSON_AGG(a) FROM a;
                             }
                             if (scope.mapDefs && scope.mapDefs.study_type && scope.mapDefs.study_type == "Risk Analysis") {
                                 scope.isRiskAnalysisStudy=true;
-                                scope.studyType=scope.mapDefs.study_type;
-                                if (scope.mapDefs.riskAnalysisDescription) {
-                                    scope.studyType=scope.mapDefs.riskAnalysisDescription;
-                                }
                                 scope.reportList = ["Summary", "Covariate Loss Report", "Homogeneity Tests", "Homogeneity Charts"];
                             }
                             else {
                                 scope.reportList = ["Summary", "Covariate Loss Report"];
                             }
                         
-                            scope.summary = '<header class="info-header">Fetching Study Information for ' + scope.studyType.toLowerCase() + " study " + 
-                               ((scope.mapDefs && scope.mapDefs.study_id) ? scope.mapDefs.study_id : "Unknown") + 
-                                '...</header>';
-                            scope.covariateLossReport = '<header class="info-header">Fetching Study Covariate Loss Report for ' + scope.studyType.toLowerCase() + " study " + 
-                               ((scope.mapDefs && scope.mapDefs.study_id) ? scope.mapDefs.study_id : "Unknown") + 
-                                '...</header>';
-                            scope.homogeneityTests = '<header class="info-header">Fetching Study Homogeneity Tests for ' + scope.studyType.toLowerCase() + " study " + 
-                               ((scope.mapDefs && scope.mapDefs.study_id) ? scope.mapDefs.study_id : "Unknown") + 
-                                '...</header>';
-                            scope.homogeneityChartHeader = '<header class="info-header">Fetching Study Homogeneity Charts for ' + scope.studyType.toLowerCase() + " study " + 
-                               ((scope.mapDefs && scope.mapDefs.study_id) ? scope.mapDefs.study_id : "Unknown") + 
-                                '...</header>';
-								
-                            var homogeneityTestsHtml = '<header>Homogeneity Tests &ndash; ' + 
-                                ((scope.mapDefs && scope.mapDefs.riskAnalysisDescription) ? scope.mapDefs.riskAnalysisDescription : "No risk analysis description") +
+                            scope.headerInfo=((scope.mapDefs && scope.mapDefs.study_id) ? "Study: " + 
+                                scope.mapDefs.study_id : "Unknown study") + 
                                 ' &ndash; ' +
-                                ((scope.mapDefs && scope.mapDefs.name) ? scope.mapDefs.name : "No name") + 
-                                '</header>';
-                            var covariateLossReportHtml = '<header>Covariate Loss Report &ndash; ' +
-                                ((scope.mapDefs && scope.mapDefs.name) ? scope.mapDefs.name : "No name") + 
-                                '</header>';
+                                ((scope.mapDefs && scope.mapDefs.riskAnalysisDescription) ? 
+                                       scope.mapDefs.riskAnalysisDescription : (scope.mapDefs.study_type || "Unknown study type") + " study") +
+                                ' &ndash; ' +
+                                ((scope.mapDefs && scope.mapDefs.name) ? scope.mapDefs.name : "No name");
+                            scope.summary = $sce.trustAsHtml('<header class="info-header">Fetching Study Information for ' + 
+                                scope.headerInfo + '...</header>');
+                            scope.covariateLossReport = $sce.trustAsHtml('<header class="info-header">Fetching Study Covariate Loss Report for ' + 
+                                scope.headerInfo + '...</header>');
+                            scope.homogeneityTests = $sce.trustAsHtml('<header class="info-header">Fetching Study Homogeneity Tests for ' + 
+                                scope.headerInfo + '...</header>');
+                            scope.homogeneityChartHeader = $sce.trustAsHtml('<header class="info-header">Fetching Study Homogeneity Charts for ' + 
+                                scope.headerInfo + '...</header>');
+								
+                            var homogeneityTestsHtml = '<header>Homogeneity Tests &ndash; ' + scope.headerInfo + '</header>';
+                            var covariateLossReportHtml = '<header>Covariate Loss Report &ndash; ' + scope.headerInfo + '</header>';
                             
                             var thisStudy = scope.studyID[attr.mapid].study_id;
                             _getAttr = function (v) {
-                                return '<attr>' + $sce.trustAsHtml(v) + '</attr></br>';
+                                if (!v) {
+                                    return "&nbsp;";
+                                }
+                                else if (isNaN(v)) {
+                                    return '<attr>' + $sce.trustAsHtml(v) + '</attr></br>';
+                                }
+                                else {
+                                    return roundTo3DecimalPlaces(v);
+                                }
                             };
+                            
                             function retrieveError(err, functionName) {
                                 if (functionName) {
                                     alertScope.showError("Could not get information for study: " + functionName + " failed; " +
@@ -492,12 +486,13 @@ SELECT JSON_AGG(a) FROM a;
 
                                 user.getDetailsForProcessedStudy(user.currentUser, thisStudy).then(function (res) {
                                     var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(res.data[0][13]) +
+                                            '<section>Study:</section>' + _getAttr(thisStudy) +
                                             '<section>Project Description:</section>' + _getAttr(res.data[0][14]) +
                                             '<section>Submitted By:</section>' + _getAttr(res.data[0][0]) +
                                             '<section>Date:</section>' + _getAttr(res.data[0][3]) +
                                             '<section>Study Name:</section>' + _getAttr(res.data[0][1]) +
                                             '<section>Study Description:</section>' + _getAttr(res.data[0][2] || 
-                                                "<em>TODO: not returned from DB</em>") +
+                                                '<em>' + _getAttr('TODO: not set in DB') + '</em>') +
                                             '<section>Geography:</section>' + _getAttr(res.data[0][4]) +
                                             '<section>Study Type:</section>' + _getAttr(res.data[0][5]);
 
@@ -511,7 +506,7 @@ SELECT JSON_AGG(a) FROM a;
 
                                     //Investigations
                                     project += '<header>Investigations</header>';
-                                    project += '<section>Health Theme:</section><em>' + _getAttr("TODO: not returned from DB") + '</em>' + 
+                                    project += '<section>Health Theme:</section><em>' + _getAttr('TODO: not returned from DB') + '</em>' + 
                                             '<section>Numerator Table:</section>' + _getAttr(res.data[0][19]) +
                                             '<section>Denominator Table:</section>' + _getAttr(res.data[0][7]);
 
@@ -563,9 +558,7 @@ SELECT JSON_AGG(a) FROM a;
                                         project += '<header>Statistics</header>';
                                         project += '<section>Calculation Method:</section>' + _getAttr(res.data[0][15]);
 
-                                        scope.summary = $sce.trustAsHtml(
-                                            cautionMessage("This Information is a work in progress due to missing data (RIF developers)") + 
-                                            project);    
+                                        scope.summary = $sce.trustAsHtml(project);    
                                         if (scope.isRiskAnalysisStudy) {  
                                             user.getHomogeneity(user.currentUser, thisStudy).then(function (res) {
     /*
@@ -601,14 +594,14 @@ SELECT JSON_AGG(a) FROM a;
 	 *  */
                                 
                                                 var homogeneityTable = '<table class="info-table"><tr>' +
-                                                    '<th colspan="3" class="info-table">Unadjusted</th>' +
-                                                    '<th align="center" class="info-table"></th>' +
-                                                    '<th colspan="3" class="info-table">Adjusted</th>'+ +
+                                             /*       '<th colspan="3" class="info-table">Unadjusted</th>' */
+                                                    '<th align="center" class="info-table">Statistic</th>' +
+                                                    '<th colspan="3" class="info-table">Adjusted</th>'+
                                                     '</tr>' +
                                                     '<tr>' +
-                                                    '<td class="info-table">Males</td>' +
+                                            /*        '<td class="info-table">Males</td>' +
                                                     '<td class="info-table">Females</td>' +
-                                                    '<td class="info-table">Both</td>' +
+                                                    '<td class="info-table">Both</td>' + */
                                                     '<td class="info-table"></td>' +
                                                     '<td class="info-table">Males</td>' +
                                                     '<td class="info-table">Females</td>' +
@@ -628,6 +621,7 @@ SELECT JSON_AGG(a) FROM a;
                                                 for (var i=0; i<homogeneityList.length; i++) {
                                                     var homogeneityAttr=homogeneityList[i];
                                                     homogeneityTable+='<tr>';
+                                                    /*
                                                     for (var j=0; j<scope.gendersList.length; j++) {
                                                         var genderAttr=scope.gendersList[j];
                                                         if (res.data.unadjusted && res.data.unadjusted[genderAttr] && 
@@ -640,8 +634,8 @@ SELECT JSON_AGG(a) FROM a;
                                                         else {
                                                             homogeneityTable+='<td class="info-table">0</td>';
                                                         }
-                                                    }
-                                                    homogeneityTable+='<td  class="info-table" align="center">' + 
+                                                    } */
+                                                    homogeneityTable+='<td  class="info-table" align="left">' + 
                                                         _getAttr(homogeneityDescriptions[homogeneityAttr] || "No description") + 
                                                         '</td>';
                                                     for (var j=0; j<scope.gendersList.length; j++) {
@@ -670,10 +664,9 @@ SELECT JSON_AGG(a) FROM a;
 				
                                                 scope.d3HomogeneityChartChange(scope.gendersName);
                                             
-                                                AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + homogeneityTestsHtml);
-                                                scope.homogeneityTests = $sce.trustAsHtml(
-                                                    cautionMessage("This Information is a work in progress as the unadjusted values are missing (RIF developers)") + 
-                                                    homogeneityTestsHtml); 
+                                                AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + 
+                                                    homogeneityTestsHtml);
+                                                scope.homogeneityTests = $sce.trustAsHtml(homogeneityTestsHtml); 
                                                         
                                                 if (scope.hasCovariates) {        
                                                     user.getCovariateLossReport(user.currentUser, thisStudy).then(function (res) {
@@ -719,39 +712,178 @@ SELECT JSON_AGG(a) FROM a;
                             }
                             function buildCovariateLossReport(res) {
                                 var covariateLossReportValid=false;
+                                var covariateTableDescription;
                                 var i=0;
+     /* Not used:
+      "extractMaxYear": 1996,
+      "missingCovariateAreas": 0,
+      "denominatorMaxYear": 1996,
+      "denominatorMinYear": 1995,
+      "extractMinYear": 1995,
+      "missingDenominatorAreas": 0,
+      "extractYears": 2,
+      "mappingGeolevelAreas": 1,
+      "missingYears": 0
+     
+      Used:
+      "covariateTableName": "COVAR_SAHSULAND_COVARIATES4",
+      "icdFilter": "[icd] LIKE 'C33%' AND [icd] LIKE 'C34%'",
+      "covariateFilter": "CASE WHEN b.ses BETWEEN '1.0' AND '5.0'",
+      "missingDenominatorCovariateCount": 2888240,
+      "missingNumeratorCovariateCount": 1458,
+      "numeratorCount": 12892,
+      "denominatorCount": 21073598,
+      "missingDenominator": 0,
+      "ageSexGroupFilter": "age_sex_group BETWEEN 100 AND 221",
+      */
+                                var fieldColumnList = [
+                                {
+                                        description: "Database Table",
+                                        studyNumerator: "numeratorTable",
+                                        studyDenominator: "denominatorTable",
+                                        comparisonNumerator: "numeratorTable",
+                                        comparisonDenominator: "denominatorTable",
+                                }, {
+                                        description: "Covariate Table",
+                                        studyNumerator: "covariateTableName",
+                                        studyDenominator: "covariateTableName",
+                                        comparisonNumerator: "covariateTableName",
+                                        comparisonDenominator: "covariateTableName",
+                                }, {
+                                        description: "Covariate Filter",
+                                        studyNumerator: "covariateFilter",
+                                        studyDenominator: "covariateFilter",
+                                        comparisonNumerator: "covariateFilter",
+                                        comparisonDenominator: "covariateFilter",
+                                }, {
+                                        description: "Number Excluded",
+                                        studyNumerator: "missingNumeratorCovariateCount",
+                                        studyDenominator: "missingDenominatorCovariateCount",
+                                        comparisonNumerator: "missingNumeratorCovariateCount",
+                                        comparisonDenominator: "missingDenominatorCovariateCount",
+                                }, {
+                                        description: "Total",
+                                        studyNumerator: "numeratorCount",
+                                        studyDenominator: "denominatorCount",
+                                        comparisonNumerator: "numeratorCount",
+                                        comparisonDenominator: "denominatorCount",
+                                }, {
+                                        description: "% excluded",
+                                        studyNumerator: "missingNumeratorCovariatePct",
+                                        studyDenominator: "missingDenominatorCovariatePct",
+                                        comparisonNumerator: "missingNumeratorCovariatePct",
+                                        comparisonDenominator: "missingDenominatorCovariatePct",
+                                }, {
+                                        description: "ICD filter",
+                                        studyNumerator: "icdFilter",
+                                        studyDenominator: "icdFilter",
+                                        comparisonNumerator: "icdFilter",
+                                        comparisonDenominator: "icdFilter",
+                                }, {
+                                        description: "Age sex group filter",
+                                        studyNumerator: "ageSexGroupFilter",
+                                        studyDenominator: "ageSexGroupFilter",
+                                        comparisonNumerator: "ageSexGroupFilter",
+                                        comparisonDenominator: "ageSexGroupFilter",
+                                }, {
+                                        description: "Missing Years",
+                                        studyNumerator: "missingNumerator",
+                                        studyDenominator: "missingDenominator",
+                                        comparisonNumerator: "missingNumerator",
+                                        comparisonDenominator: "missingDenominator",
+                                }
+                                ];
+                                
                                 for (key in res.data) {
-                                    scope.covariateType=key;
+                                    if (i ==0) {
+                                        scope.covariateType=key;
+                                    }
                                     if (res.data[key] && res.data[key].S && res.data[key].C) {
                                         covariateLossReportValid=true;
                                         scope.covariateList.push(key);
                                         scope.covariateDescriptions[key] =
                                             res.data[key].S.covariateTableDescription;
-                                        if (i == 0) {
-                                            scope.showCovariateLossCovariate[key] = true;
+                                        scope.covariateHtml[key] = 
+                                            '<section>' + key + '</section>' + (scope.covariateDescriptions[key] || "No description") +
+                                            '<table class="info-table"><tr>' +
+                                            '<th class="info-table" colspan="2">Numerator</th>' +
+                                            '<th>&nbsp;</th>' +
+                                            '<th class="info-table" colspan="2">Denominator</th>' +
+                                            '</tr>' +
+                                            '<tr>' +
+                                            '<td class="info-table">Study area</td>' +
+                                            '<td class="info-table">Comparison area</td>' +
+                                            '<td>&nbsp;</td>' +
+                                            '<td class="info-table">Study area</td>' +
+                                            '<td class="info-table">Comparison area</td>' +
+                                            '</tr>';
+                                        for (var k=0; k<fieldColumnList.length; k++) {
+                                            if (fieldColumnList[k] && fieldColumnList[k].description) {
+                                                
+                                                if (fieldColumnList[k].studyNumerator && res.data[key].S[fieldColumnList[k].studyNumerator] &&
+                                                    fieldColumnList[k].comparisonNumerator && res.data[key].C[fieldColumnList[k].comparisonNumerator] &&
+                                                    res.data[key].S[fieldColumnList[k].studyNumerator] ==
+                                                                res.data[key].C[fieldColumnList[k].comparisonNumerator]) {
+                                                    scope.covariateHtml[key] += 
+                                                        '<td class="info-table" colspan="2" align="center">' +
+                                                            (
+                                                                (fieldColumnList[k].comparisonNumerator && res.data[key].C[fieldColumnList[k].comparisonNumerator]) ?
+                                                                _getAttr(res.data[key].S[fieldColumnList[k].comparisonNumerator]) : 
+                                                                (fieldColumnList[k].comparisonNumerator || '')
+                                                            ) + '</td>';
+                                                }
+                                                else {               
+                                                    scope.covariateHtml[key] += '<tr>' +
+                                                        '<td class="info-table">' +
+                                                            (
+                                                                (fieldColumnList[k].studyNumerator && res.data[key].S[fieldColumnList[k].studyNumerator]) ?
+                                                                _getAttr(res.data[key].S[fieldColumnList[k].studyNumerator]) : 
+                                                                (fieldColumnList[k].studyNumerator || '')
+                                                            ) + '</td>' +
+                                                        '<td class="info-table">' +
+                                                            (
+                                                                (fieldColumnList[k].comparisonNumerator && res.data[key].C[fieldColumnList[k].comparisonNumerator]) ?
+                                                                _getAttr(res.data[key].S[fieldColumnList[k].comparisonNumerator]) : 
+                                                                (fieldColumnList[k].comparisonNumerator || '')
+                                                            ) + '</td>';
+                                                }
+                                                scope.covariateHtml[key] += 
+                                                    '<td class="info-table" align="center">' + _getAttr(fieldColumnList[k].description || "UNKNOWN") + '</td>';
+                                                if (fieldColumnList[k].studyDenominator && res.data[key].S[fieldColumnList[k].studyDenominator] &&
+                                                    fieldColumnList[k].comparisonDenominator && res.data[key].C[fieldColumnList[k].comparisonDenominator] &&
+                                                    res.data[key].S[fieldColumnList[k].studyDenominator] ==
+                                                                res.data[key].C[fieldColumnList[k].comparisonDenominator]) {
+                                                    scope.covariateHtml[key] += 
+                                                        '<td class="info-table" colspan="2" align="center">' +
+                                                            (
+                                                                (fieldColumnList[k].comparisonDenominator && res.data[key].C[fieldColumnList[k].comparisonDenominator]) ?
+                                                                _getAttr(res.data[key].S[fieldColumnList[k].comparisonDenominator]) : 
+                                                                (fieldColumnList[k].comparisonDenominator || '')
+                                                            ) + '</td>' +
+                                                        '</tr>';  
+                                                }
+                                                else {
+                                                    scope.covariateHtml[key] += 
+                                                        '<td class="info-table">' +
+                                                            (
+                                                                (fieldColumnList[k].studyDenominator && res.data[key].S[fieldColumnList[k].studyDenominator]) ?
+                                                                _getAttr(res.data[key].S[fieldColumnList[k].studyDenominator]) : 
+                                                                (fieldColumnList[k].studyDenominator || '')
+                                                            ) + '</td>' +
+                                                        '<td class="info-table">' +
+                                                            (
+                                                                (fieldColumnList[k].comparisonDenominator && res.data[key].C[fieldColumnList[k].comparisonDenominator]) ?
+                                                                _getAttr(res.data[key].S[fieldColumnList[k].comparisonDenominator]) : 
+                                                                (fieldColumnList[k].comparisonDenominator || '')
+                                                            ) + '</td>' +
+                                                        '</tr>';
+                                                }
+                                            }
                                         }
-                                        else {
-                                            scope.showCovariateLossCovariate[key] = false;
+                                        scope.covariateHtml[key] += '</table>';
+                                        if (i ==0) {
+                                            covariateLossReportHtml+=scope.covariateHtml[key];
                                         }
-                                        covariateLossReportHtml+='<div ng-show="showCovariateLossCovariate[' + 
-                                            key + ']">';
-                                        covariateLossReportHtml+="<section><header>" +
-                                            key + ": " + res.data[key].S.covariateTableDescription;
-                                            '</header><table class="info-table"><tr>' +
-                                            "<th colspan='2'>Numerator</th>"+
-                                            "<th>&nbsp;</th>" +
-                                            "<th colspan='2'>Denominator</th>"+ +
-                                            "</tr>" +
-                                            "<tr>" +
-                                            "<td>Study area</td>" +
-                                            "<td>Comparison area</td>" +
-                                            "<td>&nbsp;</td>" +
-                                            "<td>Study area</td>" +
-                                            "<td>Comparison area</td>" +
-                                            "</tr>";
-                                        covariateLossReportHtml+="</table></section>";
-                                        covariateLossReportHtml+="<section><pre>" + JSON.stringify(res.data[key], null, 2) +
-                                            "</pre></section></div>";
                                     }     
                                     else {
                                         covariateLossReportValid=false;
@@ -766,9 +898,14 @@ SELECT JSON_AGG(a) FROM a;
                                 
                                 if (!covariateLossReportValid) {
                                     scope.covariateLossReport = $sce.trustAsHtml(
-                                        cautionMessage("No covariates were used by this study") + 
+                                        cautionMessage("No covariates were found for this study") + 
                                         covariateLossReportHtml);
                                     AlertService.consoleDebug("[rifd-util-info.js] no Covariate Loss Report: " + 
+                                        JSON.stringify(res.data, null, 2));
+                                }   
+                                else {
+                                    scope.covariateLossReport = $sce.trustAsHtml(covariateLossReportHtml);
+                                    AlertService.consoleDebug("[rifd-util-info.js] Covariate Loss Report: " + 
                                         JSON.stringify(res.data, null, 2));
                                 }    
                             }
