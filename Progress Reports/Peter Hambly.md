@@ -3392,3 +3392,11 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
   March 2019) and [issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). 
 * RIF meeting;
 * Create branch [risk_analysis_d3_graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/risk_analysis_d3_graphs);
+* getHomoGeneity REST call
+
+### 4th to 8th February
+
+* Covariant Loss report SQL generator
+* Covariant Loss report REST call, SQL Server fixes
+* Covariate loss report and homogeneity front end, experimental D3 chart
+* RIF meeting
