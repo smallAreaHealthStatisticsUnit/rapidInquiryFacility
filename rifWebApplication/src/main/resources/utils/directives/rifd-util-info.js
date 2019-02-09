@@ -715,17 +715,23 @@ SELECT JSON_AGG(a) FROM a;
                                 var covariateTableDescription;
                                 var i=0;
      /* Not used:
-      "extractMaxYear": 1996,
-      "missingCovariateAreas": 0,
-      "denominatorMaxYear": 1996,
-      "denominatorMinYear": 1995,
-      "extractMinYear": 1995,
-      "missingDenominatorAreas": 0,
-      "extractYears": 2,
       "mappingGeolevelAreas": 1,
-      "missingYears": 0
+      
+      To do:
+      
+      "missingCovariateAreas": 0,
+      "missingDenominatorAreas": 0,
+      "missingNumeratorAreas": 0,
      
       Used:
+      "denominatorMaxYear": 1996,
+      "denominatorMinYear": 1995,
+      "numeratorMaxYear": 1996,
+      "numeratorMinYear": 1995,
+      "extractMaxYear": 1996,
+      "extractMinYear": 1995,
+      "missingExtractYears": 0,
+      "extractYears": 2,
       "covariateTableName": "COVAR_SAHSULAND_COVARIATES4",
       "icdFilter": "[icd] LIKE 'C33%' AND [icd] LIKE 'C34%'",
       "covariateFilter": "CASE WHEN b.ses BETWEEN '1.0' AND '5.0'",
@@ -734,6 +740,7 @@ SELECT JSON_AGG(a) FROM a;
       "numeratorCount": 12892,
       "denominatorCount": 21073598,
       "missingDenominator": 0,
+      "missingNumeranator": 0,
       "ageSexGroupFilter": "age_sex_group BETWEEN 100 AND 221",
       */
                                 var fieldColumnList = [
@@ -756,6 +763,8 @@ SELECT JSON_AGG(a) FROM a;
                                         comparisonNumerator: "missingNumeratorCovariatePct",
                                         comparisonDenominator: "missingDenominatorCovariatePct",
                                 }, {
+                                        description: "&nbsp;" /* Spacer */
+                                }, {
                                         description: "Database Table",
                                         studyNumerator: "numeratorTableName",
                                         studyDenominator: "denominatorTableName",
@@ -767,6 +776,8 @@ SELECT JSON_AGG(a) FROM a;
                                         studyDenominator: "covariateTableName",
                                         comparisonNumerator: "covariateTableName",
                                         comparisonDenominator: "covariateTableName",
+                                }, {
+                                        description: "&nbsp;" /* Spacer */
                                 }, {
                                         description: "Covariate Filter",
                                         studyNumerator: "covariateFilter",
@@ -786,15 +797,98 @@ SELECT JSON_AGG(a) FROM a;
                                         comparisonNumerator: "ageSexGroupFilter",
                                         comparisonDenominator: "ageSexGroupFilter",
                                 }, {
-                                        description: "Missing Years",
+                                        description: "&nbsp;" /* Spacer */
+                                }, {
+                                        description: "Verification period",
+                                        studyNumerator: "numeratorYears",
+                                        studyDenominator: "denominatorYears",
+                                        comparisonNumerator: "numeratorYears",
+                                        comparisonDenominator: "denominatorYears",
+                                }, {
+                                        description: "Extract period",
+                                        studyNumerator: "extractYears",
+                                        studyDenominator: "extractYears",
+                                        comparisonNumerator: "extractYears",
+                                        comparisonDenominator: "extractYears",
+                                }, {
+                                        description: "Missing Cases/Population",
                                         studyNumerator: "missingNumerator",
                                         studyDenominator: "missingDenominator",
                                         comparisonNumerator: "missingNumerator",
                                         comparisonDenominator: "missingDenominator",
+                                }, {
+                                        description: "Extract counts verified",
+                                        studyNumerator: "extractNumeratorCount",
+                                        studyDenominator: "extractDenominatorCount",
+                                        comparisonNumerator: "extractNumeratorCount",
+                                        comparisonDenominator: "extractDenominatorCount",
                                 }
                                 ];
                                 
-                                for (key in res.data) {
+                                for (var key in res.data) {
+                                    if (res.data[key] && res.data[key].S && res.data[key].S["extractMinYear"] && res.data[key].S["extractMaxYear"] &&
+                                                         res.data[key].C && res.data[key].C["extractMinYear"] && res.data[key].C["extractMaxYear"]) {
+                                        res.data[key].S["extractYears"] = res.data[key].S["extractMinYear"] + "&ndash;" + 
+                                            res.data[key].S["extractMaxYear"];
+                                        if (res.data[key].S["missingExtractYears"] && res.data[key].S["missingExtractYears"] != "0") { 
+                                            res.data[key].S["extractYears"] += ";&nbsp;" + res.data[key].S["missingExtractYears"];
+                                        }
+                                        else {
+                                            res.data[key].S["extractYears"] += "; years verified";
+                                        }
+                                        res.data[key].C["extractYears"] = res.data[key].C["extractMinYear"] + "&ndash;" + 
+                                            res.data[key].C["extractMaxYear"];
+                                        if (res.data[key].C["missingExtractYears"] && res.data[key].C["missingExtractYears"] != "0") { 
+                                            res.data[key].C["extractYears"] += ";&nbsp;" + res.data[key].C["missingExtractYears"];
+                                        }
+                                        else {
+                                            res.data[key].C["extractYears"] += "; years verified";
+                                        }
+                                    }
+                               
+                                    if (res.data[key] && res.data[key].S && res.data[key].S["denominatorMinYear"] && res.data[key].S["denominatorMaxYear"] && 
+                                                         res.data[key].C && res.data[key].C["denominatorMinYear"] && res.data[key].C["denominatorMaxYear"]) {
+                                        res.data[key].S["denominatorYears"] = res.data[key].S["denominatorMinYear"] + "&ndash;" + 
+                                            res.data[key].S["denominatorMaxYear"];
+                                        res.data[key].C["denominatorYears"] = res.data[key].C["denominatorMinYear"] + "&ndash;" + 
+                                            res.data[key].C["denominatorMaxYear"];
+                                    }
+                                    
+                                    if (res.data[key] && res.data[key].S && res.data[key].S["numeratorMinYear"] && res.data[key].S["numeratorMinYear"] && 
+                                                         res.data[key].C && res.data[key].C["numeratorMinYear"] && res.data[key].C["numeratorMinYear"]) {
+                                        res.data[key].S["numeratorYears"] = res.data[key].S["numeratorMinYear"] + "&ndash;" + 
+                                            res.data[key].S["numeratorMaxYear"];
+                                        res.data[key].C["numeratorYears"] = res.data[key].C["numeratorMinYear"] + "&ndash;" + 
+                                            res.data[key].C["numeratorMinYear"];
+                                    }
+                                    
+                                    if (res.data[key] && res.data[key].S && res.data[key].S["missingNumerator"] && res.data[key].S["missingNumerator"] != "0.0") {
+                                        res.data[key].S["extractNumeratorCount"] = "No: " + res.data[key].S["missingNumerator"] + " missing";
+                                    }
+                                    else {
+                                        res.data[key].S["extractNumeratorCount"] = "Yes";
+                                    }
+                                    if (res.data[key] && res.data[key].S && res.data[key].S["missingDenominator"] && res.data[key].S["missingDenominator"] != "0.0") {
+                                        res.data[key].S["extractDenominatorCount"] = "No: " + res.data[key].S["missingDenominator"] + " missing";
+                                    }
+                                    else {
+                                        res.data[key].S["extractDenominatorCount"] = "Yes";
+                                    }
+                                    
+                                    if (res.data[key] && res.data[key].C && res.data[key].C["missingNumerator"] && res.data[key].C["missingNumerator"] != "0.0") {
+                                        res.data[key].C["extractNumeratorCount"] = "No: " + res.data[key].C["missingNumerator"] + " missing";
+                                    }
+                                    else {
+                                        res.data[key].C["extractNumeratorCount"] = "Yes";
+                                    }
+                                    if (res.data[key] && res.data[key].C && res.data[key].C["missingDenominator"] && res.data[key].C["missingDenominator"] != "0.0") {
+                                        res.data[key].C["extractDenominatorCount"] = "No: " + res.data[key].C["missingDenominator"] + " missing";
+                                    }
+                                    else {
+                                        res.data[key].C["extractDenominatorCount"] = "Yes";
+                                    }
+                                }
+                                for (var key in res.data) {
                                     if (i ==0) {
                                         scope.covariateType=key;
                                     }
