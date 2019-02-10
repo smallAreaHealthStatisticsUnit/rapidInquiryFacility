@@ -714,34 +714,45 @@ SELECT JSON_AGG(a) FROM a;
                                 var covariateLossReportValid=false;
                                 var covariateTableDescription;
                                 var i=0;
-     /* Not used:
-      "mappingGeolevelAreas": 1,
-      
-      To do:
-      
-      "missingCovariateAreas": 0,
-      "missingDenominatorAreas": 0,
-      "missingNumeratorAreas": 0,
-     
-      Used:
-      "denominatorMaxYear": 1996,
-      "denominatorMinYear": 1995,
-      "numeratorMaxYear": 1996,
-      "numeratorMinYear": 1995,
-      "extractMaxYear": 1996,
-      "extractMinYear": 1995,
-      "missingExtractYears": 0,
-      "extractYears": 2,
-      "covariateTableName": "COVAR_SAHSULAND_COVARIATES4",
-      "icdFilter": "[icd] LIKE 'C33%' AND [icd] LIKE 'C34%'",
-      "covariateFilter": "CASE WHEN b.ses BETWEEN '1.0' AND '5.0'",
-      "missingDenominatorCovariateCount": 2888240,
-      "missingNumeratorCovariateCount": 1458,
-      "numeratorCount": 12892,
-      "denominatorCount": 21073598,
-      "missingDenominator": 0,
-      "missingNumeranator": 0,
-      "ageSexGroupFilter": "age_sex_group BETWEEN 100 AND 221",
+     /* Example data:
+     "SES": {
+        "S": {
+          "missingCovariateAreas": "174",
+          "covariateTableDescription": "socio-economic status",
+          "denominatorMaxYear": "1996",
+          "covariateName": "SES",
+          "covariateTableName": "COVAR_SAHSULAND_COVARIATES4",
+          "numeratorMinYear": "1995",
+          "studyOrComparison": "S",
+          "extractMinYear": "1995",
+          "missingDenominatorAreas": "0",
+          "denominatorCount": "1.4074236E7",
+          "missingDenominatorCovariateCount": "1852276.0",
+          "numeratorTableName": "NUM_SAHSULAND_CANCER",
+          "missingNumerator": "0",
+          "icdFilter": "([icd] LIKE 'C33%' -* Value filter *- OR</br> [icd] LIKE 'C34%' -* Value filter *-)",
+          "extractMaxYear": "1996",
+          "numeratorMaxYear": "1996",
+          "missingExtractYears": "0",
+          "denominatorTableName": "POP_SAHSULAND_POP",
+          "ageSexGroupFilter": "age_sex_group BETWEEN 100 AND 221",
+          "numeratorCount": "8750",
+          "denominatorMinYear": "1995",
+          "missingDenominator": "0.0",
+          "covariateFilter": "CASE WHEN b.ses BETWEEN '1.0' AND '5.0'",
+          "missingNumeratorCovariatePct": "0.006892025968585435",
+          "extractYears": "1995&ndash;1996; years verified",
+          "missingNumeratorCovariateCount": "970",
+          "mappingGeolevelAreas": "889",
+          "missingDenominatorCovariatePct": "13.160757003079954",
+          "denominatorYears": "1995&ndash;1996",
+          "numeratorYears": "1995&ndash;1996",
+          "extractNumeratorCount": "Yes",
+          "extractDenominatorCount": "Yes"
+        },
+        "C": {
+            ...
+        }
       */
                                 var fieldColumnList = [
                                 {
@@ -751,19 +762,39 @@ SELECT JSON_AGG(a) FROM a;
                                         comparisonNumerator: "numeratorCount",
                                         comparisonDenominator: "denominatorCount",
                                 }, {
-                                        description: "Number Excluded",
+                                        description: "Areas",
+                                        studyNumerator: "mappingGeolevelAreas",
+                                        studyDenominator: "mappingGeolevelAreas",
+                                        comparisonNumerator: "mappingGeolevelAreas",
+                                        comparisonDenominator: "mappingGeolevelAreas",
+                                }, {
+                                        description: "&nbsp;" /* Spacer */
+                                }, {
+                                        description: "Covariate Exclusion",
+                                        header: true
+                                }, {
+                                        description: "Areas Excluded",
+                                        studyNumerator: "missingCovariateAreas",
+                                        studyDenominator: "missingCovariateAreas",
+                                        comparisonNumerator: "missingCovariateAreas",
+                                        comparisonDenominator: "missingCovariateAreas",
+                                }, {
+                                        description: "Records Excluded",
                                         studyNumerator: "missingNumeratorCovariateCount",
                                         studyDenominator: "missingDenominatorCovariateCount",
                                         comparisonNumerator: "missingNumeratorCovariateCount",
                                         comparisonDenominator: "missingDenominatorCovariateCount",
                                 }, {
-                                        description: "% excluded",
+                                        description: "% Excluded",
                                         studyNumerator: "missingNumeratorCovariatePct",
                                         studyDenominator: "missingDenominatorCovariatePct",
                                         comparisonNumerator: "missingNumeratorCovariatePct",
                                         comparisonDenominator: "missingDenominatorCovariatePct",
                                 }, {
                                         description: "&nbsp;" /* Spacer */
+                                }, {
+                                        description: "Study Setup",
+                                        header: true
                                 }, {
                                         description: "Database Table",
                                         studyNumerator: "numeratorTableName",
@@ -799,29 +830,32 @@ SELECT JSON_AGG(a) FROM a;
                                 }, {
                                         description: "&nbsp;" /* Spacer */
                                 }, {
-                                        description: "Verification period",
+                                        description: "Extract Verification",
+                                        header: true
+                                }, {
+                                        description: "Verification Period",
                                         studyNumerator: "numeratorYears",
                                         studyDenominator: "denominatorYears",
                                         comparisonNumerator: "numeratorYears",
                                         comparisonDenominator: "denominatorYears",
                                 }, {
-                                        description: "Extract period",
+                                        description: "ExtractPeriod",
                                         studyNumerator: "extractYears",
                                         studyDenominator: "extractYears",
                                         comparisonNumerator: "extractYears",
                                         comparisonDenominator: "extractYears",
                                 }, {
-                                        description: "Missing Cases/Population",
-                                        studyNumerator: "missingNumerator",
-                                        studyDenominator: "missingDenominator",
-                                        comparisonNumerator: "missingNumerator",
-                                        comparisonDenominator: "missingDenominator",
-                                }, {
-                                        description: "Extract counts verified",
+                                        description: "Extract Counts Verified",
                                         studyNumerator: "extractNumeratorCount",
                                         studyDenominator: "extractDenominatorCount",
                                         comparisonNumerator: "extractNumeratorCount",
                                         comparisonDenominator: "extractDenominatorCount",
+                                }, {
+                                        description: "Missing Extract Areas",
+                                        studyNumerator: "missingExtractAreas",
+                                        studyDenominator: "missingExtractAreas",
+                                        comparisonNumerator: "missingExtractAreas",
+                                        comparisonDenominator: "missingExtractAreas",
                                 }
                                 ];
                                 
@@ -862,31 +896,11 @@ SELECT JSON_AGG(a) FROM a;
                                             res.data[key].C["numeratorMinYear"];
                                     }
                                     
-                                    if (res.data[key] && res.data[key].S && res.data[key].S["missingNumerator"] && res.data[key].S["missingNumerator"] != "0.0") {
-                                        res.data[key].S["extractNumeratorCount"] = "No: " + res.data[key].S["missingNumerator"] + " missing";
-                                    }
-                                    else {
-                                        res.data[key].S["extractNumeratorCount"] = "Yes";
-                                    }
-                                    if (res.data[key] && res.data[key].S && res.data[key].S["missingDenominator"] && res.data[key].S["missingDenominator"] != "0.0") {
-                                        res.data[key].S["extractDenominatorCount"] = "No: " + res.data[key].S["missingDenominator"] + " missing";
-                                    }
-                                    else {
-                                        res.data[key].S["extractDenominatorCount"] = "Yes";
-                                    }
+                                    processMissingKey(res.data[key], "extractNumeratorCount", "missingNumerator", "S");
+                                    processMissingKey(res.data[key], "extractDenominatorCount", "missingDenominator", "S");
+                                    processMissingKey(res.data[key], "extractNumeratorCount", "missingNumerator", "C");
+                                    processMissingKey(res.data[key], "extractDenominatorCount", "missingDenominator", "C");
                                     
-                                    if (res.data[key] && res.data[key].C && res.data[key].C["missingNumerator"] && res.data[key].C["missingNumerator"] != "0.0") {
-                                        res.data[key].C["extractNumeratorCount"] = "No: " + res.data[key].C["missingNumerator"] + " missing";
-                                    }
-                                    else {
-                                        res.data[key].C["extractNumeratorCount"] = "Yes";
-                                    }
-                                    if (res.data[key] && res.data[key].C && res.data[key].C["missingDenominator"] && res.data[key].C["missingDenominator"] != "0.0") {
-                                        res.data[key].C["extractDenominatorCount"] = "No: " + res.data[key].C["missingDenominator"] + " missing";
-                                    }
-                                    else {
-                                        res.data[key].C["extractDenominatorCount"] = "Yes";
-                                    }
                                 }
                                 for (var key in res.data) {
                                     if (i ==0) {
@@ -898,7 +912,8 @@ SELECT JSON_AGG(a) FROM a;
                                         scope.covariateDescriptions[key] =
                                             res.data[key].S.covariateTableDescription;
                                         scope.covariateHtml[key] = 
-                                            '<section>' + key + '</section>' + (scope.covariateDescriptions[key] || "No description") +
+                                            '<section>' + key + ': </section>' + 
+                                                _getAttr(scope.covariateDescriptions[key] || "No description") + '</br>' +
                                             '<table class="info-table"><tr>' +
                                             '<th class="info-table" colspan="2">Numerator</th>' +
                                             '<th>&nbsp;</th>' +
@@ -907,18 +922,26 @@ SELECT JSON_AGG(a) FROM a;
                                             '<tr>' +
                                             '<th class="info-table">Study area</th>' +
                                             '<th class="info-table">Comparison area</th>' +
-                                            '<th>&nbsp;</th>' +
+                                            '<th class="info-table">Summary</th>' +
                                             '<th class="info-table">Study area</th>' +
                                             '<th class="info-table">Comparison area</th>' +
                                             '</tr>';
                                         for (var k=0; k<fieldColumnList.length; k++) {
-                                            if (fieldColumnList[k] && fieldColumnList[k].description) {
+                                            if (fieldColumnList[k] && fieldColumnList[k].header) {
+                                                scope.covariateHtml[key] +=  '<tr>' +
+                                                    '<th class="info-table" colspan="2" align="center">&nbsp;</th>' +
+                                                    '<th class="info-table" align="center">' + 
+                                                        _getAttr(fieldColumnList[k].description || "UNKNOWN") + '</th>' +
+                                                    '<th class="info-table" colspan="2" align="center">&nbsp;</th>' +
+                                                    '</tr>';
+                                            }
+                                            else if (fieldColumnList[k] && fieldColumnList[k].description) {
                                                 
                                                 if (fieldColumnList[k].studyNumerator && res.data[key].S[fieldColumnList[k].studyNumerator] &&
                                                     fieldColumnList[k].comparisonNumerator && res.data[key].C[fieldColumnList[k].comparisonNumerator] &&
                                                     res.data[key].S[fieldColumnList[k].studyNumerator] ==
                                                                 res.data[key].C[fieldColumnList[k].comparisonNumerator]) {
-                                                    scope.covariateHtml[key] += 
+                                                    scope.covariateHtml[key] +=  '<tr>' +
                                                         '<td class="info-table" colspan="2" align="center">' + 
                                                         _getAttr(res.data[key].S[fieldColumnList[k].studyNumerator]) + '</td>';
                                                 }
@@ -969,17 +992,13 @@ SELECT JSON_AGG(a) FROM a;
                                             }
                                         }
                                         scope.covariateHtml[key] += '</table>';
-                                        if (i ==0) {
+                                        if (i == 0) {
                                             covariateLossReportHtml+=scope.covariateHtml[key];
                                         }
                                     }     
                                     else {
                                         covariateLossReportValid=false;
-                                    }
-                                    
-                                    scope.covariateLossReport = $sce.trustAsHtml(
-                                        cautionMessage("This Information is a work in progress (RIF developers)") + 
-                                        covariateLossReportHtml);
+                                    }          
                                  
                                     i++;
                                 }  
@@ -997,7 +1016,31 @@ SELECT JSON_AGG(a) FROM a;
                                         JSON.stringify(res.data, null, 2));
                                 }    
                             }
-                  
+                                   
+                            function processMissingKey(dataRecord, outputKeyName, inputKeyName, studyOrComparison) { 
+                                if (dataRecord && dataRecord[studyOrComparison] && dataRecord[studyOrComparison][inputKeyName]) {
+                                    var value=dataRecord[studyOrComparison][inputKeyName];
+                                    try {
+                                        value=parseFloat(dataRecord[studyOrComparison][inputKeyName]);
+                                        if (value == 0) {
+                                            dataRecord[studyOrComparison][outputKeyName] = "Yes";
+                                        }    
+                                        else if (value > 0){
+                                            dataRecord[studyOrComparison][outputKeyName] = "Extra: " + value;
+                                        } 
+                                        else {
+                                            dataRecord[studyOrComparison][outputKeyName] = "Missing: " + (value*-1);
+                                        }  
+                                    }
+                                    catch (e) {
+                                        dataRecord[studyOrComparison][outputKeyName] = "NaN: " + value + "error: " + JSON.stringify(e);
+                                    }    
+                                }
+                                else {
+                                    dataRecord[studyOrComparison][outputKeyName] = "N/A";
+                                }
+                            }
+                                    
                             function roundTo3DecimalPlaces(attr) {
                                 if (isNaN(attr)) {
                                     return _getAttr(attr);
