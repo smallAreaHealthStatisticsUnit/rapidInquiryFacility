@@ -3337,8 +3337,66 @@ Further changes are needed to support risk analysis:
 
 ## RIF User role faults
 
-* The RIF role *rif_user* cannot run studies. The branch *rif_user_role_fixes* repairs this. This is not fully tested. This also repairs a Postgres 9/10 incompaitiblity in *rif40_trg_pkg.trigger_fct_rif40_tables_checks()*.
+* The RIF role *rif_user* cannot run studies. The branch *rif_user_role_fixes* repairs this. This is not fully tested. This also repairs a Postgres 9/10 
+  incompatibility in *rif40_trg_pkg.trigger_fct_rif40_tables_checks()*.
 
 ## Use PNG tiles instead of GeoJSON
 
-* This first patch add the ability to generate PNG tiles and to use them when you return to a previously selected study or comparision area. The branch *png_tiles_from_geojson* implements this and is complete apart from supporting tile generation below the maximum database geolevel. (GeoJSON interpolates automatically; PNG tiles must be generated). 
+* This first patch add the ability to generate PNG tiles and to use them when you return to a previously selected study or comparison area.
+  The branch *png_tiles_from_geojson* implements this and is complete apart from supporting tile generation below the maximum database 
+  geolevel. (GeoJSON interpolates automatically; PNG tiles must be generated). 
+
+# New contract extension Jan/Feb 2019
+
+## Tasks:
+
+19.	Support the development of a roadmap for RIF developments in 2019 in a 2019 development roadmap document – Oct-Jan 2019. 
+    Estimated time: 1 day;
+20.	Support the import of Swedish geographies and data into the RIF 4.0 for Ulf Stromberg and colleagues based on the agreed 
+    timeframe – Jan 2019. Estimated time: 2-3 days;
+21.	Plan and commence implantation of functionality so that all the covariates available can easily be added to the data extract and 
+    hence exported from the RIF 4.0. The end user should be able to specify the content and the extract must be able to contain up to 
+	10 continuous or discrete variables in compatible format for use in STATA/R or other appropriate software – Jan 2019. Estimated 
+	time: 5-10 days;
+22.	Support SAHSU’s database team as required to enable access of the RIF 4.0 to a pseudonymised version of HES and ultimately, other 
+    health databases. – Jan 2019. Estimated time: 2-3 days;
+23.	Set up the RIF 4.0 for linkage to SAHSU’s health database, for example through the use of template dummy data. – Jan 2019. 
+    Estimated time: 2-3 days;
+24.	Test and document end-users data access permissions and SQL statement auditing with middleware log examples – Jan 2019. Estimated 
+    time: 2 days;
+25.	Plan and commence implementation of a front end "report", based on the visible displays in the RIF 3.2, for point source exposures 
+    (minimum displayed dataset to include observed counts, expected counts, relative risk, trend test for each site, and adjusted 
+	by region with heterogeneity testing and meta-analysis function. The content and layout should be discussed with FP – Jan 2019. 
+	Estimated time: 5-10 days;
+26.	Plan adding support for multiple covariates in the disease mapping and risk analysis functionalities of the RIF 4.0 – Jan 2019. 
+    Estimated time: 1 day;
+27.	Using a provided specification plan adding support for region-specific details around point sources – Jan 2019. Estimated time: 
+    1 day;
+28.	Ensure that all IG training is completed and up to date for potential future access to SAHSU’s private network – Jan 2019. Estimated 
+    time: 1-2 days.
+
+Total time estimates for additional items 16 to 28: 18-30 days; time available: 16 days.
+
+## Weekly summary
+
+### 21st to 25th January 2019
+
+* RIF meeting;
+* 2019 plans;
+* Swedish geography build;
+* IG training.
+
+### 28th January to 1st February
+
+* Plan [issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
+  March 2019) and [issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). 
+* RIF meeting;
+* Create branch [risk_analysis_d3_graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/risk_analysis_d3_graphs);
+* getHomoGeneity REST call
+
+### 4th to 8th February
+
+* Covariant Loss report SQL generator
+* Covariant Loss report REST call, SQL Server fixes
+* Covariate loss report and homogeneity front end, experimental D3 chart
+* RIF meeting
