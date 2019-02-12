@@ -625,7 +625,14 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 				result);
 	}
 
-
+	/**
+	 * Gets the availaible covariates from the database for a given geography and level.
+	 * @param servletRequest an HTTP servlet request
+	 * @param userID the user
+	 * @param geographyName the geography name
+	 * @param geoLevelToMapName the geography level
+	 * @return a {@code {@link Response} containing a list of covariate names
+	 */
 	@GET
 	@Produces({"application/json"})
 	@Path("/getCovariates")
@@ -635,35 +642,26 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			@QueryParam("geographyName") String geographyName,
 			@QueryParam("geoLevelToMapName") String geoLevelToMapName) {
 
-		String result = "";
+		String result;
 
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
-			Geography geography
-					= Geography.newInstance(geographyName, "");
-			GeoLevelToMap geoLevelToMap
-					= GeoLevelToMap.newInstance(geoLevelToMapName);
+			Geography geography = Geography.newInstance(geographyName, "");
+			GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance(geoLevelToMapName);
 
-			//Call service API
-			RIFStudySubmissionAPI studySubmissionService
-					= getRIFStudySubmissionService();
-			ArrayList<AbstractCovariate> covariates
-					= studySubmissionService.getCovariates(
-					user,
-					geography,
-					geoLevelToMap);
+			RIFStudySubmissionAPI studySubmissionService = getRIFStudySubmissionService();
+			ArrayList<AbstractCovariate> covariates = studySubmissionService.getCovariates(
+					user, geography, geoLevelToMap);
 
 			//Convert results to support JSON
-			ArrayList<CovariateProxy> covariateProxies
-					= new ArrayList<CovariateProxy>();
+			ArrayList<CovariateProxy> covariateProxies = new ArrayList<>();
 			for (AbstractCovariate covariate : covariates) {
-				CovariateProxy covariateProxy
-						= new CovariateProxy();
+				CovariateProxy covariateProxy = new CovariateProxy();
+
 				if (covariate instanceof AdjustableCovariate) {
 					covariateProxy.setCovariateType("adjustable");
-				}
-				else {
+				} else {
 					covariateProxy.setCovariateType("exposure");
 				}
 				covariateProxy.setName(covariate.getName());
@@ -672,27 +670,15 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 				covariateProxies.add(covariateProxy);
 			}
 
-			result
-					= serialiseArrayResult(
-					servletRequest,
-					covariateProxies);
-		}
-		catch(Exception exception) {
+			result = serialiseArrayResult(servletRequest, covariateProxies);
+		} catch(Exception exception) {
 			//Convert exceptions to support JSON
-			result
-					= serialiseException(
-					servletRequest,
-					exception);
+			result = serialiseException(servletRequest, exception);
 		}
 
+		WebServiceResponseGenerator webServiceResponseGenerator = getWebServiceResponseGenerator();
 
-		WebServiceResponseGenerator webServiceResponseGenerator
-				= getWebServiceResponseGenerator();
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-				servletRequest,
-				result);
-
+		return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
 	}
 
 	@GET
