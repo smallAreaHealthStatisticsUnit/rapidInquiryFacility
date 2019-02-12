@@ -43,56 +43,6 @@ angular.module("RIF")
                         females: '#7f82c9',
                         both: '#660033'
                     };                
-                    
-                    // Scale to 20% bigger than range
-                    function getDomain(data, gendersArray, riskFactorFieldName) {
-                        var domainExtent = {
-                            riskFactorFieldName: riskFactorFieldName,
-                            gendersArray: gendersArray,
-                            xMin: 0,
-                            xMax: 0,
-                            yMin: 0,
-                            yMax: 0
-                        };
-                        
-                        for (var i=0; i<gendersArray.length; i++) {
-                            var yMin = d3.min(data[gendersArray[i]], function(d) { return (d.lower95*0.8); }); 
-                            if (!domainExtent.yMin) {
-                                domainExtent.yMin=yMin;
-                            }
-                            else if (yMin < domainExtent.yMin) {
-                                domainExtent.yMin=yMin;
-                            }
-                            
-                            var yMax = d3.max(data[gendersArray[i]], function(d) { return (d.upper95*1.2); });            
-                            if (!domainExtent.yMax) {
-                                domainExtent.yMax=yMax;
-                            }
-                            else if (yMax > domainExtent.yMax) {
-                                domainExtent.yMax=yMax;
-                            }
-                            
-                            var xMin = d3.min(data[gendersArray[i]], function(d) { 
-                                return d[riskFactorFieldName]*0.8; });                        
-                            if (!domainExtent.xMin) {
-                                domainExtent.xMin=xMin;
-                            }
-                            else if (xMin < domainExtent.xMin) {
-                                domainExtent.xMin=xMin;
-                            }
-                            
-                            var xMax = d3.max(data[gendersArray[i]], function(d) { 
-                                return d[riskFactorFieldName]*1.2; });                            
-                            if (!domainExtent.xMax) {
-                                domainExtent.xMax=xMax;
-                            }
-                            else if (xMax > domainExtent.xMax) {
-                                domainExtent.xMax=xMax;
-                            }
-                        } 
-                        return domainExtent;
-                    }
-                    
                     function d3HomogeneityChart(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
                         
                         // Check parameters are defined
@@ -106,7 +56,76 @@ angular.module("RIF")
                             AlertService.showError("Null data passed to d3HomogeneityChart");
                             return;
                         }
-                        
+                   
+                        /*
+                         * Function:    getDomain()
+                         * Parameters:  gender
+                         * Description: Get max/min for X/Y data domains; scale to 20% bigger than range
+                         * Returns:     domainExtent: {
+                         *        "riskFactorFieldName": "max_exposure_value",
+                         *        "gendersArray": [
+                         *         "males",
+                         *         "females"
+                         *        ],
+                         *        "xMin": 48,
+                         *        "xMax": 86.39999999999999,
+                         *        "yMin": 0.386280032070744,
+                         *        "yMax": 1.7259575019473998
+                         *       }
+                         */ 
+                        function getDomain(data, gendersArray, riskFactorFieldName) {
+                            var domainExtent = {
+                                riskFactorFieldName: riskFactorFieldName,
+                                gendersArray: gendersArray,
+                                xMin: 0,
+                                xMax: 0,
+                                yMin: 0,
+                                yMax: 0
+                            };
+                            
+                            for (var i=0; i<gendersArray.length; i++) {
+                                var yMin = d3.min(data[gendersArray[i]], function(d) { return (d.lower95*0.8); }); 
+                                if (!domainExtent.yMin) {
+                                    domainExtent.yMin=yMin;
+                                }
+                                else if (yMin < domainExtent.yMin) {
+                                    domainExtent.yMin=yMin;
+                                }
+                                
+                                var yMax = d3.max(data[gendersArray[i]], function(d) { return (d.upper95*1.2); });            
+                                if (!domainExtent.yMax) {
+                                    domainExtent.yMax=yMax;
+                                }
+                                else if (yMax > domainExtent.yMax) {
+                                    domainExtent.yMax=yMax;
+                                }
+                                
+                                var xMin = d3.min(data[gendersArray[i]], function(d) { 
+                                    return d[riskFactorFieldName]*0.8; });                        
+                                if (!domainExtent.xMin) {
+                                    domainExtent.xMin=xMin;
+                                }
+                                else if (xMin < domainExtent.xMin) {
+                                    domainExtent.xMin=xMin;
+                                }
+                                
+                                var xMax = d3.max(data[gendersArray[i]], function(d) { 
+                                    return d[riskFactorFieldName]*1.2; });                            
+                                if (!domainExtent.xMax) {
+                                    domainExtent.xMax=xMax;
+                                }
+                                else if (xMax > domainExtent.xMax) {
+                                    domainExtent.xMax=xMax;
+                                }
+                            } 
+                            return domainExtent;
+                        }
+                          
+                        /*
+                         * Function:    gender2text()
+                         * Parameters:  gender
+                         * Returns:     Gender name
+                         */                  
                         function gender2text(gender) {
                             var rval;
                             switch (gender) {
@@ -119,137 +138,129 @@ angular.module("RIF")
                                 case 3: 
                                     rval="males and females";
                                     break;
+                                default:
+                                    rval="unknown: " + gender;
+                                    break;
                             }
                             return rval;
                         }          		
                         
+                        /*
+                         * Function:    addErrorBar()
+                         * Parameters:  gendersName, riskFactorFieldName
+                         * Description: Add error bar
+                         * Returns:     Nothing
+                         */
                         function addErrorBar(gendersName, riskFactorFieldName) {
                             // Add Error Line
                             svg.append("g").selectAll("line")
-                                .data(data[gendersName]).enter()
-                              .append("line")
-                              .attr("class", "homogeneityChart-error-line")
-                              .attr("x1", function(d) {
-                                return xScale(d[riskFactorFieldName]);
-                              })
-                              .attr("y1", function(d) {
-                                return yScale(d.upper95);
-                              })
-                              .attr("x2", function(d) {
-                                return xScale(d[riskFactorFieldName]);
-                              })
-                              .attr("y2", function(d) {
-                                return yScale(d.lower95);
-                              }).
-                              style("stroke", colors[gendersName]);
+                               .data(data[gendersName]).enter()
+                               .append("line")
+                               .attr("class", "homogeneityChart-error-line")
+                               .attr("x1", function(d) {
+                                    return xScale(d[riskFactorFieldName]);
+                               })
+                               .attr("y1", function(d) {
+                                    return yScale(d.upper95);
+                               })
+                               .attr("x2", function(d) {
+                                    return xScale(d[riskFactorFieldName]);
+                               })
+                               .attr("y2", function(d) {
+                                    return yScale(d.lower95);
+                               })
+                               .style("stroke", colors[gendersName]);
 
                             // Add Error Top Cap
                             svg.append("g").selectAll("line")
-                                .data(data[gendersName]).enter()
-                              .append("line")
-                              .attr("class", "homogeneityChart-error-cap")
-                              .attr("x1", function(d) {
-                                return xScale(d[riskFactorFieldName]) - 4;
-                              })
-                              .attr("y1", function(d) {
-                                return yScale(d.upper95);
-                              })
+                               .data(data[gendersName]).enter()
+                               .append("line")
+                               .attr("class", "homogeneityChart-error-cap")
+                               .attr("x1", function(d) {
+                                    return xScale(d[riskFactorFieldName]) - 4;
+                               })
+                               .attr("y1", function(d) {
+                                    return yScale(d.upper95);
+                               })
                               .attr("x2", function(d) {
                                 return xScale(d[riskFactorFieldName]) + 4;
                               })
                               .attr("y2", function(d) {
                                 return yScale(d.upper95);
-                              }).
-                              style("stroke", colors[gendersName]);
+                              })
+                              .style("stroke", colors[gendersName]);
                               
                              // Add Error Bottom Cap
                             svg.append("g").selectAll("line")
-                                .data(data[gendersName]).enter()
-                              .append("line")
-                              .attr("class", "homogeneityChart-error-cap")
-                              .attr("x1", function(d) {
-                                return xScale(d[riskFactorFieldName]) - 4;
-                              })
-                              .attr("y1", function(d) {
-                                return yScale(d.lower95);
-                              })
-                              .attr("x2", function(d) {
-                                return xScale(d[riskFactorFieldName]) + 4;
-                              })
-                              .attr("y2", function(d) {
-                                return yScale(d.lower95);
-                              }).
-                              style("stroke", colors[gendersName]); 
+                               .data(data[gendersName]).enter()
+                               .append("line")
+                               .attr("class", "homogeneityChart-error-cap")
+                               .attr("x1", function(d) {
+                                    return xScale(d[riskFactorFieldName]) - 4;
+                               })
+                               .attr("y1", function(d) {
+                                    return yScale(d.lower95);
+                               })
+                               .attr("x2", function(d) {
+                                    return xScale(d[riskFactorFieldName]) + 4;
+                               })
+                               .attr("y2", function(d) {
+                                    return yScale(d.lower95);
+                               })
+                               .style("stroke", colors[gendersName]); 
                               
                             // Add Scatter Points
                             svg.append("g").attr("class", "scatter")
-                            .selectAll("circle")
-                            .data(data[gendersName]).enter()
-                            .append("circle")
-                            .attr("cx", function(d) {
-                              return xScale(d[riskFactorFieldName]);
-                            })
-                            .attr("cy", function(d) {
-                              return yScale(d.relative_risk);
-                            })
-                            .attr("r", 4)
-                            .style("background", colors[gendersName])
-                            .on("mouseover", function(d, i, n) {
-                                var transform=this.getScreenCTM().translate(+this.getAttribute("cx"),
-                                    +this.getAttribute("cy")); /* Actual pixel position of circle */
-                                var transform0=this.getScreenCTM().translate(0, 0); 
-                                                               /* Actual pixel position of SVG graph div origin */
+                               .selectAll("circle")
+                               .data(data[gendersName]).enter()
+                               .append("circle")
+                               .attr("cx", function(d) {
+                                    return xScale(d[riskFactorFieldName]);
+                               })
+                               .attr("cy", function(d) {
+                                    return yScale(d.relative_risk);
+                               })
+                               .attr("r", 4)
+                               .style("fill", colors[gendersName])
+                               .on("mouseover", function(d, i, n) {
+                                    var transform=this.getScreenCTM().translate(+this.getAttribute("cx"),
+                                        +this.getAttribute("cy")); /* Actual pixel position of circle */
+                                    var transform0=this.getScreenCTM().translate(0, 0); 
+                                                                   /* Actual pixel position of SVG graph div origin */
 
-                                AlertService.consoleDebug("[rifs-util-d3charts.js] homogeneityChart mouseover: " + JSON.stringify(d, 0, 1));
-                                return tooltip.html("Band " + d.band_id + " " +
-                                            gender2text(d.genders) + "</br>" + 
-                                            d.relative_risk.toFixed(3) + 
-                                            "&nbsp;[95% CI&nbsp;" + d.lower95.toFixed(3) +
-                                            "&ndash;" + d.upper95.toFixed(3) + "]") 
-                                     .style("visibility", "visible")
-                                     .style("left", (transform.e - transform0.e + 53) + "px") // Correct as position is relative
-                                     .style("top", (transform.f - transform0.f + 25) + "px")
-                                     .style("background", colors[gendersName]);
-                             })
-                            .on("mouseout", function() {
-                                return tooltip.style("visibility", "hidden");
-                             });  
+                                    AlertService.consoleDebug("[rifs-util-d3charts.js] homogeneityChart mouseover: " + 
+                                        JSON.stringify(d, 0, 1));
+                                    return tooltip.html("Band " + d.band_id + " " +
+                                                gender2text(d.genders) + "</br>" + 
+                                                d.relative_risk.toFixed(3) + 
+                                                "&nbsp;[95% CI&nbsp;" + d.lower95.toFixed(3) +
+                                                "&ndash;" + d.upper95.toFixed(3) + "]") 
+                                        .style("visibility", "visible")
+                                        .style("left", (transform.e - transform0.e + 53) + "px") // Correct as position is relative
+                                        .style("top", (transform.f - transform0.f + 25) + "px")
+                                        .style("background", colors[gendersName]);
+                               })
+                               .on("mouseout", function() {
+                                    return tooltip.style("visibility", "hidden");
+                               });  
                         } 
                         
-                        /* Questions: 
-                         * 1. Do we need to use band_id if max_exposure_value is undefined/null YES
-                         * 2. Would average exposure value be better? YES
-                         * 3. Do we want a choice: max/min/average/median/band_id/distance from nearest source
-                         */
-                        var svg=d3.select("#homogeneityChart").select("svg");
-                         
-/*                              var tooltip = d3.select("#homogeneityTooltip");
-                                if (tooltip._group && tooltip._group[0] && tooltip._group[0][0] != null) { 
-                                }
-                                else {                                      
-                                    tooltip = d3.select("#homogeneityTooltip").append("div")
-                                        .attr("id", "homogeneityTooltip")
-                                        .attr("class", "homogeneityChart-tooltip")
-                                        .style("visibility", "hidden");
-                                } */
-                                
-                        var tooltip = d3.select("#homogeneityTooltip").append("div")
-                            .attr("class", "homogeneityChart-tooltip")
-                            .style("visibility", "hidden");
-                        
                         /*
-                        marginHeightWidth: {
- "margin": {
-  "top": 20,
-  "right": 20,
-  "bottom": 40,
-  "left": 40
- },
- "width": 900,
- "height": 350,
- "innerWidth": 1920,
- "innerHeight": 938
-}
+                         * Function:    getMargin()
+                         * Parameters:  None
+                         * Description: Setup margin, height and width
+                         * Returns:     marginHeightWidth: {
+                         *    "margin": {
+                         *     "top": 20,
+                         *     "right": 20,
+                         *     "bottom": 40,
+                         *     "left": 40
+                         *    },
+                         *    "width": 900,
+                         *    "height": 350,
+                         *    "innerWidth": 1920,
+                         *    "innerHeight": 938
+                         *   }
                          */
                         function getMargin() {
                             var marginHeightWidth = {
@@ -274,6 +285,27 @@ angular.module("RIF")
                             return marginHeightWidth;
                         }
                         
+                        /* Questions: 
+                         * 1. Do we need to use band_id if max_exposure_value is undefined/null YES
+                         * 2. Would average exposure value be better? YES
+                         * 3. Do we want a choice: max/min/average/median/band_id/distance from nearest source
+                         */
+                        var svg=d3.select("#homogeneityChart").select("svg");
+                         
+/*                              var tooltip = d3.select("#homogeneityTooltip");
+                                if (tooltip._group && tooltip._group[0] && tooltip._group[0][0] != null) { 
+                                }
+                                else {                                      
+                                    tooltip = d3.select("#homogeneityTooltip").append("div")
+                                        .attr("id", "homogeneityTooltip")
+                                        .attr("class", "homogeneityChart-tooltip")
+                                        .style("visibility", "hidden");
+                                } */
+                                
+                        var tooltip = d3.select("#homogeneityTooltip").append("div")
+                                .attr("class", "homogeneityChart-tooltip")
+                                .style("visibility", "hidden");                       
+                        
                         var domainExtent=getDomain(data, gendersArray, riskFactorFieldName);
                         var marginHeightWidth = getMargin();
                         AlertService.consoleDebug("[rifd-util-info.js] homogeneityChart domainExtent: " + 
@@ -285,19 +317,18 @@ angular.module("RIF")
                             .domain([domainExtent.xMin, domainExtent.xMax]).nice();
                         var yScale = d3.scaleLinear()
                            .range([marginHeightWidth.height, 0])
-                           .domain([domainExtent.yMin, domainExtent.yMax]).nice();
-                                       
+                           .domain([domainExtent.yMin, domainExtent.yMax]).nice();                                      
                         
                         var xAxis = d3.axisBottom(xScale).ticks(12);
                         var yAxis = d3.axisLeft(yScale).ticks(12 * marginHeightWidth.height / marginHeightWidth.width);
 
                         let line = d3.line()
-                            .x(function(d) {
-                            return xScale(d.max_exposure_value);
-                          })
-                          .y(function(d) {
-                            return yScale(d.relative_risk);
-                          });
+                                .x(function(d) {
+                                       return xScale(d.max_exposure_value);
+                                 })
+                                .y(function(d) {
+                                        return yScale(d.relative_risk);
+                                 });
 
                         if (svg) {
                             d3.select("#homogeneityChart").select("svg").remove();
@@ -318,54 +349,57 @@ angular.module("RIF")
 
                         // Add Axis and labels
                         svg.append("g").attr("class", "axis axis--x")
-                        .attr("transform", "translate(" + 0 + "," + marginHeightWidth.height + ")")
-                        .call(xAxis);
+                            .attr("transform", "translate(" + 0 + "," + marginHeightWidth.height + ")")
+                            .call(xAxis);
+                            
                         // text label for the x axis
                         svg.append("text")             
                             .attr("transform",
                                   "translate(" + (marginHeightWidth.width/2) + " ," + 
-                                               (marginHeightWidth.height + marginHeightWidth.margin.top + 10) + ")")
+                                                 (marginHeightWidth.height + marginHeightWidth.margin.top + 10) + ")")
                             .style("text-anchor", "middle")
-                            .text(riskFactorFieldDesc);
+                            .text(riskFactorFieldDesc.toUpperCase());
 
                         svg.append("g").attr("class", "axis axis--y").call(yAxis);                           
                         // text label for the y axis
                         svg.append("text")
-                            .attr("transform", "rotate(-90)")
-                            .attr("y", 0 - marginHeightWidth.margin.left)
-                            .attr("x", 0 - (marginHeightWidth.height / 2))
-                            .attr("dy", "1em")
-                            .style("text-anchor", "middle")
-                            .text("Relative Risk");    
-
-                        //Add legend 
-      /*                  svg.append("rect")
-                                .attr("width", yLegend)
-                                .attr("height", yLegend)
-                                .style("fill", "#c97f82")
-                                .attr("transform", "translate(0, " + (-yLegend - 10) + ")");
+                           .attr("transform", "rotate(-90)")
+                           .attr("y", 0 - marginHeightWidth.margin.left)
+                           .attr("x", 0 - (marginHeightWidth.height / 2))
+                           .attr("dy", "1em")
+                           .style("text-anchor", "middle")
+                           .text("RELATIVE RISK");  
+                            
+                        // Add title	  
                         svg.append("text")
-                                .style("font-size", function (d) {
-                                    return Math.min((width / 15), 10, (height / 15));
-                                })
-                                .attr("transform", "translate(" + (yLegend + 2) + "," + ((-yLegend / 2) - 10) + ")")
-                                .style("text-anchor", "start")
-                                .text("Male");
-                        svg.append("rect")
-                                .attr("width", yLegend)
-                                .attr("height", yLegend)
-                                .style("fill", "#7f82c9")
-                                .attr("transform", "translate(80, " + (-yLegend - 10) + ")");
-                        svg.append("text")
-                                .style("font-size", function (d) {
-                                    return Math.min((width / 15), 10, (height / 15));
-                                })
-                                .attr("transform", "translate(" + (yLegend + 82) + "," + ((-yLegend / 2) - 10) + ")")
-                                .style("text-anchor", "start")
-                                .text("Female"); */
-                        
+                           .attr("class", "homogeneityTitle")
+                           .attr("x", (marginHeightWidth.width / 2))
+                           .attr("y", 20)
+                           .style("text-anchor", "middle")
+                           .text("Risk Graph");
+ 	
+                        // Add legend   
+                        var legend = svg.append("g")
+                                        .attr("class", "legend")
+                                        .attr("height", 100)
+                                        .attr("width", 100)
+                                        .attr('transform', 'translate(-20,50)');                            
+                         
                         for (var i=0; i< gendersArray.length; i++) {
-                            addErrorBar(gendersArray[i], riskFactorFieldName);    
+                            addErrorBar(gendersArray[i], riskFactorFieldName);  
+                        
+                            // Add legend   
+                            legend.append("rect")
+                                  .attr("x", marginHeightWidth.width - 135)
+                                  .attr("y", (i * 20))
+                                  .attr("width", 10)
+                                  .attr("height", 10)
+                                  .style("fill", colors[gendersArray[i]]); 
+                            legend.append("text")
+                                  .attr("x", marginHeightWidth.width - 122)
+                                  .attr("y", ((i * 20) + 9))
+                                  .style("text-transform", "capitalize")
+                                  .text((gendersArray[i] == "both" ? "Both males and females" : gendersArray[i]));                          
                         }                            
                          
                     }

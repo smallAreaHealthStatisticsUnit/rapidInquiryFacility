@@ -88,7 +88,7 @@ angular.module("RIF")
                                     scope.showHomogeneityTests=true;
 									scope.showHomogeneityCharts=false;
                                 }
-                                else if (scope.reportType == "Homogeneity Charts") {
+                                else if (scope.reportType == "Risk Graphs") {
                                     scope.showSummary=false;
                                     scope.showCovariateLossReport=false;
                                     scope.showHomogeneityTests=false;
@@ -236,7 +236,7 @@ SELECT JSON_AGG(a) FROM a;
 												"max_exposure_value": 60
 											}]
 									};				
-							var homogeneityChartHtml='<header>Homogeneity Chart &ndash; ' + scope.headerInfo + '</header>';
+							var homogeneityChartHtml='<header>Risk Graph &ndash; ' + scope.headerInfo + '</header>';
 							scope.homogeneityChartHeader = $sce.trustAsHtml(homogeneityChartHtml);
                             
                             var gendersArray=['males', 'females'];
@@ -301,7 +301,7 @@ SELECT JSON_AGG(a) FROM a;
                             }
                             if (scope.mapDefs && scope.mapDefs.study_type && scope.mapDefs.study_type == "Risk Analysis") {
                                 scope.isRiskAnalysisStudy=true;
-                                scope.reportList = ["Summary", "Covariate Loss Report", "Homogeneity Tests", "Homogeneity Charts"];
+                                scope.reportList = ["Summary", "Covariate Loss Report", "Homogeneity Tests", "Risk Graphs"];
                             }
                             else {
                                 scope.reportList = ["Summary", "Covariate Loss Report"];
@@ -320,7 +320,7 @@ SELECT JSON_AGG(a) FROM a;
                                 scope.headerInfo + '...</header>');
                             scope.homogeneityTests = $sce.trustAsHtml('<header class="info-header">Fetching Study Homogeneity Tests for ' + 
                                 scope.headerInfo + '...</header>');
-                            scope.homogeneityChartHeader = $sce.trustAsHtml('<header class="info-header">Fetching Study Homogeneity Charts for ' + 
+                            scope.homogeneityChartHeader = $sce.trustAsHtml('<header class="info-header">Fetching Study Risk Graphs for ' + 
                                 scope.headerInfo + '...</header>');
 								
                             var homogeneityTestsHtml = '<header>Homogeneity Tests &ndash; ' + scope.headerInfo + '</header>';
