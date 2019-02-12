@@ -30,13 +30,16 @@
 
  * David Morley
  * @author dmorley
+ *
+ * Peter Hambly
+ * @author phambly
  */
 -->
 
 <!-- 
 HTML partial for study info
 -->
-<div class="modal-body">
+<div class="modal-body" id="util-info-body">
     <div class="msettings">
         <div class="msettings-ct">
             <div class="msettings-header">
@@ -50,7 +53,7 @@ HTML partial for study info
                             <select type="text" ng-model="reportType" id='report' class='dropdownSelect' ng-options="s for s in reportList" ng-change="reportChange(reportType)">
                             </select>
                             <div id='reportAvailables' class='availables'></div>
-                            <div class="dropDownLabel">
+                            <div class="dropDownLabel">Report Type
                                 <md-tooltip md-direction="right" md-delay="1000">{{reportDescription}}</md-tooltip>
                             </div>
                         </div>
@@ -63,8 +66,8 @@ HTML partial for study info
                             <select type="text" ng-model="covariateType" id='covariate' class='dropdownSelect' ng-options="s for s in covariateList" ng-change="covariateChange(covariateType)">
                             </select>
                             <div id='covariateAvailables' class='availables'></div>
-                            <div class="dropDownLabel">
-                                <md-tooltip md-direction="right" md-delay="1000">{{covariateDescription}}</md-tooltip>
+                            <div class="dropDownLabel">Covariate
+                                <md-tooltip md-direction="right" md-delay="1000">{{covariateDescription[covariate]}}</md-tooltip>
                             </div>
                         </div>
                         <p ng-bind-html="covariateLossReport"></p>
@@ -73,18 +76,27 @@ HTML partial for study info
                         <p ng-bind-html="homogeneityTests"></p>
                     </div>
                     <div ng-show="showHomogeneityCharts">
-                        <div  class="styleUnderline dropdowns availablesWrapper">
-                            <select type="text" ng-model="gendersName" id="gender" class="dropdownSelect" ng-options="s for s in gendersList" ng-change="d3HomogeneityChartChange(gendersName)">
-                            </select>
-                            <div id="genderAvailables" class="availables"></div>
-                            <div class="dropDownLabel">
-                                <md-tooltip md-direction="right" md-delay="1000">{{genderDescription}}</md-tooltip>
+                        <div id="homogeneityChartSelector">
+                            <div id="riskFactorSelector">
+                                <div>Risk Factor:</div>
+                                <select type="text" ng-model="riskFactor" id="riskFactor" class="homogeneityChartSelect1" ng-options="s for s in riskFactorList" ng-change="d3HomogeneityChartChange(gendersName1, gendersName2, riskFactor)">
+                                </select>
+                            </div>
+                            <div id="gender1Selector">
+                                <div>Gender 1:</div>
+                                <select type="text" ng-model="gendersName1" id="gender1" class="homogeneityChartSelect2" ng-options="s for s in gendersList" ng-change="d3HomogeneityChartChange(gendersName1, gendersName2, riskFactor)">
+                                </select>
+                            </div>
+                            <div id="gender2Selector">
+                                <div>Gender 2:</div>
+                                <select type="text" ng-model="gendersName2" id="gender2" class="homogeneityChartSelect2" ng-options="s for s in gendersList" ng-change="d3HomogeneityChartChange(gendersName1, gendersName2, riskFactor)">
+                                </select>
                             </div>
                         </div>
-                        <p ng-bind-html="homogeneityChartHeader"></p>
-                        <div id="homogeneityTooltip">
-							<div id="homogeneityChart">
-							</div>
+                        <div id="homogeneityChartTable">
+                            <p ng-bind-html="homogeneityChartHeader"></p>
+                            <div id="homogeneityTooltip"></div>
+                            <div id="homogeneityChart"></div>
                         </div>
                     </div>
                 </div>                

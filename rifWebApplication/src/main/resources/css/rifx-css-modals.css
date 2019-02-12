@@ -657,11 +657,84 @@ circle {
   fill: #ff6600;
 }
 
-.homogeneityChart {;
+.homogeneityChart {
+}
+
+#homogeneityChartTable {
+  width: 100%;
+  position: relative;
+}
+
+#homogeneityChartSelector {
+  width: 100%;
+  height: 80px;
+}
+#riskFactorSelector {
+  position: absolute;
+  width: 40%;
+}
+#gender1Selector {
+  position: absolute;
+  width: 30%;
+
+  left: -moz-calc(50%);
+    /* WebKit */
+
+  left: -webkit-calc(50%);
+    /* Opera */
+
+  left: -o-calc(50%);
+    /* Standard */
+
+   left: calc(50%);
+}
+#gender2Selector {
+  position: absolute;
+  width: 30%;
+
+  left: -moz-calc(70%);
+    /* WebKit */
+
+  left: -webkit-calc(70%);
+    /* Opera */
+
+  left: -o-calc(70%);
+    /* Standard */
+
+   left: calc(70%);
+}
+
+#riskFactor {
+    margin: 2px;
+    font-size: 18px !important;
+    color: #8DB6CD;
+    width: -moz-calc(95%) !important;
+    /* WebKit */
+
+    width: -webkit-calc(95%) !important;
+    /* Opera */
+
+    width: -o-calc(95%) !important;
+    /* Standard */
+
+    width: calc(95%) !important;
+}
+#gender1 {
+    margin: 2px;
+    font-size: 18px !important;
+    color: #8DB6CD;
+    width: 120px !important;
+}
+#gender2 {
+    margin: 2px;
+    font-size: 18px !important;
+    color: #8DB6CD;
+    width: 120px !important;
 }
 
 .homogeneityChart-error-line {
   stroke: #b30059;
+  stroke-width: 2px;
   stroke-dasharray: 2,2;
 }
 
@@ -676,24 +749,24 @@ circle {
 }
  
 .homogeneityChart-tooltip {
-  position: absolute;
-  height: auto;
-  width: auto;
-  padding: 15px;
-  background: #660033;
-  color: white;
-  font-family: Monospace, Serif;
-  }
+   position: absolute;
+   height: auto;
+   width: auto;
+   padding: 15px;
+   color: white;
+   font-family: Monospace, Serif;
+   pointer-events: none;
+}
 
 .homogeneityChart-tooltip:after {
-    content: " ";
-    position: absolute;
-    top: 50%;
-    right: 100%; /* To the left of the tooltip */
-    margin-top: -10px;
-    border-width: 10px;
-    border-style: solid;
-    border-color: transparent #660033 transparent transparent;
+   content: " ";
+   position: absolute;
+   top: 50%;
+   right: 100%; /* To the left of the tooltip */
+   margin-top: -10px;
+   border-width: 10px;
+   border-style: solid;
+   border-color: transparent #000000 transparent transparent;
 }
 
 #exposureSelect {

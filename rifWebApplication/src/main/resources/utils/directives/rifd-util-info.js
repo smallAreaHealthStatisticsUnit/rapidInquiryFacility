@@ -29,6 +29,9 @@
  
  * David Morley
  * @author dmorley
+ *
+ * Peter Hambly
+ * @author phambly
  */
 
 /* 
@@ -46,7 +49,8 @@ angular.module("RIF")
                 $uibModalInstance.close();
             };
         })
-        .directive('getStudyInfo', ['$uibModal', 'user', '$sce', 'AlertService', function ($uibModal, user, $sce, AlertService) {
+        .directive('getStudyInfo', ['$uibModal', 'user', '$sce', 'AlertService', 'D3ChartsService',
+                function ($uibModal, user, $sce, AlertService, D3ChartsService) {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
@@ -102,42 +106,7 @@ angular.module("RIF")
                             scope.reportDescription=scope.reportTitle;
                         }
 						
-						scope.d3HomogeneityChartChange = function (gendersName) {
-							scope.gendersName=gendersName;
-                            AlertService.consoleDebug("[rifd-util-info.js] d3HomogeneityChartChange(): " + scope.gendersName);
-							var homogeneityChartHtml='<header>Homogeneity Chart &ndash; ' + scope.headerInfo + '</header>';
-							scope.homogeneityChartHeader = $sce.trustAsHtml(homogeneityChartHtml);
-							
-							function gender2text(gender) {
-								var rval;
-								switch (gender) {
-									case 1: 
-										rval="males";
-										break;
-									case 2: 
-										rval="females";
-										break;
-									case 3: 
-										rval="males and females";
-										break;
-								}
-								return rval;
-							}          		
-							
-							/* Questions: 
-							 * 1. Do we need to use band_id if max_exposure_value is undefined/null YES
-							 * 2. Would average exposure value be better? YES
-							 * 3. Do we want a choice: max/min/average/median/band_id/distance from nearest source
-							 */
-							 
-//									d3.select("#homogeneityTooltip").remove();
-                                    var tooltip = d3.select("#homogeneityTooltip").append("div")
-                                        .attr("class", "homogeneityChart-tooltip")
-                                        .style("visibility", "hidden");
-
-                                    var margin = {top: 20, right: 20, bottom: 30, left: 40}, // Scale using CSS
-                                        width = 960 - margin.left - margin.right,
-                                        height = 400 - margin.top - margin.bottom;
+						scope.d3HomogeneityChartChange = function (gendersName1, gendersName2, riskFactor) {
 /* Need new REST call
  genders | band_id | adjusted | observed |     expected     |      lower95      |      upper95      |   relative_risk   |     avg_exposure_value     | avg_distance_from_nearest_source
 ---------+---------+----------+----------+------------------+-------------------+-------------------+-------------------+----------------------------+----------------------------------
@@ -266,134 +235,31 @@ SELECT JSON_AGG(a) FROM a;
 												"relative_risk": 1.09461754124358,
 												"max_exposure_value": 60
 											}]
-									};
-                                    AlertService.consoleDebug("[rifd-util-info.js] homogeneityChart data[" + gendersName + "]: " + 
-										JSON.stringify(data[gendersName], null, 1));
-                                    var xScale = d3.scaleLinear()
-                                             .range([0, width])
-                                             .domain([0, d3.max(data[gendersName], function(d) { return d.max_exposure_value; })]).nice();
-                                             
-                                    var yScale = d3.scaleLinear()
-                                       .range([height, 0])
-//                                       .domain([0, d3.max(data[gendersName], function(d) { return d.upper95*1.2; })]).nice();
-                                       .domain([d3.min(data[gendersName], function(d) { return d.lower95*0.8; }), 
-									            d3.max(data[gendersName], function(d) { return d.upper95*1.2; })]).nice();
+									};				
+							var homogeneityChartHtml='<header>Homogeneity Chart &ndash; ' + scope.headerInfo + '</header>';
+							scope.homogeneityChartHeader = $sce.trustAsHtml(homogeneityChartHtml);
+                            
+                            var gendersArray=['males', 'females'];
+                            if (gendersName1) {
+                                gendersArray[0] = gendersName1;
+                            }
+                            if (gendersName2) {
+                                gendersArray[0] = gendersName2;
+                            }
+                            
+                            riskFactor2FieldName = {
+                                'average exposure': 'max_exposure_value', 
+                                'band': 'band_id', 
+                                'average distance from nearest source': '???'
+                            };
 
-                                    var xAxis = d3.axisBottom(xScale).ticks(12),
-                                       yAxis = d3.axisLeft(yScale).ticks(12 * height / width);
-
-                                    let line = d3.line()
-                                        .x(function(d) {
-                                        return xScale(d.max_exposure_value);
-                                      })
-                                      .y(function(d) {
-                                        return yScale(d.relative_risk);
-                                      });
-	
-									if (scope.svg) {
-										d3.select("#homogeneityChart").select("svg").remove();
-									}
-                                    scope.svg = d3.select("#homogeneityChart").append("svg")
-                                        .attr("width", width + margin.left + margin.right)
-                                        .attr("height", height + margin.top + margin.bottom)
-                                      .append("g")
-                                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                                        
-                                    scope.svg.append("g").append("rect").
-                                        attr("width", width).attr("height", height).attr("class", "homogeneityChart-bg");
-
-                                    // Add Axis labels
-                                    scope.svg.append("g").attr("class", "axis axis--x")
-                                    .attr("transform", "translate(" + 0 + "," + height + ")")
-                                    .call(xAxis);
-
-                                    scope.svg.append("g").attr("class", "axis axis--y").call(yAxis);
-
-                                    // Add Error Line
-                                    scope.svg.append("g").selectAll("line")
-                                        .data(data[gendersName]).enter()
-                                      .append("line")
-                                      .attr("class", "homogeneityChart-error-line")
-                                      .attr("x1", function(d) {
-                                        return xScale(d.max_exposure_value);
-                                      })
-                                      .attr("y1", function(d) {
-                                        return yScale(d.upper95);
-                                      })
-                                      .attr("x2", function(d) {
-                                        return xScale(d.max_exposure_value);
-                                      })
-                                      .attr("y2", function(d) {
-                                        return yScale(d.lower95);
-                                      });
-
-                                    // Add Error Top Cap
-                                    scope.svg.append("g").selectAll("line")
-                                        .data(data[gendersName]).enter()
-                                      .append("line")
-                                      .attr("class", "homogeneityChart-error-cap")
-                                      .attr("x1", function(d) {
-                                        return xScale(d.max_exposure_value) - 4;
-                                      })
-                                      .attr("y1", function(d) {
-                                        return yScale(d.upper95);
-                                      })
-                                      .attr("x2", function(d) {
-                                        return xScale(d.max_exposure_value) + 4;
-                                      })
-                                      .attr("y2", function(d) {
-                                        return yScale(d.upper95);
-                                      });
-                                      
-                                     // Add Error Bottom Cap
-                                    scope.svg.append("g").selectAll("line")
-                                        .data(data[gendersName]).enter()
-                                      .append("line")
-                                      .attr("class", "homogeneityChart-error-cap")
-                                      .attr("x1", function(d) {
-                                        return xScale(d.max_exposure_value) - 4;
-                                      })
-                                      .attr("y1", function(d) {
-                                        return yScale(d.lower95);
-                                      })
-                                      .attr("x2", function(d) {
-                                        return xScale(d.max_exposure_value) + 4;
-                                      })
-                                      .attr("y2", function(d) {
-                                        return yScale(d.lower95);
-                                      });
-                                      
-                                    // Add Scatter Points
-                                    scope.svg.append("g").attr("class", "scatter")
-                                    .selectAll("circle")
-                                    .data(data[gendersName]).enter()
-                                    .append("circle")
-                                    .attr("cx", function(d) {
-                                      return xScale(d.max_exposure_value);
-                                    })
-                                    .attr("cy", function(d) {
-                                      return yScale(d.relative_risk);
-                                    })
-                                    .attr("r", 4)
-                                    .on("mouseover", function(d){
-										AlertService.consoleDebug("[rifd-util-info.js] homogeneityChart mouseover: " +
-											JSON.stringify(d));
-										var matrix = this.getScreenCTM()
-											.translate(+ this.getAttribute("cx"), + this.getAttribute("cy"));
-                                        return tooltip.html("Band " + d.band_id + " " +
-											gender2text(d.genders) + "</br>" + 
-											d.relative_risk.toFixed(3) + 
-											"&nbsp;[95% CI&nbsp;" + d.lower95.toFixed(3) +
-											"&ndash;" + d.upper95.toFixed(3) + "]")
-                                            .style("visibility", "visible")
-  //                                        .style("top", (event.pageY-17)+"px").
-  //										.style("left",(event.pageX+25)+"px");
-											.style("left", (window.pageXOffset + matrix.e + 15) + "px")
-											.style("top", (window.pageYOffset + matrix.f - 30) + "px");
-                                     })
-                                    .on("mouseout", function(){
-                                        return tooltip.style("visibility", "hidden");
-                                     });  
+                            AlertService.consoleDebug("[rifd-util-info.js] d3HomogeneityChartChange() gendersArray: " + 
+                                JSON.stringify(gendersArray) + 
+                                "; riskFactor: " + (riskFactor || scope.riskFactor)+
+                                "; riskFactor2FieldName: " + riskFactor2FieldName[riskFactor || scope.riskFactor]);
+                            
+                            D3ChartsService.getD3HomogeneityChart(data, gendersArray, 
+                                riskFactor2FieldName[riskFactor || scope.riskFactor], riskFactor || scope.riskFactor);
 						}
 						
                         element.on('click', function (event) {
@@ -411,15 +277,17 @@ SELECT JSON_AGG(a) FROM a;
 							scope.showHomogeneityCharts=false;
                             scope.covariateList = [];
                             scope.covariateType = null;
-                            scope.covariateDescription = null;
                             scope.covariateDescriptions = {};
                             scope.covariateHtml = {};
                             scope.isRiskAnalysisStudy=false;
                             scope.hasCovariates=false;
                             scope.hSplit1 = 100;
-                            scope.gendersName="males";
-							scope.gendersList = ['males', 'females', 'both'];
-							scope.svg  = undefined;
+                            scope.gendersName1="males";
+                            scope.gendersName2="females";
+							scope.gendersList = ['males', 'females', 'both'];			
+                            scope.gendersArray=['males', 'females'];	
+                            scope.riskFactorList=['average exposure', 'band', 'average distance from nearest source'];
+                            scope.riskFactor='average exposure';
 							
                             if (scope.myMaps) {
                                 scope.mapType=scope.myMaps[0]; // E.g. viewermap
@@ -662,7 +530,7 @@ SELECT JSON_AGG(a) FROM a;
                                                         JSON.stringify(res.data, null, 2));
                                                 }
 				
-                                                scope.d3HomogeneityChartChange(scope.gendersName);
+                                                scope.d3HomogeneityChartChange(undefined, undefined, undefined);
                                             
                                                 AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + 
                                                     homogeneityTestsHtml);
