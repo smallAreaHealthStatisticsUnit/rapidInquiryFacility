@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
-import org.sahsu.rif.services.concepts.CovariateType;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.test.AbstractRIFTestCase;
 
@@ -95,7 +94,6 @@ public final class TestAdjustableCovariate
 	 */
 	public TestAdjustableCovariate() {
 		masterAdjustableCovariate = AdjustableCovariate.newInstance();
-		masterAdjustableCovariate.setCovariateType(CovariateType.BINARY_INTEGER_SCORE);
 		masterAdjustableCovariate.setName("SES");
 		masterAdjustableCovariate.setMinimumValue("1");
 		masterAdjustableCovariate.setMaximumValue("5");
@@ -165,20 +163,6 @@ public final class TestAdjustableCovariate
 				RIFServiceError.INVALID_ADJUSTABLE_COVARIATE, 
 				1);
 		}		
-		
-		//covariate type is blank		
-		try {
-			AdjustableCovariate adjustableCovariate
-				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
-			adjustableCovariate.setCovariateType(null);
-			adjustableCovariate.checkErrors(getValidationPolicy());
-			fail();
-		}
-		catch(RIFServiceException rifServiceException) {
-			checkErrorType(rifServiceException, 
-				RIFServiceError.INVALID_ADJUSTABLE_COVARIATE, 
-				1);
-		}	
 		
 		//minimum value is blank
 		try {
@@ -305,7 +289,6 @@ public final class TestAdjustableCovariate
 		try {
 			AdjustableCovariate adjustableCovariate1
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
-			adjustableCovariate1.setCovariateType(CovariateType.CONTINUOUS_VARIABLE);
 			adjustableCovariate1.setMinimumValue("5.6");
 			adjustableCovariate1.setMaximumValue("3.4");
 			adjustableCovariate1.checkErrors(getValidationPolicy());
@@ -320,7 +303,6 @@ public final class TestAdjustableCovariate
 		try {
 			AdjustableCovariate adjustableCovariate2
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
-			adjustableCovariate2.setCovariateType(CovariateType.BINARY_INTEGER_SCORE);
 			adjustableCovariate2.setMinimumValue("4");
 			adjustableCovariate2.setMaximumValue("3");
 			adjustableCovariate2.checkErrors(getValidationPolicy());
@@ -345,7 +327,6 @@ public final class TestAdjustableCovariate
 			AdjustableCovariate adjustableCovariate1
 				= AdjustableCovariate.createCopy(masterAdjustableCovariate);
 			adjustableCovariate1.setName(null);
-			adjustableCovariate1.setCovariateType(null);
 			adjustableCovariate1.setMinimumValue("");
 			adjustableCovariate1.setMaximumValue("");
 			adjustableCovariate1.checkErrors(getValidationPolicy());
@@ -354,7 +335,7 @@ public final class TestAdjustableCovariate
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(rifServiceException, 
 				RIFServiceError.INVALID_ADJUSTABLE_COVARIATE, 
-				4);
+				3);
 		}
 		
 		try {
