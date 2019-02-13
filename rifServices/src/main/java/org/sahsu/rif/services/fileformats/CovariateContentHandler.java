@@ -12,7 +12,6 @@ import org.sahsu.rif.generic.fileformats.XMLUtility;
 import org.sahsu.rif.generic.presentation.HTMLUtility;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
-import org.sahsu.rif.services.concepts.CovariateType;
 import org.sahsu.rif.services.concepts.ExposureCovariate;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.xml.sax.Attributes;
@@ -173,9 +172,7 @@ public final class CovariateContentHandler
 			xmlUtility.writeField(adjustableCovariateName, "minimum_value", covariate.getMinimumValue());
 			xmlUtility.writeField(adjustableCovariateName, "maximum_value", covariate.getMaximumValue());
 
-			CovariateType covariateType = covariate.getCovariateType();
-			xmlUtility.writeField(adjustableCovariateName, "covariate_type", covariateType.getName());
-			xmlUtility.writeRecordEndTag(adjustableCovariateName);		
+			xmlUtility.writeRecordEndTag(adjustableCovariateName);
 		}
 		else if (covariate instanceof ExposureCovariate) {
 			xmlUtility.writeRecordStartTag(exposureCovariateName);		
@@ -183,8 +180,6 @@ public final class CovariateContentHandler
 			xmlUtility.writeField(exposureCovariateName, "minimum_value", covariate.getMinimumValue());
 			xmlUtility.writeField(exposureCovariateName, "maximum_value", covariate.getMaximumValue());
 
-			CovariateType covariateType = covariate.getCovariateType();
-			xmlUtility.writeField(exposureCovariateName, "covariate_type", covariateType.getName());						
 			xmlUtility.writeRecordEndTag(exposureCovariateName);
 		}
 		else {
@@ -224,8 +219,6 @@ public final class CovariateContentHandler
 		for (AbstractCovariate covariate : covariates) {
 			htmlUtility.beginRow();
 			htmlUtility.writeColumnValue(covariate.getName());
-			CovariateType covariateType = covariate.getCovariateType();
-			htmlUtility.writeColumnValue(covariateType.getName());
 			htmlUtility.writeColumnValue(covariate.getMinimumValue());
 			htmlUtility.writeColumnValue(covariate.getMaximumValue());
 			htmlUtility.endRow();
@@ -262,8 +255,6 @@ public final class CovariateContentHandler
 		String covariateTypeFieldName
 			= RIFServiceMessages.getMessage("covariate.covariateType.label");
 		htmlUtility.writeBoldColumnValue(covariateTypeFieldName);
-		CovariateType covariateType = covariate.getCovariateType();
-		htmlUtility.writeColumnValue(covariateType.getName());
 		htmlUtility.endRow();
 		
 		htmlUtility.beginRow();
@@ -356,11 +347,6 @@ public final class CovariateContentHandler
 		}
 		else if (equalsFieldName(qualifiedName, "maximum_value") == true) {
 			currentCovariate.setMaximumValue(getCurrentFieldValue());
-		}		
-		else if (equalsFieldName(qualifiedName, "covariate_type") == true) {
-			CovariateType covariateType
-				= CovariateType.getTypeFromName(getCurrentFieldValue());
-			currentCovariate.setCovariateType(covariateType);
 		}
 		else if (isIgnoredEndTag(qualifiedName) == false) {
 			assert false;
