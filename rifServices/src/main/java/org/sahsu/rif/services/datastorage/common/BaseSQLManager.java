@@ -912,6 +912,7 @@ public class BaseSQLManager implements SQLManager {
  *
  * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
  * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
+ * 3. alter_12.sql (post 13th February 2019 changes to support multiple and additional covariates)
  */ 
 			String errorMessage = schemaVersionChecks(currentConnection);
 			if (errorMessage != null) { // Failed 
@@ -957,6 +958,7 @@ public class BaseSQLManager implements SQLManager {
  *
  * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
  * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
+ * 3. alter_12.sql (post 13th February 2019 changes to support multiple and additional covariates)
  */ 
 	private String schemaVersionChecks(Connection connection) throws RIFServiceException {
 	
@@ -968,6 +970,9 @@ public class BaseSQLManager implements SQLManager {
 			}
 			if (!doesColumnExist(connection, "rif40", "t_rif40_study_areas", "intersect_count")) { // alter_11.sql has not been run
 				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter11NotRun");
+			}
+			if (!doesColumnExist(connection, "rif40", "t_rif40_inv_covariates", "covariate_type")) { // alter_12.sql has not been run
+				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter12NotRun");
 			}
 		}
 		catch (Exception exception) {		
