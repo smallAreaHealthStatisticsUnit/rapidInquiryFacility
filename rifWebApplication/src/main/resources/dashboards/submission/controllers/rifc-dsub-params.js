@@ -139,6 +139,7 @@ angular.module("RIF")
                     $scope.years = [];
                     $scope.sexes = [];
                     $scope.covariates = [];
+                    $scope.additionals = [{name: 'NONE'}];
                     $scope.selectedAges = [];
                     $scope.ages = [];
                     $scope.taxonomyServices = [];
@@ -196,7 +197,9 @@ angular.module("RIF")
                 //handle fill covariates box
                 function fillCovariates() {
                     $scope.covariates.length = 0;
+                    $scope.additionals.length = 0;
                     $scope.covariates.push("NONE");
+//                    $scope.additionals.push("NONE");
                     var tmp = [];
                     if (thisGeoLevel !== "") {
                         user.getCovariates(user.currentUser, thisGeography, thisGeoLevel).then(fillHandleCovariates, handleParameterError);
@@ -206,7 +209,11 @@ angular.module("RIF")
                     function fillHandleCovariates(res) {
                         if (!angular.isUndefined(res.data)) {
                             for (var i = 0; i < res.data.length; i++) {
-                                $scope.covariates.push(res.data[i].name);
+//                              if (res.data[i].covariateType == "1") {
+                                    $scope.covariates.push(res.data[i].name);
+//                              }
+                                $scope.additionals.push({name: res.data[i].name, minimum_value: res.data[i].minimumValue,
+                                    maximum_value: res.data[i].maximumValue, covariate_type: res.data[i].covariateType});
                                 tmp.push({name: res.data[i].name, minimum_value: res.data[i].minimumValue,
                                     maximum_value: res.data[i].maximumValue, covariate_type: res.data[i].covariateType});
                             }
