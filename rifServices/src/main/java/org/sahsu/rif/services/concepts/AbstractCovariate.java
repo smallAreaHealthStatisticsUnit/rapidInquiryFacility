@@ -77,7 +77,7 @@ import org.sahsu.rif.services.system.RIFServiceMessages;
  *
  */
 
-abstract public class AbstractCovariate 
+abstract public class AbstractCovariate
 	extends AbstractRIFConcept {
 
 // ==========================================
@@ -90,8 +90,6 @@ abstract public class AbstractCovariate
 // Section Properties
 // ==========================================
     
-    /** The covariate type. */
-    private CovariateType covariateType;	
 	/** The maximum value. */
 	private String maximumValue;
 	/** The minimum value. */
@@ -155,27 +153,6 @@ abstract public class AbstractCovariate
         this.name = name;
     }
 
-    /**
-     * Gets the covariate type.
-     *
-     * @return the covariate type
-     */
-    public CovariateType getCovariateType() {
-    	
-        return covariateType;
-    }
-
-    /**
-     * Sets the covariate type.
-     *
-     * @param covariateType the new covariate type
-     */
-    public void setCovariateType(
-    	final CovariateType covariateType) {
-    	
-        this.covariateType = covariateType;
-    }
-	
 	/**
 	 * Gets the minimum value.
 	 *
@@ -243,7 +220,6 @@ abstract public class AbstractCovariate
 		String otherName = otherCovariate.getName();
 		String otherMinimumValue = otherCovariate.getMinimumValue();
 		String otherMaximumValue = otherCovariate.getMaximumValue();
-		CovariateType otherCovariateType = otherCovariate.getCovariateType();
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
@@ -297,10 +273,6 @@ abstract public class AbstractCovariate
 			}
 		}
 
-		if (covariateType != otherCovariateType) {
-			return false;
-		}
-		
 		return true;
 	}
 	
@@ -373,16 +345,7 @@ abstract public class AbstractCovariate
 		} 
 		
 		if (validationPolicy == ValidationPolicy.STRICT) {
-		
-			if (covariateType == null) {
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"general.validation.undefinedObject", 
-						recordType,
-						covariateFieldTypeLabel);
-				errorMessages.add(errorMessage);
-			}
-		
+
 			if (fieldValidationUtility.isEmpty(minimumValue)) {				
 				String errorMessage
 					= GENERIC_MESSAGES.getMessage(
@@ -402,8 +365,7 @@ abstract public class AbstractCovariate
 			}
 		
 			if ( (fieldValidationUtility.isEmpty(minimumValue) == false) && 
-				(fieldValidationUtility.isEmpty(maximumValue) == false) &&
-				(covariateType != null)) {
+				(fieldValidationUtility.isEmpty(maximumValue) == false)) {
 			
 				Double minimumDoubleValue = null;
 				Double maximumDoubleValue = null;
