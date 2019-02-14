@@ -43,7 +43,7 @@ angular.module("RIF")
                         females: '#7f82c9',
                         both: '#660033'
                     };                
-                    function d3HomogeneityChart(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
+                    function d3RiskGraph(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
                         
                         // Check parameters are defined
                         if (!data || !(gendersArray && gendersArray.length > 0) || !riskFactorFieldName || 
@@ -218,7 +218,7 @@ angular.module("RIF")
                                     return xScale(d[riskFactorFieldName]);
                                })
                                .attr("cy", function(d) {
-                                    return yScale(d.relative_risk);
+                                    return yScale(d.relativeRisk);
                                })
                                .attr("r", 4)
                                .style("fill", colors[gendersName])
@@ -232,7 +232,7 @@ angular.module("RIF")
                                         JSON.stringify(d, 0, 1));
                                     return tooltip.html("Band " + d.band_id + " " +
                                                 gender2text(d.genders) + "</br>" + 
-                                                d.relative_risk.toFixed(3) + 
+                                                d.relativeRisk.toFixed(3) + 
                                                 "&nbsp;[95% CI&nbsp;" + d.lower95.toFixed(3) +
                                                 "&ndash;" + d.upper95.toFixed(3) + "]") 
                                         .style("visibility", "visible")
@@ -327,7 +327,7 @@ angular.module("RIF")
                                        return xScale(d.max_exposure_value);
                                  })
                                 .y(function(d) {
-                                        return yScale(d.relative_risk);
+                                        return yScale(d.relativeRisk);
                                  });
 
                         if (svg) {
@@ -404,8 +404,8 @@ angular.module("RIF")
                          
                     }
                     return {
-                        getD3HomogeneityChart: function (data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
-                            return d3HomogeneityChart(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc);
+                        getD3RiskGraph: function (data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
+                            return d3RiskGraph(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc);
                         }
                     };
                 }]);

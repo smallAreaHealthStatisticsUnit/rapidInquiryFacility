@@ -405,64 +405,71 @@ public class ResultsQueryManager extends BaseSQLManager {
 	 * <p>	 
 	 * Example JSON:
      * {
-	 *     males: [{ 
- 	 *        "genders": 1,
-	 *         "band_id": 1,
-	 *         "adjusted": 1,
-	 *         "observed": 122,
- 	 *        "expected": 134.614918177067,
-	 *         "lower95": 0.758928839190033,
-	 *         "upper95": 1.08226153160508,
-	 *         "relative_risk": 0.906288854549734,
-	 *         "avg_exposure_value": 72
-	 *     }, {
-	 *         "genders": 1,
-	 *         "band_id": 2,
-	 *         "adjusted": 1,
-	 *         "observed": 154,
-	 *         "expected": 160.986693034749,
-	 *         "lower95": 0.816841334381448,
-	 *         "upper95": 1.12027276266715,
-	 *         "relative_risk": 0.956600804059993,
-	 *         "avg_exposure_value": 66
-	 *     },{
-	 *         "genders": 1,
-	 *         "band_id": 3,
-	 *         "adjusted": 1,
-	 *         "observed": 428,
-	 *         "expected": 398.740546340158,
-	 *         "lower95": 0.976356077183336,
-	 *         "upper95": 1.18004482604304,
-	 *         "relative_risk": 1.07337967991568,
-	 *         "avg_exposure_value": 60
-	 *     }],
-	 *     females: [ ... ],
-	 *     both: [ ... ]
+	 *     "males": [{
+     *         "studyAreas": "528",
+     *          "relativeRisk": "0.906289",
+     *          "bandId": "1.0",
+     *          "adjusted": "1.0",
+     *          "expected": "134.614918",
+     *          "genders": "1.0",
+     *          "lower95": "0.758929",
+     *          "observed": "122.0",
+     *          "upper95": "1.082262"
+     *         },
+     *         {
+     *          "studyAreas": "836",
+     *          "relativeRisk": "0.956601",
+     *          "bandId": "2.0",
+     *          "adjusted": "1.0",
+     *          "expected": "160.986693",
+     *          "genders": "1.0",
+     *          "lower95": "0.816841",
+     *          "observed": "154.0",
+     *          "upper95": "1.120273"
+     *         },
+     *         {
+     *          "studyAreas": "2244",
+     *          "relativeRisk": "1.07338",
+     *          "bandId": "3.0",
+     *          "adjusted": "1.0",
+     *          "expected": "398.740546",
+     *          "genders": "1.0",
+     *          "lower95": "0.976356",
+     *          "observed": "428.0",
+     *          "upper95": "1.180045"
+     *         }
+     *        ],
+	 *        females: [ ... ],
+	 *        both: [ ... ]
 	 * }		
 	 * 
      * Example SQL:     
 	 * WITH b AS (
-	 *     SELECT band_id, sex AS genders, 
-	 *            AVG(exposure_value) AS avg_exposure_value, 
-	 * 		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source
-	 *       FROM s563_extract
+	 *     SELECT band_id, sex AS genders,
+	 *            AVG(exposure_value) AS avg_exposure_value,
+	 * 		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source,
+	 * 		   COUNT(area_id) AS study_areas
+ 	 *      FROM rif_studies.s196_extract
 	 * 	 WHERE study_or_comparison = 'S'
 	 *      GROUP BY band_id, sex
 	 * 	UNION
-	 *     SELECT band_id, 3 AS genders, 
-	 *            AVG(exposure_value) AS avg_exposure_value, 
-	 * 		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source
-	 *       FROM s563_extract
+	 *     SELECT band_id, 3 AS genders,
+	 *            AVG(exposure_value) AS avg_exposure_value,
+	 * 		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source,
+	 *            COUNT(area_id) AS study_areas
+	 *       FROM rif_studies.s196_extract
 	 * 	 WHERE study_or_comparison = 'S'
 	 *      GROUP BY band_id
 	 * ), a AS (
-	 *     SELECT a.genders, a.band_id, adjusted, observed, expected, lower95, upper95, relative_risk, 
-	 * 	       b.avg_exposure_value, b.avg_distance_from_nearest_source
-	 *       FROM s563_map a 
-	 * 		LEFT OUTER JOIN b  ON (a.band_id = b.band_id AND a.genders = b.genders)
+	 *     SELECT a.genders, a.band_id, a.adjusted, observed, expected, lower95, upper95, relative_risk,
+	 * 	       b.avg_exposure_value,
+	 * 		   b.avg_distance_from_nearest_source,
+	 *            b.study_areas
+	 *       FROM rif_studies.s196_map a
+	 * 		LEFT OUTER JOIN b ON (a.band_id = b.band_id AND a.genders = b.genders)
 	 * )
 	 * SELECT * FROM a
-	 *  ORDER BY 1, 2, 3;
+	 *  ORDER BY 1, 2, 3
 	 * </p>
 	 *
 	 * @param connection			JDBC Connection
@@ -496,9 +503,9 @@ public class ResultsQueryManager extends BaseSQLManager {
             boolean hasDistanceFromNearestSource=false;
             try {
                 hasDistanceFromNearestSource=doesColumnExist(connection, 
-                    "rif40_studies", "rif40_studies.s" + studyID + "_extract", "distance_from_nearest_source"); 
+                    "rif_studies", "s" + studyID + "_extract", "distance_from_nearest_source"); 
                 hasExposureValue=doesColumnExist(connection, 
-                    "rif40_studies", "rif40_studies.s" + studyID + "_extract", "exposure_value");
+                    "rif_studies", "s" + studyID + "_extract", "exposure_value");
             }
             catch (Exception exception) {            
                 throw new RIFServiceException(
@@ -512,10 +519,10 @@ public class ResultsQueryManager extends BaseSQLManager {
                 queryFormatter.addQueryLine(0, "           AVG(exposure_value) AS avg_exposure_value,"); 
             }
             if (hasDistanceFromNearestSource) {
-                queryFormatter.addQueryLine(0, "		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source");
+                queryFormatter.addQueryLine(0, "		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source,");
             }
-            queryFormatter.addQueryLine(0, "		   SUM(area_id) AS areas");
-            queryFormatter.addQueryLine(0, "      FROM rif40_studies.s" + studyID + "_extract");
+            queryFormatter.addQueryLine(0, "		   COUNT(area_id) AS study_areas");
+            queryFormatter.addQueryLine(0, "      FROM rif_studies.s" + studyID + "_extract");
             queryFormatter.addQueryLine(0, "	 WHERE study_or_comparison = 'S'");
             queryFormatter.addQueryLine(0, "     GROUP BY band_id, sex");
             queryFormatter.addQueryLine(0, "	UNION");
@@ -524,10 +531,10 @@ public class ResultsQueryManager extends BaseSQLManager {
                 queryFormatter.addQueryLine(0, "           AVG(exposure_value) AS avg_exposure_value,"); 
             }
             if (hasDistanceFromNearestSource) {
-                queryFormatter.addQueryLine(0, "		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source");
+                queryFormatter.addQueryLine(0, "		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source,");
             }
-            queryFormatter.addQueryLine(0, "           SUM(area_id) AS areas");
-            queryFormatter.addQueryLine(0, "      FROM rif40_studies.s" + studyID + "_extract");
+            queryFormatter.addQueryLine(0, "           COUNT(area_id) AS study_areas");
+            queryFormatter.addQueryLine(0, "      FROM rif_studies.s" + studyID + "_extract");
             queryFormatter.addQueryLine(0, "	 WHERE study_or_comparison = 'S'");
             queryFormatter.addQueryLine(0, "     GROUP BY band_id");
             queryFormatter.addQueryLine(0, "), a AS (");
@@ -536,9 +543,10 @@ public class ResultsQueryManager extends BaseSQLManager {
                 queryFormatter.addQueryLine(0, "	       b.avg_exposure_value,");
             }
             if (hasDistanceFromNearestSource) {
-                queryFormatter.addQueryLine(0, "		   b.avg_distance_from_nearest_source");
+                queryFormatter.addQueryLine(0, "		   b.avg_distance_from_nearest_source,");
             }
-            queryFormatter.addQueryLine(0, "      FROM rif40_studies.s" + studyID + "_map a");
+            queryFormatter.addQueryLine(0, "           b.study_areas");
+            queryFormatter.addQueryLine(0, "      FROM rif_studies.s" + studyID + "_map a");
             queryFormatter.addQueryLine(0, "		LEFT OUTER JOIN b ON (a.band_id = b.band_id AND a.genders = b.genders)");
             queryFormatter.addQueryLine(0, ")");
             queryFormatter.addQueryLine(0, "SELECT * FROM a");

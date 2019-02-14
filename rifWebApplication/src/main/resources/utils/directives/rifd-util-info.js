@@ -106,7 +106,7 @@ angular.module("RIF")
                             scope.reportDescription=scope.reportTitle;
                         }
 						
-						scope.d3HomogeneityChartChange = function (gendersName1, gendersName2, riskFactor) {
+						scope.d3RiskGraphChange = function (gendersName1, gendersName2, riskFactor) {
 		
 							var homogeneityChartHtml='<header>Risk Graph &ndash; ' + scope.headerInfo + '</header>';
 							scope.homogeneityChartHeader = $sce.trustAsHtml(homogeneityChartHtml);
@@ -116,21 +116,21 @@ angular.module("RIF")
                                 gendersArray[0] = gendersName1;
                             }
                             if (gendersName2) {
-                                gendersArray[0] = gendersName2;
+                                gendersArray[1] = gendersName2;
                             }
                             
                             riskFactor2FieldName = {
-                                'average exposure': 'avg_exposure_value', 
-                                'band': 'band_id', 
-                                'average distance from nearest source': 'avg_distance_from_nearest_source'
+                                'average exposure': 'avgExposureValue', 
+                                'band': 'bandId', 
+                                'average distance from nearest source': 'avgDistanceFromNearestSource'
                             };
 
-                            AlertService.consoleDebug("[rifd-util-info.js] d3HomogeneityChartChange() gendersArray: " + 
+                            AlertService.consoleDebug("[rifd-util-info.js] d3RiskGraphChange() gendersArray: " + 
                                 JSON.stringify(gendersArray) + 
                                 "; riskFactor: " + (riskFactor || scope.riskFactor)+
                                 "; riskFactor2FieldName: " + riskFactor2FieldName[riskFactor || scope.riskFactor]);
                             
-                            D3ChartsService.getD3HomogeneityChart(scope.riskGraphdata, gendersArray, 
+                            D3ChartsService.getD3RiskGraph(scope.riskGraphdata, gendersArray, 
                                 riskFactor2FieldName[riskFactor || scope.riskFactor], riskFactor || scope.riskFactor);
 						}
 						
@@ -404,7 +404,9 @@ angular.module("RIF")
 				
                                                 user.getRiskGraph(user.currentUser, thisStudy).then(function (res) {
                                                     scope.riskGraphdata=res.data;
-                                                    scope.d3HomogeneityChartChange(undefined, undefined, undefined);
+                                                    AlertService.consoleDebug("[rifd-util-info.js] riskGraphdata: " +
+                                                        JSON.stringify(scope.riskGraphdata, 0, 1));
+                                                    scope.d3RiskGraphChange(undefined, undefined, undefined);
                                             
                                                     AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + 
                                                         homogeneityTestsHtml);
