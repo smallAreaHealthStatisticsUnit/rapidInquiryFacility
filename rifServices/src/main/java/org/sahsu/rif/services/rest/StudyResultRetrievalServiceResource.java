@@ -497,6 +497,18 @@ public class StudyResultRetrievalServiceResource extends WebService {
 			) { 
 
 		return super.getCovariateLossReport(servletRequest, userID, studyID);
+	}	
+	
+	@GET
+	@Produces({"application/json"})
+	@Path("/getRiskGraph")
+	public Response getRiskGraph(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID
+			) { 
+
+		return super.getRiskGraph(servletRequest, userID, studyID);
 	}		
 	
 	@GET

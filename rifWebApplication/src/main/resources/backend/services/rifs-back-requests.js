@@ -318,6 +318,11 @@ angular.module("RIF")
 				self.getCovariateLossReport = function (username, studyID) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/getCovariateLossReport?userID=dwmorley&studyID=46
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getCovariateLossReport?userID=' + username + '&studyID=' + studyID);
+                };  		
+				// Get Risk Graph
+				self.getRiskGraph = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getRiskGraph?userID=dwmorley&studyID=46
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getRiskGraph?userID=' + username + '&studyID=' + studyID);
                 };   		
 				// Get JSON study print state
 				self.getPrintState = function (username, studyID) {

@@ -809,6 +809,32 @@ public class WebService {
 			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
 	}
 	
+	protected Response getRiskGraph(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getRiskGraph(
+						user, studyID);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getRiskGraph error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+    
 	protected Response getCovariateLossReport(
 			final HttpServletRequest servletRequest,
 			final String userID,

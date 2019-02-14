@@ -86,6 +86,11 @@ public interface UserService {
 			User _user,
 			String studyID)
 					throws RIFServiceException;	
+                    
+	String getRiskGraph(
+			User _user,
+			String studyID)
+					throws RIFServiceException;	
 					
 	String getSelectState(
 			User _user,

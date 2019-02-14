@@ -107,135 +107,7 @@ angular.module("RIF")
                         }
 						
 						scope.d3HomogeneityChartChange = function (gendersName1, gendersName2, riskFactor) {
-/* Need new REST call
- genders | band_id | adjusted | observed |     expected     |      lower95      |      upper95      |   relative_risk   |     avg_exposure_value     | avg_distance_from_nearest_source
----------+---------+----------+----------+------------------+-------------------+-------------------+-------------------+----------------------------+----------------------------------
-       1 |       1 |        1 |      388 | 427.777061286851 | 0.821107894649418 |  1.00190890842638 |  0.90701450618415 |     0.00000000000000000000 |            3418.7734693877551020
-       1 |       2 |        1 |     2346 | 2406.33491747343 | 0.936262657024983 |  1.01518728045123 | 0.974926633431069 | 0.000000000000000000000000 |               12563.830341340076
-       2 |       1 |        1 |      198 |  231.71056006628 | 0.743405880514966 | 0.982228959508871 | 0.854514355942012 |     0.00000000000000000000 |            3418.7734693877551020
-       2 |       2 |        1 |     1298 | 1271.54908641107 | 0.966751520813936 |  1.07787465630659 |  1.02080211756794 | 0.000000000000000000000000 |               12563.830341340076
-       3 |       1 |        1 |      586 | 661.286241242518 | 0.817230697113517 | 0.960885383035752 | 0.886151810597087 |     0.00000000000000000000 |            3418.7734693877551020
-       3 |       2 |        1 |     3644 | 3671.76065065572 |  0.96073356367783 |  1.02519161807457 | 0.992439417136092 | 0.000000000000000000000000 |               12563.830341340076
-(6 rows)
- 
-WITH b AS (
-    SELECT band_id, sex AS genders, AVG(exposure_value) AS avg_exposure_value, 
-								    AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source
-      FROM s563_extract
-	 wHERE study_or_comparison = 'S'
-     GROUP BY band_id, sex
-	UNION
-    SELECT band_id, 3 AS genders, AVG(exposure_value) AS avg_exposure_value, 
-								    AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source
-      FROM s563_extract
-	 wHERE study_or_comparison = 'S'
-     GROUP BY band_id
-), a AS (
-    SELECT a.genders, a.band_id, adjusted, observed, expected, lower95, upper95, relative_risk, 
-	       b.avg_exposure_value, b.avg_distance_from_nearest_source
-      FROM s563_map a 
-		LEFT OUTER JOIN b  ON (a.band_id = b.band_id AND a.genders = b.genders)
-)
-SELECT * FROM a
- ORDER BY 1, 2;
-SELECT JSON_AGG(a) FROM a;
-
-  */
-                                    var data= {
-											males: [{ // x is max_exposure_value, y is relative_risk, e is upper95
-												"genders": 1,
-												"band_id": 1,
-												"adjusted": 1,
-												"observed": 122,
-												"expected": 134.614918177067,
-												"lower95": 0.758928839190033,
-												"upper95": 1.08226153160508,
-												"relative_risk": 0.906288854549734,
-												"max_exposure_value": 72
-											}, {
-												"genders": 1,
-												"band_id": 2,
-												"adjusted": 1,
-												"observed": 154,
-												"expected": 160.986693034749,
-												"lower95": 0.816841334381448,
-												"upper95": 1.12027276266715,
-												"relative_risk": 0.956600804059993,
-												"max_exposure_value": 66
-											},{
-												"genders": 1,
-												"band_id": 3,
-												"adjusted": 1,
-												"observed": 428,
-												"expected": 398.740546340158,
-												"lower95": 0.976356077183336,
-												"upper95": 1.18004482604304,
-												"relative_risk": 1.07337967991568,
-												"max_exposure_value": 60
-											}],
-											females: [{
-												"genders": 2,
-												"band_id": 1,
-												"adjusted": 1,
-												"observed": 80,
-												"expected": 69.225522543931,
-												"lower95": 0.916353134795538,
-												"upper95": 1.4382979182895,
-												"relative_risk": 1.15564313652138,
-												"max_exposure_value": 72
-											},{
-												"genders": 2,
-												"band_id": 2,
-												"adjusted": 1,
-												"observed": 56,
-												"expected": 87.6085630538271,
-												"lower95": 0.48285004008843,
-												"upper95": 0.830063357652665,
-												"relative_risk": 0.639206922793533,
-												"max_exposure_value": 66
-											},{
-												"genders": 2,
-												"band_id": 3,
-												"adjusted": 1,
-												"observed": 248,
-												"expected": 215.487326637354,
-												"lower95": 1.01619628358071,
-												"upper95": 1.3034137340007,
-												"relative_risk": 1.15087974717586,
-												"max_exposure_value": 60
-											}],
-											both: [{
-												"genders": 3,
-												"band_id": 1,
-												"adjusted": 1,
-												"observed": 202,
-												"expected": 203.56522154764,
-												"lower95": 0.864482796580928,
-												"upper95": 1.13904063929265,
-												"relative_risk": 0.992310957953723,
-												"max_exposure_value": 72
-											},{
-												"genders": 3,
-												"band_id": 2,
-												"adjusted": 1,
-												"observed": 210,
-												"expected": 249.66589886741,
-												"lower95": 0.734717697589835,
-												"upper95": 0.962940900563699,
-												"relative_risk": 0.841124082033824,
-												"max_exposure_value": 66
-											},{
-												"genders": 3,
-												"band_id": 3,
-												"adjusted": 1,
-												"observed": 676,
-												"expected": 617.567300476479,
-												"lower95": 1.01513378274594,
-												"upper95": 1.18032478276612,
-												"relative_risk": 1.09461754124358,
-												"max_exposure_value": 60
-											}]
-									};				
+		
 							var homogeneityChartHtml='<header>Risk Graph &ndash; ' + scope.headerInfo + '</header>';
 							scope.homogeneityChartHeader = $sce.trustAsHtml(homogeneityChartHtml);
                             
@@ -248,9 +120,9 @@ SELECT JSON_AGG(a) FROM a;
                             }
                             
                             riskFactor2FieldName = {
-                                'average exposure': 'max_exposure_value', 
+                                'average exposure': 'avg_exposure_value', 
                                 'band': 'band_id', 
-                                'average distance from nearest source': '???'
+                                'average distance from nearest source': 'avg_distance_from_nearest_source'
                             };
 
                             AlertService.consoleDebug("[rifd-util-info.js] d3HomogeneityChartChange() gendersArray: " + 
@@ -258,7 +130,7 @@ SELECT JSON_AGG(a) FROM a;
                                 "; riskFactor: " + (riskFactor || scope.riskFactor)+
                                 "; riskFactor2FieldName: " + riskFactor2FieldName[riskFactor || scope.riskFactor]);
                             
-                            D3ChartsService.getD3HomogeneityChart(data, gendersArray, 
+                            D3ChartsService.getD3HomogeneityChart(scope.riskGraphdata, gendersArray, 
                                 riskFactor2FieldName[riskFactor || scope.riskFactor], riskFactor || scope.riskFactor);
 						}
 						
@@ -530,24 +402,29 @@ SELECT JSON_AGG(a) FROM a;
                                                         JSON.stringify(res.data, null, 2));
                                                 }
 				
-                                                scope.d3HomogeneityChartChange(undefined, undefined, undefined);
+                                                user.getRiskGraph(user.currentUser, thisStudy).then(function (res) {
+                                                    scope.riskGraphdata=res.data;
+                                                    scope.d3HomogeneityChartChange(undefined, undefined, undefined);
                                             
-                                                AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + 
-                                                    homogeneityTestsHtml);
-                                                scope.homogeneityTests = $sce.trustAsHtml(homogeneityTestsHtml); 
-                                                        
-                                                if (scope.hasCovariates) {        
-                                                    user.getCovariateLossReport(user.currentUser, thisStudy).then(function (res) {
-                                                            buildCovariateLossReport(res)
-                                                        }, function(err) {
-                                                        retrieveError(err, "covariate loss report");
-                                                    });
-                                                }
-                                                else {
-                                                    scope.covariateLossReport = $sce.trustAsHtml(
-                                                        cautionMessage("No covariates were used by this study") + 
-                                                        covariateLossReportHtml);
-                                                }
+                                                    AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + 
+                                                        homogeneityTestsHtml);
+                                                    scope.homogeneityTests = $sce.trustAsHtml(homogeneityTestsHtml); 
+                                                            
+                                                    if (scope.hasCovariates) {        
+                                                        user.getCovariateLossReport(user.currentUser, thisStudy).then(function (res) {
+                                                                buildCovariateLossReport(res)
+                                                            }, function(err) {
+                                                            retrieveError(err, "covariate loss report");
+                                                        });
+                                                    }
+                                                    else {
+                                                        scope.covariateLossReport = $sce.trustAsHtml(
+                                                            cautionMessage("No covariates were used by this study") + 
+                                                            covariateLossReportHtml);
+                                                    }
+                                                }, function(err) {
+                                                        retrieveError(err, "risk graph");
+                                                });
                                                                 
                                             }, function(err) {
                                                     retrieveError(err, "homogeneity report");

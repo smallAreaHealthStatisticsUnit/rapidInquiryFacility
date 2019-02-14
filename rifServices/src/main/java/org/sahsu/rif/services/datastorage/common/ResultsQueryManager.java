@@ -401,6 +401,250 @@ public class ResultsQueryManager extends BaseSQLManager {
 	}		
     
 	/** 
+	 * Get the Risk Graph data for a study
+	 * <p>	 
+	 * Example JSON:
+     * {
+	 *     males: [{ 
+ 	 *        "genders": 1,
+	 *         "band_id": 1,
+	 *         "adjusted": 1,
+	 *         "observed": 122,
+ 	 *        "expected": 134.614918177067,
+	 *         "lower95": 0.758928839190033,
+	 *         "upper95": 1.08226153160508,
+	 *         "relative_risk": 0.906288854549734,
+	 *         "avg_exposure_value": 72
+	 *     }, {
+	 *         "genders": 1,
+	 *         "band_id": 2,
+	 *         "adjusted": 1,
+	 *         "observed": 154,
+	 *         "expected": 160.986693034749,
+	 *         "lower95": 0.816841334381448,
+	 *         "upper95": 1.12027276266715,
+	 *         "relative_risk": 0.956600804059993,
+	 *         "avg_exposure_value": 66
+	 *     },{
+	 *         "genders": 1,
+	 *         "band_id": 3,
+	 *         "adjusted": 1,
+	 *         "observed": 428,
+	 *         "expected": 398.740546340158,
+	 *         "lower95": 0.976356077183336,
+	 *         "upper95": 1.18004482604304,
+	 *         "relative_risk": 1.07337967991568,
+	 *         "avg_exposure_value": 60
+	 *     }],
+	 *     females: [ ... ],
+	 *     both: [ ... ]
+	 * }		
+	 * 
+     * Example SQL:     
+	 * WITH b AS (
+	 *     SELECT band_id, sex AS genders, 
+	 *            AVG(exposure_value) AS avg_exposure_value, 
+	 * 		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source
+	 *       FROM s563_extract
+	 * 	 WHERE study_or_comparison = 'S'
+	 *      GROUP BY band_id, sex
+	 * 	UNION
+	 *     SELECT band_id, 3 AS genders, 
+	 *            AVG(exposure_value) AS avg_exposure_value, 
+	 * 		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source
+	 *       FROM s563_extract
+	 * 	 WHERE study_or_comparison = 'S'
+	 *      GROUP BY band_id
+	 * ), a AS (
+	 *     SELECT a.genders, a.band_id, adjusted, observed, expected, lower95, upper95, relative_risk, 
+	 * 	       b.avg_exposure_value, b.avg_distance_from_nearest_source
+	 *       FROM s563_map a 
+	 * 		LEFT OUTER JOIN b  ON (a.band_id = b.band_id AND a.genders = b.genders)
+	 * )
+	 * SELECT * FROM a
+	 *  ORDER BY 1, 2, 3;
+	 * </p>
+	 *
+	 * @param connection			JDBC Connection
+	 * @param studyID				studyID string
+	 *
+	 * @return JSONObject as a string
+	 *
+	 * @throws RIFServiceException RIF error
+	 * @throws RIFSQLException RIF SQL error
+     */		
+	String getRiskGraph(
+			final Connection connection,
+			final String studyID)
+					throws RIFServiceException {
+						
+		String result="{}";
+		
+        SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+        
+        PreparedStatement statement1 = null;
+        ResultSet resultSet1 = null;
+        String sqlQueryText = null;
+        
+        JSONObject riskGraphJson = new JSONObject();
+        JSONArray riskGraphMales = new JSONArray();
+        JSONArray riskGraphFemales = new JSONArray();
+        JSONArray riskGraphBoth = new JSONArray();
+        try {
+            
+            boolean hasExposureValue=false;
+            boolean hasDistanceFromNearestSource=false;
+            try {
+                hasDistanceFromNearestSource=doesColumnExist(connection, 
+                    "rif40_studies", "rif40_studies.s" + studyID + "_extract", "distance_from_nearest_source"); 
+                hasExposureValue=doesColumnExist(connection, 
+                    "rif40_studies", "rif40_studies.s" + studyID + "_extract", "exposure_value");
+            }
+            catch (Exception exception) {            
+                throw new RIFServiceException(
+                    RIFServiceError.DATABASE_QUERY_FAILED,
+                    "getRiskGraph unable to determine columns present in extract for study_id: " + studyID, exception);
+            }
+
+            queryFormatter.addQueryLine(0, "WITH b AS (");
+            queryFormatter.addQueryLine(0, "    SELECT band_id, sex AS genders,");
+            if (hasExposureValue) {
+                queryFormatter.addQueryLine(0, "           AVG(exposure_value) AS avg_exposure_value,"); 
+            }
+            if (hasDistanceFromNearestSource) {
+                queryFormatter.addQueryLine(0, "		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source");
+            }
+            queryFormatter.addQueryLine(0, "		   SUM(area_id) AS areas");
+            queryFormatter.addQueryLine(0, "      FROM rif40_studies.s" + studyID + "_extract");
+            queryFormatter.addQueryLine(0, "	 WHERE study_or_comparison = 'S'");
+            queryFormatter.addQueryLine(0, "     GROUP BY band_id, sex");
+            queryFormatter.addQueryLine(0, "	UNION");
+            queryFormatter.addQueryLine(0, "    SELECT band_id, 3 AS genders,");
+            if (hasExposureValue) {
+                queryFormatter.addQueryLine(0, "           AVG(exposure_value) AS avg_exposure_value,"); 
+            }
+            if (hasDistanceFromNearestSource) {
+                queryFormatter.addQueryLine(0, "		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source");
+            }
+            queryFormatter.addQueryLine(0, "           SUM(area_id) AS areas");
+            queryFormatter.addQueryLine(0, "      FROM rif40_studies.s" + studyID + "_extract");
+            queryFormatter.addQueryLine(0, "	 WHERE study_or_comparison = 'S'");
+            queryFormatter.addQueryLine(0, "     GROUP BY band_id");
+            queryFormatter.addQueryLine(0, "), a AS (");
+            queryFormatter.addQueryLine(0, "    SELECT a.genders, a.band_id, a.adjusted, observed, expected, lower95, upper95, relative_risk,"); 
+            if (hasExposureValue) {
+                queryFormatter.addQueryLine(0, "	       b.avg_exposure_value,");
+            }
+            if (hasDistanceFromNearestSource) {
+                queryFormatter.addQueryLine(0, "		   b.avg_distance_from_nearest_source");
+            }
+            queryFormatter.addQueryLine(0, "      FROM rif40_studies.s" + studyID + "_map a");
+            queryFormatter.addQueryLine(0, "		LEFT OUTER JOIN b ON (a.band_id = b.band_id AND a.genders = b.genders)");
+            queryFormatter.addQueryLine(0, ")");
+            queryFormatter.addQueryLine(0, "SELECT * FROM a");
+            queryFormatter.addQueryLine(0, " ORDER BY 1, 2, 3");
+        
+            sqlQueryText = logSQLQuery("getRiskGraph", queryFormatter);
+
+            statement1 = connection.prepareStatement(queryFormatter.generateQuery());
+            resultSet1 = statement1.executeQuery();
+            if (!resultSet1.next()) {
+                throw new RIFServiceException(
+                    RIFServiceError.DATABASE_QUERY_FAILED,
+                    "getRiskGraph query 1; expected 1+ rows, got NONE for study_id: " + studyID);
+            }
+            do {
+                
+                ResultSetMetaData rsmd = resultSet1.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+                // The column count starts from 1
+                JSONObject riskGraphRow = new JSONObject();
+                int genders=-1;
+                
+                for (int i = 1; i <= columnCount; i++ ) {
+                    String name = rsmd.getColumnName(i); 
+                    String value = resultSet1.getString(i);
+                    String columnType = rsmd.getColumnTypeName(i);
+                    if (name.equals("genders")) {
+                        genders=resultSet1.getInt(i);
+                    }
+                    
+                    if (value != null && (
+                             columnType.equals("integer") || 
+                             columnType.equals("bigint") || 
+                             columnType.equals("int4") ||
+                             columnType.equals("int") ||
+                             columnType.equals("smallint"))) {
+                        try { // Use normal decimal formatting - will cause confusion with coordinates
+                            Long longVal=Long.parseLong(resultSet1.getString(i));
+                            riskGraphRow.put(jsonCapitalise(name), String.valueOf(longVal));
+                        }
+                        catch (Exception exception) {	
+                            throw new RIFServiceException(
+                                RIFServiceError.DATABASE_DATATYPE_ERROR,
+                                "Unable to parseLong(" + 
+                                columnType + "): " + resultSet1.getString(i) + " for study_id: " + studyID, exception);
+                        }
+                    }
+                    else if (value != null && (
+                             columnType.equals("float") || 
+                             columnType.equals("float8") || 
+                             columnType.equals("double precision") ||
+                             columnType.equals("numeric"))) {
+                        try { // Ditto
+                            Double doubleVal=Double.parseDouble(resultSet1.getString(i));
+                            riskGraphRow.put(jsonCapitalise(name), String.valueOf(doubleVal));
+                        }
+                        catch (Exception exception) {
+                            throw new RIFServiceException(
+                                RIFServiceError.DATABASE_DATATYPE_ERROR,
+                                "Unable to parseDouble(" + 
+                                columnType + "): " + resultSet1.getString(i) + " for study_id: " + studyID, exception);
+                        }
+                    }
+                    else {
+                        riskGraphRow.put(jsonCapitalise(name), value);
+                    }
+                } /* End of for column loop */
+              
+                switch (genders) {
+                    case 1: /* Males */
+                        riskGraphMales.put(riskGraphRow);
+                        break;
+                    case 2: /* Females */
+                        riskGraphFemales.put(riskGraphRow);
+                        break;
+                    case 3: /* Both */
+                        riskGraphBoth.put(riskGraphRow);
+                        break;
+                    default:
+                        throw new RIFServiceException(
+                            RIFServiceError.DATABASE_DATATYPE_ERROR,
+                            "Invalid value for genders: " + genders);
+                }
+            } while (resultSet1.next()); /* riskGraphRow */
+            
+            connection.commit();
+        } catch(RIFServiceException rifServiceException) {
+            throw rifServiceException;
+        } catch(SQLException sqlException) {
+            //Record original exception, throw sanitised, human-readable version
+            throw new RIFSQLException(this.getClass(), sqlException, statement1, sqlQueryText);
+        }  finally {
+            //Cleanup database resources
+            SQLQueryUtility.close(statement1);
+            SQLQueryUtility.close(resultSet1);
+        }
+        
+        riskGraphJson.put("females", riskGraphFemales);
+        riskGraphJson.put("males", riskGraphMales);
+        riskGraphJson.put("both", riskGraphBoth);
+        
+		result=riskGraphJson.toString();            
+		return result;
+	}		
+    
+	/** 
 	 * Get the rif40_homogeneity data for a study
 	 * <p>	 
 	 * Returned JSON:

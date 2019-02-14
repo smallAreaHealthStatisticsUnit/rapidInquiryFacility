@@ -1198,7 +1198,87 @@ public class CommonUserService implements UserService {
 
 			return result;	
 		}	
+
+	@Override
+	public String getRiskGraph(
+			final User _user,
+			final String studyID)
+					throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user)) {
+				return null;
+			}
+			String result="{}";
+			
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getRiskGraph",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getRiskGraph",
+					"studyID",
+					studyID);
 				
+				//Check for security violations
+				validateUser(user);
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getRiskGraph", 
+					"studyID", 
+					studyID);		
+				
+				//Check for security violations
+				validateUser(user);
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
+				//Audit attempt to do operation				
+				String auditTrailMessage
+					= SERVICE_MESSAGES.getMessage("logging.getRiskGraph",
+						user.getUserID(),
+						user.getIPAddress(),
+						studyID);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				ResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getRiskGraph(
+						connection,
+						studyID);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getRiskGraph",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}	
+		            
 	@Override
 	public String getSelectState(
 			final User _user,
