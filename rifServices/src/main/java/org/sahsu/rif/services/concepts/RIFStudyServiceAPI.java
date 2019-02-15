@@ -91,7 +91,9 @@ public interface RIFStudyServiceAPI {
 					final User user,
 					final Geography geography,
 					final GeoLevelSelect geoLevelSelect)
-		throws RIFServiceException;	
-	
+		throws RIFServiceException;
+
+	void validateUser(User user) throws RIFServiceException;
+
 	void initialise(final ServiceResources startupParameter);
 }

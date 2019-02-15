@@ -1,6 +1,6 @@
 package org.sahsu.rif.services.test.services;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 import org.sahsu.rif.generic.concepts.User;
@@ -22,7 +22,7 @@ public final class GetAvailableCalculationMethods extends CommonRIFServiceTestCa
 	public void getAvailableCalculationMethods_COMMON1() throws RIFServiceException {
 
 		User validUser = cloneValidUser();
-		ArrayList<CalculationMethod> calculationMethods
+		List<CalculationMethod> calculationMethods
 				= rifStudySubmissionService.getAvailableCalculationMethods(validUser);
 		assertEquals(3, calculationMethods.size());
 	}

@@ -55,7 +55,7 @@ import org.sahsu.rif.services.system.RIFServiceMessages;
  *</li>
  *<li>
  * Obtain a connection object from the
- * {@link rifServices.dataStorageLayer.common.SQLManager}.
+ * {@link SQLManager}.
  *</li>
  *<li>
  *Delegate to a manager class, using a method with the same name.  Pass the connection object as part of the call. 
@@ -73,7 +73,7 @@ import org.sahsu.rif.services.system.RIFServiceMessages;
  *log any attempts to do so.  If the method throws a {@link RIFServiceSecurityException},
  *then this class will log it and continue to pass it to client application.
  */
-public abstract class StudyRetrievalService extends CommonUserService
+public abstract class StudyRetrievalService extends StudyService
 		implements RIFStudyResultRetrievalAPI {
 
 	/**
@@ -158,7 +158,7 @@ public abstract class StudyRetrievalService extends CommonUserService
 				connection);
 		}
 	}
-	
+
 	public void updateStudyStatus(
 		final User _user, 
 		final String studyID, 
@@ -230,7 +230,8 @@ public abstract class StudyRetrievalService extends CommonUserService
 				connection);
 		}
 	}
-	
+
+	@Override
 	public RIFResultTable getCurrentStatusAllStudies(final User _user)
 		throws RIFServiceException {
 		
@@ -295,9 +296,8 @@ public abstract class StudyRetrievalService extends CommonUserService
 		}
 		return result;
 	}
-	
-				
-	
+
+	@Override
 	public RIFResultTable getSmoothedResults(
 		final User _user,
 		final String studyID,
@@ -391,6 +391,7 @@ public abstract class StudyRetrievalService extends CommonUserService
 		
 	}
 
+	@Override
 	public RIFResultTable getPopulationPyramidData(
 		final User _user,
 		final String studyID,
@@ -479,7 +480,8 @@ public abstract class StudyRetrievalService extends CommonUserService
 		
 		
 	}
-			
+
+	@Override
 	public ArrayList<Integer> getYearsForStudy(
 		final User _user, 
 		final String studyID)
@@ -555,7 +557,8 @@ public abstract class StudyRetrievalService extends CommonUserService
 	
 		return results;		
 	}
-		
+
+	@Override
 	public ArrayList<Sex> getSexesForStudy(
 		final User _user,
 		final String studyID)
@@ -630,7 +633,8 @@ public abstract class StudyRetrievalService extends CommonUserService
 		
 		return results;		
 	}
-		
+
+	@Override
 	public String[] getGeographyAndLevelForStudy(
 		final User _user,
 		final String studyID)
@@ -703,7 +707,8 @@ public abstract class StudyRetrievalService extends CommonUserService
 		
 		return results;		
 }
-	
+
+	@Override
 	public String[] getDetailsForProcessedStudy(
 			final User _user,
 			final String studyID)
@@ -776,7 +781,8 @@ public abstract class StudyRetrievalService extends CommonUserService
 			
 			return results;		
 	}
-	
+
+	@Override
 	public String[] getHealthCodesForProcessedStudy(
 			final User _user,
 			final String studyID)
@@ -850,6 +856,7 @@ public abstract class StudyRetrievalService extends CommonUserService
 			return results;		
 	}
 
+	@Override
 	public RIFResultTable getStudyTableForProcessedStudy(
 			final User _user,
 			final String studyID,

@@ -332,7 +332,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
-			ArrayList<CalculationMethod> calculationMethods
+			List<CalculationMethod> calculationMethods
 					= studySubmissionService.getAvailableCalculationMethods(user);
 
 			//Convert results to support JSON
@@ -394,7 +394,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
-			ArrayList<Project> projects
+			List<Project> projects
 					= studySubmissionService.getProjects(user);
 
 			//Convert results to support JSON
@@ -446,7 +446,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
-			ArrayList<Project> projects
+			List<Project> projects
 					= studySubmissionService.getProjects(user);
 
 			//Convert results to support JSON
@@ -534,7 +534,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
 
-			ArrayList<HealthTheme> healthThemes
+			List<HealthTheme> healthThemes
 					= studySubmissionService.getHealthThemes(
 					user,
 					geography);
@@ -587,7 +587,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
-			ArrayList<Sex> sexes
+			List<Sex> sexes
 					= studySubmissionService.getSexes(
 					user);
 
@@ -651,7 +651,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance(geoLevelToMapName);
 
 			RIFStudySubmissionAPI studySubmissionService = getRIFStudySubmissionService();
-			ArrayList<AbstractCovariate> covariates = studySubmissionService.getCovariates(
+			List<AbstractCovariate> covariates = studySubmissionService.getCovariates(
 					user, geography, geoLevelToMap);
 
 			//Convert results to support JSON

@@ -611,7 +611,7 @@ public class WebService {
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
-			ArrayList<NumeratorDenominatorPair> ndPairs
+			List<NumeratorDenominatorPair> ndPairs
 				= studySubmissionService.getNumeratorDenominatorPairs(
 					user,
 					geography,
@@ -668,7 +668,7 @@ public class WebService {
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
-			ArrayList<NumeratorDenominatorPair> ndPairs
+			List<NumeratorDenominatorPair> ndPairs
 				= studySubmissionService.getNumeratorDenominatorPairs(
 					user,
 					geography,
