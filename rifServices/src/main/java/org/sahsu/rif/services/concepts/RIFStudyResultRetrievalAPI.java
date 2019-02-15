@@ -18,8 +18,8 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	String getMapBackground(
 			final User user,
 			final Geography geography)
-					throws RIFServiceException;		
-					
+					throws RIFServiceException;
+
 	String getSelectState(
 			final User user,
 			final String studyID)
@@ -30,7 +30,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final String studyID)
 					throws RIFServiceException;		
 					
-	String setPrintState(
+	void setPrintState(
 			final User user,
 			final String studyID,
 			final String printStateText)
@@ -112,5 +112,4 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final String studyID)
 					throws RIFServiceException;
 
-	RIFServiceInformation getRIFServiceInformation(User user) throws RIFServiceException;
 }

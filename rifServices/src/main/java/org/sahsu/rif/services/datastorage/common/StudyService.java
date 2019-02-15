@@ -23,9 +23,9 @@ public class StudyService implements RIFStudyServiceAPI {
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	protected static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
-	protected String serviceName;
-	protected String serviceDescription;
-	protected String serviceContactEmail;
+	private String serviceName;
+	private String serviceDescription;
+	private String serviceContactEmail;
 	ServiceResources rifServiceResources;
 
 	@Override
@@ -35,8 +35,7 @@ public class StudyService implements RIFStudyServiceAPI {
 	}
 
 	@Override
-	public boolean isInformationGovernancePolicyActive(
-			final User _user)
+	public boolean isInformationGovernancePolicyActive(final User _user)
 		throws RIFServiceException {
 
 		User user = User.createCopy(_user);
@@ -596,6 +595,7 @@ public class StudyService implements RIFStudyServiceAPI {
 		new ValidateUser(user, rifServiceResources.getSqlConnectionManager()).validate();
 	}
 
+	@Override
 	public void logException(
 			final User user,
 			final String methodName,
@@ -605,6 +605,7 @@ public class StudyService implements RIFStudyServiceAPI {
 		new ExceptionLog(user, methodName, rifServiceException, rifServiceResources, rifLogger).log();
 	}
 
+	@Override
 	public void setServiceName(final String serviceName) {
 		this.serviceName = serviceName;
 	}
@@ -617,6 +618,7 @@ public class StudyService implements RIFStudyServiceAPI {
 		this.serviceContactEmail = serviceContactEmail;
 	}
 
+	@Override
 	public RIFResultTable getTileMakerCentroids(
 			final User _user,
 			final Geography _geography,
@@ -702,7 +704,8 @@ public class StudyService implements RIFStudyServiceAPI {
 			return result;
 		}
 
-	public String getMapBackground(
+		@Override
+		public String getMapBackground(
 			final User _user,
 			final Geography _geography)
 					throws RIFServiceException{
@@ -777,7 +780,8 @@ public class StudyService implements RIFStudyServiceAPI {
 			return result;
 		}
 
-	public String getTileMakerTiles(
+		@Override
+		public String getTileMakerTiles(
 				final User _user,
 				final Geography _geography,
 				final GeoLevelSelect _geoLevelSelect,
@@ -895,6 +899,7 @@ public class StudyService implements RIFStudyServiceAPI {
 			return result;
 		}
 
+	@Override
 	public String getTileMakerAttributes(
 				final User _user,
 				final Geography _geography,
@@ -980,7 +985,8 @@ public class StudyService implements RIFStudyServiceAPI {
 			return result;
 		}
 
-	public String getSelectState(
+		@Override
+		public String getSelectState(
 			final User _user,
 			final String studyID)
 					throws RIFServiceException {
@@ -1059,7 +1065,8 @@ public class StudyService implements RIFStudyServiceAPI {
 			return result;
 		}
 
-	public String getPrintState(
+		@Override
+		public String getPrintState(
 				final User _user,
 				final String studyID)
 						throws RIFServiceException {
@@ -1138,7 +1145,8 @@ public class StudyService implements RIFStudyServiceAPI {
 				return result;
 			}
 
-	public String setPrintState(
+			@Override
+			public void setPrintState(
 					final User _user,
 					final String studyID,
 					final String printStateText)
@@ -1149,9 +1157,8 @@ public class StudyService implements RIFStudyServiceAPI {
 					SQLManager sqlConnectionManager
 						= rifServiceResources.getSqlConnectionManager();
 					if (sqlConnectionManager.isUserBlocked(user)) {
-						return null;
+						return;
 					}
-					String result="{}";
 
 					Connection connection = null;
 					try {
@@ -1196,8 +1203,7 @@ public class StudyService implements RIFStudyServiceAPI {
 						//Delegate operation to a specialised manager class
 						ResultsQueryManager sqlResultsQueryManager
 							= rifServiceResources.getSqlResultsQueryManager();
-						result
-							= sqlResultsQueryManager.setPrintState(
+						sqlResultsQueryManager.setPrintState(
 								connection,
 								studyID,
 								printStateText);
@@ -1215,11 +1221,10 @@ public class StudyService implements RIFStudyServiceAPI {
 							user,
 							connection);
 					}
-
-					return result;
 				}
 
-	public String getPostalCodeCapabilities(
+				@Override
+				public String getPostalCodeCapabilities(
 						final User _user,
 						final Geography _geography)
 						throws RIFServiceException {
@@ -1294,7 +1299,8 @@ public class StudyService implements RIFStudyServiceAPI {
 						return result;
 					}
 
-	public String getPostalCodes(
+					@Override
+					public String getPostalCodes(
 							final User _user,
 							final Geography _geography,
 							final String postcode,

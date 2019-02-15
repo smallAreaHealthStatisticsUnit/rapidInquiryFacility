@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.datastorage.common.ServiceResources;
@@ -14,74 +13,8 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 
-	String getMapBackground(
-			User _user,
-			Geography _geography)
-					throws RIFServiceException;
-
-	String getSelectState(
-			User _user,
-			String studyID)
-					throws RIFServiceException;
-
-	String getPrintState(
-			User _user,
-			String studyID)
-					throws RIFServiceException;
-
-	String setPrintState(
-			User _user,
-			String studyID,
-			String printStateText)
-					throws RIFServiceException;
-
-	String getPostalCodes(
-			User _user,
-			Geography _geography,
-			String postcode,
-			Locale locale)
-					throws RIFServiceException;
-
-	String getPostalCodeCapabilities(
-			User _user,
-			Geography _geography)
-								throws RIFServiceException;
-
-	RIFResultTable getTileMakerCentroids(
-			User _user,
-			Geography _geography,
-			GeoLevelSelect _geoLevelSelect)
-								throws RIFServiceException;
-
-	String getTileMakerTiles(
-			User _user,
-			Geography _geography,
-			GeoLevelSelect _geoLevelSelect,
-			Integer zoomlevel,
-			Integer x,
-			Integer y)
-								throws RIFServiceException;
-
-	String getTileMakerAttributes(
-			User _user,
-			Geography _geography,
-			GeoLevelSelect _geoLevelSelect)
-								throws RIFServiceException;
-
 	void initialise(ServiceResources startupParameter);
 
-	void setServiceName(String serviceName);
-
-	void logException(
-			User user,
-			String methodName,
-			RIFServiceException rifServiceException)
-										throws RIFServiceException;
-
-	abstract RIFServiceInformation getRIFServiceInformation(
-			User _user)
-											throws RIFServiceException;
-	
 	/**
 	 * Gets the available calculation methods.
 	 *
@@ -128,7 +61,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 			GeoLevelSelect _geoLevelSelect)
 			throws RIFServiceException;
 
-	abstract List<HealthTheme> getHealthThemes(
+	List<HealthTheme> getHealthThemes(
 			User _user,
 			Geography _geography)
 					throws RIFServiceException;

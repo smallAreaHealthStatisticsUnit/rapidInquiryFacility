@@ -1,7 +1,9 @@
 package org.sahsu.rif.services.concepts;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
+import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.datastorage.common.ServiceResources;
@@ -16,6 +18,68 @@ import org.sahsu.rif.services.datastorage.common.ServiceResources;
  */
 
 public interface RIFStudyServiceAPI {
+
+	void logException(
+			User user,
+			String methodName,
+			RIFServiceException rifServiceException)
+										throws RIFServiceException;
+
+	String getTileMakerAttributes(
+			User _user,
+			Geography _geography,
+			GeoLevelSelect _geoLevelSelect)
+								throws RIFServiceException;
+
+	void setServiceName(String serviceName);
+
+	String getTileMakerTiles(
+			User _user,
+			Geography _geography,
+			GeoLevelSelect _geoLevelSelect,
+			Integer zoomlevel,
+			Integer x,
+			Integer y)
+								throws RIFServiceException;
+
+	RIFResultTable getTileMakerCentroids(
+			User _user,
+			Geography _geography,
+			GeoLevelSelect _geoLevelSelect)
+								throws RIFServiceException;
+
+	String getPostalCodeCapabilities(
+			User _user,
+			Geography _geography)
+								throws RIFServiceException;
+
+	String getPostalCodes(
+			User _user,
+			Geography _geography,
+			String postcode,
+			Locale locale)
+					throws RIFServiceException;
+
+	void setPrintState(
+			User _user,
+			String studyID,
+			String printStateText)
+					throws RIFServiceException;
+
+	String getPrintState(
+			User _user,
+			String studyID)
+					throws RIFServiceException;
+
+	String getSelectState(
+			User _user,
+			String studyID)
+					throws RIFServiceException;
+
+	String getMapBackground(
+			User _user,
+			Geography _geography)
+					throws RIFServiceException;
 
 	boolean isInformationGovernancePolicyActive(
 					final User user)
@@ -96,4 +160,6 @@ public interface RIFStudyServiceAPI {
 	void validateUser(User user) throws RIFServiceException;
 
 	void initialise(final ServiceResources startupParameter);
+
+	RIFServiceInformation getRIFServiceInformation(User user) throws RIFServiceException;
 }
