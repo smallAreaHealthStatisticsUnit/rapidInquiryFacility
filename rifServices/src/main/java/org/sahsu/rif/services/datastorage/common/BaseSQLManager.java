@@ -294,7 +294,7 @@ public class BaseSQLManager implements SQLManager {
 	 */
 	@Override
 	public String getColumnComment(Connection connection, String schemaName, String tableName,
-			String columnName) throws Exception {
+			String columnName) throws SQLException {
 		
 		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();
 		ResultSet resultSet;
@@ -316,7 +316,7 @@ public class BaseSQLManager implements SQLManager {
 			columnCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'view', ?, 'column', ?)");
 		}
 		else {
-			throw new Exception("getColumnComment(): invalid databaseType: " +
+			throw new SQLException("getColumnComment(): invalid databaseType: " +
 				databaseType);
 		}
 		PreparedStatement statement = createPreparedStatement(connection, columnCommentQueryFormatter);
@@ -337,7 +337,7 @@ public class BaseSQLManager implements SQLManager {
 			if (resultSet.next()) {
 				columnComment=resultSet.getString(1);
 				if (resultSet.next()) {
-					throw new Exception("getColumnComment() database: " + databaseType +
+					throw new SQLException("getColumnComment() database: " + databaseType +
 						"; expected 1 row, got >1");
 				}
 			}
@@ -346,7 +346,7 @@ public class BaseSQLManager implements SQLManager {
 					"; expected 1 row, got none");
 			}
 		}
-		catch (Exception exception) {
+		catch (SQLException exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
 				lineSeparator + columnCommentQueryFormatter.generateQuery(),
 				exception);

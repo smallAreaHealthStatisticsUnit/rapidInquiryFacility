@@ -244,43 +244,31 @@ public class StudySubmissionService extends StudyService implements RIFStudySubm
 	
 
 	@Override
-	public List<AbstractCovariate> getCovariates(
-			final User _user,
-			final Geography _geography,
-			final GeoLevelToMap _geoLevelToMap)
-		throws RIFServiceException {
+	public List<AbstractCovariate> getCovariates(final User _user, final Geography _geography,
+			final GeoLevelToMap _geoLevelToMap) throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
+
 		Geography geography = Geography.createCopy(_geography);
-		GeoLevelToMap geoLevelToMap
-			= GeoLevelToMap.createCopy(_geoLevelToMap);
+		GeoLevelToMap geoLevelToMap = GeoLevelToMap.createCopy(_geoLevelToMap);
 	
-		ArrayList<AbstractCovariate> results = new ArrayList<>();
+		List<AbstractCovariate> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 			
 			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getCovariates",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getCovariates",
-				"geography",
-				geography);
+			FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter("getCovariates", "user", user);
+			fieldValidationUtility.checkNullMethodParameter("getCovariates", "geography",
+			                                                geography);
 		
-			fieldValidationUtility.checkNullMethodParameter(
-				"getCovariates",
-				"geoLevelToMap",
-				geoLevelToMap);
+			fieldValidationUtility.checkNullMethodParameter("getCovariates", "geoLevelToMap",
+			                                                geoLevelToMap);
 						
 			//Check for security violations
 			validateUser(user);
@@ -288,42 +276,28 @@ public class StudySubmissionService extends StudyService implements RIFStudySubm
 			geoLevelToMap.checkSecurityViolations();
 
 			//Audit attempt to do operation				
-			String auditTrailMessage
-				= SERVICE_MESSAGES.getMessage("logging.getCovariates",
-					user.getUserID(),
-					user.getIPAddress(),
-					geography.getDisplayName(),
-					geoLevelToMap.getDisplayName());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
+			String auditTrailMessage = SERVICE_MESSAGES.getMessage("logging.getCovariates",
+			                                                       user.getUserID(),
+			                                                       user.getIPAddress(),
+			                                                       geography.getDisplayName(),
+			                                                       geoLevelToMap.getDisplayName());
+			rifLogger.info(getClass(), auditTrailMessage);
 
-			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledReadConnection(user);
+			// Assign pooled connection
+			connection = sqlConnectionManager.assignPooledReadConnection(user);
 			
-			//Delegate operation to a specialised manager class		
-			CovariateManager sqlCovariateManager
-				= rifServiceResources.getSqlCovariateManager();
-			results 
-				= sqlCovariateManager.getCovariates(
-					connection, 
-					geography, 
-					geoLevelToMap);
+			// Delegate operation to a specialised manager class
+			CovariateManager sqlCovariateManager = rifServiceResources.getSqlCovariateManager();
+			results = sqlCovariateManager.getCovariates(connection, geography, geoLevelToMap);
 
 		}
 		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getCovariates",
-				rifServiceException);	
+			// Audit failure of operation
+			logException(user, "getCovariates", rifServiceException);
 		}
 		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
+			// Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(user, connection);
 		}
 				
 		return results;		

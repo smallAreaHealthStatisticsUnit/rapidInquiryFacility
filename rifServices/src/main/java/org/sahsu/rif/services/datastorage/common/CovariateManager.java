@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
@@ -52,21 +53,16 @@ public final class CovariateManager extends BaseSQLManager {
 	 * @return the covariates
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<AbstractCovariate> getCovariates(final Connection connection,
+	public List<AbstractCovariate> getCovariates(final Connection connection,
 			final Geography geography, final GeoLevelToMap geoLevelToMap)
 			throws RIFServiceException {
 		
 		//Validate parameters
-		validateCommonMethodParameters(
-			connection,
-			geography,
-			null,
-			geoLevelToMap);
-
+		validateCommonMethodParameters(connection, geography, null, geoLevelToMap);
 		
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
-		ArrayList<AbstractCovariate> results = new ArrayList<>();
+		List<AbstractCovariate> results = new ArrayList<>();
 		try {
 			//Create SQL query		
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
@@ -87,7 +83,7 @@ public final class CovariateManager extends BaseSQLManager {
 				geography.getName(),
 				geoLevelToMap.getName());
 		
-			//Parameterise and execute query
+			// Parameterise and execute query
 				
 			statement = createPreparedStatement(connection, queryFormatter);
 			statement.setString(1, geography.getName());
@@ -101,8 +97,13 @@ public final class CovariateManager extends BaseSQLManager {
 				double minimumValue = dbResultSet.getDouble(2);
 				double maximumValue = dbResultSet.getDouble(3);
 				adjustableCovariate.setMinimumValue(String.valueOf(minimumValue));
-				adjustableCovariate.setMaximumValue(String.valueOf(maximumValue));				
-
+				adjustableCovariate.setMaximumValue(String.valueOf(maximumValue));
+				adjustableCovariate.setType(AbstractCovariate.Type.fromNumber(
+						dbResultSet.getDouble(4)));
+				adjustableCovariate.setDescription(
+						sqlRIFContextManager.getColumnComment(connection,
+						                                      queryFormatter.getDatabaseSchemaName(),
+						                                      covariatesTableName, "covariate_name"));
 				results.add(adjustableCovariate);
 			}
 			
