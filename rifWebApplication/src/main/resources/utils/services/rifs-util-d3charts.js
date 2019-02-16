@@ -55,12 +55,12 @@ angular.module("RIF")
                         // Check parameters are defined
                         if (!data || !(gendersArray && gendersArray.length > 0) || !riskFactorFieldName || 
                             !riskFactorFieldDesc) {
-                            AlertService.consoleError("[rifs-util-d3charts.js] null data in d3HomogeneityChart: "  + 
+                            AlertService.consoleError("[rifs-util-d3charts.js] null data in d3riskFactorChart: "  + 
                                 "; gendersArray: " + JSON.stringify(gendersArray) + 
                                 "; riskFactor: " + riskFactorFieldName + 
                                 "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
                                 "; data: " + JSON.stringify(data));
-                            AlertService.showError("Null data passed to d3HomogeneityChart");
+                            AlertService.showError("Null data passed to d3riskFactorChart");
                             return;
                         }
                    
@@ -163,7 +163,7 @@ angular.module("RIF")
                             svg.append("g").selectAll("line")
                                .data(data[gendersName]).enter()
                                .append("line")
-                               .attr("class", "homogeneityChart-error-line")
+                               .attr("class", "riskFactorChart-error-line")
                                .attr("x1", function(d) {
                                     return xScale(d[riskFactorFieldName]);
                                })
@@ -182,7 +182,7 @@ angular.module("RIF")
                             svg.append("g").selectAll("line")
                                .data(data[gendersName]).enter()
                                .append("line")
-                               .attr("class", "homogeneityChart-error-cap")
+                               .attr("class", "riskFactorChart-error-cap")
                                .attr("x1", function(d) {
                                     return xScale(d[riskFactorFieldName]) - 4;
                                })
@@ -201,7 +201,7 @@ angular.module("RIF")
                             svg.append("g").selectAll("line")
                                .data(data[gendersName]).enter()
                                .append("line")
-                               .attr("class", "homogeneityChart-error-cap")
+                               .attr("class", "riskFactorChart-error-cap")
                                .attr("x1", function(d) {
                                     return xScale(d[riskFactorFieldName]) - 4;
                                })
@@ -235,7 +235,7 @@ angular.module("RIF")
                                     var transform0=this.getScreenCTM().translate(0, 0); 
                                                                    /* Actual pixel position of SVG graph div origin */
 
-                                    AlertService.consoleDebug("[rifs-util-d3charts.js] homogeneityChart mouseover: " + 
+                                    AlertService.consoleDebug("[rifs-util-d3charts.js] riskFactorChart mouseover: " + 
                                         JSON.stringify(d, 0, 1));
                                     return tooltip.html("Band " + d.band_id + " " +
                                                 gender2text(d.genders) + "</br>" + 
@@ -297,25 +297,25 @@ angular.module("RIF")
                          * 2. Would average exposure value be better? YES
                          * 3. Do we want a choice: max/min/average/median/band_id/distance from nearest source
                          */
-                        var svg=d3.select("#homogeneityChart").select("svg");
+                        var svg=d3.select("#riskFactorChart").select("svg");
                          
-/*                              var tooltip = d3.select("#homogeneityTooltip");
+/*                              var tooltip = d3.select("#riskRactorTooltip");
                                 if (tooltip._group && tooltip._group[0] && tooltip._group[0][0] != null) { 
                                 }
                                 else {                                      
-                                    tooltip = d3.select("#homogeneityTooltip").append("div")
-                                        .attr("id", "homogeneityTooltip")
-                                        .attr("class", "homogeneityChart-tooltip")
+                                    tooltip = d3.select("#riskRactorTooltip").append("div")
+                                        .attr("id", "riskRactorTooltip")
+                                        .attr("class", "riskFactorChart-tooltip")
                                         .style("visibility", "hidden");
                                 } */
                                 
-                        var tooltip = d3.select("#homogeneityTooltip").append("div")
-                                .attr("class", "homogeneityChart-tooltip")
+                        var tooltip = d3.select("#riskRactorTooltip").append("div")
+                                .attr("class", "riskFactorChart-tooltip")
                                 .style("visibility", "hidden");                       
                         
                         var domainExtent=getDomain(data, gendersArray, riskFactorFieldName);
                         var marginHeightWidth = getMargin();
-                        AlertService.consoleDebug("[rifd-util-info.js] homogeneityChart domainExtent: " + 
+                        AlertService.consoleDebug("[rifd-util-info.js] riskFactorChart domainExtent: " + 
                             JSON.stringify(domainExtent, null, 1) +
                             "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
                             
@@ -338,9 +338,9 @@ angular.module("RIF")
                                  });
 
                         if (svg) {
-                            d3.select("#homogeneityChart").select("svg").remove();
+                            d3.select("#riskFactorChart").select("svg").remove();
                         }
-                        svg = d3.select("#homogeneityChart").append("svg")
+                        svg = d3.select("#riskFactorChart").append("svg")
                             .attr("width", 
                                 marginHeightWidth.width + marginHeightWidth.margin.left + marginHeightWidth.margin.right)
                             .attr("height", 
@@ -352,7 +352,7 @@ angular.module("RIF")
                         svg.append("g").append("rect")
                             .attr("width", marginHeightWidth.width)
                             .attr("height", marginHeightWidth.height)
-                            .attr("class", "homogeneityChart-bg");
+                            .attr("class", "riskFactorChart-bg");
 
                         // Add Axis and labels
                         svg.append("g").attr("class", "axis axis--x")

@@ -75,28 +75,28 @@ HTML partial for study info
                     <div ng-show="showHomogeneityTests">
                         <p ng-bind-html="homogeneityTests"></p>
                     </div>
-                    <div ng-show="showHomogeneityCharts">
-                        <div id="homogeneityChartSelector">
+                    <div ng-show="showRiskFactorCharts">
+                        <div id="riskFactorChartSelector">
                             <div id="riskFactorSelector">
                                 <div>Risk Factor:</div>
-                                <select type="text" ng-model="riskFactor" id="riskFactor" class="homogeneityChartSelect1" ng-options="s for s in riskFactorList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
+                                <select type="text" ng-model="riskFactor" id="riskFactor" class="riskFactorChartSelect1" ng-options="s for s in riskFactorList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
                                 </select>
                             </div>
                             <div id="gender1Selector">
                                 <div>Gender 1:</div>
-                                <select type="text" ng-model="gendersName1" id="gender1" class="homogeneityChartSelect2" ng-options="s for s in gendersList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
+                                <select type="text" ng-model="gendersName1" id="gender1" class="riskFactorChartSelect2" ng-options="s for s in gendersList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
                                 </select>
                             </div>
                             <div ng-show="riskGraphHasBothMalesAndFemales" id="gender2Selector">
                                 <div>Gender 2:</div>
-                                <select type="text" ng-model="gendersName2" id="gender2" class="homogeneityChartSelect2" ng-options="s for s in gendersList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
+                                <select type="text" ng-model="gendersName2" id="gender2" class="riskFactorChartSelect2" ng-options="s for s in gendersList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
                                 </select>
                             </div>
                         </div>
-                        <div id="homogeneityChartTable">
-                            <p ng-bind-html="homogeneityChartHeader"></p>
-                            <div id="homogeneityTooltip"></div>
-                            <div id="homogeneityChart"></div>
+                        <div id="riskFactorCharts">
+                            <p ng-bind-html="riskFactorChartHeader"></p>
+                            <div id="riskRactorTooltip"></div>
+                            <div id="riskFactorChart"></div>
                         </div>
                     </div>
                 </div>                
