@@ -43,6 +43,13 @@ angular.module("RIF")
                         females: '#7f82c9',
                         both: '#660033'
                     };                
+                    /*
+                     * Function:    d3RiskGraph()
+                     * Parameters:  data, gendersArray, riskFactorFieldName, riskFactorFieldDesc
+                     * Description: Create risk graph error bars 
+                     *              https://bl.ocks.org/NGuernse/8dc8b9e96de6bedcb6ad2c5467f5ef9a
+                     * Returns:     Nothing
+                     */
                     function d3RiskGraph(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
                         
                         // Check parameters are defined

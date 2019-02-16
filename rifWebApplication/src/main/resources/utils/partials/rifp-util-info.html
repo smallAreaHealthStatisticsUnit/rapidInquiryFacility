@@ -87,7 +87,7 @@ HTML partial for study info
                                 <select type="text" ng-model="gendersName1" id="gender1" class="homogeneityChartSelect2" ng-options="s for s in gendersList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
                                 </select>
                             </div>
-                            <div id="gender2Selector">
+                            <div ng-show="riskGraphHasBothMalesAndFemales" id="gender2Selector">
                                 <div>Gender 2:</div>
                                 <select type="text" ng-model="gendersName2" id="gender2" class="homogeneityChartSelect2" ng-options="s for s in gendersList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
                                 </select>
