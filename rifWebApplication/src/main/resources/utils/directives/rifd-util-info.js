@@ -56,6 +56,10 @@ angular.module("RIF")
                     link: function (scope, element, attr) {
 
                         var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
+                        
+                        /*
+                         * Change functions
+                         */
                         scope.covariateChange= function (covariateType) {
                             scope.covariateType = covariateType;
                             AlertService.consoleDebug("[rifd-util-info.js] covariateChange(): " + scope.covariateType);
@@ -128,6 +132,9 @@ angular.module("RIF")
                                 scope.riskFactor2FieldName[riskFactor || scope.riskFactor], riskFactor || scope.riskFactor);
 						}
 						
+                        /*
+                         * Initiation function: when the "i" is clicked
+                         */
                         element.on('click', function (event) {
                             scope.mapType = undefined;
                             scope.mapDefs = undefined;
@@ -147,7 +154,6 @@ angular.module("RIF")
                             scope.covariateHtml = {};
                             scope.isRiskAnalysisStudy=false;
                             scope.hasCovariates=false;
-                            scope.hSplit1 = 100;
                             scope.gendersName1="males";
                             scope.gendersName2="females";
 							scope.gendersList = ['males', 'females', 'both'];			
@@ -168,10 +174,6 @@ angular.module("RIF")
                             }
                             if (scope.mapType && scope.studyID && scope.studyID[scope.mapType]) {
                                 scope.mapDefs=scope.studyID[scope.mapType]; 
-                                /* name: "1006 LUNG CANCER RA" ​​​​​
-                                   riskAnalysisDescription: "Risk Analysis (point sources)" ​​​​​
-                                   study_id: "55";
-                                   study_type: "Risk Analysis" */
                             }
                             if (scope.mapDefs && scope.mapDefs.study_type && scope.mapDefs.study_type == "Risk Analysis") {
                                 scope.isRiskAnalysisStudy=true;
@@ -181,6 +183,7 @@ angular.module("RIF")
                                 scope.reportList = ["Summary", "Covariate Loss Report"];
                             }
                         
+                            // Set defaults for summaries, headers
                             scope.headerInfo=((scope.mapDefs && scope.mapDefs.study_id) ? "Study: " + 
                                 scope.mapDefs.study_id : "Unknown study") + 
                                 ' &ndash; ' +
@@ -223,334 +226,289 @@ angular.module("RIF")
                                         (err ? err : "no error specified"));
                                 }
                             }
-                            user.getHealthCodesForProcessedStudy(user.currentUser, thisStudy).then(function (invx) {
-                                var inv = invx.data[0];
+                            
+                            function processDetailsForProcessedStudy(res) {
+                                var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(res.data[0][13]) +
+                                        '<section>Study:</section>' + _getAttr(thisStudy) +
+                                        '<section>Project Description:</section>' + _getAttr(res.data[0][14]) +
+                                        '<section>Submitted By:</section>' + _getAttr(res.data[0][0]) +
+                                        '<section>Date:</section>' + _getAttr(res.data[0][3]) +
+                                        '<section>Study Name:</section>' + _getAttr(res.data[0][1]) +
+                                        '<section>Study Description:</section>' + _getAttr(res.data[0][2] || 
+                                            '<em>' + _getAttr('TODO: not set in DB') + '</em>') +
+                                        '<section>Geography:</section>' + _getAttr(res.data[0][4]) +
+                                        '<section>Study Type:</section>' + _getAttr(res.data[0][5]);
 
-                                user.getDetailsForProcessedStudy(user.currentUser, thisStudy).then(function (res) {
-                                    var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(res.data[0][13]) +
-                                            '<section>Study:</section>' + _getAttr(thisStudy) +
-                                            '<section>Project Description:</section>' + _getAttr(res.data[0][14]) +
-                                            '<section>Submitted By:</section>' + _getAttr(res.data[0][0]) +
-                                            '<section>Date:</section>' + _getAttr(res.data[0][3]) +
-                                            '<section>Study Name:</section>' + _getAttr(res.data[0][1]) +
-                                            '<section>Study Description:</section>' + _getAttr(res.data[0][2] || 
-                                                '<em>' + _getAttr('TODO: not set in DB') + '</em>') +
-                                            '<section>Geography:</section>' + _getAttr(res.data[0][4]) +
-                                            '<section>Study Type:</section>' + _getAttr(res.data[0][5]);
+                                //Study area
+                                project += '<header>Study Area</header>' +
+                                        '<section>Resolution of Results:</section>' + _getAttr(res.data[0][12]);
 
-                                    //Study area
-                                    project += '<header>Study Area</header>' +
-                                            '<section>Resolution of Results:</section>' + _getAttr(res.data[0][12]);
+                                //Comparision area
+                                project += '<header>Comparison Area</header>' +
+                                        '<section>Resolution of Results:</section>' + _getAttr(res.data[0][6]);
 
-                                    //Comparision area
-                                    project += '<header>Comparison Area</header>' +
-                                            '<section>Resolution of Results:</section>' + _getAttr(res.data[0][6]);
+                                //Investigations
+                                project += '<header>Investigations</header>';
+                                project += '<section>Health Theme:</section><em>' + _getAttr('TODO: not returned from DB') + '</em>' + 
+                                        '<section>Numerator Table:</section>' + _getAttr(res.data[0][19]) +
+                                        '<section>Denominator Table:</section>' + _getAttr(res.data[0][7]);
+                              
+                                return project;
+                            }
+                            
+                            function processAgeGroups(res, resAge, inv, project) {   
+                                //Table
+                                var studyTable = '<table width="90%" align="center"><tr>' +
+                                        '<th class="info-table">Title</th>' +
+                                        '<th class="info-table">Identifier</th>' +
+                                        '<th class="info-table">Description</th>' +
+                                        '<th class="info-table">Years</th>' +
+                                        '<th class="info-table">Sex</th>' +
+                                        '<th class="info-table">Age Range</th>' +
+                                        '<th class="info-table">Covariates</th>' +
+                                        '</tr>';  
+                                        
+                                for (var j = 0; j < inv.length; j++) {
+                                    if (j === 0) {
+                                        //match age group limits to fieldname
+                                        var lwr = resAge.data[0].name[res.data[0][11]];
+                                        var upr = resAge.data[0].name[res.data[0][10]];
+                                        
+                                        studyTable += '<tr><td class="info-table">' + res.data[0][17] + 
+                                                '</td><td class="info-table">' +
+                                                inv[j] + '</td>' +
+                                                '<td class="info-table">' + inv[j] + '</td>' +
+                                                '<td class="info-table">' + res.data[0][8] + "-" + res.data[0][9] + '</td>' +
+                                                '<td class="info-table">' + res.data[0][18] + '</td>' +
+                                                '<td class="info-table"> Lower: ' + lwr + ", Upper: " + upr + '</td>' +
+                                                '<td class="info-table">' + function () {
+                                                    if (res.data[0][16]) {
+                                                        scope.hasCovariates=true;
+                                                        return res.data[0][16]; /* Covariates */
+                                                    } else {
+                                                        return "None";
+                                                    }
+                                                }() + "</td>" +
+                                                "</tr>";
+                                    } else {
+                                        studyTable += '<tr><td class="info-table"></td>' + 
+                                                '</td><td class="info-table">' +
+                                                inv[j] + '</td>' +
+                                                '<td class="info-table">' + inv[j] + '</td>' +
+                                                '</tr>';
+                                    }
+                                }
+                                project += studyTable + '</table>';
 
-                                    //Investigations
-                                    project += '<header>Investigations</header>';
-                                    project += '<section>Health Theme:</section><em>' + _getAttr('TODO: not returned from DB') + '</em>' + 
-                                            '<section>Numerator Table:</section>' + _getAttr(res.data[0][19]) +
-                                            '<section>Denominator Table:</section>' + _getAttr(res.data[0][7]);
+                                //Statistics
+                                project += '<header>Statistics</header>';
+                                project += '<section>Calculation Method:</section>' + _getAttr(res.data[0][15]);
 
-                                    //Table
-                                    var studyTable = '<table width="90%" align="center"><tr>' +
-                                            '<th class="info-table">Title</th>' +
-                                            '<th class="info-table">Identifier</th>' +
-                                            '<th class="info-table">Description</th>' +
-                                            '<th class="info-table">Years</th>' +
-                                            '<th class="info-table">Sex</th>' +
-                                            '<th class="info-table">Age Range</th>' +
-                                            '<th class="info-table">Covariates</th>' +
-                                            '</tr>';
+                                scope.summary = $sce.trustAsHtml(project);   
+                            }
+                            
+                            function processHomogeneity(res) {
 
-                                    user.getAgeGroups(user.currentUser, res.data[0][4], res.data[0][19]).then(function (resAge) {
-                                        for (var j = 0; j < inv.length; j++) {
-                                            if (j === 0) {
-                                                //match age group limits to fieldname
-                                                var lwr = resAge.data[0].name[res.data[0][11]];
-                                                var upr = resAge.data[0].name[res.data[0][10]];
-                                                
-                                                studyTable += '<tr><td class="info-table">' + res.data[0][17] + 
-                                                        '</td><td class="info-table">' +
-                                                        inv[j] + '</td>' +
-                                                        '<td class="info-table">' + inv[j] + '</td>' +
-                                                        '<td class="info-table">' + res.data[0][8] + "-" + res.data[0][9] + '</td>' +
-                                                        '<td class="info-table">' + res.data[0][18] + '</td>' +
-                                                        '<td class="info-table"> LWR: ' + lwr + ", UPR: " + upr + '</td>' +
-                                                        '<td class="info-table">' + function () {
-                                                            if (res.data[0][16]) {
-                                                                scope.hasCovariates=true;
-                                                                return res.data[0][16]; /* Covariates */
-                                                            } else {
-                                                                return "None";
-                                                            }
-                                                        }() + "</td>" +
-                                                        "</tr>";
-                                            } else {
-                                                studyTable += '<tr><td class="info-table"></td>' + 
-                                                        '</td><td class="info-table">' +
-                                                        inv[j] + '</td>' +
-                                                        '<td class="info-table">' + inv[j] + '</td>' +
-                                                        '</tr>';
-                                            }
-                                        }
-                                        project += studyTable + '</table>';
-
-                                        //Statistics
-                                        project += '<header>Statistics</header>';
-                                        project += '<section>Calculation Method:</section>' + _getAttr(res.data[0][15]);
-
-                                        scope.summary = $sce.trustAsHtml(project);    
-                                        if (scope.isRiskAnalysisStudy) {  
-                                            user.getHomogeneity(user.currentUser, thisStudy).then(function (res) {
-    /*
-     * Returned JSON: 
-     * "adjusted": {
-	 *      "females": {
-	 * 	    	"linearityP": 0,
-	 * 	    	"linearityChi2": 0,
-	 * 	    	"explt5": 0,
-	 * 	    	"homogeneityDof": 2,
-	 * 	    	"homogeneityP": 1.95058679437527E-4,
-	 * 	    	"homogeneityChi2": 17.084420248951
-	 * 	    },
-	 * 	    "males": {
-	 * 	    	"linearityP": 0,
-	 * 	    	"linearityChi2": 0,
-	 * 	    	"explt5": 0,
-	 * 	    	"homogeneityDof": 2,
-	 * 	    	"homogeneityP": 0.178163986654135,
-	 * 	    	"homogeneityChi2": 3.45010175892807
-	 * 	    },
-	 * 	    "both": {
-	 * 		"linearityP": 0,
-	 * 		"linearityChi2": 0,
-	 * 		"explt5": 0,
-	 * 		"homogeneityDof": 2,
-	 * 		"homogeneityP": 0.00337359835580779,
-	 * 		"homogeneityChi2": 11.3835506858045
-     *      }
-     * },
-     * "unadjusted": {
-     * }
-	 *  */
-                                
-                                                var homogeneityTable = '<table class="info-table"><tr>' +
-                                             /*       '<th colspan="3" class="info-table">Unadjusted</th>' */
-                                                    '<th align="left" class="info-table">Statistic</th>' +
-                                                    '<th colspan="3" class="info-table">Adjusted</th>'+
-                                                    '</tr>' +
-                                                    '<tr>' +
-                                            /*        '<th align="left" class="info-table">Males</th>' +
-                                                    '<th align="left" class="info-table">Females</th>' +
-                                                    '<th align="left" class="info-table">Both</th>' + */
-                                                    '<th align="left" class="info-table"></th>' +
-                                                    '<th align="left" class="info-table">Males</th>' +
-                                                    '<th align="left" class="info-table">Females</th>' +
-                                                    '<th align="left" class="info-table">Both</th>' +
-                                                    '</tr>';
-                                                var homogeneityList = ["linearityP", "linearityChi2", "explt5", "homogeneityDof", 
-                                                "homogeneityP", "homogeneityChi2"];
-                                                var homogeneityDescriptions = {
-                                                    "linearityP": "Linearity p-value",
-                                                    "linearityChi2": "Linearity Chi&sup2; statistic",
-                                                    "explt5": "#bands with expected &lt;5",
-                                                    "homogeneityDof": "Homogeneity Degree of Freedom",
-                                                    "homogeneityP": "Homogeneity p-value",
-                                                    "homogeneityChi2": "Homogeneity Chi&sup2; statistic"
-                                                }
-                                                var hasHomogeneityTable=false; 
-                                                for (var i=0; i<homogeneityList.length; i++) {
-                                                    var homogeneityAttr=homogeneityList[i];
-                                                    homogeneityTable+='<tr>';
-                                                    /*
-                                                    for (var j=0; j<scope.gendersList.length; j++) {
-                                                        var genderAttr=scope.gendersList[j];
-                                                        if (res.data.unadjusted && res.data.unadjusted[genderAttr] && 
-                                                            res.data.unadjusted[genderAttr][homogeneityAttr]) {
-                                                            homogeneityTable+='<td class="info-table">' + 
-                                                                roundTo3DecimalPlaces(res.data.unadjusted[genderAttr][homogeneityAttr]) +
-                                                                '</td>';
-                                                            hasHomogeneityTable=true;
-                                                        }
-                                                        else {
-                                                            homogeneityTable+='<td class="info-table">0</td>';
-                                                        }
-                                                    } */
-                                                    homogeneityTable+='<td  class="info-table" align="left">' + 
-                                                        _getAttr(homogeneityDescriptions[homogeneityAttr] || "No description") + 
-                                                        '</td>';
-                                                    for (var j=0; j<scope.gendersList.length; j++) {
-                                                        var genderAttr=scope.gendersList[j];
-                                                        if (res.data.adjusted && res.data.adjusted[genderAttr] && 
-                                                            res.data.adjusted[genderAttr][homogeneityAttr]) {
-                                                            homogeneityTable+='<td class="info-table">' + 
-                                                                roundTo3DecimalPlaces(res.data.adjusted[genderAttr][homogeneityAttr]) +
-                                                                '</td>';
-                                                            hasHomogeneityTable=true;
-                                                        }
-                                                        else {
-                                                            homogeneityTable+='<td class="info-table">0</td>';
-                                                        }
-                                                    }
-                                                    homogeneityTable+='</tr>';
-                                                } 
-                                                homogeneityTable+='</table>';
-                                                if (hasHomogeneityTable) {
-                                                   homogeneityTestsHtml+= homogeneityTable;
-                                                }
-                                                else {
-                                                    AlertService.consoleDebug("[rifd-util-info.js] no Homogeneity Table: " + 
-                                                        JSON.stringify(res.data, null, 2));
-                                                }
-				
-                                                user.getRiskGraph(user.currentUser, thisStudy).then(function (res) {
-                                                    scope.riskGraphdata=res.data;
-                                                    
-                                                    var fieldList=[];
-                                                    for (var key in scope.riskFactor2FieldName) {
-                                                        fieldList.push(scope.riskFactor2FieldName[key]);
-                                                    }
-                                                    
-                                                    if (res.data.males && res.data.males.length > 0 &&
-                                                        res.data.females && res.data.females.length > 0) {
-                                                        scope.riskGraphHasBothMalesAndFemales=true;
-                                                        scope.riskGraphHasFemales=true;
-                                                        scope.riskGraphHasMales=true;
-                                                        scope.gendersName1="males";
-                                                        scope.gendersName2="females";
-                                                        scope.gendersList = ['males', 'females', 'both'];			
-                                                        scope.gendersArray=['males', 'females'];	
-                                                    }
-                                                    else if (res.data.males && res.data.males.length > 0) {
-                                                        scope.riskGraphHasBothMalesAndFemales=false;
-                                                        scope.riskGraphHasMales=true;
-                                                        scope.riskGraphHasFemales=false;
-                                                        scope.gendersName1="males";
-                                                        scope.gendersName2=undefined;
-                                                        scope.gendersList = ['males'];			
-                                                        scope.gendersArray=['males']
-                                                    }
-                                                    else if (res.data.females && res.data.females.length > 0) {
-                                                        scope.riskGraphHasBothMalesAndFemales=false;
-                                                        scope.riskGraphHasMales=false;
-                                                        scope.gendersName1="females";
-                                                        scope.gendersName2=undefined;
-                                                        scope.gendersList = ['females'];			
-                                                        scope.gendersArray=['females']
-                                                        scope.riskGraphHasFemales=true;
-                                                    }
-                                                   
-                                                    var fieldList=[];
-                                                    var newFieldList={};
-                                                    for (var key in scope.riskFactor2FieldName) {
-                                                        fieldList.push(scope.riskFactor2FieldName[key]);
-                                                    }
-                                                    for (var j=0; j<fieldList.length; j++) {
-                                                        for (var k=0; k<scope.gendersList.length; k++) {
-                                                            var gender=scope.gendersList[k];
-                                                            var bands=res.data[gender];         
-                                                            var field=fieldList[j];                      
-                                                            for (var l=0; l<bands.length; l++) {
-                                                                if (res.data[gender] &&
-                                                                    res.data[gender][l] &&
-                                                                    res.data[gender][l][field]) {
-                                                                    if (res.data[gender][l][field] != "0.0" &&
-                                                                        !isNaN(res.data[gender][l][field]) &&
-                                                                        parseFloat(res.data[gender][l][field]) > 0.0) {
-                                                                        if (newFieldList[field]) {
-                                                                            newFieldList[field]++;
-                                                                        }
-                                                                        else {
-                                                                            newFieldList[field]=1;
-                                                                        } 
-/*                                                                        
-                                                                        AlertService.consoleDebug("[rifd-util-info.js] res.data[" + 
-                                                                            gender + "][" + l + "][" + field + "]: " +
-                                                                            JSON.stringify(res.data[gender][l][field]) +
-                                                                            "; newFieldList[" + field + "]: " + newFieldList[field]);
-                                                                    }
-                                                                    else {                                                                 
-                                                                        AlertService.consoleDebug("[rifd-util-info.js] res.data[" + 
-                                                                            gender + "][" + l + "][" + field + "]: " +
-                                                                            JSON.stringify(res.data[gender][l][field]) +
-                                                                            "; !isNaN(res.data[" + 
-                                                                            gender + "][" + l + "][" + field + "]): " + !isNaN(res.data[gender][l][field]) +
-                                                                            "; parseFloat(res.data[" + 
-                                                                            gender + "][" + l + "][" + field + "]: " + parseFloat(res.data[gender][l][field])); */
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    var newRiskFactor2FieldName={};
-                                                    var newRiskFactorList = [];
-                                                    for (var key in scope.riskFactor2FieldName) {
-                                                        if (newFieldList[scope.riskFactor2FieldName[key]] &&
-                                                            newFieldList[scope.riskFactor2FieldName[key]] > 0) {
-                                                            newRiskFactor2FieldName[key] = scope.riskFactor2FieldName[key];
-                                                            newRiskFactorList.push(key);
-                                                        }
-                                                    }
-                                                    if (newRiskFactorList[0]) {
-                                                        scope.riskFactorList=newRiskFactorList;
-                                                        scope.riskFactor=newRiskFactorList[0];
-                                                    }
-                                                    else {                                                    
-                                                        AlertService.consoleDebug("[rifd-util-info.js] unable to rebuild riskFactorList" +
-                                                            ", scope.riskFactor2FieldName: " + JSON.stringify(scope.riskFactor2FieldName) +
-                                                            ", newFieldList: " + JSON.stringify(newFieldList) +
-                                                            "' data: " + JSON.stringify(res.data));
-                                                    }
-                                                    
-                                                    scope.d3RiskGraphChange(undefined, undefined, undefined);
-                                            
-//                                                    AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + 
-//                                                        homogeneityTestsHtml);
-                                                    scope.homogeneityTests = $sce.trustAsHtml(homogeneityTestsHtml); 
-                                                            
-                                                    if (scope.hasCovariates) {        
-                                                        user.getCovariateLossReport(user.currentUser, thisStudy).then(function (res) {
-                                                                buildCovariateLossReport(res)
-                                                            }, function(err) {
-                                                            retrieveError(err, "covariate loss report");
-                                                        });
-                                                    }
-                                                    else {
-                                                        scope.covariateLossReport = $sce.trustAsHtml(
-                                                            cautionMessage("No covariates were used by this study") + 
-                                                            covariateLossReportHtml);
-                                                    }
-                                                }, function(err) {
-                                                        retrieveError(err, "risk graph");
-                                                });
-                                                                
-                                            }, function(err) {
-                                                    retrieveError(err, "homogeneity report");
-                                            });
-                                        }
-                                        else if (scope.hasCovariates) {
-                                            user.getCovariateLossReport(user.currentUser, thisStudy).then(function (res) {
-                                                    buildCovariateLossReport(res)
-                                                }, function(err) {
-                                                    retrieveError(err, "covariate loss report");
-                                                });
+/*
+ * Returned JSON: 
+ * "adjusted": {
+ *      "females": {
+ * 	    	"linearityP": 0,
+ * 	    	"linearityChi2": 0,
+ * 	    	"explt5": 0,
+ * 	    	"homogeneityDof": 2,
+ * 	    	"homogeneityP": 1.95058679437527E-4,
+ * 	    	"homogeneityChi2": 17.084420248951
+ * 	    },
+ * 	    "males": {
+ * 	    	"linearityP": 0,
+ * 	    	"linearityChi2": 0,
+ * 	    	"explt5": 0,
+ * 	    	"homogeneityDof": 2,
+ * 	    	"homogeneityP": 0.178163986654135,
+ * 	    	"homogeneityChi2": 3.45010175892807
+ * 	    },
+ * 	    "both": {
+ * 		"linearityP": 0,
+ * 		"linearityChi2": 0,
+ * 		"explt5": 0,
+ * 		"homogeneityDof": 2,
+ * 		"homogeneityP": 0.00337359835580779,
+ * 		"homogeneityChi2": 11.3835506858045
+ *      }
+ * },
+ * "unadjusted": {
+ * }
+ *  */
+                
+                                var homogeneityTable = '<table class="info-table"><tr>' +
+                             /*       '<th colspan="3" class="info-table">Unadjusted</th>' */
+                                    '<th align="left" class="info-table">Statistic</th>' +
+                                    '<th colspan="3" class="info-table">Adjusted</th>'+
+                                    '</tr>' +
+                                    '<tr>' +
+                            /*        '<th align="left" class="info-table">Males</th>' +
+                                    '<th align="left" class="info-table">Females</th>' +
+                                    '<th align="left" class="info-table">Both</th>' + */
+                                    '<th align="left" class="info-table"></th>' +
+                                    '<th align="left" class="info-table">Males</th>' +
+                                    '<th align="left" class="info-table">Females</th>' +
+                                    '<th align="left" class="info-table">Both</th>' +
+                                    '</tr>';
+                                var homogeneityList = ["linearityP", "linearityChi2", "explt5", "homogeneityDof", 
+                                "homogeneityP", "homogeneityChi2"];
+                                var homogeneityDescriptions = {
+                                    "linearityP": "Linearity p-value",
+                                    "linearityChi2": "Linearity Chi&sup2; statistic",
+                                    "explt5": "#bands with expected &lt;5",
+                                    "homogeneityDof": "Homogeneity Degree of Freedom",
+                                    "homogeneityP": "Homogeneity p-value",
+                                    "homogeneityChi2": "Homogeneity Chi&sup2; statistic"
+                                }
+                                var hasHomogeneityTable=false; 
+                                for (var i=0; i<homogeneityList.length; i++) {
+                                    var homogeneityAttr=homogeneityList[i];
+                                    homogeneityTable+='<tr>';
+                                    /*
+                                    for (var j=0; j<scope.gendersList.length; j++) {
+                                        var genderAttr=scope.gendersList[j];
+                                        if (res.data.unadjusted && res.data.unadjusted[genderAttr] && 
+                                            res.data.unadjusted[genderAttr][homogeneityAttr]) {
+                                            homogeneityTable+='<td class="info-table">' + 
+                                                roundTo3DecimalPlaces(res.data.unadjusted[genderAttr][homogeneityAttr]) +
+                                                '</td>';
+                                            hasHomogeneityTable=true;
                                         }
                                         else {
-                                            scope.covariateLossReport = $sce.trustAsHtml(
-                                                cautionMessage("No covariates were used by this study") + 
-                                                covariateLossReportHtml);
+                                            homogeneityTable+='<td class="info-table">0</td>';
                                         }
-                                    }, function(err) {
-                                        retrieveError(err, "age groups");
-                                    });
-                                }, function(err) {
-                                    retrieveError(err, "study details");
-                                });
-                            }, function(err) {
-                                retrieveError(err, "health code");
-                            });
-
+                                    } */
+                                    homogeneityTable+='<td  class="info-table" align="left">' + 
+                                        _getAttr(homogeneityDescriptions[homogeneityAttr] || "No description") + 
+                                        '</td>';
+                                    for (var j=0; j<scope.gendersList.length; j++) {
+                                        var genderAttr=scope.gendersList[j];
+                                        if (res.data.adjusted && res.data.adjusted[genderAttr] && 
+                                            res.data.adjusted[genderAttr][homogeneityAttr]) {
+                                            homogeneityTable+='<td class="info-table">' + 
+                                                roundTo3DecimalPlaces(res.data.adjusted[genderAttr][homogeneityAttr]) +
+                                                '</td>';
+                                            hasHomogeneityTable=true;
+                                        }
+                                        else {
+                                            homogeneityTable+='<td class="info-table">0</td>';
+                                        }
+                                    }
+                                    homogeneityTable+='</tr>';
+                                } 
+                                homogeneityTable+='</table>';
+                                if (hasHomogeneityTable) {
+                                   homogeneityTestsHtml+= homogeneityTable;
+                                }
+                                else {
+                                    AlertService.consoleDebug("[rifd-util-info.js] no Homogeneity Table: " + 
+                                        JSON.stringify(res.data, null, 2));
+                                }                                
+                            }
+                            
+                            function setupRiskGraphSelector(res) {
+                                var fieldList=[];
+                                for (var key in scope.riskFactor2FieldName) {
+                                    fieldList.push(scope.riskFactor2FieldName[key]);
+                                }
+                                
+                                if (res.data.males && res.data.males.length > 0 &&
+                                    res.data.females && res.data.females.length > 0) {
+                                    scope.riskGraphHasBothMalesAndFemales=true;
+                                    scope.riskGraphHasFemales=true;
+                                    scope.riskGraphHasMales=true;
+                                    scope.gendersName1="males";
+                                    scope.gendersName2="females";
+                                    scope.gendersList = ['males', 'females', 'both'];			
+                                    scope.gendersArray=['males', 'females'];	
+                                }
+                                else if (res.data.males && res.data.males.length > 0) {
+                                    scope.riskGraphHasBothMalesAndFemales=false;
+                                    scope.riskGraphHasMales=true;
+                                    scope.riskGraphHasFemales=false;
+                                    scope.gendersName1="males";
+                                    scope.gendersName2=undefined;
+                                    scope.gendersList = ['males'];			
+                                    scope.gendersArray=['males']
+                                }
+                                else if (res.data.females && res.data.females.length > 0) {
+                                    scope.riskGraphHasBothMalesAndFemales=false;
+                                    scope.riskGraphHasMales=false;
+                                    scope.gendersName1="females";
+                                    scope.gendersName2=undefined;
+                                    scope.gendersList = ['females'];			
+                                    scope.gendersArray=['females']
+                                    scope.riskGraphHasFemales=true;
+                                }
+                               
+                                var fieldList=[];
+                                var newFieldList={};
+                                for (var key in scope.riskFactor2FieldName) {
+                                    fieldList.push(scope.riskFactor2FieldName[key]);
+                                }
+                                for (var j=0; j<fieldList.length; j++) {
+                                    for (var k=0; k<scope.gendersList.length; k++) {
+                                        var gender=scope.gendersList[k];
+                                        var bands=res.data[gender];         
+                                        var field=fieldList[j];                      
+                                        for (var l=0; l<bands.length; l++) {
+                                            if (res.data[gender] &&
+                                                res.data[gender][l] &&
+                                                res.data[gender][l][field]) {
+                                                if (res.data[gender][l][field] != "0.0" &&
+                                                    !isNaN(res.data[gender][l][field]) &&
+                                                    parseFloat(res.data[gender][l][field]) > 0.0) {
+                                                    if (newFieldList[field]) {
+                                                        newFieldList[field]++;
+                                                    }
+                                                    else {
+                                                        newFieldList[field]=1;
+                                                    } 
+/*                                                                        
+                                                    AlertService.consoleDebug("[rifd-util-info.js] res.data[" + 
+                                                        gender + "][" + l + "][" + field + "]: " +
+                                                        JSON.stringify(res.data[gender][l][field]) +
+                                                        "; newFieldList[" + field + "]: " + newFieldList[field]);
+                                                }
+                                                else {                                                                 
+                                                    AlertService.consoleDebug("[rifd-util-info.js] res.data[" + 
+                                                        gender + "][" + l + "][" + field + "]: " +
+                                                        JSON.stringify(res.data[gender][l][field]) +
+                                                        "; !isNaN(res.data[" + 
+                                                        gender + "][" + l + "][" + field + "]): " + !isNaN(res.data[gender][l][field]) +
+                                                        "; parseFloat(res.data[" + 
+                                                        gender + "][" + l + "][" + field + "]: " + parseFloat(res.data[gender][l][field])); */
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                var newRiskFactor2FieldName={};
+                                var newRiskFactorList = [];
+                                for (var key in scope.riskFactor2FieldName) {
+                                    if (newFieldList[scope.riskFactor2FieldName[key]] &&
+                                        newFieldList[scope.riskFactor2FieldName[key]] > 0) {
+                                        newRiskFactor2FieldName[key] = scope.riskFactor2FieldName[key];
+                                        newRiskFactorList.push(key);
+                                    }
+                                }
+                                if (newRiskFactorList[0]) {
+                                    scope.riskFactorList=newRiskFactorList;
+                                    scope.riskFactor=newRiskFactorList[0];
+                                }
+                                else {                                                    
+                                    AlertService.consoleDebug("[rifd-util-info.js] unable to rebuild riskFactorList" +
+                                        ", scope.riskFactor2FieldName: " + JSON.stringify(scope.riskFactor2FieldName) +
+                                        ", newFieldList: " + JSON.stringify(newFieldList) +
+                                        "' data: " + JSON.stringify(res.data));
+                                }
+                            }
+                                                
                             function cautionMessage(message) {
                                 return '</br><section class="info-caution">&#9888;&nbsp;' + message + '</section>';
                             }
@@ -893,7 +851,73 @@ angular.module("RIF")
                                     return '<attr>' + Math.round(attr * 1000) / 1000 + '</attr></br>';
                                 }
                             }						   
-                            
+ 
+                           user.getHealthCodesForProcessedStudy(user.currentUser, thisStudy).then(function (invx) {
+                                var inv = invx.data[0];
+
+                                user.getDetailsForProcessedStudy(user.currentUser, thisStudy).then(function (res) {
+                                    var project=processDetailsForProcessedStudy(res);
+
+                                    user.getAgeGroups(user.currentUser, res.data[0][4], res.data[0][19]).then(function (resAge) {
+                                        processAgeGroups(res, resAge, inv, project);
+                                         
+                                        if (scope.isRiskAnalysisStudy) {  
+                                            user.getHomogeneity(user.currentUser, thisStudy).then(function (res) {
+                                                processHomogeneity(res);
+                                                
+                                                user.getRiskGraph(user.currentUser, thisStudy).then(function (res) {
+                                                    scope.riskGraphdata=res.data;
+                                                    
+                                                    setupRiskGraphSelector(res);
+
+                                                    scope.d3RiskGraphChange(undefined, undefined, undefined);
+                                            
+//                                                    AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + 
+//                                                        homogeneityTestsHtml);
+                                                    scope.homogeneityTests = $sce.trustAsHtml(homogeneityTestsHtml); 
+                                                            
+                                                    if (scope.hasCovariates) {        
+                                                        user.getCovariateLossReport(user.currentUser, thisStudy).then(function (res) {
+                                                                buildCovariateLossReport(res)
+                                                            }, function(err) {
+                                                            retrieveError(err, "covariate loss report");
+                                                        });
+                                                    }
+                                                    else {
+                                                        scope.covariateLossReport = $sce.trustAsHtml(
+                                                            cautionMessage("No covariates were used by this study") + 
+                                                            covariateLossReportHtml);
+                                                    }
+                                                }, function(err) {
+                                                        retrieveError(err, "risk graph");
+                                                });
+                                                                
+                                            }, function(err) {
+                                                    retrieveError(err, "homogeneity report");
+                                            });
+                                        }
+                                        else if (scope.hasCovariates) {
+                                            user.getCovariateLossReport(user.currentUser, thisStudy).then(function (res) {
+                                                    buildCovariateLossReport(res)
+                                                }, function(err) {
+                                                    retrieveError(err, "covariate loss report");
+                                                });
+                                        }
+                                        else {
+                                            scope.covariateLossReport = $sce.trustAsHtml(
+                                                cautionMessage("No covariates were used by this study") + 
+                                                covariateLossReportHtml);
+                                        }
+                                    }, function(err) {
+                                        retrieveError(err, "age groups");
+                                    });
+                                }, function(err) {
+                                    retrieveError(err, "study details");
+                                });
+                            }, function(err) {
+                                retrieveError(err, "health code");
+                            });
+ 
                             var modalInstance = $uibModal.open({
                                 animation: true,
                                 templateUrl: 'utils/partials/rifp-util-info.html',

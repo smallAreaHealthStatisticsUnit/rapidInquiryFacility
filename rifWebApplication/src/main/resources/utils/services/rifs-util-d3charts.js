@@ -48,6 +48,9 @@ angular.module("RIF")
                      * Parameters:  data, gendersArray, riskFactorFieldName, riskFactorFieldDesc
                      * Description: Create risk graph error bars 
                      *              https://bl.ocks.org/NGuernse/8dc8b9e96de6bedcb6ad2c5467f5ef9a
+                     *              1. We do need to use band_id if max_exposure_value is undefined/null
+                     *              2. Use average exposure value be
+                     *              3. A choice: average/band_id/distance from nearest source
                      * Returns:     Nothing
                      */
                     function d3RiskGraph(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
@@ -292,22 +295,17 @@ angular.module("RIF")
                             return marginHeightWidth;
                         }
                         
-                        /* Questions: 
-                         * 1. Do we need to use band_id if max_exposure_value is undefined/null YES
-                         * 2. Would average exposure value be better? YES
-                         * 3. Do we want a choice: max/min/average/median/band_id/distance from nearest source
-                         */
                         var svg=d3.select("#riskFactorChart").select("svg");
                          
-/*                              var tooltip = d3.select("#riskRactorTooltip");
-                                if (tooltip._group && tooltip._group[0] && tooltip._group[0][0] != null) { 
-                                }
-                                else {                                      
-                                    tooltip = d3.select("#riskRactorTooltip").append("div")
-                                        .attr("id", "riskRactorTooltip")
-                                        .attr("class", "riskFactorChart-tooltip")
-                                        .style("visibility", "hidden");
-                                } */
+/*                      var tooltip = d3.select("#riskRactorTooltip");
+                        if (tooltip._group && tooltip._group[0] && tooltip._group[0][0] != null) { 
+                        }
+                        else {                                      
+                            tooltip = d3.select("#riskRactorTooltip").append("div")
+                                .attr("id", "riskRactorTooltip")
+                                .attr("class", "riskFactorChart-tooltip")
+                                .style("visibility", "hidden");
+                        } */
                                 
                         var tooltip = d3.select("#riskRactorTooltip").append("div")
                                 .attr("class", "riskFactorChart-tooltip")
@@ -315,9 +313,9 @@ angular.module("RIF")
                         
                         var domainExtent=getDomain(data, gendersArray, riskFactorFieldName);
                         var marginHeightWidth = getMargin();
-                        AlertService.consoleDebug("[rifd-util-info.js] riskFactorChart domainExtent: " + 
-                            JSON.stringify(domainExtent, null, 1) +
-                            "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
+//                        AlertService.consoleDebug("[rifd-util-info.js] riskFactorChart domainExtent: " + 
+//                            JSON.stringify(domainExtent, null, 1) +
+//                            "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
                             
                         var xScale = d3.scaleLinear()
                             .range([0, marginHeightWidth.width])
