@@ -33,6 +33,8 @@
 
 /*
  * DIRECTIVE for D3 chart showing histogram and choropleth break points
+ *
+ * THIS CODE IS NOT IN USE!
  */
 /* global d3 */
 

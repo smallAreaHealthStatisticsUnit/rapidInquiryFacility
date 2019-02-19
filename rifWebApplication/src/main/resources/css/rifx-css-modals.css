@@ -658,6 +658,7 @@ circle {
 }
 
 .riskFactorCharts {
+  position: absolute;
 }
 
 #riskFactorChartTable {
@@ -732,35 +733,35 @@ circle {
     width: 120px !important;
 }
 
-.riskFactorChartTitle {
+.riskGraphChartTitle {
     font-size: 1.6em;
     font-weight: bold;
     text-decoration: underline;
 }
 
-.riskFactorChartLegend rect {
+.riskGraphLegend rect {
   fill:white;
   stroke:black;
   opacity:0.8;
 }
 
-.riskFactorChart-error-line {
+.riskGraph-error-line {
   stroke: #b30059;
   stroke-width: 2px;
   stroke-dasharray: 2,2;
 }
 
-.riskFactorChart-error-cap {
+.riskGraph-error-cap {
   stroke: #b30059;
   stroke-width: 2px;
   stroke-type: solid;
 }
 
-.riskFactorChart-bg {
+.riskGraph-bg {
    fill: #fff0e6;
 }
  
-.riskFactorChart-tooltip {
+.riskGraph-tooltip {
    position: absolute;
    height: auto;
    width: auto;
@@ -770,7 +771,7 @@ circle {
    pointer-events: none;
 }
 
-.riskFactorChart-tooltip:after {
+.riskGraph-tooltip:after {
    content: " ";
    position: absolute;
    top: 50%;

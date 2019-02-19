@@ -44,6 +44,7 @@ angular.module("RIF")
                 //child scope will be on either the mapping or viewer dashboards
                 //controller instance recreated in each case
                 $scope.child = {};
+                $scope.isDieaseMapping=true;
 
                 $scope.$on("$destroy", function () {
                     //A flag to keep renderers if changing tabs
@@ -200,6 +201,11 @@ angular.module("RIF")
                         container: "distHisto",
                         element: "#hSplit1",
                         filename: "histogram.png"
+                    },
+                    "riskFactorGraph": {
+                        container: "riskFactorGraph",
+                        element: "#hSplit1",
+                        filename: "riskFactorGraph.png"
                     }
                 };
 

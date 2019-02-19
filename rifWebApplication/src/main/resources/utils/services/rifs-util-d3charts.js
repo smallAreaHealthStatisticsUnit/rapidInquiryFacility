@@ -35,17 +35,47 @@
  * SERVICE for UI-Grid helper functions
  */
 angular.module("RIF")
-        .factory('D3ChartsService', ['AlertService', '$window',
-                function (AlertService, $window) {
+        .factory('D3ChartsService', ['AlertService', '$window', '$timeout',
+                function (AlertService, $window, $timeout) {
                     
                     var colors = {
                         males: '#c97f82',
                         females: '#7f82c9',
                         both: '#660033'
-                    };                
+                    };      
+
+                    var riskGraphParameters = {};
+                    
+                    /*
+                     * Function:    hasRiskGraphDataChanged2()
+                     * Parameters:  data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, hasRiskGraphDataChangedCallback
+                     * Description: Test if risk graph data and parameters have changed.
+                     *              If no change, waits 0.5 seconds to avoid digest() trashing
+                     * Returns:     Callback returns (error text, true/false)
+                     */
+                    function hasRiskGraphDataChanged2(
+                        data, gendersArray, riskFactorFieldName, riskFactor, hasRiskGraphDataChangedCallback) {
+                            
+                        var newRiskGraphParameters = {
+                            data: data, 
+                            gendersArray: gendersArray, 
+                            riskFactorFieldName: riskFactorFieldName, 
+                            riskFactor: riskFactor
+                        };
+                        if (angular.equals(newRiskGraphParameters, riskGraphParameters)) {
+                            $timeout( function() { // To avoid Error: $rootScope:infdig Infinite $digest Loop errors
+                                hasRiskGraphDataChangedCallback(undefined /* No error */, false);
+                            }, 500 /* mS */);   
+                        }
+                        else {
+                            riskGraphParameters = angular.copy(newRiskGraphParameters);
+                            hasRiskGraphDataChangedCallback(undefined /* No error */, true);
+                        }    
+                    }
+                    
                     /*
                      * Function:    d3RiskGraph()
-                     * Parameters:  data, gendersArray, riskFactorFieldName, riskFactorFieldDesc
+                     * Parameters:  SVG object, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback
                      * Description: Create risk graph error bars 
                      *              https://bl.ocks.org/NGuernse/8dc8b9e96de6bedcb6ad2c5467f5ef9a
                      *              1. We do need to use band_id if max_exposure_value is undefined/null
@@ -53,18 +83,17 @@ angular.module("RIF")
                      *              3. A choice: average/band_id/distance from nearest source
                      * Returns:     Nothing
                      */
-                    function d3RiskGraph(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
+                    function d3RiskGraph(svg, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback) {
                         
                         // Check parameters are defined
                         if (!data || !(gendersArray && gendersArray.length > 0) || !riskFactorFieldName || 
                             !riskFactorFieldDesc) {
-                            AlertService.consoleError("[rifs-util-d3charts.js] null data in d3riskFactorChart: "  + 
+                            AlertService.consoleError("[rifs-util-d3charts.js] null data in d3RiskGraph: "  + 
                                 "; gendersArray: " + JSON.stringify(gendersArray) + 
                                 "; riskFactor: " + riskFactorFieldName + 
                                 "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
                                 "; data: " + JSON.stringify(data));
-                            AlertService.showError("Null data passed to d3riskFactorChart");
-                            return;
+                            riskGraphCallback("Null data passed to d3RiskGraph", undefined);
                         }
                    
                         /*
@@ -94,7 +123,7 @@ angular.module("RIF")
                             };
                             
                             for (var i=0; i<gendersArray.length; i++) {
-                                var yMin = d3.min(data[gendersArray[i]], function(d) { return (d.lower95*0.8); }); 
+                                var yMin = d3.min(data[gendersArray[i]], function(d) { return (parseFloat(d.lower95)*0.8); }); 
                                 if (!domainExtent.yMin) {
                                     domainExtent.yMin=yMin;
                                 }
@@ -102,7 +131,7 @@ angular.module("RIF")
                                     domainExtent.yMin=yMin;
                                 }
                                 
-                                var yMax = d3.max(data[gendersArray[i]], function(d) { return (d.upper95*1.2); });            
+                                var yMax = d3.max(data[gendersArray[i]], function(d) { return (parseFloat(d.upper95)*1.2); });            
                                 if (!domainExtent.yMax) {
                                     domainExtent.yMax=yMax;
                                 }
@@ -111,7 +140,7 @@ angular.module("RIF")
                                 }
                                 
                                 var xMin = d3.min(data[gendersArray[i]], function(d) { 
-                                    return d[riskFactorFieldName]*0.8; });                        
+                                    return parseFloat(d[riskFactorFieldName])*0.8; });                        
                                 if (!domainExtent.xMin) {
                                     domainExtent.xMin=xMin;
                                 }
@@ -120,7 +149,7 @@ angular.module("RIF")
                                 }
                                 
                                 var xMax = d3.max(data[gendersArray[i]], function(d) { 
-                                    return d[riskFactorFieldName]*1.2; });                            
+                                    return parseFloat(d[riskFactorFieldName])*1.2; });                            
                                 if (!domainExtent.xMax) {
                                     domainExtent.xMax=xMax;
                                 }
@@ -157,16 +186,16 @@ angular.module("RIF")
                         
                         /*
                          * Function:    addErrorBar()
-                         * Parameters:  gendersName, riskFactorFieldName
+                         * Parameters:  svg object, gendersName, riskFactorFieldName
                          * Description: Add error bar
                          * Returns:     Nothing
                          */
-                        function addErrorBar(gendersName, riskFactorFieldName) {
+                        function addErrorBar(svg, gendersName, riskFactorFieldName) {
                             // Add Error Line
                             svg.append("g").selectAll("line")
                                .data(data[gendersName]).enter()
                                .append("line")
-                               .attr("class", "riskFactorChart-error-line")
+                               .attr("class", "d3RiskGraph-error-line")
                                .attr("x1", function(d) {
                                     return xScale(d[riskFactorFieldName]);
                                })
@@ -185,7 +214,7 @@ angular.module("RIF")
                             svg.append("g").selectAll("line")
                                .data(data[gendersName]).enter()
                                .append("line")
-                               .attr("class", "riskFactorChart-error-cap")
+                               .attr("class", "d3RiskGraph-error-cap")
                                .attr("x1", function(d) {
                                     return xScale(d[riskFactorFieldName]) - 4;
                                })
@@ -204,7 +233,7 @@ angular.module("RIF")
                             svg.append("g").selectAll("line")
                                .data(data[gendersName]).enter()
                                .append("line")
-                               .attr("class", "riskFactorChart-error-cap")
+                               .attr("class", "d3RiskGraph-error-cap")
                                .attr("x1", function(d) {
                                     return xScale(d[riskFactorFieldName]) - 4;
                                })
@@ -238,16 +267,18 @@ angular.module("RIF")
                                     var transform0=this.getScreenCTM().translate(0, 0); 
                                                                    /* Actual pixel position of SVG graph div origin */
 
-                                    AlertService.consoleDebug("[rifs-util-d3charts.js] riskFactorChart mouseover: " + 
-                                        JSON.stringify(d, 0, 1));
-                                    return tooltip.html("Band " + d.band_id + " " +
-                                                gender2text(d.genders) + "</br>" + 
-                                                d.relativeRisk.toFixed(3) + 
-                                                "&nbsp;[95% CI&nbsp;" + d.lower95.toFixed(3) +
-                                                "&ndash;" + d.upper95.toFixed(3) + "]") 
+//                                    AlertService.consoleDebug("[rifs-util-d3charts.js] d3RiskGraph mouseover(" +
+//                                        transform.e + " - " + transform0.e + ", " +
+//                                        transform.f + " - " + transform0.f + ")" +
+//                                        "; data: " + JSON.stringify(d, 0, 1));
+                                    return tooltip.html("Band " + parseInt(d.bandId) + " " +
+                                                gender2text(parseInt(d.genders)) + "</br>" + 
+                                                parseFloat(d.relativeRisk).toFixed(3) + 
+                                                "&nbsp;[95% CI&nbsp;" + parseFloat(d.lower95).toFixed(3) +
+                                                "&ndash;" + parseFloat(d.upper95).toFixed(3) + "]") 
                                         .style("visibility", "visible")
-                                        .style("left", (transform.e - transform0.e + 53) + "px") // Correct as position is relative
-                                        .style("top", (transform.f - transform0.f + 25) + "px")
+                                        .style("left", (transform.e - transform0.e + marginHeightWidth.margin.left + 18) + "px") // Correct as position is relative
+                                        .style("top", (transform.f - transform0.f + marginHeightWidth.margin.top + 153) + "px")
                                         .style("background", colors[gendersName]);
                                })
                                .on("mouseout", function() {
@@ -268,52 +299,66 @@ angular.module("RIF")
                          *    },
                          *    "width": 900,
                          *    "height": 350,
+                         *    "hSplit1Width": 0,
+                         *    "hSplit1Height": 0,
                          *    "innerWidth": 1920,
                          *    "innerHeight": 938
                          *   }
                          */
                         function getMargin() {
                             var marginHeightWidth = {
-                                margin: {top: 20, right: 20, bottom: 40, left: 40}, // Scale using CSS
+                                margin: {top: 20, right: 20, bottom: 40, left: 80}, // Scale using CSS
                                 width: 0,
                                 height: 0,
+                                hSplit1Width: 0,
+                                hSplit1Height: 0,
                                 innerWidth: $window.innerWidth,
                                 innerHeight: $window.innerHeight
                             };
                             // 1346x416 
-                            var width = 960;
-                            var height = 410;
-                            if (marginHeightWidth.innerWidth) {
+                            marginHeightWidth.hSplit1Width = 
+                                d3.select("#hSplit1").node().getBoundingClientRect().width;
+                            marginHeightWidth.hSplit1Height = 
+                                d3.select("#hSplit1").node().getBoundingClientRect().height;
+
+                            var width=860;
+                            if (marginHeightWidth.hSplit1Width) {
+                                   width = marginHeightWidth.hSplit1Width;
+                            }
+                            else if (marginHeightWidth.innerWidth) {
                                 width=marginHeightWidth.innerWidth*0.65;
                             }
-                            if (marginHeightWidth.innerHeight) {
-                                height=marginHeightWidth.innerHeight*0.55;
+                            var height=410;
+                            if (marginHeightWidth.hSplit1Height) {
+                                   height = marginHeightWidth.hSplit1Height;
                             }
+                            else if (marginHeightWidth.innerHeight) {
+                                height=marginHeightWidth.innerHeight*0.55;
+                            }                   
+
                             marginHeightWidth.width=width - marginHeightWidth.margin.left - marginHeightWidth.margin.right;
                             marginHeightWidth.height=height - marginHeightWidth.margin.top - marginHeightWidth.margin.bottom;
                             
                             return marginHeightWidth;
-                        }
-                        
-                        var svg=d3.select("#riskFactorChart").select("svg");
+                        }                      
                          
-/*                      var tooltip = d3.select("#riskRactorTooltip");
+/*                      var tooltip = d3.select("#riskGraphTooltip");
                         if (tooltip._group && tooltip._group[0] && tooltip._group[0][0] != null) { 
                         }
                         else {                                      
-                            tooltip = d3.select("#riskRactorTooltip").append("div")
-                                .attr("id", "riskRactorTooltip")
-                                .attr("class", "riskFactorChart-tooltip")
+                            tooltip = d3.select("#d3RiskGraphTooltip").append("div")
+                                .attr("id", "riskGraphTooltip")
+                                .attr("class", "riskGraph-tooltip")
                                 .style("visibility", "hidden");
                         } */
                                 
-                        var tooltip = d3.select("#riskRactorTooltip").append("div")
-                                .attr("class", "riskFactorChart-tooltip")
+                        var tooltip = d3.select("#riskGraphTooltip").append("div")
+                                .attr("class", "riskGraph-tooltip")
                                 .style("visibility", "hidden");                       
                         
                         var domainExtent=getDomain(data, gendersArray, riskFactorFieldName);
                         var marginHeightWidth = getMargin();
-//                        AlertService.consoleDebug("[rifd-util-info.js] riskFactorChart domainExtent: " + 
+//                        AlertService.consoleDebug("[rifd-util-info.js] riskGraph domainExtent: " + 
 //                            JSON.stringify(domainExtent, null, 1) +
 //                            "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
                             
@@ -324,7 +369,13 @@ angular.module("RIF")
                            .range([marginHeightWidth.height, 0])
                            .domain([domainExtent.yMin, domainExtent.yMax]).nice();                                      
                         
-                        var xAxis = d3.axisBottom(xScale).ticks(12);
+                        var xAxis;
+                        if (riskFactorFieldName == "bandId") {
+                            xAxis = d3.axisBottom(xScale).ticks(domainExtent.xMax.toFixed());
+                        }
+                        else {
+                            xAxis = d3.axisBottom(xScale).ticks(12);
+                        }
                         var yAxis = d3.axisLeft(yScale).ticks(12 * marginHeightWidth.height / marginHeightWidth.width);
 
                         let line = d3.line()
@@ -335,39 +386,40 @@ angular.module("RIF")
                                         return yScale(d.relativeRisk);
                                  });
 
-                        if (svg) {
-                            d3.select("#riskFactorChart").select("svg").remove();
-                        }
-                        svg = d3.select("#riskFactorChart").append("svg")
+                        var svg2=svg.attr("id", "riskGraph")
                             .attr("width", 
                                 marginHeightWidth.width + marginHeightWidth.margin.left + marginHeightWidth.margin.right)
                             .attr("height", 
                                 marginHeightWidth.height + marginHeightWidth.margin.top + marginHeightWidth.margin.bottom)
+    //                        .attr("transform", "translate(" + 
+    //                            marginHeightWidth.margin.left + "," + marginHeightWidth.margin.top + ")")
                             .append("g")
                             .attr("transform", "translate(" + 
                                 marginHeightWidth.margin.left + "," + marginHeightWidth.margin.top + ")");
                  
-                        svg.append("g").append("rect")
+                        svg2.append("g").append("rect")
                             .attr("width", marginHeightWidth.width)
                             .attr("height", marginHeightWidth.height)
-                            .attr("class", "riskFactorChart-bg");
+                            .attr("class", "riskGraph-bg");
 
                         // Add Axis and labels
-                        svg.append("g").attr("class", "axis axis--x")
+                        svg2.append("g").attr("class", "axis axis--x")
                             .attr("transform", "translate(" + 0 + "," + marginHeightWidth.height + ")")
                             .call(xAxis);
                             
+                        svg2.append("g").attr("class", "axis axis--y")
+                           .call(yAxis);            
+                           
                         // text label for the x axis
-                        svg.append("text")             
+                        svg2.append("text")             
                             .attr("transform",
                                   "translate(" + (marginHeightWidth.width/2) + " ," + 
                                                  (marginHeightWidth.height + marginHeightWidth.margin.top + 10) + ")")
                             .style("text-anchor", "middle")
                             .text(riskFactorFieldDesc.toUpperCase());
 
-                        svg.append("g").attr("class", "axis axis--y").call(yAxis);                           
                         // text label for the y axis
-                        svg.append("text")
+                        svg2.append("text")
                            .attr("transform", "rotate(-90)")
                            .attr("y", 0 - marginHeightWidth.margin.left)
                            .attr("x", 0 - (marginHeightWidth.height / 2))
@@ -376,7 +428,7 @@ angular.module("RIF")
                            .text("RELATIVE RISK");  
                             
                         // Add title	  
-                        svg.append("text")
+                        svg2.append("text")
                            .attr("class", "homogeneityTitle")
                            .attr("x", (marginHeightWidth.width / 2))
                            .attr("y", 20)
@@ -384,14 +436,14 @@ angular.module("RIF")
                            .text("Risk Graph");
  	
                         // Add legend   
-                        var legend = svg.append("g")
+                        var legend = svg2.append("g")
                                         .attr("class", "legend")
                                         .attr("height", 100)
                                         .attr("width", 100)
                                         .attr('transform', 'translate(-20,50)');                            
                          
                         for (var i=0; i< gendersArray.length; i++) {
-                            addErrorBar(gendersArray[i], riskFactorFieldName);  
+                            addErrorBar(svg2, gendersArray[i], riskFactorFieldName);  
                         
                             // Add legend   
                             legend.append("rect")
@@ -407,10 +459,24 @@ angular.module("RIF")
                                   .text((gendersArray[i] == "both" ? "Both males and females" : gendersArray[i]));                          
                         }                            
                          
+                         riskGraphCallback(undefined /* No error */, svg2);
                     }
                     return {
-                        getD3RiskGraph: function (data, gendersArray, riskFactorFieldName, riskFactorFieldDesc) {
-                            return d3RiskGraph(data, gendersArray, riskFactorFieldName, riskFactorFieldDesc);
+                        getD3RiskGraph: function (svg, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback) {
+                            try {
+                                return d3RiskGraph(svg, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback);
+                            }
+                            catch (e) {
+                                riskGraphCallback("Caught exception: " + e.toString(), undefined);
+                            }
+                        },
+                        hasRiskGraphDataChanged: function (data, gendersArray, riskFactorFieldName, riskFactor, hasRiskGraphDataChangedCallback) {
+                            try {
+                                return hasRiskGraphDataChanged2(data, gendersArray, riskFactorFieldName, riskFactor, hasRiskGraphDataChangedCallback);
+                            }
+                            catch (e) {
+                                hasRiskGraphDataChangedCallback("Caught exception: " + e.toString(), undefined);
+                            }
                         }
                     };
                 }]);

@@ -49,8 +49,8 @@ angular.module("RIF")
                 $uibModalInstance.close();
             };
         })
-        .directive('getStudyInfo', ['$uibModal', 'user', '$sce', 'AlertService', 'D3ChartsService',
-                function ($uibModal, user, $sce, AlertService, D3ChartsService) {
+        .directive('getStudyInfo', ['$uibModal', 'user', '$sce', 'AlertService',
+                function ($uibModal, user, $sce, AlertService) {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
@@ -122,14 +122,38 @@ angular.module("RIF")
                             if (gendersName2) {
                                 gendersArray[1] = gendersName2;
                             }
+                            scope.gendersArray=gendersArray;
+                            scope.riskFactor=riskFactor || scope.riskFactor;
 
-                            AlertService.consoleDebug("[rifd-util-info.js] d3RiskGraphChange() gendersArray: " + 
-                                JSON.stringify(gendersArray) + 
-                                "; riskFactor: " + (riskFactor || scope.riskFactor)+
-                                "; riskFactor2FieldName: " + scope.riskFactor2FieldName[riskFactor || scope.riskFactor]);
+                            scope.optionsd3 = { // For save button
+                                "riskGraph": {
+                                    container: "riskGraph",
+                                    element: "#hSplit1",
+                                    filename: "riskGraph.png"
+                                }
+                            };        
                             
-                            D3ChartsService.getD3RiskGraph(scope.riskGraphdata, gendersArray, 
-                                scope.riskFactor2FieldName[riskFactor || scope.riskFactor], riskFactor || scope.riskFactor);
+                            /* Directive inputs:
+                             * <risk-graph 
+                             *       risk-graph-data="riskGraphData" 
+                             *       name="riskGraphChartName" 
+                             *       width="riskGraphChartCurrentWidth" 
+                             *       height="riskGraphChartCurrentHeight" 
+                             *       genders-array="gendersArray" 
+                             *       risk-factor="riskFactor" 
+                             *       risk-factor2-field-name="riskFactor2FieldName">
+                             *  </risk-graph>
+                             */
+                            AlertService.consoleDebug("[rifd-util-info.js] d3RiskGraphChange() " +
+                                "gendersArray: " + JSON.stringify(scope.gendersArray) + 
+                                "; riskFactor: " + scope.riskFactor +
+                                "; riskGraphChartName: " + scope.riskGraphChartName +
+                                "; riskGraphChartCurrentWidth: " + scope.riskGraphChartCurrentWidth +
+                                "; riskGraphChartCurrentHeight: " + scope.riskGraphChartCurrentHeight +
+                                "; riskFactor2FieldName: " + scope.riskFactor2FieldName[scope.riskFactor]);
+                            
+//                            D3ChartsService.getD3RiskGraph(scope.riskGraphdata, gendersArray, 
+//                                scope.riskFactor2FieldName[riskFactor || scope.riskFactor], riskFactor || scope.riskFactor);
 						}
 						
                         /*
@@ -163,11 +187,15 @@ angular.module("RIF")
                             scope.riskGraphHasBothMalesAndFemales=false;
                             scope.riskGraphHasMales=false;
                             scope.riskGraphHasFemales=false;
+                            scope.hSplit1=860;
                             scope.riskFactor2FieldName = {
                                 'average exposure': 'avgExposureValue', 
                                 'band': 'bandId', 
                                 'average distance from nearest source': 'avgDistanceFromNearestSource'
                             };
+                            scope.riskGraphChartCurrentWidth=860;
+                            scope.riskGraphChartCurrentHeight=410;
+                            scope.riskGraphChartName="Risk Graph";
 							
                             if (scope.myMaps) {
                                 scope.mapType=scope.myMaps[0]; // E.g. viewermap
@@ -866,7 +894,7 @@ angular.module("RIF")
                                                 processHomogeneity(res);
                                                 
                                                 user.getRiskGraph(user.currentUser, thisStudy).then(function (res) {
-                                                    scope.riskGraphdata=res.data;
+                                                    scope.riskGraphData=res.data;
                                                     
                                                     setupRiskGraphSelector(res);
 
