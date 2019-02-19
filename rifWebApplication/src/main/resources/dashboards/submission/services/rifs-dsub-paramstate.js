@@ -134,7 +134,8 @@ angular.module("RIF")
                                                         "name": s.possibleCovariates[i].name,
                                                         "minimum_value": s.possibleCovariates[i].minimum_value,
                                                         "maximum_value": s.possibleCovariates[i].maximum_value,
-                                                        "covariate_type": s.possibleCovariates[i].covariate_type
+                                                        "covariate_type": s.possibleCovariates[i].covariate_type,
+                                                        "description": s.possibleCovariates[i].description
                                                     }
                                                 }
                                         );

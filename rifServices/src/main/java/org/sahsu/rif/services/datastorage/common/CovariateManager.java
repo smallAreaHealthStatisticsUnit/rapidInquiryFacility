@@ -63,6 +63,8 @@ public final class CovariateManager extends BaseSQLManager {
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
 		List<AbstractCovariate> results = new ArrayList<>();
+		String geographyName = geography.getName();
+		String geoLevelName = geoLevelToMap.getName();
 		try {
 			//Create SQL query		
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
@@ -80,30 +82,33 @@ public final class CovariateManager extends BaseSQLManager {
 			logSQLQuery(
 				"getCovariates",
 				queryFormatter,
-				geography.getName(),
-				geoLevelToMap.getName());
+				geographyName,
+				geoLevelName);
 		
 			// Parameterise and execute query
 				
 			statement = createPreparedStatement(connection, queryFormatter);
-			statement.setString(1, geography.getName());
-			statement.setString(2, geoLevelToMap.getName());
+			statement.setString(1, geographyName);
+			statement.setString(2, geoLevelName);
 
 			dbResultSet = statement.executeQuery();
 			connection.commit();
 			while (dbResultSet.next()) {				
 				AdjustableCovariate adjustableCovariate = AdjustableCovariate.newInstance();
-				adjustableCovariate.setName(dbResultSet.getString(1));
+				String covariateName = dbResultSet.getString(1);
+				adjustableCovariate.setName(covariateName);
 				double minimumValue = dbResultSet.getDouble(2);
 				double maximumValue = dbResultSet.getDouble(3);
 				adjustableCovariate.setMinimumValue(String.valueOf(minimumValue));
 				adjustableCovariate.setMaximumValue(String.valueOf(maximumValue));
 				adjustableCovariate.setType(AbstractCovariate.Type.fromNumber(
 						dbResultSet.getDouble(4)));
-				adjustableCovariate.setDescription(
-						sqlRIFContextManager.getColumnComment(connection,
-						                                      queryFormatter.getDatabaseSchemaName(),
-						                                      covariatesTableName, "covariate_name"));
+
+				// Need to go deeper to get the description
+				String description =
+						new CovariateDescription(sqlRIFContextManager, connection,
+						                         geographyName, geoLevelName, covariateName).get();
+				adjustableCovariate.setDescription(description);
 				results.add(adjustableCovariate);
 			}
 			
@@ -128,7 +133,7 @@ public final class CovariateManager extends BaseSQLManager {
 		}		
 		return results;
 	}
-	
+
 	/**
 	 * Validate common method parameters.
 	 *

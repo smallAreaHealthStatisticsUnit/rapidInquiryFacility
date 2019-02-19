@@ -208,7 +208,9 @@ angular.module("RIF")
                             for (var i = 0; i < res.data.length; i++) {
                                 $scope.covariates.push(res.data[i].name);
                                 tmp.push({name: res.data[i].name, minimum_value: res.data[i].minimumValue,
-                                    maximum_value: res.data[i].maximumValue, covariate_type: res.data[i].covariateType});
+                                    maximum_value: res.data[i].maximumValue,
+                                    covariate_type: res.data[i].covariateType,
+                                    description: res.data[i].description});
                             }
                         }
                         ParameterStateService.getState().possibleCovariates = tmp;

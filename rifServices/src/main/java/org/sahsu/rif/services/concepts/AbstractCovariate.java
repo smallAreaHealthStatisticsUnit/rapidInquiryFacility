@@ -8,8 +8,6 @@ import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /**
 * Describes the basic properties that a covariate should have.  
 * <p>
@@ -22,28 +20,19 @@ import com.google.common.annotations.VisibleForTesting;
 */
 public abstract class AbstractCovariate extends AbstractRIFConcept {
 
-	public Type getType() {
-		return type;
-	}
-
-	public AbstractCovariate setType(final Type type) {
-		this.type = type;
-		return this;
-	}
-
 	public enum Type {
 
 		INTEGER_SCORE(1),
 		CONTINUOUS_VARIABLE(2),
 		UNKNOWN_TYPE(-1);
 
-		private final int type;
+		private final int numericType;
 		Type(final int type) {
-			this.type = type;
+			this.numericType = type;
 		}
 
-		public String toString() {
-			return String.valueOf(type);
+		public String stringValue() {
+			return String.valueOf(numericType);
 		}
 
 		public static Type fromNumber(final Number n) {
@@ -156,14 +145,29 @@ public abstract class AbstractCovariate extends AbstractRIFConcept {
 		
 		this.maximumValue = maximumValue;
 	}
-	
+
+	public Type getType() {
+		return type;
+	}
+
+	public AbstractCovariate setType(final Type type) {
+		this.type = type;
+		return this;
+	}
+
 	public abstract String getRecordType();
-	
-	
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(final String description) {
+		this.description = description;
+	}
+
 	public void identifyDifferences(final AbstractCovariate anotherCovariate,
 			final ArrayList<String> differences) {
 	}
-	
 	
 	/**
 	 * Checks for identical contents.
@@ -386,12 +390,4 @@ public abstract class AbstractCovariate extends AbstractRIFConcept {
 		return name;
 	}
 
-	public String getDescription() {
-		return description;
-	}
-
-	public AbstractCovariate setDescription(final String description) {
-		this.description = description;
-		return this;
-	}
 }

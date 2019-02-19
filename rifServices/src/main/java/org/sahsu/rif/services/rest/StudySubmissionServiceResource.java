@@ -645,7 +645,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 		String result;
 
 		try {
-			//Convert URL parameters to RIF service API parameters
+			// Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance(geoLevelToMapName);
@@ -654,25 +654,22 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			List<AbstractCovariate> covariates = studySubmissionService.getCovariates(
 					user, geography, geoLevelToMap);
 
-			//Convert results to support JSON
-			ArrayList<CovariateProxy> covariateProxies = new ArrayList<>();
+			// Convert results to support JSON
+			List<CovariateProxy> covariateProxies = new ArrayList<>();
 			for (AbstractCovariate covariate : covariates) {
 				CovariateProxy covariateProxy = new CovariateProxy();
 
-				if (covariate instanceof AdjustableCovariate) {
-					covariateProxy.setCovariateType("adjustable");
-				} else {
-					covariateProxy.setCovariateType("exposure");
-				}
+				covariateProxy.setCovariateType(covariate.getType().toString());
 				covariateProxy.setName(covariate.getName());
 				covariateProxy.setMinimumValue(covariate.getMinimumValue());
 				covariateProxy.setMaximumValue(covariate.getMaximumValue());
+				covariateProxy.setDescription(covariate.getDescription());
 				covariateProxies.add(covariateProxy);
 			}
 
 			result = serialiseArrayResult(servletRequest, covariateProxies);
 		} catch(Exception exception) {
-			//Convert exceptions to support JSON
+			// Convert exceptions to support JSON
 			result = serialiseException(servletRequest, exception);
 		}
 
