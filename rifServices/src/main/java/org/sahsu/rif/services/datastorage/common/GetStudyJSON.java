@@ -1431,11 +1431,11 @@ public class GetStudyJSON {
 			if (resultSet.next()) {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
-				String covariateName = null;
-				String geographyName = null;
-				String geoLevelName = null;
 
-				do {			
+				do {
+					String covariateName = null;
+					String geographyName = null;
+					String geoLevelName = null;
 					JSONObject covariate=new JSONObject();
 					JSONObject adjustableCovariate=new JSONObject();
 					
@@ -1486,8 +1486,9 @@ public class GetStudyJSON {
 			}			
 		}
 		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifInvCovariatesQueryFormatter.generateQuery(),
-				exception);
+			rifLogger.error(this.getClass(),
+			                "Error in SQL Statement: >>> " + lineSeparator
+			                + rifInvCovariatesQueryFormatter.generateQuery(), exception);
 			throw exception;
 		}
 		finally {
