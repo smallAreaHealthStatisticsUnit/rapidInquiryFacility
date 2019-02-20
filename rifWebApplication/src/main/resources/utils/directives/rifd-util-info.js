@@ -49,8 +49,8 @@ angular.module("RIF")
                 $uibModalInstance.close();
             };
         })
-        .directive('getStudyInfo', ['$uibModal', 'user', '$sce', 'AlertService',
-                function ($uibModal, user, $sce, AlertService) {
+        .directive('getStudyInfo', ['$uibModal', 'user', '$sce', 'AlertService', 'D3ChartsService', 
+                function ($uibModal, user, $sce, AlertService, D3ChartsService) {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
@@ -128,7 +128,7 @@ angular.module("RIF")
                             scope.optionsd3 = { // For save button
                                 "riskGraph": {
                                     container: "riskGraph",
-                                    element: "#hSplit1",
+                                    element: "#hSplit3",
                                     filename: "riskGraph.png"
                                 }
                             };        
@@ -136,7 +136,7 @@ angular.module("RIF")
                             /* Directive inputs:
                              * <risk-graph 
                              *       risk-graph-data="riskGraphData" 
-                             *       name="riskGraphChartName" 
+                             *       name="riskGraphChartName1" 
                              *       width="riskGraphChartCurrentWidth" 
                              *       height="riskGraphChartCurrentHeight" 
                              *       genders-array="gendersArray" 
@@ -147,13 +147,11 @@ angular.module("RIF")
                             AlertService.consoleDebug("[rifd-util-info.js] d3RiskGraphChange() " +
                                 "gendersArray: " + JSON.stringify(scope.gendersArray) + 
                                 "; riskFactor: " + scope.riskFactor +
-                                "; riskGraphChartName: " + scope.riskGraphChartName +
+                                "; riskGraphChartName1: " + scope.riskGraphChartName1 +
                                 "; riskGraphChartCurrentWidth: " + scope.riskGraphChartCurrentWidth +
                                 "; riskGraphChartCurrentHeight: " + scope.riskGraphChartCurrentHeight +
                                 "; riskFactor2FieldName: " + scope.riskFactor2FieldName[scope.riskFactor]);
                             
-//                            D3ChartsService.getD3RiskGraph(scope.riskGraphdata, gendersArray, 
-//                                scope.riskFactor2FieldName[riskFactor || scope.riskFactor], riskFactor || scope.riskFactor);
 						}
 						
                         /*
@@ -183,11 +181,11 @@ angular.module("RIF")
 							scope.gendersList = ['males', 'females', 'both'];			
                             scope.gendersArray=['males', 'females'];	
                             scope.riskFactorList=['average exposure', 'band', 'average distance from nearest source'];
-                            scope.riskFactor='average exposure';
+                            scope.riskFactor='band';
                             scope.riskGraphHasBothMalesAndFemales=false;
                             scope.riskGraphHasMales=false;
                             scope.riskGraphHasFemales=false;
-                            scope.hSplit1=860;
+                            scope.hSplit1=100;
                             scope.riskFactor2FieldName = {
                                 'average exposure': 'avgExposureValue', 
                                 'band': 'bandId', 
@@ -195,7 +193,7 @@ angular.module("RIF")
                             };
                             scope.riskGraphChartCurrentWidth=860;
                             scope.riskGraphChartCurrentHeight=410;
-                            scope.riskGraphChartName="Risk Graph";
+                            scope.riskGraphChartName1="riskGraph1";
 							
                             if (scope.myMaps) {
                                 scope.mapType=scope.myMaps[0]; // E.g. viewermap
@@ -438,105 +436,7 @@ angular.module("RIF")
                                         JSON.stringify(res.data, null, 2));
                                 }                                
                             }
-                            
-                            function setupRiskGraphSelector(res) {
-                                var fieldList=[];
-                                for (var key in scope.riskFactor2FieldName) {
-                                    fieldList.push(scope.riskFactor2FieldName[key]);
-                                }
-                                
-                                if (res.data.males && res.data.males.length > 0 &&
-                                    res.data.females && res.data.females.length > 0) {
-                                    scope.riskGraphHasBothMalesAndFemales=true;
-                                    scope.riskGraphHasFemales=true;
-                                    scope.riskGraphHasMales=true;
-                                    scope.gendersName1="males";
-                                    scope.gendersName2="females";
-                                    scope.gendersList = ['males', 'females', 'both'];			
-                                    scope.gendersArray=['males', 'females'];	
-                                }
-                                else if (res.data.males && res.data.males.length > 0) {
-                                    scope.riskGraphHasBothMalesAndFemales=false;
-                                    scope.riskGraphHasMales=true;
-                                    scope.riskGraphHasFemales=false;
-                                    scope.gendersName1="males";
-                                    scope.gendersName2=undefined;
-                                    scope.gendersList = ['males'];			
-                                    scope.gendersArray=['males']
-                                }
-                                else if (res.data.females && res.data.females.length > 0) {
-                                    scope.riskGraphHasBothMalesAndFemales=false;
-                                    scope.riskGraphHasMales=false;
-                                    scope.gendersName1="females";
-                                    scope.gendersName2=undefined;
-                                    scope.gendersList = ['females'];			
-                                    scope.gendersArray=['females']
-                                    scope.riskGraphHasFemales=true;
-                                }
-                               
-                                var fieldList=[];
-                                var newFieldList={};
-                                for (var key in scope.riskFactor2FieldName) {
-                                    fieldList.push(scope.riskFactor2FieldName[key]);
-                                }
-                                for (var j=0; j<fieldList.length; j++) {
-                                    for (var k=0; k<scope.gendersList.length; k++) {
-                                        var gender=scope.gendersList[k];
-                                        var bands=res.data[gender];         
-                                        var field=fieldList[j];                      
-                                        for (var l=0; l<bands.length; l++) {
-                                            if (res.data[gender] &&
-                                                res.data[gender][l] &&
-                                                res.data[gender][l][field]) {
-                                                if (res.data[gender][l][field] != "0.0" &&
-                                                    !isNaN(res.data[gender][l][field]) &&
-                                                    parseFloat(res.data[gender][l][field]) > 0.0) {
-                                                    if (newFieldList[field]) {
-                                                        newFieldList[field]++;
-                                                    }
-                                                    else {
-                                                        newFieldList[field]=1;
-                                                    } 
-/*                                                                        
-                                                    AlertService.consoleDebug("[rifd-util-info.js] res.data[" + 
-                                                        gender + "][" + l + "][" + field + "]: " +
-                                                        JSON.stringify(res.data[gender][l][field]) +
-                                                        "; newFieldList[" + field + "]: " + newFieldList[field]);
-                                                }
-                                                else {                                                                 
-                                                    AlertService.consoleDebug("[rifd-util-info.js] res.data[" + 
-                                                        gender + "][" + l + "][" + field + "]: " +
-                                                        JSON.stringify(res.data[gender][l][field]) +
-                                                        "; !isNaN(res.data[" + 
-                                                        gender + "][" + l + "][" + field + "]): " + !isNaN(res.data[gender][l][field]) +
-                                                        "; parseFloat(res.data[" + 
-                                                        gender + "][" + l + "][" + field + "]: " + parseFloat(res.data[gender][l][field])); */
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                var newRiskFactor2FieldName={};
-                                var newRiskFactorList = [];
-                                for (var key in scope.riskFactor2FieldName) {
-                                    if (newFieldList[scope.riskFactor2FieldName[key]] &&
-                                        newFieldList[scope.riskFactor2FieldName[key]] > 0) {
-                                        newRiskFactor2FieldName[key] = scope.riskFactor2FieldName[key];
-                                        newRiskFactorList.push(key);
-                                    }
-                                }
-                                if (newRiskFactorList[0]) {
-                                    scope.riskFactorList=newRiskFactorList;
-                                    scope.riskFactor=newRiskFactorList[0];
-                                }
-                                else {                                                    
-                                    AlertService.consoleDebug("[rifd-util-info.js] unable to rebuild riskFactorList" +
-                                        ", scope.riskFactor2FieldName: " + JSON.stringify(scope.riskFactor2FieldName) +
-                                        ", newFieldList: " + JSON.stringify(newFieldList) +
-                                        "' data: " + JSON.stringify(res.data));
-                                }
-                            }
-                                                
+                                                        
                             function cautionMessage(message) {
                                 return '</br><section class="info-caution">&#9888;&nbsp;' + message + '</section>';
                             }
@@ -894,10 +794,13 @@ angular.module("RIF")
                                                 processHomogeneity(res);
                                                 
                                                 user.getRiskGraph(user.currentUser, thisStudy).then(function (res) {
-                                                    scope.riskGraphData=res.data;
+                                                    scope.riskGraphData=angular.copy(res.data);
                                                     
-                                                    setupRiskGraphSelector(res);
-
+                                                    var selector=D3ChartsService.setupRiskGraphSelector(
+                                                        scope.riskGraphData, scope.riskFactor2FieldName);
+                                                    for (var key in selector) { // Copy to scope
+                                                        scope[key]=angular.copy(selector[key]);
+                                                    }
                                                     scope.d3RiskGraphChange(undefined, undefined, undefined);
                                             
 //                                                    AlertService.consoleDebug("[rifd-util-info.js] homogeneityTestsHtml: " + 

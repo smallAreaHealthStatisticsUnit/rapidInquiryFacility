@@ -37,7 +37,8 @@
 /* global d3 */
 
 angular.module("RIF")
-        .directive('saved3Chart', function () {
+        .directive('saved3Chart', ['AlertService', 
+        function (AlertService) {
             return {
                 restrict: 'A',
                 link: function (scope, element, attr) {
@@ -154,20 +155,30 @@ angular.module("RIF")
                                 /MSIE 9/i.test(navigator.userAgent) ||
                                 /rv:11.0/i.test(navigator.userAgent) ||
                                 /Edge\/\d./i.test(navigator.userAgent)) {
-                            alert("You are using Internet Explorer:\nPlease use 'right click' then 'save picture as...' instead");
+                            AlertService.showWarning("You are using Internet Explorer:\nPlease use 'right click' then 'save picture as...' instead");
                             return;
                         }
 
                         opts = scope.$parent.optionsd3[attr.mapid];
 
                         var container;
-                        if (opts.container === "rrchart") {
+                        if (angular.isUndefined(opts)) {
+                            AlertService.consoleError("[rifd-util-savechart.js] optionsd3: " + 
+                                JSON.stringify(scope.$parent.optionsd3, 0, 1));
+                            AlertService.showError("Unable to get D3 options for: " + attr.mapid + 
+                                " from parent window for save");
+                            return;
+                        }
+                        else if (opts.container === "rrchart") {
                             container = opts.container + attr.mapid;
                         } else {
                             container = attr.mapid;
                         }
 
                         if (document.getElementById(container) === null) {
+                            AlertService.consoleError("[rifd-util-savechart.js] optionsd3: " + 
+                                JSON.stringify(scope.$parent.optionsd3, 0, 1));
+                            AlertService.showError("Unable to D3 container: " + container + " for save");
                             return;
                         } else {
                             var svgString = getSVGString(d3.select("#" + container)
@@ -183,4 +194,4 @@ angular.module("RIF")
                     });
                 }
             };
-        });
+        }]);

@@ -45,7 +45,117 @@ angular.module("RIF")
                     };      
 
                     var riskGraphParameters = {};
-                    
+                              
+                    /*
+                     * Function:    setupRiskGraphSelector2()
+                     * Parameters:  data, riskFactor2FieldName
+                     * Description: Setup Risk Graph Selector
+                     * Returns:     selector object (objects to set as scope)
+                     */
+                    function setupRiskGraphSelector2(data, riskFactor2FieldName) {
+                        var fieldList=[];
+                        var selector={};
+                        selector.riskFactor2FieldName=riskFactor2FieldName;
+                        for (var key in selector.riskFactor2FieldName) {
+                            fieldList.push(selector.riskFactor2FieldName[key]);
+                        }
+                        
+                        if (data.males && data.males.length > 0 &&
+                            data.females && data.females.length > 0) {
+                            selector.riskGraphHasBothMalesAndFemales=true;
+                            selector.riskGraphHasFemales=true;
+                            selector.riskGraphHasMales=true;
+                            selector.gendersName1="males";
+                            selector.gendersName2="females";
+                            selector.gendersList = ['males', 'females', 'both'];			
+                            selector.gendersArray=['males', 'females'];	
+                        }
+                        else if (data.males && data.males.length > 0) {
+                            selector.riskGraphHasBothMalesAndFemales=false;
+                            selector.riskGraphHasMales=true;
+                            selector.riskGraphHasFemales=false;
+                            selector.gendersName1="males";
+                            selector.gendersName2=undefined;
+                            selector.gendersList = ['males'];			
+                            selector.gendersArray=['males']
+                        }
+                        else if (data.females && data.females.length > 0) {
+                            selector.riskGraphHasBothMalesAndFemales=false;
+                            selector.riskGraphHasMales=false;
+                            selector.gendersName1="females";
+                            selector.gendersName2=undefined;
+                            selector.gendersList = ['females'];			
+                            selector.gendersArray=['females']
+                            selector.riskGraphHasFemales=true;
+                        }
+                       
+                        var fieldList=[];
+                        var newFieldList={};
+                        for (var key in selector.riskFactor2FieldName) {
+                            fieldList.push(selector.riskFactor2FieldName[key]);
+                        }
+                        for (var j=0; j<fieldList.length; j++) {
+                            for (var k=0; k<selector.gendersList.length; k++) {
+                                var gender=selector.gendersList[k];
+                                var bands=data[gender];         
+                                var field=fieldList[j];                      
+                                for (var l=0; l<bands.length; l++) {
+                                    if (data[gender] &&
+                                        data[gender][l] &&
+                                        data[gender][l][field]) {
+                                        if (data[gender][l][field] != "0.0" &&
+                                            !isNaN(data[gender][l][field]) &&
+                                            parseFloat(data[gender][l][field]) > 0.0) {
+                                            if (newFieldList[field]) {
+                                                newFieldList[field]++;
+                                            }
+                                            else {
+                                                newFieldList[field]=1;
+                                            } 
+/*                                                                        
+                                            AlertService.consoleDebug("[rifs-util-d3charts.js] data[" + 
+                                                gender + "][" + l + "][" + field + "]: " +
+                                                JSON.stringify(data[gender][l][field]) +
+                                                "; newFieldList[" + field + "]: " + newFieldList[field]);
+                                        }
+                                        else {                                                                 
+                                            AlertService.consoleDebug("[rifs-util-d3charts.js] data[" + 
+                                                gender + "][" + l + "][" + field + "]: " +
+                                                JSON.stringify(data[gender][l][field]) +
+                                                "; !isNaN(data[" + 
+                                                gender + "][" + l + "][" + field + "]): " + !isNaN(data[gender][l][field]) +
+                                                "; parseFloat(data[" + 
+                                                gender + "][" + l + "][" + field + "]: " + parseFloat(data[gender][l][field])); */
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        var newRiskFactor2FieldName={};
+                        var newRiskFactorList = [];
+                        for (var key in selector.riskFactor2FieldName) {
+                            if (newFieldList[selector.riskFactor2FieldName[key]] &&
+                                newFieldList[selector.riskFactor2FieldName[key]] > 0) {
+                                newRiskFactor2FieldName[key] = selector.riskFactor2FieldName[key];
+                                newRiskFactorList.push(key);
+                            }
+                        }
+                        if (newRiskFactorList[0]) {
+                            selector.riskFactorList=newRiskFactorList;
+                            selector.riskFactor=newRiskFactorList[0];
+                        }
+                        else {                                                    
+                            AlertService.consoleDebug("[rifs-util-d3charts.js] unable to rebuild riskFactorList" +
+                                ", selector.riskFactor2FieldName: " + JSON.stringify(selector.riskFactor2FieldName) +
+                                ", newFieldList: " + JSON.stringify(newFieldList) +
+                                "' data: " + JSON.stringify(data));
+                        }
+                        AlertService.consoleDebug("[rifs-util-d3charts.js] setupRiskGraphSelector2() selector: " + 
+                            JSON.stringify(selector));
+                        
+                        return selector;
+                    }
+                                                        
                     /*
                      * Function:    hasRiskGraphDataChanged2()
                      * Parameters:  data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, hasRiskGraphDataChangedCallback
@@ -54,13 +164,48 @@ angular.module("RIF")
                      * Returns:     Callback returns (error text, true/false)
                      */
                     function hasRiskGraphDataChanged2(
-                        data, gendersArray, riskFactorFieldName, riskFactor, hasRiskGraphDataChangedCallback) {
+                        data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, hasRiskGraphDataChangedCallback) {
                             
+                        if ((angular.isUndefined(data)) || (Object.keys(data).length === 0)) {
+                            $timeout( function() { // To avoid Error: $rootScope:infdig Infinite $digest Loop errors
+                                AlertService.consoleError("[rifs-util-d3charts.js] null data in hasRiskGraphDataChanged2");
+                                hasRiskGraphDataChangedCallback(undefined /* No error */, false);
+                            }, 500 /* mS */);  
+                            return;
+                        }
+                        else if (data && gendersArray && gendersArray.length > 0 &&
+                            angular.isUndefined(data[gendersArray[0]])) {
+                            $timeout( function() { // To avoid Error: $rootScope:infdig Infinite $digest Loop errors
+                                AlertService.consoleError("[rifs-util-d3charts.js] empty data in hasRiskGraphDataChanged2: " +
+                                    JSON.stringify(data));
+                                hasRiskGraphDataChangedCallback(undefined /* No error */, false);
+                            }, 500 /* mS */);  
+                            return;
+                        }
+                        else if (!(gendersArray && gendersArray.length > 0) || !riskFactorFieldName || 
+                            !riskFactorFieldDesc) {
+                            AlertService.consoleError("[rifs-util-d3charts.js] null parameters in hasRiskGraphDataChanged2: "  + 
+                                "; gendersArray: " + JSON.stringify(gendersArray) + 
+                                "; riskFactorFieldName: " + riskFactorFieldName + 
+                                "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
+                                "; data: " + JSON.stringify(data));
+                            hasRiskGraphDataChangedCallback("Null parameters passed to hasRiskGraphDataChanged2", 
+                                undefined); 
+                            return;
+                        }
+/*                        else {                     
+                            AlertService.consoleDebug("[rifs-util-d3charts.js] hasRiskGraphDataChanged2: "  + 
+                                "; gendersArray: " + JSON.stringify(gendersArray) + 
+                                "; riskFactorFieldName: " + riskFactorFieldName + 
+                                "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
+                                "; data: " + JSON.stringify(data));
+                        } */
+                        
                         var newRiskGraphParameters = {
                             data: data, 
                             gendersArray: gendersArray, 
                             riskFactorFieldName: riskFactorFieldName, 
-                            riskFactor: riskFactor
+                            riskFactorFieldDesc: riskFactorFieldDesc
                         };
                         if (angular.equals(newRiskGraphParameters, riskGraphParameters)) {
                             $timeout( function() { // To avoid Error: $rootScope:infdig Infinite $digest Loop errors
@@ -75,7 +220,7 @@ angular.module("RIF")
                     
                     /*
                      * Function:    d3RiskGraph()
-                     * Parameters:  SVG object, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback
+                     * Parameters:  SVG object, element Name, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback
                      * Description: Create risk graph error bars 
                      *              https://bl.ocks.org/NGuernse/8dc8b9e96de6bedcb6ad2c5467f5ef9a
                      *              1. We do need to use band_id if max_exposure_value is undefined/null
@@ -83,17 +228,46 @@ angular.module("RIF")
                      *              3. A choice: average/band_id/distance from nearest source
                      * Returns:     Nothing
                      */
-                    function d3RiskGraph(svg, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback) {
+                    function d3RiskGraph(svg, elementName, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback) {
                         
                         // Check parameters are defined
-                        if (!data || !(gendersArray && gendersArray.length > 0) || !riskFactorFieldName || 
+                        if (angular.isUndefined(data)) {
+                            AlertService.consoleError("[rifs-util-d3charts.js] null data in d3RiskGraph");
+                            riskGraphCallback("Null data passed to d3RiskGraph", undefined, undefined); 
+                            return;
+                        }
+                        else if (!(gendersArray && gendersArray.length > 0) || !riskFactorFieldName || 
                             !riskFactorFieldDesc) {
-                            AlertService.consoleError("[rifs-util-d3charts.js] null data in d3RiskGraph: "  + 
+                            AlertService.consoleError("[rifs-util-d3charts.js] null parameters in d3RiskGraph: "  + 
                                 "; gendersArray: " + JSON.stringify(gendersArray) + 
-                                "; riskFactor: " + riskFactorFieldName + 
+                                "; riskFactorFieldName: " + riskFactorFieldName + 
                                 "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
                                 "; data: " + JSON.stringify(data));
-                            riskGraphCallback("Null data passed to d3RiskGraph", undefined);
+                            riskGraphCallback("Null parameters passed to d3RiskGraph", undefined, undefined); 
+                            return;
+                        }
+                        else if (data && gendersArray && gendersArray.length > 0 &&
+                            angular.isUndefined(data[gendersArray[0]])) {
+                            AlertService.consoleError("[rifs-util-d3charts.js] empty data in d3RiskGraph: " + 
+                                JSON.stringify(data));
+                            riskGraphCallback("Empty data passed to d3RiskGraph: " + JSON.stringify(data), undefined, undefined); 
+                            return;
+                        }
+                        else if (data && gendersArray && gendersArray.length > 0 && data[gendersArray[0]] && (
+                            angular.isUndefined(data[gendersArray[0]][0]) ||
+                            angular.isUndefined(data[gendersArray[0]][0][riskFactorFieldName]))) {
+                            AlertService.consoleError("[rifs-util-d3charts.js] no " + riskFactorFieldName + 
+                                " data in d3RiskGraph: " + JSON.stringify(data));
+                            riskGraphCallback("No " + riskFactorFieldName + " data passed to d3RiskGraph: " + 
+                                JSON.stringify(data), undefined, undefined); 
+                            return;
+                        }
+                        else {                     
+                            AlertService.consoleDebug("[rifs-util-d3charts.js] d3RiskGraph: "  + 
+                                "; gendersArray: " + JSON.stringify(gendersArray) + 
+                                "; riskFactorFieldName: " + riskFactorFieldName + 
+                                "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
+                                "; data: " + JSON.stringify(data));
                         }
                    
                         /*
@@ -123,6 +297,10 @@ angular.module("RIF")
                             };
                             
                             for (var i=0; i<gendersArray.length; i++) {
+                                if (angular.isUndefined(data[gendersArray[i]])) {
+                                    riskGraphCallback("No data found", undefined, undefined);
+                                    return;
+                                }
                                 var yMin = d3.min(data[gendersArray[i]], function(d) { return (parseFloat(d.lower95)*0.8); }); 
                                 if (!domainExtent.yMin) {
                                     domainExtent.yMin=yMin;
@@ -299,8 +477,8 @@ angular.module("RIF")
                          *    },
                          *    "width": 900,
                          *    "height": 350,
-                         *    "hSplit1Width": 0,
-                         *    "hSplit1Height": 0,
+                         *    "hSplit3Width": 0,
+                         *    "hSplit3Height": 0,
                          *    "innerWidth": 1920,
                          *    "innerHeight": 938
                          *   }
@@ -310,27 +488,34 @@ angular.module("RIF")
                                 margin: {top: 20, right: 20, bottom: 40, left: 80}, // Scale using CSS
                                 width: 0,
                                 height: 0,
-                                hSplit1Width: 0,
-                                hSplit1Height: 0,
+                                hSplit3Width: 0,
+                                hSplit3Height: 0,
                                 innerWidth: $window.innerWidth,
                                 innerHeight: $window.innerHeight
                             };
                             // 1346x416 
-                            marginHeightWidth.hSplit1Width = 
-                                d3.select("#hSplit1").node().getBoundingClientRect().width;
-                            marginHeightWidth.hSplit1Height = 
-                                d3.select("#hSplit1").node().getBoundingClientRect().height;
-
+                            var hSplit=d3.select("#hSplit3"); // Info
+                            if (hSplit && hSplit.size() > 0) {
+                                marginHeightWidth.hSplit3Width = hSplit.node().getBoundingClientRect().width;
+                                marginHeightWidth.hSplit3Height = hSplit.node().getBoundingClientRect().height;
+                            }
+                            else {
+                                hSplit=d3.select("#hSplit1"); // Viewer
+                                if (hSplit && hSplit.size() > 0) {
+                                    marginHeightWidth.hSplit3Width = hSplit.node().getBoundingClientRect().width;
+                                    marginHeightWidth.hSplit3Height = hSplit.node().getBoundingClientRect().height;
+                                }
+                            }
                             var width=860;
-                            if (marginHeightWidth.hSplit1Width) {
-                                   width = marginHeightWidth.hSplit1Width;
+                            if (marginHeightWidth.hSplit3Width) {
+                                   width = marginHeightWidth.hSplit3Width;
                             }
                             else if (marginHeightWidth.innerWidth) {
                                 width=marginHeightWidth.innerWidth*0.65;
                             }
                             var height=410;
-                            if (marginHeightWidth.hSplit1Height) {
-                                   height = marginHeightWidth.hSplit1Height;
+                            if (marginHeightWidth.hSplit3Height) {
+                                   height = marginHeightWidth.hSplit3Height;
                             }
                             else if (marginHeightWidth.innerHeight) {
                                 height=marginHeightWidth.innerHeight*0.55;
@@ -459,12 +644,12 @@ angular.module("RIF")
                                   .text((gendersArray[i] == "both" ? "Both males and females" : gendersArray[i]));                          
                         }                            
                          
-                         riskGraphCallback(undefined /* No error */, svg2);
+                         riskGraphCallback(undefined /* No error */, svg2, elementName);
                     }
                     return {
-                        getD3RiskGraph: function (svg, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback) {
+                        getD3RiskGraph: function (svg, elementName, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback) {
                             try {
-                                return d3RiskGraph(svg, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback);
+                                return d3RiskGraph(svg, elementName, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback);
                             }
                             catch (e) {
                                 riskGraphCallback("Caught exception: " + e.toString(), undefined);
@@ -477,6 +662,9 @@ angular.module("RIF")
                             catch (e) {
                                 hasRiskGraphDataChangedCallback("Caught exception: " + e.toString(), undefined);
                             }
+                        },
+                        setupRiskGraphSelector: function (data, riskFactor2FieldName) {
+                            return setupRiskGraphSelector2(data, riskFactor2FieldName);
                         }
                     };
                 }]);
