@@ -92,14 +92,11 @@ Whichever way you run the installer, you will see a series of prompts. These tab
 | Press any key to continue . . .        |                                                     |                     |
 | Press any key to continue . . .        |                                                     |                     |
 
+## Taxonomies
 
+One of the features of the RIF is its Taxonomy Service. This service allows users to select diseases and conditions by various coding systems, such as the International Classification of Diseases (ICD). A default installation of  the RIF will have the complete set of ICD9 data, and a sample of the ICD10 data.
 
+The relevant files are contained in the `taxonomies.war` file, and so are expanded by Tomcat into its `webapps/taxonomies/WEB-INF/classes` directory. We recommend that you don't change or add to the files in there, as the entire directory is replaced whenever a new version of `taxonomies.war` is deployed. Instead, updated versions of the files should be placed in Tomcat's `conf` directory.
 
-
-- Database
-	- PostgreSQL
-	- SQL Server
-- Tomcat
-	- Deploying the WARs
-- Configuration
+For more details, including how to use the full set of ICD10 data, see the [Taxonomy Services Guide](../taxonomyServices/Taxonomy-Services). To add a custom taxonomy, see [How to Add a New Taxonomy](../taxonomyServices/adding-a-new-taxonomy).
 

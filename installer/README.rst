@@ -100,7 +100,7 @@ But you will have to identify the correct location for your own system.
 Multiple Platforms
 ------------------
 
-You will have to repeat the above steps on each of the platforms for which you want to create an installer. The file will be named appropriately for the platform: ``rifInstaller.exe`` on Windows and ``rifInstaller`` on Unix-based systems.
+You will have to repeat the above steps on each of the platforms for which you want to create an installer. The file will be named appropriately for the platform: ``rifInstaller.exe`` on Windows and ``rifInstaller_<platform>`` on Unix-based systems.
 
 
 
