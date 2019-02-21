@@ -105,7 +105,7 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_studies'
                   AND column_name  = 'select_state') BEGIN
-	ALTER TABLE t_rif40_studies ADD select_state NVARCHAR(MAX) NULL;
+	ALTER TABLE rif40.t_rif40_studies ADD select_state NVARCHAR(MAX) NULL;
 END;
 GO		
 
@@ -172,7 +172,7 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_studies'
                   AND column_name  = 'print_state') BEGIN
-	ALTER TABLE t_rif40_studies ADD print_state NVARCHAR(MAX) NULL;
+	ALTER TABLE rif40.t_rif40_studies ADD print_state NVARCHAR(MAX) NULL;
 END;
 GO		
 
@@ -197,7 +197,7 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_studies'
                   AND column_name  = 'export_date') BEGIN
-	ALTER TABLE t_rif40_studies ADD export_date NVARCHAR(MAX) NULL;
+	ALTER TABLE rif40.t_rif40_studies ADD export_date NVARCHAR(MAX) NULL;
 END;
 GO	
 
@@ -531,7 +531,7 @@ GO
 -- 3. The column predefined_group_name in the table t_rif40_inv_conditions is defined as varchar(5) in Postgres. It should be varchar(30);
 --    [Issue 21](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/21)
 --		 
-ALTER TABLE t_rif40_inv_conditions ALTER COLUMN predefined_group_name VARCHAR(30);
+ALTER TABLE rif40.t_rif40_inv_conditions ALTER COLUMN predefined_group_name VARCHAR(30);
 GO
 
 --
@@ -567,7 +567,7 @@ IF OBJECT_ID('rif40.t_rif40_homogeneity', 'U') IS NULL BEGIN
 		  explt5  double precision,      			    			-- the number of bands in the study which have an expected number of cases less than 1 
 		  CONSTRAINT t_rif40_homogeneity_pk PRIMARY KEY (study_id, inv_id, adjusted, genders),
 		  CONSTRAINT t_rif40_homogeneity_si_fk FOREIGN KEY (study_id, inv_id)
-			  REFERENCES t_rif40_investigations (study_id, inv_id),
+			  REFERENCES rif40.t_rif40_investigations (study_id, inv_id),
 		  CONSTRAINT adjusted_ck CHECK (adjusted BETWEEN 0 AND 1),
 		  CONSTRAINT genders_ck CHECK (genders BETWEEN 1 AND 3)
 		);
@@ -717,7 +717,7 @@ IF IndexProperty(Object_Id('rif40.rif40_health_study_themes'), 'rif40_health_stu
 GO
 
 IF IndexProperty(Object_Id('rif40.rif40_outcome_groups'), 'rif40_outcome_groups_desc', 'IndexId') IS NULL BEGIN
-	UPDATE rif40_outcome_groups 
+	UPDATE rif40.rif40_outcome_groups
 	   SET outcome_group_description = 'SAHSULAND Single ICD'
 	 WHERE outcome_group_name = 'SAHSULAND_ICD' AND outcome_group_description = 'Single ICD';
 	CREATE UNIQUE INDEX rif40_outcome_groups_desc ON rif40.rif40_outcome_groups(outcome_group_description);
@@ -751,7 +751,7 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 'rif40_geographies'
                   AND column_name  = 'map_background') BEGIN
-	ALTER TABLE rif40_geographies ADD map_background VARCHAR(200) DEFAULT 'OpenStreetMap Mapnik' NULL;
+	ALTER TABLE rif40.rif40_geographies ADD map_background VARCHAR(200) DEFAULT 'OpenStreetMap Mapnik' NULL;
 	
 	EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
 		@value=N'RIF geography map background', 
@@ -764,7 +764,7 @@ IF NOT EXISTS (SELECT constraint_name
                 WHERE table_schema    = 'rif40'
                   AND table_name      = 'rif40_geographies'
                   AND constraint_name = 'map_background_ck')
-ALTER TABLE rif40_geographies ADD CONSTRAINT map_background_ck CHECK (map_background IN (
+ALTER TABLE rif40.rif40_geographies ADD CONSTRAINT map_background_ck CHECK (map_background IN (
 		'OpenStreetMap Mapnik','OpenStreetMap BlackAndWhite','OpenTopoMap','Humanitarian OpenStreetMap','Thunderforest OpenCycleMap',
 		'Thunderforest Transport','Thunderforest TransportDark','Thunderforest Landscape','Thunderforest SpinalMap','Thunderforest Outdoors',
 		'Thunderforest Pioneer','Thunderforest Mobile Atlas','Thunderforest Neighbourhood','OpenMapSurfer Roads','OpenMapSurfer Grayscale',
@@ -775,9 +775,9 @@ ALTER TABLE rif40_geographies ADD CONSTRAINT map_background_ck CHECK (map_backgr
 		'HikeBike HikeBike','HikeBike HillShading','NASAGIBS ViirsEarthAtNight2012','OSM UK Postcodes','Code-Point Open UK Postcodes'));
 GO
 		
-UPDATE rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND' AND map_background IS NULL;
+UPDATE rif40.rif40_geographies SET map_background = 'OpenStreetMap Mapnik' WHERE geography != 'SAHSULAND' AND map_background IS NULL;
 GO
-UPDATE rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND' AND map_background IS NOT NULL;
+UPDATE rif40.rif40_geographies SET map_background = NULL WHERE geography = 'SAHSULAND' AND map_background IS NOT NULL;
 GO
 
 :r ..\sahsuland_dev\rif40\table_triggers\t_rif40_studies_trigger.sql

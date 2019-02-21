@@ -8,8 +8,7 @@ title: RIF Web Application and Middleware Installation
 
 # Installation Prerequisites
 
-These instructions are to install and setup the RIF middleware and web application (front end) and are for Windows Apache Tomcat. Linux Tomcat
-will be very similar. It is assumed that the installer knows how to:
+These instructions are to install and setup the RIF middleware and web application (front end) and are for Windows Apache Tomcat. Linux Tomcat will be very similar. It is assumed that the installer knows how to:
 
 * Modify Windows file permissions
 * Set environment variables; check settings; setup up the executable and library search paths
@@ -32,7 +31,7 @@ of this document and are not required for a simple RIF setup.
 ## Apache Maven
 
 Apache Maven is required to build the RIF web application (War) files and the data loader tool from source. It is
-not required if you are supplied with pre-built copies (in the *tomcat webaapps* directory).
+not required if you are supplied with pre-built copies (in the *Tomcat webaapps* directory).
 
 Download and install Apache Maven: (https://maven.apache.org/download.cgi)
 
@@ -67,7 +66,7 @@ and has not been tested - we DO NOT have any!*). The 32 bit version will cause 3
 - Add the Java bin directory (*C:\Program Files\Java\jdk1.8.0_111\bin*) to the path.
 - Test Java is installed correctly with *java -showversion* in a new command window.
 
-JRE_HOME is used by the Apache tomcat manual start script *catalina.bat*. Normally, Java upgrades go into the same
+JRE_HOME is used by the Apache Tomcat manual start script *catalina.bat*. Normally, Java upgrades go into the same
 directory as installed, but if Java is upgraded by hand or re-installed these environment settings may need to
 be changed.
 
@@ -75,7 +74,7 @@ be changed.
 
 Apache Tomcat in the Java web server that runs the RIF. Tomcat can be downloaded from: https://tomcat.apache.org/download-80.cgi
 
-Please use tomcat version 8, not 9 as we have not tested 9. The version tested was 8.5.13. It is advised to use the MSI
+Please use Tomcat version 8, not 9 as we have not tested 9. The version tested was 8.5.13. It is advised to use the MSI
 version.
 
 Set the following environment variables using the system control panel: *Control Panel\All Control Panel Items\System:*. This is
@@ -86,40 +85,40 @@ well hidden on Windows 10, but you can type the path into Windows explorer! Choo
 
 Start a new command window as an Administrator (type *cmd* into windows search, right click on the command icon and select "run as Administrator").
 
-Use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
+Use the configure Tomcat application (Tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking Tomcat!
 
 ![Setting Java version autodetect]({{ site.baseurl }}/rifWebApplication/tomcat8_configuration_3.PNG)
 
-This makes tomcat Java upgrade proof; but this may have unintended effects if:
+This makes Tomcat Java upgrade proof; but this may have unintended effects if:
 
 * You have not removed all the old Java releases
 * You install another version of Java (e.g. the Oracle installer may do this)
 
 ### Apache Tomcat on a single host
 
-This is suitable for laptops and developers with no access from other machines. Download and install tomcat; make sure your firewall blocks
+This is suitable for laptops and developers with no access from other machines. Download and install Tomcat; make sure your firewall blocks
 port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in
-[Securing Tomcat]({{ site.baseurl }}/rifWebApplication/rifWebApplication#securing-tomcat).
+[Securing Tomcat]({{ site.baseurl }}/Installation/rifWebApplication#securing-tomcat).
 
 ### Apache Tomcat for internet use
 
 The is the normal production use case. It is important that Apache Tomcat is installed securely. It is *NOT* required for laptops.
 
-Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.owasp.org/index.php/Securing_tomcat#Sample_Configuration_-_Good_Security) for securing tomcat with good security.
+Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.owasp.org/index.php/Securing_tomcat#Sample_Configuration_-_Good_Security) for securing Tomcat with good security.
 
-*Do not just install **Tomcat** without reading the instructions first*. In particular on Windows:
+*Do not just install Tomcat without reading the instructions first*. In particular on Windows:
 
 - Download the core windows service installer
 - Start the installation, click Next and Agree to the licence
 - Untick native, documentation, examples and webapps then click Next
 - Choose an installation directory (referenced as *CATALINA_HOME* from now on), preferably on a different drive to the OS.
 - Choose an administrator username (NOT admin) and a secure password that complies with your organisations password policy.
-- Complete tomcat installation, but do not start service.
+- Complete Tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web
   services will not work [The web services will fail to start on the first user logon if it is not set]; see:
-  [RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services-crash-on-logon).
+  [RIF Services crash on logon]({{ site.baseurl }}/Installation/rifWebApplication#rif-services-crash-on-logon).
 - If *CATALINA_HOME* is *C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.5* you have installed the 32 bit version of Java.
-  Remove tomcat and Java and re-install a 64 bit Java (unless you are on a really old 32 bit only Machine...)
+  Remove Tomcat and Java and re-install a 64 bit Java (unless you are on a really old 32 bit only Machine...)
 
 When accessed from the internet the RIF **must** be secured using TLS to protect the login details and any health data viewed.
 
@@ -135,14 +134,14 @@ an updated ServerInfo.properties:
 
 **Do this first, before you try to run the RIF as a service or configure the logging.**
 
-Tomcat can be run from the command line. The advantage of this is all the output appears in the same place! To do this the tomcat server must be
-stopped (i.e. in the Windows services panel or via Linux runlevel scripts (/etc/init.d/tomcat*). Normally tomcat is run as a server (i.e. as a
+Tomcat can be run from the command line. The advantage of this is all the output appears in the same place! To do this the Tomcat server must be
+stopped (i.e. in the Windows services panel or via Linux runlevel scripts (/etc/init.d/tomcat*). Normally Tomcat is run as a server (i.e. as a
 daemon in Unix parlance).
 
 **Make sure you start a new command window (cmd) after setting any environment variables**. The new settings will *NOT* be picked up otherwise.
 
 **It is advisable at this point to install the WAR files in the %CATALINA_HOME\webapps directory before you start the RIF. See section 3. Normally
-these are pre-supplied (in the *tomcat webapps* folder)This will get tomcat to expand the WAR files and all the configuration and example
+these are pre-supplied (in the *Tomcat webapps* folder)This will get Tomcat to expand the WAR files and all the configuration and example
 files in this section will then appear. The RIF will not work until you configure it correctly in section 4.**
 
 cd to %CATALINA_HOME%\bin; run *catalina.bat* with the parameter *start* or *stop*.
@@ -170,7 +169,7 @@ Neither the JAVA_HOME nor the JRE_HOME environment variable is defined
 At least one of these environment variable is needed to run this program
 ```
 
-You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disable Tomcat or the RIF will not work!
+You may get a complaint from your firewall or security software; allow Tomcat the access it requires. Do *NOT* disable Tomcat or the RIF will not work!
 
   ![Prevent Tomcat from being disabled by your security software]({{ site.baseurl }}/rifWebApplication/windows_defender_message.png)
 
@@ -288,15 +287,15 @@ The shortcuts created then need to be modified to run as an Administrator (right
 
   ![Make a shortcut run as an administrator]({{ site.baseurl }}/rifWebApplication/setting_runas_administrator.png)
 
-When running Tomcat at the command line on Windows 10 the new Unix like copy paste functionality will prevent the buffer from scrolling and thence cause tomcat to hang. This can be alleviated by typing `<enter>` or
-`<return>` in the log window and fixed by changing the properties of the log window (right click on tomcat in the top left corner of the Java logging window,
+When running Tomcat at the command line on Windows 10 the new Unix like copy paste functionality will prevent the buffer from scrolling and thence cause Tomcat to hang. This can be alleviated by typing `<enter>` or
+`<return>` in the log window and fixed by changing the properties of the log window (right click on Tomcat in the top left corner of the Java logging window,
 select properties; In options unset "quick edit mode", "insert mode", "filter clipboard contents on paste" and "enable line wrapping selection"):
 
   ![Windows 10 Tomcat console window properties]({{ site.baseurl }}/rifWebApplication/tomcat_console_properties.png)
 
 Tomcat can be stopped using "control-C" if R has not been run or using `stop_rif.bat`.
 
-* When further instructions tell you to stop and start tomcat you will need to use the configure Tomcat application (tomcat8w) or the services panel
+* When further instructions tell you to stop and start Tomcat you will need to use the configure Tomcat application (Tomcat8w) or the services panel
 
 ### Middleware Logging (Log4j2) Introduction
 
@@ -305,17 +304,17 @@ This section introduces RIF logging. You do not need to do anything!
 The RIF middleware now uses Log4j version 2 for logging. The configuration file `log4j2.xml` (example in:
 *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*) sets up five loggers:
 
-  1. The tomcat logger: `org.apache.catalina.core.ContainerBase.[Catalina].[localhost]` used by the middleware: tomcat.log
+  1. The Tomcat logger: `org.apache.catalina.core.ContainerBase.[Catalina].[localhost]` used by the middleware: tomcat.log
   2. The middleware logger: `rifGenericLibrary.util.RIFLogger` used by the *rifServices* middleware: `RIF_middleware.log`
   3. The taxonomy services logger: `rifGenericLibrary.util.TaxonomyLogger` used by the *taxonomyservices* middleware: `TaxonomyLogger.log`
   4. The front end (RIF web application) logger: `rifGenericLibrary.util.FrontEndLogger` used by the *rifServices* front end logger: `FrontEndLogger.log`
   5. "Other" for all other logger output not the above: `Other.log`
 
-Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
+Log4j2 was chosen because it is easy to integrate with Tomcat; it is however old and does not always rotate the logs well.
 
 Logs go to STDOUT and `%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log`, where:
 
-* `<Log name>` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+* `<Log name>` is one of: Tomcat, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
 * `<YYYY>` is the year;
 * `<MM>` is the numeric month;
 * `<DD>` is the numeric day and;
@@ -515,7 +514,7 @@ configuration in the previous section (which is a subset).
 	REM
 	REM A copy of this script is provided in %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
 	REM
-	REM Do not set LOGGING_MANAGER to jul, tomcat will NOT sart
+	REM Do not set LOGGING_MANAGER to jul, Tomcat will NOT sart
 	REM set LOGGING_MANAGER=org.apache.logging.log4j.jul.LogManager
 	REM
 	REM To enable Jconsole add %ENABLE_JMX% to CATALINA_OPTS. Set to run on port 9999 and only allow connections from localhost
@@ -524,13 +523,13 @@ configuration in the previous section (which is a subset).
 	set CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
 
 	REM
-	REM Add -Dlog4j2.debug=true if tomcat exceptions/does not start
+	REM Add -Dlog4j2.debug=true if Tomcat exceptions/does not start
 	REM (catalina.bat run is useful if no output)
 	REM
 	REM Default CLASSPATH; no need to be added
 	REM set CLASSPATH=%CATALINA_HOME%\bin\bootstrap.jar;%CATALINA_HOME%\bin\tomcat-juli.jar
 	REM
-	REM Added JUL and Log4j2 to tomcat CLASSAPATH
+	REM Added JUL and Log4j2 to Tomcat CLASSAPATH
 	set CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.0.jar
 	REM
 	REM Do not do this, use CATALINA_OPTS instead. This will work on Linux
@@ -548,22 +547,22 @@ configuration in the previous section (which is a subset).
   If you use Maven to build the Middleware, these files are in subdirectories below
   `%USER%\.m2\repository\org\apache\logging\log4j\<log4j module>\2.9.0` where `<log4j module>` is log4j-api etc.
 
-  SAHSU will normally supply these JAR files (in the log4j directory) together with the war files (in the tomcat webapps directory).
+  SAHSU will normally supply these JAR files (in the log4j directory) together with the war files (in the Tomcat webapps directory).
 
   Do NOT set the enviroment variables LOGGING_MANAGER or LOGGING_CONFIG.
-  This script sets *CATALINA_OPTS* and *CLASSPATH* in the tomcat environment*:
+  This script sets *CATALINA_OPTS* and *CLASSPATH* in the Tomcat environment*:
   ```
   CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
   CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.CONSOLE0.jar
   ```
 
-* Restart Tomcat using the configure Tomcat application (tomcat8w) or the services panel.
-  The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
+* Restart Tomcat using the configure Tomcat application (Tomcat8w) or the services panel.
+  The Tomcat output trace will appear in %CATALINA_HOME%/logs as:
   *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*.
 
 Debugging logging faults:
 
-* Adding  -Dlog4j2.debug=true to the CATALINA_OPTS environment variable if tomcat exceptions/does not start
+* Adding  -Dlog4j2.debug=true to the CATALINA_OPTS environment variable if Tomcat exceptions/does not start
 * Use `catalina.bat run` if there is no output from te script and the Java windows disappears immediately
 * Set the configuration status to **debug**
 
@@ -606,17 +605,17 @@ Debugging logging faults:
   The RIF middleware now uses Log4j version 2 for logging. The configuration file:
   *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
 
-  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  1. The Tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
   2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
   3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
   4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
   5. "Other" for all other logger output not the above: Other.log
 
-  Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
+  Log4j2 was chosen because it is easy to integrate with Tomcat; it is however old and does not always rotate the logs well.
 
   Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log```; where:
 
-  * ```<Log name>``` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+  * ```<Log name>``` is one of: Tomcat, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
   * ```<YYYY>``` is the year;
   * ```<MM>``` is the numeric month;
   * ```<DD>``` is the numeric day and;
@@ -689,7 +688,7 @@ Debugging logging faults:
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
 	</RollingFile>
-    <RollingFile name="STATISTICSLOGGER" 
+    <RollingFile name="STATISTICSLOGGER"
 				 filePattern="${logdir}/StatisticsLogger.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
@@ -697,7 +696,7 @@ Debugging logging faults:
 		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
-    </RollingFile>	
+    </RollingFile>
     <RollingFile name="OTHER"
 				 filePattern="${logdir}/Other.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
@@ -726,7 +725,7 @@ Debugging logging faults:
       <AppenderRef ref="OTHER"/>
     </Root>
 
-	<!-- tomcat logging -->
+	<!-- Tomcat logging -->
     <Logger name="org.apache.catalina.core.ContainerBase.[Catalina].[localhost]"
         level="info" additivity="false">
       <AppenderRef ref="TOMCAT"/>
@@ -767,26 +766,19 @@ Debugging logging faults:
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="STATISTICSLOGGER"/>
     </Logger>
-	
+
   </Loggers>
 </Configuration>
 ```
 
 ## R
 
-Download and install R: (https://cran.ma.imperial.ac.uk/bin/windows/base)
+See [Setup R](#setup-r)
 
-R is setup later in: [R setup]({{ site.baseurl }}/rifWebApplication/rifWebApplication#setup-r)
-
-As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64
-bit version
-
-Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*. Not: **C:\Program Files\R\R-3.4.4\bin**
-or you will cause [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifWebApplication/rifWebApplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 # Building Web Services using Maven
 
-Normally users will be supplied with pre built files in the *tomcat webapps* folder:
+Normally users will be supplied with pre built files in the *Tomcat webapps* folder:
 
 * RIF middleware: `rifServices.war`
 * Statistics service: `statistics.war`
@@ -994,7 +986,7 @@ This is code in `...rapidInquiryFacility\rifServices\src\main\java\rifServices\d
 ### Taxonomy Services
 
 For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy services configuration files*) to:
-*%CATALINA_HOME%\conf* and restart tomcat
+*%CATALINA_HOME%\conf* and restart Tomcat
 
   * icdClaML2016ens.xml
   * TaxonomyServicesConfiguration.xml
@@ -1028,10 +1020,10 @@ Create RIF40 in web-apps:
 * Copy all files and directories from the directory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"*
   to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40*
 
-### Method 2: Using pre-supplied RIF40.war (in the *tomcat webapps* folder)
+### Method 2: Using pre-supplied RIF40.war (in the *Tomcat webapps* folder)
 
 * *RIF40.war* needs to be copied to: *%CATALINA_HOME%\webapps\RIF40.war*
-* Once you have started tomcat check that the *%CATALINA_HOME%\webapps\RIF* contains files:
+* Once you have started Tomcat check that the *%CATALINA_HOME%\webapps\RIF* contains files:
   ```
 	C:\Program Files\Apache Software Foundation\Tomcat 8.5>cd %CATALINA_HOME%\webapps\RIF40
 
@@ -1071,12 +1063,12 @@ This should be copied to *%CATALINA_HOME%\conf* so it is not overwritten by midd
 
 If you are running on a laptop and using Postgres you only need to copy the file.
 
-* If the folder rifServices does not exist; start tomcat and it will be expanded from the war file.
+* If the folder rifServices does not exist; start Tomcat and it will be expanded from the war file.
 * The default database is setup as follows:
   * type (key database.databaseType) is Postgres. You will need to comment out the Postgres setting and use the SQL Server examples for SQL Server;
   * name (key database.databaseName) is *sahsuland*;
   * Port (key database.port) is *5432*;
-  * host (key database.host) is *localhost* for Postgres. Normally tomcat is installed on the same server as the database; if this is not the case Postgres and the
+  * host (key database.host) is *localhost* for Postgres. Normally Tomcat is installed on the same server as the database; if this is not the case Postgres and the
     firewalls will need to be setup correctly, see [Postgres Client Authentication](https://www.postgresql.org/docs/9.6/auth-methods.html).
 	This usually requires skilled database and network administrators. The SQL Server host will be the same as the SQLCMDSERVER variable;
 
@@ -1131,7 +1123,7 @@ database.databaseType=postgresql
 
 This section not required is you are running on localhost (e.g. a laptop).
 
-By default tomcat runs on port 8080, if you have installed the Apache webserver (Postgres installs can) then it will appear on port 8081. This can be
+By default Tomcat runs on port 8080, if you have installed the Apache webserver (Postgres installs can) then it will appear on port 8081. This can be
 detected using the ```netstat``` command (the syntax will be slightly differ on Linux):
 
 ```
@@ -1292,7 +1284,7 @@ Set the password correctly; as used above. Do **NOT** use a password of *changei
 
 This will generate a self signed certificate; this will cause browsers to complain:
 
-  ![Insecure TLS warning]({{ site.baseurl }}/rifWebApplication/insecure_connection_warning.png)
+  ![Insecure TLS warning]({{ site.baseurl }}/rifWebApplication/insecure_connection_warning.png){:width="100%"}
 
 To sign the certificates, follow the instructions in: (https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html#SSL_and_Tomcat)
 
@@ -1311,242 +1303,28 @@ This setup will support:
 
 ## Setup R
 
-**Note:** Much of the information below is specific to setting up on Windows. You can get information on setting up on a Mac -- which will also be helpful for setting up on other Unixes -- [here]({{ site.baseurl }}/rifWebApplication/R_setup_on_Mac).
-
-### R and Printing Output Directories
-
-Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults in *RIFServiceStartupProperties.properties* are:
-
-* Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
-* Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
-
-Grant appropriate read, write and execute access to these directories for Tomcat and SQL Server. Both normally run as the local administrator group: Administrators
-(e.g. DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
-
-### R ODBC
-
-This is only required for SQL Server ports of the RIF. All Postgres ports use R JDBC. We have been forced to use *RODBC* on SQL Server due to an *RJDBC* error:
-```
-saveDataFrameToDatabaseTable() ERROR: execute JDBC update query failed in dbSendUpdate (The incoming tabular data
-stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 5 (""): The supplied value is not
-a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is
-data of numeric type with scale greater than precision.
-```
-
-Create and test a system ODBC datasource
-
-* Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as Adminstrator" for the database in use
-* Use SQL Server Native Client version 11, 2011 version or later;
-  ![SQL Server ODBC Setup]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_sqlserver.png).
-
-  The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=SQLServer13```; so
-  the name is *SQLServer13*.
-
-  1. Choose server. Normally you have to type in the host name as discovery will be turned off by default. You may need append "tcp:" to the hostname to force the use of
-     TCP/IP:
-
-     ![SQL Server ODBC Setup 1]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup.png).
-
-  2. Set the connection type to SQL Server authentication using a login and password. Make sure you supply the login and password.
-
-	 ![SQL Server ODBC Setup 2]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup2.png).
-
-  3. Change the database to your database name (e.g. *sahsuland*)
-
-     ![SQL Server ODBC Setup 3]({{ site.baseurl }}/rifWebApplication/sql_server_odbc_setup3.png).
-
-* If you cannot see a SQL Server database list (you will get an error when SQL server tries to build a list) or get SQL Server connection errors on test see:
-  [SQL Server ODBC Connection Errors]({{ site.baseurl }}/rifWebApplication/rifWebApplication#sql-server-odbc-connection-errors)
-
-* Make sure you test the ODBC connection using the RIF user username and password.!
-
-### R Packages
-
-Start *R* in an Administrator command window and run the following script:
-
-```R
-# CHECK & AUTO INSTALL MISSING PACKAGES
-packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "RJDBC", "MatrixModels", "rJava", "here")
-if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
-  install.packages(setdiff(packages, rownames(installed.packages())))
-}
-if (!require(INLA)) {
-	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
-}
-
-```
-
-* If R cannot be found, add it to the PATH and restart the administrator Window
-* If R asks if you want to use a personal library you are not running as Administrator, do *NOT* accept this.
-  The script will fail. These R libraries *NUST* be installed for all users.
-* R will ask for the nearest CRAN (R code archive); select one geographically near you (e.g. same country).
-* R output (version numbers will be higher as you always get the latest version):
-
-```
---- Please select a CRAN mirror for use in this session ---
-also installing the dependencies 'gtools', 'gdata', 'Rcpp', 'sp', 'LearnBayes', 'deldir', 'coda', 'gmodels', 'expm'
-
-
-  There are binary versions available but the source versions are later:
-       binary source needs_compilation
-deldir 0.1-12 0.1-14              TRUE
-spdep  0.6-12 0.6-13              TRUE
-
-Do you want to install from sources the packages which need compilation?
-y/n: if (!require(INLA)) {
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gtools_3.5.0.zip'
-Content type 'application/zip' length 144014 bytes (140 KB)
-downloaded 140 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gdata_2.17.0.zip'
-Content type 'application/zip' length 1178306 bytes (1.1 MB)
-downloaded 1.1 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/Rcpp_0.12.10.zip'
-Content type 'application/zip' length 3261850 bytes (3.1 MB)
-downloaded 3.1 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/sp_1.2-4.zip'
-Content type 'application/zip' length 1528674 bytes (1.5 MB)
-downloaded 1.5 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/LearnBayes_2.15.zip'
-Content type 'application/zip' length 1129565 bytes (1.1 MB)
-downloaded 1.1 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/deldir_0.1-12.zip'
-Content type 'application/zip' length 171603 bytes (167 KB)
-downloaded 167 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/coda_0.19-1.zip'
-Content type 'application/zip' length 201300 bytes (196 KB)
-downloaded 196 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gmodels_2.16.2.zip'
-Content type 'application/zip' length 73931 bytes (72 KB)
-downloaded 72 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/expm_0.999-2.zip'
-Content type 'application/zip' length 194188 bytes (189 KB)
-downloaded 189 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/plyr_1.8.4.zip'
-Content type 'application/zip' length 1121290 bytes (1.1 MB)
-downloaded 1.1 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/abind_1.4-5.zip'
-Content type 'application/zip' length 40002 bytes (39 KB)
-downloaded 39 KB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/maptools_0.9-2.zip'
-Content type 'application/zip' length 1818632 bytes (1.7 MB)
-downloaded 1.7 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/spdep_0.6-12.zip'
-Content type 'application/zip' length 3819364 bytes (3.6 MB)
-downloaded 3.6 MB
-
-trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/RODBC_1.3-15.zip'
-Content type 'application/zip' length 829585 bytes (810 KB)
-downloaded 810 KB
-
-package 'gtools' successfully unpacked and MD5 sums checked
-package 'gdata' successfully unpacked and MD5 sums checked
-package 'Rcpp' successfully unpacked and MD5 sums checked
-package 'sp' successfully unpacked and MD5 sums checked
-package 'LearnBayes' successfully unpacked and MD5 sums checked
-package 'deldir' successfully unpacked and MD5 sums checked
-package 'coda' successfully unpacked and MD5 sums checked
-package 'gmodels' successfully unpacked and MD5 sums checked
-package 'expm' successfully unpacked and MD5 sums checked
-package 'plyr' successfully unpacked and MD5 sums checked
-package 'abind' successfully unpacked and MD5 sums checked
-package 'maptools' successfully unpacked and MD5 sums checked
-package 'spdep' successfully unpacked and MD5 sums checked
-package 'RODBC' successfully unpacked and MD5 sums checked
-
-The downloaded binary packages are in
-        C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
-> install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
-Warning: dependency 'MatrixModels' is not available
-trying URL 'https://www.math.ntnu.no/inla/R/stable/bin/windows/contrib/3.2/INLA_0.0-1485844051.zip'
-Content type 'application/zip' length 93004915 bytes (88.7 MB)
-downloaded 88.7 MB
-
-
-The downloaded binary packages are in
-        C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
-```
-
-### R Environment
-
-1. Add R_HOME, e.g. *C:\Program Files\R\R-3.4.4* to the environment
-
-2. Add the 64bit JRI native library location and the R_HOME bin\x64 directory to the path
-
-   To use R from Tomcat Java you will need to install JRI. Fortunately, JRI is now a part of rJava and is installed with it.
-   JRI will require its own native shared library which is already installed with rJava. To locate JRI installed with
-   rJava, use
-	```
-	> system.file("jri",package="rJava")
-	[1] "C:/Program Files/R/R-3.4.4/library/rJava/jri"
-	```
-   from inside of R [command-line]. Above command will give you a path. If you look in this directory you will see *i386*
-   and *x64* sub directories. In *x64* you will be able to find the 64 bit *libjri.so*
-   which is the shared library JRI is looking for.
-
-   This 32 or 64 bit subdirectory appended needs to be added to the path:
-   *C:\Program Files\R\R-3.4.4\library\rJava\jri\x64*. This ensures that file "x64\jri.dll"
-   is in java.library.path. If you have 64bit Java (as instructed previous) you will need to use the 64 bit version.
-
-   Just after user logon the middleware can print the JAVA LIBRARY PATH: *System.getProperty("java.library.path")*
-
-   As with Java and R, normally the 64 bit version is used.
-
-	```
-	JAVA LIBRARY PATH >>>
-	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\ProgramData\Ora
-	cle\Java\javapath;C:\Python27\;C:\Python27\Scripts;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\
-	Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\Intel(R) Man
-	agement Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R)
-	 Management Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\WiFi
-	\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Users\admin\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Fi
-	les (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\MinGW\msys\1.0\bin;C:\Program Files\PostgreSQL\9.5\bin;C:\Program Files\R
-	\R-3.2.3\bin\x64;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\110\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\1
-	20\Tools\Binn\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\Microsoft SQL Server\120\DTS\Binn\;C:\Program
-	Files (x86)\Microsoft SQL Server\120\Tools\Binn\ManagementStudio\;C:\Program Files (x86)\Microsoft SQL Server\120\DTS\Binn\;C:\Progr
-	am Files\nodejs\;C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\bin;C:\Program Files\R\R-3.4.0\bin;C:\Program Files
-	(x86)\Skype\Phone\;C:/Program Files/R/R-3.4.0/library/rJava/jri;.
-	```
-
-	* **RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES**
-	* [You can now start the rif]({{ site.baseurl }}/rifWebApplication/rifWebApplication#running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory
-	  *%CATALINA_HOME%\bin* as an Administrator.). The web services will fail to start on the first user logon if the R environment not setup correctly]; see:
-  [RIF Services crash on logon]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services-crash-on-logon).
-	* Then you can logon. See section 5
-	  [Running the RIF]({{ site.baseurl }}/rifWebApplication/rifWebApplication#running-the-rif)
-	  for logon instructions
-
+* [Setting up on Windows](/Installation/R_setup_on_Windows)
+* [Setting up on Mac](/Installation/R_setup_on_Mac).
 
 ## Common Setup Errors
 
 The RIF middleware now uses Log4j version 2 for logging. The configuration file *log4j2.xml* (example in:
 *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*) sets up five loggers:
 
-  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  1. The Tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
   2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the *rifServices* middleware: RIF_middleware.log
   3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyservices* middleware: TaxonomyLogger.log
   4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the *rifServices* front end logger: FrontEndLogger.log
   5. "Other" for all other logger output not the above: Other.log
 
-When run from catalina.bat all tomcat output appears in the console window. When run as a service tomcat logs to:
+When run from catalina.bat all Tomcat output appears in the console window. When run as a service Tomcat logs to:
 commons-daemon.<date e.g., 2018-04-16>.log, tomcat8-stderr.<date e.g., 2018-04-16>.log, tomcat8-stdout.<date e.g., 2018-04-16>.log instead of to the console
 
 ### Logon RIF Service Call Incorrect
 
 Use developer mode in the browser to bring up the console log:
 
-  ![Logon RIF Service Call Incorrect]({{ site.baseurl }}/rifWebApplication/caching_error.png)
+  ![Logon RIF Service Call Incorrect]({{ site.baseurl }}/rifWebApplication/caching_error.png){:width="100%"}
 
 In this example the RIF web application file RIF40\backend\services\rifs-back-urls.js (e.g.
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40\backend\services\rifs-back-urls.js)
@@ -1603,7 +1381,7 @@ TLS errors tend to be:
 
 ### Unable to unpack war files
 
-In this case the .war file (e.g. rifServices.war) is not unpacked and the service is not available in tomcat. Find in error in the Tomcat stderr log and send to the development team.
+In this case the .war file (e.g. rifServices.war) is not unpacked and the service is not available in Tomcat. Find in error in the Tomcat stderr log and send to the development team.
 This is indicative of a build problem.
 
 * Screen shots and log will be added when this happens again!*
@@ -1612,7 +1390,7 @@ This is indicative of a build problem.
 
 See *3.1.2 Taxonomy Service*, and *4.4.3 Unable to unpack war files*
 
-  ![Taxonomy Services error]({{ site.baseurl }}/rifWebApplication/taxonomy_sevice_error.png)
+  ![Taxonomy Services error]({{ site.baseurl }}/rifWebApplication/taxonomy_sevice_error.png){:width="100%"}
 
 ### RIF Services crash on logon
 
@@ -1799,7 +1577,7 @@ The method for configuring a specific port is detailed in: (https://docs.microso
 
 ### Tomcat service will not start
 
-When the Tomcat application (tomcat8w) is used to set the default Java installed on the machine, some desktop systems may not run tomcat as a service if a 32bit Java was installed first.
+When the Tomcat application (Tomcat8w) is used to set the default Java installed on the machine, some desktop systems may not run Tomcat as a service if a 32bit Java was installed first.
 the Windows event log has the following cryptic message
 ```
 The Apache Tomcat 8.5 Tomcat8 service terminated with the following service-specific error:
@@ -1872,9 +1650,14 @@ Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
 Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
 ```
 
+<<<<<<< HEAD
+In the case the initial size is 192M and the maximum heap size is 3040M. In the Tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
+increase this to a much larger value less than the maximum, at least 2048M. Restart the Tomcat service.
+=======
 In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
-increase this to a much larger value less than the maximum, at least 2048M. Tile generation can require large amounts of memory, UK census output area tiles 
+increase this to a much larger value less than the maximum, at least 2048M. Tile generation can require large amounts of memory, UK census output area tiles
 require 7G of memory. Restart the tomcat service.
+>>>>>>> master
 
 ### Study extracts but R does not run
 
@@ -1886,7 +1669,7 @@ Restarting the server using ```catalina.bat run``` and re-running the study resu
 
 See:
 
-* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/rifWebApplication/rifWebApplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+* [jri.dll: Can't find dependent libraries]({{ site.baseurl }}/Installation/rifWebApplication#cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 ### SQL Server ODBC Connection Errors
 
@@ -1956,7 +1739,7 @@ b) Check your firewall/other security software is permitting access to your serv
 
 # Running the RIF
 
-* Make sure you have restarted tomcat before attempting to run the RIF for the first time
+* Make sure you have restarted Tomcat before attempting to run the RIF for the first time
 * In a non networked single machine environment (e.g. a laptop) the RIF is at: (http://localhost:8080/RIF40)
 * In a networked environment the RIF is at: ```http://<your domain>/RIF40```, e.g. *https://aepw-rif27.sm.med.ic.ac.uk/RIF40*
 * Test cases are provided in the *tests* folder of the SAHSU supplied bundle:
@@ -1967,13 +1750,13 @@ b) Check your firewall/other security software is permitting access to your serv
 
 * Use the *TESTUSER* created when the database was built. Do not attempt to logon as a server administrator (e.g. postgres) or the RIF
   software owner (rif40).
-* Connect to the RIF. You should see to logon page:
+* Connect to the RIF. You should see the logon page:
 
-  ![RIF logon]({{ site.baseurl }}/rif_logon.png)
+  ![RIF logon]({{ site.baseurl }}/rifWebApplication/rif_logon.png){:width="100%"}
 
 * After logon you should see the study submission page:
 
-  ![RIF after logon]({{ site.baseurl }}/rifWebApplication/rif_after_logon.png)
+  ![RIF after logon]({{ site.baseurl }}/rifWebApplication/rif_after_logon.png){:width="100%"}
 
 * If you do not see this then use the section on logon troubleshooting below
 
@@ -1995,7 +1778,7 @@ b) Check your firewall/other security software is permitting access to your serv
 	[{"errorMessages":["Unable to register \"peterh\"."]}]
 	```
 
-	The tomcat logs can be check for the actual error:
+	The Tomcat logs can be check for the actual error:
 
 	```
 	org.postgresql.util.PSQLException: FATAL: password authentication failed for user "peterh"
@@ -2007,7 +1790,7 @@ b) Check your firewall/other security software is permitting access to your serv
 
 The service address and port used should match what you setup up in *4.2 Setup Network*. If this does not:
 
-* Restart tomcat;
+* Restart Tomcat;
 * Flush your browser cache (this is especially important for Google Chrome and Mozilla Firefox).
 
 ## R Issues
@@ -2033,7 +1816,7 @@ The RIF uses Java R integration to access R directly from Java
         at java.lang.Thread.run(Unknown Source)
         at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
   ```
-  The solution is to restart tomcat.
+  The solution is to restart Tomcat.
 
   1. Server reload needs to stop R
   2. R crashes (usually inla) and ideally script errors need to stop R
@@ -2134,11 +1917,11 @@ Be aware that the RIF war file is versioned (it creates a directory *RIF40*) and
 instructions if it is updated say to *RIF41*.
 
 * IF you have modified it (you normally do not need to) save the RIF web application file
-  *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* outside of the tomcat tree;
+  *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* outside of the Tomcat tree;
 * Stop Tomcat;
 * Change directory to *%CATALINA_HOME%\webapps*; rename RIF40 to RIF40.old;
 * Follow the instructions in
-  [installing the RIF Web Application]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-web-application)
+  [installing the RIF Web Application]({{ site.baseurl }}/Installation/rifWebApplication#rif-web-application)
   i.e. copy the replacement *RIF40.war* file into the *%CATALINA_HOME%\webapps\* directory;
 * Restore *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* if you have modified it;
 * When you are satisfied with the patch remove the RIF40.old directory in *%CATALINA_HOME%\webapps*.
@@ -2146,7 +1929,7 @@ instructions if it is updated say to *RIF41*.
 The RIF web application may require you to patch the database. You will get messages on logon such as
 **alter_10.sql (post 3rd August 2018 changes for risk analysis) not run** to tell you to run the alter scripts.
 
-![alter_10.sql (post 3rd August 2018 changes for risk analysis) not run]({{ site.baseurl }}/rifWebApplication/alter_10.PNG)
+![alter_10.sql (post 3rd August 2018 changes for risk analysis) not run]({{ site.baseurl }}/rifWebApplication/alter_10.PNG){:width="100%"}
 
 
 See the database Management manual: [Patching](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual.html#patching)
@@ -2159,10 +1942,16 @@ See the database Management manual: [Patching](https://smallareahealthstatistics
 * Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices
   and taxonomyServices trees to .old;
 * Follow the instructions in
-  [installing the web services]({{ site.baseurl }}/rifWebApplication/rifWebApplication#rif-services).
+  [installing the web services]({{ site.baseurl }}/Installation/rifWebApplication#rif-services).
+<<<<<<< HEAD
+  i.e. copy replacement *taxonomy.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
+* Start Tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
+* Restart Tomcat;
+=======
   i.e. copy replacement *taxonomy.war*, *statistics.war* and *rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart tomcat;
+>>>>>>> master
 * When you are satisfied with the patch remove the .old files and directories in *%CATALINA_HOME%\webapps*.
 
 Do **NOT** attempt to warm upgrade the RIF middleware. It will fail if any of the following are true:
@@ -2174,7 +1963,7 @@ Do **NOT** attempt to warm upgrade the RIF middleware. It will fail if any of th
 In the first case *tomcat&* will restart the services but R will not run as it cannot attach the R shared library (see earlier). In the other two cases Tomcat will still be running
 but the service will be down with a minimal file tree under *%CATALINA_HOME%\webapps*\rifServices*. The front end will report that the middleware is down.
 
-In both cases restart *tomcat*.
+In both cases restart Tomcat.
 
 ## Tomcat
 
@@ -2188,7 +1977,7 @@ This has not been tested ans it has not been required. Files to be saved/restore
 ## R
 
 If you upgrade R to newer version then follow the instructions for installing and configuring R and JRI in
-[Setup R]({{ site.baseurl }}/rifWebApplication/rifWebApplication#setup-r).
+[Setup R]({{ site.baseurl }}/Installation/rifWebApplication#setup-r).
 Make absolutely sure the PATH and R_HOME are set correctly.
 
 Updating the packages can also be done (consult your statisticians first); on a private network you have two choices:
@@ -2218,10 +2007,10 @@ Of these updates, Java, Jersey and JAckson are likely to create the most problem
 
 ## Running Tomcat as a service
 
-You only need to do this if you want tomcat to start when the server boots. This is not advised on a laptop as it uses 2GB of memory; stop and start tomcat manually.
+You only need to do this if you want Tomcat to start when the server boots. This is not advised on a laptop as it uses 2GB of memory; stop and start Tomcat manually.
 You can do this last!
 
-* It is advised to reinstall the tomcat service as the tomcat installer usually messes it up! In the directory %CATALINA_HOME%/bin; see:
+* It is advised to reinstall the Tomcat service as the Tomcat installer usually messes it up! In the directory %CATALINA_HOME%/bin; see:
   [Windows service HOW-TO](http://tomcat.apache.org/tomcat-8.0-doc/windows-service-howto.html#Installing_services)
 
 	```
@@ -2249,22 +2038,22 @@ You can do this last!
 	The service 'Tomcat8' has been installed.
 	```
 
-  Then use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
+  Then use the configure Tomcat application (Tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking Tomcat!
 
   ![Setting Java version autodetect]({{ site.baseurl }}/rifWebApplication/tomcat8_configuration_3.PNG)
 
-  Note: on some desktop systems this may prevent tomcat running as a service if a 32bit Java was installed first, with the Windows event log having the cryptic message
+  Note: on some desktop systems this may prevent Tomcat running as a service if a 32bit Java was installed first, with the Windows event log having the cryptic message
   ```
   The Apache Tomcat 8.5 Tomcat8 service terminated with the following service-specific error:
   Incorrect function.
   ```
   Tomcat logs to: commons-daemon.<date e.g.,  2018-04-16>.log, tomcat8-stderr.<date e.g.,  2018-04-16>.log, tomcat8-stdout.<date e.g.,  2018-04-16>.log instead of to the console
 
-* Use the configure Tomcat application (tomcat8w) to make the startup type automatic.
+* Use the configure Tomcat application (Tomcat8w) to make the startup type automatic.
 
   ![Make the startup type automatic]({{ site.baseurl }}/rifWebApplication/tomcat8_configuration_1.png)
 
-* Use the configure Tomcat application (tomcat8w) to set the logging level to debug.
+* Use the configure Tomcat application (Tomcat8w) to set the logging level to debug.
 
   ![Set the logging level to debug]({{ site.baseurl }}/rifWebApplication/tomcat8_configuration_2.PNG?)
 
@@ -2281,7 +2070,7 @@ You can do this last!
 	Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
   ```
 
-  In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
+  In the case the initial size is 192M and the maximum heap size is 3040M. In the Tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
   increase this to a much larger value less than the maximum, at least 2048M.
 
 ## Using JConsole with Tomcat
@@ -2311,7 +2100,7 @@ Set the following *CATALINA_OPTS* in *%CATALINA_HOME%\bin\setenv.bat*:
 
 Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 
- ![Jconsole]({{ site.baseurl }}/rifWebApplication/Jconsole.png)
+ ![Jconsole]({{ site.baseurl }}/rifWebApplication/Jconsole.png){:width="100%"}
 
 ## Securing Tomcat
 
@@ -2423,13 +2212,13 @@ With:
 
 ### PNG Tile Generation
 
-For *geolevels* with more than 5000 areas the RIF middleware can auto generate PNG tiles on startup. If you do not do this the tiles 
+For *geolevels* with more than 5000 areas the RIF middleware can auto generate PNG tiles on startup. If you do not do this the tiles
 will be generated on the fly; this can take up to 60 seconds per tile for the most complex tiles with >200,000 areas. Tiles are then cached.
-To rebuild the cache delete the tiles scratchSpace directory: *c:\rifDemo\scratchSpace\scratchSpace\tiles\<my geography>* For UK 2011 
+To rebuild the cache delete the tiles scratchSpace directory: *c:\rifDemo\scratchSpace\scratchSpace\tiles\<my geography>* For UK 2011
 census geography this typically takes 10 to 20 minutes. You need to edit the *conf* directory *RIFServiceStartupProperties.properties*:
 ```
 #
-# Tile generator: set if you need automatic tile generation for geolevels with more than 5000 areas 
+# Tile generator: set if you need automatic tile generation for geolevels with more than 5000 areas
 # (see: disableMouseClicksAt in frontEndParameters.json5)
 #
 tileGeneratorUsername=<username>
@@ -2453,7 +2242,7 @@ Exception in thread "ajp-nio-8009-exec-3" Exception in thread "http-nio-8080-exe
 exceeded
 java.lang.OutOfMemoryError: GC overhead limit exceeded
 ```
- 
+
 ### Front End Logging
 
 Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
@@ -2483,7 +2272,7 @@ Other parameters:
 * The parameter *mappingDefaults* sets up the defaults for the three maps (viewermap, dismap1 and 1).
 
 Mapping parameters should be changed with extreme caution as they will break the RIF badly if you set them up incorrectly.
-You must logout, restart tomcat and login again if you test any of the parameters.
+You must logout, restart Tomcat and login again if you test any of the parameters.
 
 ```json
 /**
@@ -2785,7 +2574,7 @@ populationPyramidAspactRatio = 1.43
 
 ### Debugging
 
-Since R now uses JRI, all errors appear in the tomcat logs.
+Since R now uses JRI, all errors appear in the Tomcat logs.
 
 1. Beware of 32 bit Java errors
 
@@ -2815,11 +2604,11 @@ java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.1\library\rJava\jri\x64
 
    If there are R script errors JRI the middleware will crash with an error. This will be saved in the *Study status* pane:
 
-   ![Study status]({{ site.baseurl }}/rifWebApplication/study-status.png)
+   ![Study status]({{ site.baseurl }}/rifWebApplication/study-status.png){:width="100%"}
 
    Clicking on the *trace* button will bring up the trace pane.
 
-   ![R Trace]({{ site.baseurl }}/rifWebApplication/R-trace.png)
+   ![R Trace]({{ site.baseurl }}/rifWebApplication/R-trace.png){:width="100%"}
 
    If there are R script errors JRI will log them to the middleware log: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```:
 
@@ -3298,7 +3087,7 @@ Free 18470072 memory; total memory is use: 144247440
 ```
 
 As Java cannot manage the memory used by *R* or *inla* the *R* script prints outs the process ID of the R processs. As R is attached as
-a DLL this is the process id of *tomcat*.
+a DLL this is the process id of Tomcat.
 
 [Process Explorer](https://docs.microsoft.com/en-gb/sysinternals/downloads/process-explorer) is a Windows tool that aloows the user to
 see the hidden R thread and the *inla* sub process.
@@ -3310,9 +3099,7 @@ R process ID tracer from the middleware log:
 Rengine Started; Rpid: 10644; JRI version: 266; thread ID: 30
 ```
 
-![Process explorer]({{ site.baseurl }}/rifWebApplication/process-explorer-1.png)
-
-![Java Process details]({{ site.baseurl }}/rifWebApplication/process-explorer-2.png)
+![Java Process details]({{ site.baseurl }}/rifWebApplication/process-explorer-2.png){:width="100%"}
 
 R will be limited to the maximum private memory (resident set size) of Java, typically around 3.3GB on Windows 8.1. To go beyond this
 you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HOME%\bin\setenv.bat*; e.g. add ```-Xmx6g``` to

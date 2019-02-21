@@ -20,9 +20,9 @@ public class TestFederatedTaxonomyService {
 			String defaultResourceDirectoryPath
 				= ClassFileLocator.getClassRootLocation("taxonomyServices");
 						
-			service.initialise(FileSystems.getDefault().getPath(defaultResourceDirectoryPath));
+			service.initialise();
 			System.out.println("Initialising again");
-			service.initialise(FileSystems.getDefault().getPath(defaultResourceDirectoryPath));
+			service.initialise();
 			
 			List<TaxonomyTerm> taxonomyTerms = service.getRootTerms("icd10");
 			for (TaxonomyTerm taxonomyTerm : taxonomyTerms) {
