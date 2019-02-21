@@ -92,7 +92,7 @@ As the completion message above suggests, installations on Windows with SQL Serv
 
 ## Problems
 
-If the installer ends with a message that indicates that there was a problem, you should examine the messages before that to work out what caused the problem, and [consult the Troubleshooting Guide](/Installation/Troubleshooting).
+If the installer ends with a message that indicates that there was a problem, you should examine the messages before that to work out what caused the problem, and [consult the Troubleshooting Guide](Troubleshooting).
 
 ## Taxonomies
 
