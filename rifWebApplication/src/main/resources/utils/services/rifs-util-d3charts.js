@@ -220,7 +220,8 @@ angular.module("RIF")
                     
                     /*
                      * Function:    d3RiskGraph()
-                     * Parameters:  SVG object, element Name, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback
+                     * Parameters:  SVG object, element Name, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, 
+                     *              name (for ids), riskGraphCallback
                      * Description: Create risk graph error bars 
                      *              https://bl.ocks.org/NGuernse/8dc8b9e96de6bedcb6ad2c5467f5ef9a
                      *              1. We do need to use band_id if max_exposure_value is undefined/null
@@ -228,7 +229,8 @@ angular.module("RIF")
                      *              3. A choice: average/band_id/distance from nearest source
                      * Returns:     Nothing
                      */
-                    function d3RiskGraph(svg, elementName, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback) {
+                    function d3RiskGraph(svg, elementName, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, 
+                        name, riskGraphCallback) {
                         
                         // Check parameters are defined
                         if (angular.isUndefined(data)) {
@@ -237,11 +239,12 @@ angular.module("RIF")
                             return;
                         }
                         else if (!(gendersArray && gendersArray.length > 0) || !riskFactorFieldName || 
-                            !riskFactorFieldDesc) {
+                            !riskFactorFieldDesc || !name) {
                             AlertService.consoleError("[rifs-util-d3charts.js] null parameters in d3RiskGraph: "  + 
                                 "; gendersArray: " + JSON.stringify(gendersArray) + 
                                 "; riskFactorFieldName: " + riskFactorFieldName + 
                                 "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
+                                "; name: " + name + 
                                 "; data: " + JSON.stringify(data));
                             riskGraphCallback("Null parameters passed to d3RiskGraph", undefined, undefined); 
                             return;
@@ -537,7 +540,7 @@ angular.module("RIF")
                                 .style("visibility", "hidden");
                         } */
                                 
-                        var tooltip = d3.select("#riskGraphTooltip").append("div")
+                        var tooltip = d3.select("#" + name + "Tooltip").append("div")
                                 .attr("class", "riskGraph-tooltip")
                                 .style("visibility", "hidden");                       
                         
@@ -571,7 +574,7 @@ angular.module("RIF")
                                         return yScale(d.relativeRisk);
                                  });
 
-                        var svg2=svg.attr("id", "riskGraph")
+                        var svg2=svg.attr("id", name)
                             .attr("width", 
                                 marginHeightWidth.width + marginHeightWidth.margin.left + marginHeightWidth.margin.right)
                             .attr("height", 
@@ -647,9 +650,11 @@ angular.module("RIF")
                          riskGraphCallback(undefined /* No error */, svg2, elementName);
                     }
                     return {
-                        getD3RiskGraph: function (svg, elementName, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback) {
+                        getD3RiskGraph: function (svg, elementName, data, gendersArray, riskFactorFieldName, 
+                            riskFactorFieldDesc, name, riskGraphCallback) {
                             try {
-                                return d3RiskGraph(svg, elementName, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, riskGraphCallback);
+                                return d3RiskGraph(svg, elementName, data, gendersArray, riskFactorFieldName, 
+                                    riskFactorFieldDesc, name, riskGraphCallback);
                             }
                             catch (e) {
                                 riskGraphCallback("Caught exception: " + e.toString(), undefined);

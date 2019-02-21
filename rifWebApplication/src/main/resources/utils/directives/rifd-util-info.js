@@ -193,7 +193,7 @@ angular.module("RIF")
                             };
                             scope.riskGraphChartCurrentWidth=860;
                             scope.riskGraphChartCurrentHeight=410;
-                            scope.riskGraphChartName1="riskGraph1";
+                            scope.riskGraphChartName1="riskGraph";
 							
                             if (scope.myMaps) {
                                 scope.mapType=scope.myMaps[0]; // E.g. viewermap

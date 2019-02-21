@@ -125,7 +125,7 @@ angular.module("RIF")
                                     "; height: " + (scope.height || "N/A") +
                                     "; riskFactor2FieldName: " + scope.riskFactor2FieldName[scope.riskFactor]);
                                 D3ChartsService.getD3RiskGraph(svg, elementName, scope.riskGraphData, scope.gendersArray, 
-                                    scope.riskFactor2FieldName[scope.riskFactor], scope.riskFactor, 
+                                    scope.riskFactor2FieldName[scope.riskFactor], scope.riskFactor, scope.name,
                                     riskGraphCallback);
                             }
                             else {

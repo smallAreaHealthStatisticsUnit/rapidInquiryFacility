@@ -769,9 +769,29 @@ circle {
    color: white;
    font-family: Monospace, Serif;
    pointer-events: none;
+} 
+
+.riskGraph2-tooltip {
+   position: absolute;
+   height: auto;
+   width: auto;
+   padding: 15px;
+   color: white;
+   font-family: Monospace, Serif;
+   pointer-events: none;
 }
 
 .riskGraph-tooltip:after {
+   content: " ";
+   position: absolute;
+   top: 50%;
+   right: 100%; /* To the left of the tooltip */
+   margin-top: -10px;
+   border-width: 10px;
+   border-style: solid;
+   border-color: transparent #000000 transparent transparent;
+}
+.riskGraph-tooltip2:after {
    content: " ";
    position: absolute;
    top: 50%;
