@@ -199,7 +199,7 @@ saveDataFrameToDatabaseTable <- function(data) {
 #
 		cat(paste0("Creating temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
 		tryCatch({
-			withErrorTracing({
+			# withErrorTracing({
 				if (dbExistsTable(connection, temporarySmoothedResultsTableName)) {
 					dropTemporaryTable()
 				}
@@ -245,8 +245,8 @@ saveDataFrameToDatabaseTable <- function(data) {
 				dbSendUpdate(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName,
 					"genders"))
 				cat(paste("Created indices on temporary table\n"), sep="")
-			}
-		)},
+			# })
+			},
 			warning=function(w) {
 				cat(paste("saveDataFrameToDatabaseTable() WARNING: ", w, "\n"), sep="")
 			},
@@ -396,9 +396,9 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer, studyType
 
 	lerrorTrace<-capture.output({
 		res <- tryCatch({
-				withErrorTracing({
+				# withErrorTracing({
 					dbSendUpdate(connection, updateMapTableSQLQuery)
-				})
+				# })
 			},
 			warning=function(w) {
 				warn1 <<- paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w, "\n")
@@ -524,7 +524,9 @@ insertHomogeneityResults <- function(homogData) {
 	  		homogData$inv_id[i], ",", homogData$study_id[i], ",", as.integer(adj), ",",
 	  		homogData$gender[i],");")
 	  res <- tryCatch({
-				withErrorTracing({ dbSendUpdate(connection, insertStmt) })
+				# withErrorTracing({
+					dbSendUpdate(connection, insertStmt)
+				# })
 			 },warning=function(w) {
 				cat(paste("JDBC UNABLE TO INSERT INTO t_rif40_homogeneity! ", w, "\n"), sep="")
 				exitValue <<- 1
@@ -549,7 +551,9 @@ insertHomogeneityResults <- function(homogData) {
 						" and adjusted = ", as.integer(adj),
 						" and genders = ", homogData$gender[i], ";\n", sep="") 
 			res <- tryCatch({
-			  withErrorTracing({ dbSendUpdate(connection, updateStmt) })
+			  # withErrorTracing({
+				dbSendUpdate(connection, updateStmt)
+				# })
 			},warning=function(w) {
 			  cat(paste("JDBC UNABLE TO UPDATE t_rif40_homogeneity! ", w, "\n"), sep="")
 			  exitValue <<- 1

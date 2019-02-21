@@ -1,12 +1,13 @@
-# Setting Up the RIF's R Environment On Mac
+---
+layout: default
+title: Setting Up the RIF's R Environment On Mac
+---
 
 (Including ODBC setup.)
 
 This is specific to MacOS, but the general principles will apply to Linux and other Unixes too.
 
 ## Installation
-
-### Installing R
 
 I originally did the basic install using [Homebrew](https://brew.sh):
 
@@ -16,9 +17,9 @@ brew install r
 
 but I don't recommend that now. The Homebrew version has issues with the INLA library (see [bug #27](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/27)), so  [downloading and installing a standard package](https://cran.r-project.org/bin/macosx/) is now the recommended approach on Mac. Please follow the instructions there.
 
-## Additional R Setup
+## R Packages
 
-You should be able to run R from the Mac terminal now. [Follow the main instructions](../rifWebApplication/#433-r-packages) to ensure all the required R packages are setup. Make sure RJDBC is among them, as it is needed for database access.
+[See Setting Up R Packages](R_setup_packages).
 
 ## Getting R to Run from Java
 

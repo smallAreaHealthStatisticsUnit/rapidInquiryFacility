@@ -110,7 +110,7 @@ runRSmoothingFunctions <- function() {
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
 					
 			tryCatch({
-					withErrorTracing({  				
+					# withErrorTracing({
 #
 # extract the relevant Study data
 #
@@ -127,7 +127,7 @@ runRSmoothingFunctions <- function() {
 # Call: performSmoothingActivity()
 #						
 						result <- performSmoothingActivity(data, AdjRowset)
-					})
+					# })
 				},
 				warning=function(w) {		
 					cat(paste("callPerformSmoothingActivity() WARNING: ", w, "\n"), sep="")
@@ -227,7 +227,7 @@ runRRiskAnalFunctions <- function() {
       # tryCatch()is trouble because it replaces the stack! it also copies all global variables!
       
       tryCatch({
-        withErrorTracing({  				
+        # withErrorTracing({
           #
           # extract the relevant Study data
           #
@@ -245,7 +245,7 @@ runRRiskAnalFunctions <- function() {
           # This runs the test for homogeneity and linearity using the band results from the performBandAnal function 
           cat(paste0("About to run homogeneity tests", "\n"))
           resultHomog <- performHomogAnal(resultBands)
-        })
+        # })
       },
       warning=function(w) {		
         cat(paste("callRiskAnal() WARNING: ", w, "\n"), sep="")
