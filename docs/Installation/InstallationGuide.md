@@ -6,7 +6,7 @@ title: The RIF Installation Guide
 See the [Quickstart Guide](QuickstartGuide) for the basic steps. This document has the details.
 
 
-The older [Building and Installing the RIF](/introduction/building-and-installation) document goes into painstaking detail about the various options. You shouldn't normally need that, but the information is there if you do.
+The older [Building and Installing the RIF](introduction/building-and-installation) document goes into painstaking detail about the various options. You shouldn't normally need that, but the information is there if you do.
 
 For most installations you can just run the appropriate installer for your platform: `rifInstaller.exe` for Windows; `rifInstaller_mac` for Mac; or `rifInstaller_linux` for Linux.
 
