@@ -150,21 +150,25 @@ angular.module("RIF")
                                 ", newFieldList: " + JSON.stringify(newFieldList) +
                                 "' data: " + JSON.stringify(data));
                         }
-                        AlertService.consoleDebug("[rifs-util-d3charts.js] setupRiskGraphSelector2() selector: " + 
-                            JSON.stringify(selector));
+//                        AlertService.consoleDebug("[rifs-util-d3charts.js] setupRiskGraphSelector2() selector: " + 
+//                            JSON.stringify(selector));
                         
                         return selector;
                     }
                                                         
                     /*
                      * Function:    hasRiskGraphDataChanged2()
-                     * Parameters:  data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, hasRiskGraphDataChangedCallback
+                     * Parameters:  data, gendersArray, riskFactorFieldName, riskFactorFieldDesc
+                     *              width, height, name, hasRiskGraphDataChangedCallback
                      * Description: Test if risk graph data and parameters have changed.
                      *              If no change, waits 0.5 seconds to avoid digest() trashing
                      * Returns:     Callback returns (error text, true/false)
                      */
                     function hasRiskGraphDataChanged2(
-                        data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, hasRiskGraphDataChangedCallback) {
+                        data, gendersArray, riskFactorFieldName, riskFactorFieldDesc,
+                        width, height, name, hasRiskGraphDataChangedCallback) {
+                            
+                        var timeoutPromise;
                             
                         if ((angular.isUndefined(data)) || (Object.keys(data).length === 0)) {
                             $timeout( function() { // To avoid Error: $rootScope:infdig Infinite $digest Loop errors
@@ -193,6 +197,16 @@ angular.module("RIF")
                                 undefined); 
                             return;
                         }
+                        else if (angular.isUndefined(name)) {
+                            AlertService.consoleError("[rifs-util-d3charts.js] no name in hasRiskGraphDataChanged2: "  + 
+                                "; gendersArray: " + JSON.stringify(gendersArray) + 
+                                "; riskFactorFieldName: " + riskFactorFieldName + 
+                                "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
+                                "; data: " + JSON.stringify(data));
+                            hasRiskGraphDataChangedCallback("No name in hasRiskGraphDataChanged2", 
+                                undefined); 
+                            return;
+                        }
 /*                        else {                     
                             AlertService.consoleDebug("[rifs-util-d3charts.js] hasRiskGraphDataChanged2: "  + 
                                 "; gendersArray: " + JSON.stringify(gendersArray) + 
@@ -201,19 +215,61 @@ angular.module("RIF")
                                 "; data: " + JSON.stringify(data));
                         } */
                         
+                        /*
+                         * Function:    diffRiskGraphParameters()
+                         * Uses:        name, newRiskGraphParameters, riskGraphParameters
+                         * Returns:     0 - same, 1+ differences
+                         */
+                        function diffRiskGraphParameters() {
+                            var differences=0;
+                            
+                            if (!angular.equals(newRiskGraphParameters, riskGraphParameters[name])) {
+                                for (var key in riskGraphParameters[name]) {
+                                    if (riskGraphParameters[name] && riskGraphParameters[name][key] &&
+                                        newRiskGraphParameters[key] &&
+                                        !angular.equals(newRiskGraphParameters[key], riskGraphParameters[name][key])) {
+                                        differences++;
+                                        AlertService.consoleDebug("[rifs-util-d3charts.js] " + name + 
+                                            " [" + differences + 
+                                            "] key: " + key +
+                                            " old: " + JSON.stringify(riskGraphParameters[name][key]) + " != " +
+                                            " new: " + JSON.stringify(newRiskGraphParameters[key]));
+                                    }
+                                }                                                                               
+                            }  
+                            if (differences == 0) {
+                                AlertService.consoleDebug("[rifs-util-d3charts.js] " + name + " no differences"/* + 
+                                    JSON.stringify(riskGraphParameters[name]) */);
+                            }
+                            
+                            return differences;                            
+                        }
+                        
                         var newRiskGraphParameters = {
                             data: data, 
                             gendersArray: gendersArray, 
                             riskFactorFieldName: riskFactorFieldName, 
-                            riskFactorFieldDesc: riskFactorFieldDesc
+                            riskFactorFieldDesc: riskFactorFieldDesc,
+                            modalWidth: width,
+                            modalHeight: height
                         };
-                        if (angular.equals(newRiskGraphParameters, riskGraphParameters)) {
-                            $timeout( function() { // To avoid Error: $rootScope:infdig Infinite $digest Loop errors
-                                hasRiskGraphDataChangedCallback(undefined /* No error */, false);
+                        if (angular.isUndefined(riskGraphParameters[name])) {
+                            riskGraphParameters[name] = angular.copy(newRiskGraphParameters);
+                            hasRiskGraphDataChangedCallback(undefined /* No error */, true);
+                        }
+                        else if (diffRiskGraphParameters() == 0) { // No change
+                            
+                            if (timeoutPromise) {
+                                $timeout.cancel(timeoutPromise);  
+                            }
+                            timeoutPromise = $timeout( function() { // To avoid Error: $rootScope:infdig Infinite $digest Loop errors
+                                var differences=diffRiskGraphParameters();
+                                hasRiskGraphDataChangedCallback(undefined /* No error */, 
+                                    ((differences == 0) ? false : true));
                             }, 500 /* mS */);   
                         }
                         else {
-                            riskGraphParameters = angular.copy(newRiskGraphParameters);
+                            riskGraphParameters[name] = angular.copy(newRiskGraphParameters);
                             hasRiskGraphDataChangedCallback(undefined /* No error */, true);
                         }    
                     }
@@ -221,7 +277,7 @@ angular.module("RIF")
                     /*
                      * Function:    d3RiskGraph()
                      * Parameters:  SVG object, element Name, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, 
-                     *              name (for ids), riskGraphCallback
+                     *              name (for ids), width, height, riskGraphCallback
                      * Description: Create risk graph error bars 
                      *              https://bl.ocks.org/NGuernse/8dc8b9e96de6bedcb6ad2c5467f5ef9a
                      *              1. We do need to use band_id if max_exposure_value is undefined/null
@@ -230,7 +286,7 @@ angular.module("RIF")
                      * Returns:     Nothing
                      */
                     function d3RiskGraph(svg, elementName, data, gendersArray, riskFactorFieldName, riskFactorFieldDesc, 
-                        name, riskGraphCallback) {
+                        name, width, height, riskGraphCallback) {
                         
                         // Check parameters are defined
                         if (angular.isUndefined(data)) {
@@ -266,11 +322,11 @@ angular.module("RIF")
                             return;
                         }
                         else {                     
-                            AlertService.consoleDebug("[rifs-util-d3charts.js] d3RiskGraph: "  + 
-                                "; gendersArray: " + JSON.stringify(gendersArray) + 
-                                "; riskFactorFieldName: " + riskFactorFieldName + 
-                                "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
-                                "; data: " + JSON.stringify(data));
+//                            AlertService.consoleDebug("[rifs-util-d3charts.js] d3RiskGraph"  + 
+//                                "; gendersArray: " + JSON.stringify(gendersArray) + 
+//                                "; riskFactorFieldName: " + riskFactorFieldName + 
+//                                "; riskFactorFieldDesc: " + riskFactorFieldDesc + 
+//                                "; data: " + JSON.stringify(data));
                         }
                    
                         /*
@@ -367,11 +423,11 @@ angular.module("RIF")
                         
                         /*
                          * Function:    addErrorBar()
-                         * Parameters:  svg object, gendersName, riskFactorFieldName
+                         * Parameters:  svg object, gendersName, riskFactorFieldName, name (id of SVG)
                          * Description: Add error bar
                          * Returns:     Nothing
                          */
-                        function addErrorBar(svg, gendersName, riskFactorFieldName) {
+                        function addErrorBar(svg, gendersName, riskFactorFieldName, name) {
                             // Add Error Line
                             svg.append("g").selectAll("line")
                                .data(data[gendersName]).enter()
@@ -448,18 +504,34 @@ angular.module("RIF")
                                     var transform0=this.getScreenCTM().translate(0, 0); 
                                                                    /* Actual pixel position of SVG graph div origin */
 
-//                                    AlertService.consoleDebug("[rifs-util-d3charts.js] d3RiskGraph mouseover(" +
-//                                        transform.e + " - " + transform0.e + ", " +
-//                                        transform.f + " - " + transform0.f + ")" +
-//                                        "; data: " + JSON.stringify(d, 0, 1));
+                                    var correctionFactors = {
+                                        riskGraph: {
+                                           left: 18,
+                                           top: 153
+                                        },
+                                        riskGraph2: {
+                                           left: 18,
+                                           top: 40
+                                        }
+                                    }
+                                    AlertService.consoleDebug("[rifs-util-d3charts.js] d3RiskGraph: " + name + 
+                                        " mouseover(" +
+                                        transform.e + " - " + transform0.e + ", " +
+                                        transform.f + " - " + transform0.f + ")" +
+                                        "; marginHeightWidth.margin: " + JSON.stringify(marginHeightWidth.margin) +
+                                        "; correctionFactors: " + JSON.stringify(correctionFactors[name]) +
+                                        "; data: " + JSON.stringify(d, 0, 1));
                                     return tooltip.html("Band " + parseInt(d.bandId) + " " +
                                                 gender2text(parseInt(d.genders)) + "</br>" + 
                                                 parseFloat(d.relativeRisk).toFixed(3) + 
                                                 "&nbsp;[95% CI&nbsp;" + parseFloat(d.lower95).toFixed(3) +
                                                 "&ndash;" + parseFloat(d.upper95).toFixed(3) + "]") 
                                         .style("visibility", "visible")
-                                        .style("left", (transform.e - transform0.e + marginHeightWidth.margin.left + 18) + "px") // Correct as position is relative
-                                        .style("top", (transform.f - transform0.f + marginHeightWidth.margin.top + 153) + "px")
+                                        .style("left", (transform.e - transform0.e + marginHeightWidth.margin.left + 
+                                            (correctionFactors[name] ? correctionFactors[name].left : 18)) + "px") 
+                                            // Correct as position is relative
+                                        .style("top", (transform.f - transform0.f + marginHeightWidth.margin.top +  + 
+                                            (correctionFactors[name] ? correctionFactors[name].top : 153)) + "px")
                                         .style("background", colors[gendersName]);
                                })
                                .on("mouseout", function() {
@@ -469,7 +541,7 @@ angular.module("RIF")
                         
                         /*
                          * Function:    getMargin()
-                         * Parameters:  None
+                         * Parameters:  Modal width, height
                          * Description: Setup margin, height and width
                          * Returns:     marginHeightWidth: {
                          *    "margin": {
@@ -486,47 +558,56 @@ angular.module("RIF")
                          *    "innerHeight": 938
                          *   }
                          */
-                        function getMargin() {
+                        function getMargin(modalWidth, modalHeight) {
                             var marginHeightWidth = {
                                 margin: {top: 20, right: 20, bottom: 40, left: 80}, // Scale using CSS
-                                width: 0,
-                                height: 0,
-                                hSplit3Width: 0,
-                                hSplit3Height: 0,
+                                modalWidth: modalWidth,
+                                modalHeight: modalHeight,
+                                hSplitWidth: 0,
+                                hSplitHeight: 0,
+                                hSplitTag: "#hSplit3",
+                                using: "defaults",
                                 innerWidth: $window.innerWidth,
                                 innerHeight: $window.innerHeight
                             };
+                            
                             // 1346x416 
-                            var hSplit=d3.select("#hSplit3"); // Info
+                            var hSplit=d3.select(marginHeightWidth.hSplitTag); // Info
                             if (hSplit && hSplit.size() > 0) {
-                                marginHeightWidth.hSplit3Width = hSplit.node().getBoundingClientRect().width;
-                                marginHeightWidth.hSplit3Height = hSplit.node().getBoundingClientRect().height;
+                                marginHeightWidth.hSplitWidth = hSplit.node().getBoundingClientRect().width;
+                                marginHeightWidth.hSplitHeight = hSplit.node().getBoundingClientRect().height;
                             }
                             else {
-                                hSplit=d3.select("#hSplit1"); // Viewer
+                                marginHeightWidth.hSplitTag="#hSplit1";
+                                hSplit=d3.select(marginHeightWidth.hSplitTag); // Viewer
                                 if (hSplit && hSplit.size() > 0) {
-                                    marginHeightWidth.hSplit3Width = hSplit.node().getBoundingClientRect().width;
-                                    marginHeightWidth.hSplit3Height = hSplit.node().getBoundingClientRect().height;
+                                    marginHeightWidth.hSplitWidth = hSplit.node().getBoundingClientRect().width;
+                                    marginHeightWidth.hSplitHeight = hSplit.node().getBoundingClientRect().height;
                                 }
                             }
-                            var width=860;
-                            if (marginHeightWidth.hSplit3Width) {
-                                   width = marginHeightWidth.hSplit3Width;
+                            var width=860; // Defaults for info modal
+                            var height=410; 
+                            if (marginHeightWidth.modalWidth && marginHeightWidth.modalHeight) {
+                                width = marginHeightWidth.modalWidth;
+                                height = marginHeightWidth.modalHeight;
+                                marginHeightWidth.using = "modal directive supplied values";
                             }
-                            else if (marginHeightWidth.innerWidth) {
+                            else if (marginHeightWidth.hSplitWidth && marginHeightWidth.hSplitHeight) {
+                                width = marginHeightWidth.hSplitWidth;
+                                height = marginHeightWidth.hSplitHeight;
+                                marginHeightWidth.using = "hSplit tag: " + marginHeightWidth.hSplitTag;
+                            }
+                            else if (marginHeightWidth.innerWidth && marginHeightWidth.innerHeight) {
                                 width=marginHeightWidth.innerWidth*0.65;
-                            }
-                            var height=410;
-                            if (marginHeightWidth.hSplit3Height) {
-                                   height = marginHeightWidth.hSplit3Height;
-                            }
-                            else if (marginHeightWidth.innerHeight) {
                                 height=marginHeightWidth.innerHeight*0.55;
-                            }                   
-
-                            marginHeightWidth.width=width - marginHeightWidth.margin.left - marginHeightWidth.margin.right;
-                            marginHeightWidth.height=height - marginHeightWidth.margin.top - marginHeightWidth.margin.bottom;
+                                marginHeightWidth.using = "$window.innerWidth, $window.innerHeight";
+                            }                
                             
+                            marginHeightWidth.width = width - 
+                                marginHeightWidth.margin.left - marginHeightWidth.margin.right;                        
+                            marginHeightWidth.height = height - 
+                                marginHeightWidth.margin.top - marginHeightWidth.margin.bottom;
+                                
                             return marginHeightWidth;
                         }                      
                          
@@ -545,10 +626,10 @@ angular.module("RIF")
                                 .style("visibility", "hidden");                       
                         
                         var domainExtent=getDomain(data, gendersArray, riskFactorFieldName);
-                        var marginHeightWidth = getMargin();
-//                        AlertService.consoleDebug("[rifd-util-info.js] riskGraph domainExtent: " + 
-//                            JSON.stringify(domainExtent, null, 1) +
-//                            "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
+                        var marginHeightWidth = getMargin(width, height);
+                        AlertService.consoleDebug("[rifd-util-info.js] riskGraph: " + name + 
+                            "; domainExtent: " + JSON.stringify(domainExtent, null, 1) +
+                            "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
                             
                         var xScale = d3.scaleLinear()
                             .range([0, marginHeightWidth.width])
@@ -631,7 +712,7 @@ angular.module("RIF")
                                         .attr('transform', 'translate(-20,50)');                            
                          
                         for (var i=0; i< gendersArray.length; i++) {
-                            addErrorBar(svg2, gendersArray[i], riskFactorFieldName);  
+                            addErrorBar(svg2, gendersArray[i], riskFactorFieldName, name);  
                         
                             // Add legend   
                             legend.append("rect")
@@ -651,18 +732,20 @@ angular.module("RIF")
                     }
                     return {
                         getD3RiskGraph: function (svg, elementName, data, gendersArray, riskFactorFieldName, 
-                            riskFactorFieldDesc, name, riskGraphCallback) {
+                            riskFactorFieldDesc, name, width, height, riskGraphCallback) {
                             try {
                                 return d3RiskGraph(svg, elementName, data, gendersArray, riskFactorFieldName, 
-                                    riskFactorFieldDesc, name, riskGraphCallback);
+                                    riskFactorFieldDesc, name, width, height, riskGraphCallback);
                             }
                             catch (e) {
                                 riskGraphCallback("Caught exception: " + e.toString(), undefined);
                             }
                         },
-                        hasRiskGraphDataChanged: function (data, gendersArray, riskFactorFieldName, riskFactor, hasRiskGraphDataChangedCallback) {
+                        hasRiskGraphDataChanged: function (data, gendersArray, riskFactorFieldName, riskFactor, 
+                             width, height, name, hasRiskGraphDataChangedCallback) {
                             try {
-                                return hasRiskGraphDataChanged2(data, gendersArray, riskFactorFieldName, riskFactor, hasRiskGraphDataChangedCallback);
+                                return hasRiskGraphDataChanged2(data, gendersArray, riskFactorFieldName, riskFactor, 
+                                    width, height, name, hasRiskGraphDataChangedCallback);
                             }
                             catch (e) {
                                 hasRiskGraphDataChangedCallback("Caught exception: " + e.toString(), undefined);

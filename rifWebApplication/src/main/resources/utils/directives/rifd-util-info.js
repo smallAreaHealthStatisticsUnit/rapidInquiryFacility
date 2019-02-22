@@ -191,8 +191,8 @@ angular.module("RIF")
                                 'band': 'bandId', 
                                 'average distance from nearest source': 'avgDistanceFromNearestSource'
                             };
-                            scope.riskGraphChartCurrentWidth=860;
-                            scope.riskGraphChartCurrentHeight=410;
+                            scope.riskGraphChartCurrentWidth=0;
+                            scope.riskGraphChartCurrentHeight=0;
                             scope.riskGraphChartName1="riskGraph";
 							
                             if (scope.myMaps) {

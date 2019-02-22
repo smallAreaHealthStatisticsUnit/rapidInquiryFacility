@@ -111,11 +111,21 @@ angular.module("RIF")
                             }
                             else if (result || svg == undefined || svg.size() == 0) {
                                 if (svg && svg.size() > 0) {
-                                    AlertService.consoleDebug("[rifd-util-d3riskGraph.js] svg remove: " + 
+                                    AlertService.consoleDebug("[rifd-util-d3riskGraph.js] has data changed result: " + result + 
+                                        "; svg remove: " + 
                                         scope.name);
                                     svg.remove();
                                 }
                                 svg = d3.select(element[0]).append("svg");
+                                
+                                var hSplit3=d3.select("#hSplit3");
+                                var riskGraphChartCurrentHeight;
+                                var riskGraphChartCurrentWidth;
+                                if (hSplit3) {
+                                    riskGraphChartCurrentHeight = hSplit3.node().getBoundingClientRect().height;
+                                    riskGraphChartCurrentWidth = hSplit3.node().getBoundingClientRect().width;
+                                }
+ 
                                 AlertService.consoleDebug("[rifd-util-d3riskGraph.js] call getD3RiskGraph() " +
                                     "; watchCount: " + watchCount +
                                     "; gendersArray: " + JSON.stringify(scope.gendersArray) + 
@@ -126,6 +136,7 @@ angular.module("RIF")
                                     "; riskFactor2FieldName: " + scope.riskFactor2FieldName[scope.riskFactor]);
                                 D3ChartsService.getD3RiskGraph(svg, elementName, scope.riskGraphData, scope.gendersArray, 
                                     scope.riskFactor2FieldName[scope.riskFactor], scope.riskFactor, scope.name,
+                                    riskGraphChartCurrentWidth, riskGraphChartCurrentHeight,
                                     riskGraphCallback);
                             }
                             else {
@@ -134,12 +145,13 @@ angular.module("RIF")
                                     " no change in risk graph data; watchCount: " + 
                                     watchCount);
                                 if (watchCount > 0) {
-                                    watchCount--;
+                                    watchCount=0;
                                 }
                             }
                         }
                             
-                        if (angular.isUndefined(scope.riskGraphData) || Object.keys(scope.riskGraphData).length === 0) {
+                        if (angular.isUndefined(scope.riskGraphData) || 
+                            Object.keys(scope.riskGraphData).length === 0) { // No data
                             if (timeoutPromise) {
                                 $timeout.cancel(timeoutPromise);  
                             }
@@ -182,7 +194,7 @@ angular.module("RIF")
                             }
 //                            d3.select(elementName).remove();
                         }
-                        else {
+                        else { // Has data
                             nullCount=0;
                             if (angular.isUndefined(scope.gendersArray) ||
                                 angular.isUndefined(scope.riskFactor) ||
@@ -201,6 +213,7 @@ angular.module("RIF")
                                     ((scope.riskFactor2FieldName && scope.riskFactor) ? 
                                         scope.riskFactor2FieldName[scope.riskFactor] : undefined), 
                                     scope.riskFactor, 
+                                    scope.width, scope.height, scope.name, 
                                     hasRiskGraphDataChangedCallback);
                             }
                         }

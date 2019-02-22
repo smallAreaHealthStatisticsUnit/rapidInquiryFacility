@@ -169,16 +169,20 @@ angular.module("RIF")
                                 " from parent window for save");
                             return;
                         }
+                        else if (attr.mapid === "riskGraph") {
+                            container = opts.container;
+                        }
                         else if (opts.container === "rrchart") {
                             container = opts.container + attr.mapid;
-                        } else {
+                        } 
+                        else {
                             container = attr.mapid;
                         }
 
                         if (document.getElementById(container) === null) {
                             AlertService.consoleError("[rifd-util-savechart.js] optionsd3: " + 
                                 JSON.stringify(scope.$parent.optionsd3, 0, 1));
-                            AlertService.showError("Unable to D3 container: " + container + " for save");
+                            AlertService.showError("Unable to find D3 container: " + container + " for save");
                             return;
                         } else {
                             var svgString = getSVGString(d3.select("#" + container)

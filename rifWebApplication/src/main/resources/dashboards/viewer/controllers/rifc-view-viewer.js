@@ -135,30 +135,27 @@ angular.module("RIF")
                 $scope.riskGraphData2={};
                 
                 //ui-container sizes
-                $scope.distHistoCurrentHeight = 200;
-                $scope.distHistoCurrentWidth = 200;
-                $scope.riskGraphChartCurrentWidth2=860;
-                $scope.riskGraphChartCurrentHeight2=410;
+                $scope.distHistoCurrentHeight = 400;
+                $scope.distHistoCurrentWidth = 250;
+                $scope.riskGraphChartCurrentWidth2=400;
+                $scope.riskGraphChartCurrentHeight2=250;
+                $scope.pyramidCurrentHeight=400;
+                $scope.pyramidCurrentWidth=250;
                 $scope.vSplit1 = ViewerStateService.getState().vSplit1;
                 $scope.hSplit1 = ViewerStateService.getState().hSplit1;
                 $scope.hSplit2 = ViewerStateService.getState().hSplit2;
 				
-                $scope.getD3Frames = function () {
-                    if ($scope.isDieaseMapping) {
-                        $scope.distHistoCurrentHeight = d3.select("#hSplit1").node().getBoundingClientRect().height;
-                        $scope.distHistoCurrentWidth = d3.select("#hSplit1").node().getBoundingClientRect().width;
-                        $scope.pyramidCurrentHeight = d3.select("#hSplit2").node().getBoundingClientRect().height;
-                        $scope.pyramidCurrentWidth = d3.select("#hSplit1").node().getBoundingClientRect().width;
-                    }
-                    else {
-                        $scope.riskGraphChartCurrentHeight2 = d3.select("#hSplit3").node().getBoundingClientRect().height;
-                        $scope.riskGraphChartCurrentWidth2 = d3.select("#hSplit3").node().getBoundingClientRect().width;                       
-                        $scope.pyramidCurrentHeight = d3.select("#hSplit2").node().getBoundingClientRect().height;
-                        $scope.pyramidCurrentWidth = d3.select("#hSplit3").node().getBoundingClientRect().width;
-                    }
+                $scope.getD3Frames = function () { // Called from ui.layout.loaded event
+                    $scope.distHistoCurrentHeight = d3.select("#hSplit1").node().getBoundingClientRect().height;
+                    $scope.distHistoCurrentWidth = d3.select("#hSplit1").node().getBoundingClientRect().width;
+                    $scope.pyramidCurrentHeight = d3.select("#hSplit2").node().getBoundingClientRect().height;
+                    $scope.pyramidCurrentWidth = d3.select("#hSplit1").node().getBoundingClientRect().width;
+                    $scope.riskGraphChartCurrentHeight2 = d3.select("#hSplit1").node().getBoundingClientRect().height;
+                    $scope.riskGraphChartCurrentWidth2 = d3.select("#hSplit1").node().getBoundingClientRect().width;                  
                 };
 
-                $scope.getD3FramesOnResize = function (beforeContainer, afterContainer) {
+                $scope.getD3FramesOnResize = function (beforeContainer, afterContainer) { 
+                    // Called from ui.layout.resize event
                     //Monitor split sizes            
                     if (beforeContainer.id === "vSplit1") {
                         ViewerStateService.getState().vSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
@@ -173,14 +170,14 @@ angular.module("RIF")
                         ViewerStateService.getState().hSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                         $scope.distHistoCurrentHeight = beforeContainer.size;
                         $scope.pyramidCurrentHeight = afterContainer.size;
-                        $scope.riskGraphChartCurrentWidth2 = afterContainer.size;
+                        $scope.riskGraphChartCurrentHeight2 = beforeContainer.size;
                     }
-                    if (beforeContainer.id === "hSplit3") {
+/*                    if (beforeContainer.id === "hSplit3") {
                         ViewerStateService.getState().hSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                         $scope.distHistoCurrentHeight = beforeContainer.size;
                         $scope.pyramidCurrentHeight = afterContainer.size;
-                        $scope.riskGraphChartCurrentWidth2 = afterContainer.size;
-                    }
+                        $scope.riskGraphChartCurrentHeight2 = beforeContainer.size;
+                    } */
                
                 };
 
@@ -233,7 +230,7 @@ angular.module("RIF")
                         filename: "histogram.png"
                     },
                     "riskGraph": {
-                        container: "riskGraph",
+                        container: "riskGraph2",
                         element: "#hSplit1",
                         filename: "riskGraph.png"
                     }
@@ -260,10 +257,10 @@ angular.module("RIF")
                             }
                             $scope.gendersArray2=selector.gendersArray;
                             $scope.riskFactor2=selector.riskFactor;
-                            $scope.consoleDebug("[rifc-view-viewer.js] got risk graph data: " +
-                                JSON.stringify($scope.riskGraphData2, 0, 1) + 
-                                "; study: " + $scope.studyID["viewermap"].study_id +
-                                "; selector: " + JSON.stringify(selector, 0, 1));
+//                            $scope.consoleDebug("[rifc-view-viewer.js] got risk graph data: " +
+//                                JSON.stringify($scope.riskGraphData2, 0, 1) + 
+//                                "; study: " + $scope.studyID["viewermap"].study_id +
+//                                "; selector: " + JSON.stringify(selector, 0, 1));
                         }, function () {
                             $scope.showError("[rifc-view-viewer.js] get risk graph data error");
                         });
