@@ -388,7 +388,7 @@ angular.module("RIF")
                                 }
                                 
                                 var xMax = d3.max(data[gendersArray[i]], function(d) { 
-                                    return parseFloat(d[riskFactorFieldName])*1.2; });                            
+                                    return parseFloat(d[riskFactorFieldName])*1.4; });                            
                                 if (!domainExtent.xMax) {
                                     domainExtent.xMax=xMax;
                                 }
@@ -604,9 +604,10 @@ angular.module("RIF")
                                 height=marginHeightWidth.innerHeight*0.55;
                                 marginHeightWidth.using = "$window.innerWidth, $window.innerHeight";
                                 
-                                if (marginHeightWidth.hSplitTag == "#hSplit3") { // Set hSplit3
+                                if (marginHeightWidth.hSplitTag == "#hSplit3") { // viewer: set hSplit3
                                     var hSplit3=document.getElementById("hSplit3");
-                                    if (hSplit3) {
+                                    if (hSplit3) { 
+//                                        height = height - 100; // To allow for chart header UNHELPFULL
                                         hSplit3.style.height = height + "px";
                                         hSplit3.style.width = width + "px";
                                     }
@@ -632,8 +633,8 @@ angular.module("RIF")
                         } */
                                 
                         var tooltip = d3.select("#" + name + "Tooltip").append("div")
-                                .attr("class", "riskGraph-tooltip")
-                                .style("visibility", "hidden");                       
+                                        .attr("class", "riskGraph-tooltip")
+                                        .style("visibility", "hidden");                       
                         
                         var domainExtent=getDomain(data, gendersArray, riskFactorFieldName);
                         var marginHeightWidth = getMargin(modalWidth, modalHeight);
@@ -642,12 +643,12 @@ angular.module("RIF")
                             "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
                             
                         var xScale = d3.scaleLinear()
-                            .range([0, marginHeightWidth.width])
-                            .domain([domainExtent.xMin, domainExtent.xMax]).nice();
+                                       .range([0, marginHeightWidth.width])
+                                       .domain([domainExtent.xMin, domainExtent.xMax]).nice();
                         var yScale = d3.scaleLinear()
-                           .range([marginHeightWidth.height, 0])
-                           .domain([domainExtent.yMin, domainExtent.yMax]).nice();                                      
-                        
+                                       .range([marginHeightWidth.height, 0])
+                                       .domain([domainExtent.yMin, domainExtent.yMax]).nice();                                      
+                         
                         var xAxis;
                         if (riskFactorFieldName == "bandId") {
                             xAxis = d3.axisBottom(xScale).ticks(domainExtent.xMax.toFixed());
@@ -658,23 +659,21 @@ angular.module("RIF")
                         var yAxis = d3.axisLeft(yScale).ticks(12 * marginHeightWidth.height / marginHeightWidth.width);
 
                         let line = d3.line()
-                                .x(function(d) {
-                                       return xScale(d.max_exposure_value);
-                                 })
-                                .y(function(d) {
-                                        return yScale(d.relativeRisk);
-                                 });
+                                     .x(function(d) {
+                                        return xScale(d.max_exposure_value);
+                                     })
+                                     .y(function(d) {
+                                            return yScale(d.relativeRisk);
+                                     });
 
                         var svg2=svg.attr("id", name)
-                            .attr("width", 
-                                marginHeightWidth.width + marginHeightWidth.margin.left + marginHeightWidth.margin.right)
-                            .attr("height", 
-                                marginHeightWidth.height + marginHeightWidth.margin.top + marginHeightWidth.margin.bottom)
-    //                        .attr("transform", "translate(" + 
-    //                            marginHeightWidth.margin.left + "," + marginHeightWidth.margin.top + ")")
-                            .append("g")
-                            .attr("transform", "translate(" + 
-                                marginHeightWidth.margin.left + "," + marginHeightWidth.margin.top + ")");
+                                    .attr("width", 
+                                            marginHeightWidth.width + marginHeightWidth.margin.left + marginHeightWidth.margin.right)
+                                    .attr("height", 
+                                            marginHeightWidth.height + marginHeightWidth.margin.top + marginHeightWidth.margin.bottom /* + 20 */)
+                                    .append("g")
+                                    .attr("transform", "translate(" + 
+                                            marginHeightWidth.margin.left + "," + marginHeightWidth.margin.top + ")");
                  
                         svg2.append("g").append("rect")
                             .attr("width", marginHeightWidth.width)
@@ -687,39 +686,43 @@ angular.module("RIF")
                             .call(xAxis);
                             
                         svg2.append("g").attr("class", "axis axis--y")
-                           .call(yAxis);            
-                           
+                            .call(yAxis);            
+              
                         // text label for the x axis
-                        svg2.append("text")             
-                            .attr("transform",
+                        svg2.append("text")           
+                            .attr("transform",                           
                                   "translate(" + (marginHeightWidth.width/2) + " ," + 
                                                  (marginHeightWidth.height + marginHeightWidth.margin.top + 10) + ")")
+//                            .attr("x", (marginHeightWidth.width / 2))
+//                            .attr("y", (marginHeightWidth.height + 20))  
+//                            .attr("dy", "1em")
                             .style("text-anchor", "middle")
                             .text(riskFactorFieldDesc.toUpperCase());
-
+                            
                         // text label for the y axis
                         svg2.append("text")
-                           .attr("transform", "rotate(-90)")
-                           .attr("y", 0 - marginHeightWidth.margin.left)
-                           .attr("x", 0 - (marginHeightWidth.height / 2))
-                           .attr("dy", "1em")
-                           .style("text-anchor", "middle")
-                           .text("RELATIVE RISK");  
+                            .attr("transform", "rotate(-90)")
+                            .attr("y", 0 - ((45<marginHeightWidth.margin.left) ? 45 : marginHeightWidth.margin.left)  
+                                    /* was marginHeightWidth.margin.left */)
+                            .attr("x", 0 - (marginHeightWidth.height / 2))
+                            .attr("dy", "1em")
+                            .style("text-anchor", "middle")
+                            .text("RELATIVE RISK");  
                             
                         // Add title	  
                         svg2.append("text")
-                           .attr("class", "homogeneityTitle")
-                           .attr("x", (marginHeightWidth.width / 2))
-                           .attr("y", 20)
-                           .style("text-anchor", "middle")
-                           .text("Risk Graph");
- 	
+                            .attr("class", "homogeneityTitle")
+                            .attr("x", (marginHeightWidth.width / 2))
+                            .attr("y", 20)
+                            .style("text-anchor", "middle")
+                            .text("Risk Graph");
+                            
                         // Add legend   
                         var legend = svg2.append("g")
-                                        .attr("class", "legend")
-                                        .attr("height", 100)
-                                        .attr("width", 100)
-                                        .attr('transform', 'translate(-20,20)');   // Was (-20,50) */                          
+                                         .attr("class", "legend")
+                                         .attr("height", 100)
+                                         .attr("width", 100)
+                                         .attr('transform', 'translate(-20,20)');   // Was (-20,50) */                          
                          
                         for (var i=0; i< gendersArray.length; i++) {
                             addErrorBar(svg2, gendersArray[i], riskFactorFieldName, name);  
