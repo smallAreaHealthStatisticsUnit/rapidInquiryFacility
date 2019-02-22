@@ -131,19 +131,20 @@ angular.module("RIF")
                                     "; gendersArray: " + JSON.stringify(scope.gendersArray) + 
                                     "; riskFactor: " + scope.riskFactor +
                                     "; name: " + scope.name +
-                                    "; width: " + (scope.width || "N/A") +
-                                    "; height: " + (scope.height || "N/A") +
+                                    "; width: " + (scope.width || riskGraphChartCurrentWidth) +
+                                    "; height: " + (scope.height || riskGraphChartCurrentHeight) +
                                     "; riskFactor2FieldName: " + scope.riskFactor2FieldName[scope.riskFactor]);
                                 D3ChartsService.getD3RiskGraph(svg, elementName, scope.riskGraphData, scope.gendersArray, 
                                     scope.riskFactor2FieldName[scope.riskFactor], scope.riskFactor, scope.name,
-                                    riskGraphChartCurrentWidth, riskGraphChartCurrentHeight,
+                                    (scope.width || riskGraphChartCurrentWidth), 
+                                    (scope.height || riskGraphChartCurrentHeight),
                                     riskGraphCallback);
                             }
                             else {
-                                AlertService.consoleDebug(
-                                    "[rifd-util-d3riskGraph.js] riskGraph: " + scope.name + 
-                                    " no change in risk graph data; watchCount: " + 
-                                    watchCount);
+//                                AlertService.consoleDebug(
+//                                    "[rifd-util-d3riskGraph.js] riskGraph: " + scope.name + 
+//                                    " no change in risk graph data; watchCount: " + 
+//                                    watchCount);
                                 if (watchCount > 0) {
                                     watchCount=0;
                                 }

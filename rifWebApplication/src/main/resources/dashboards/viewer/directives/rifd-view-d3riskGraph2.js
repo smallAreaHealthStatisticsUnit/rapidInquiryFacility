@@ -131,10 +131,10 @@ angular.module("RIF")
                                     riskGraphCallback);
                             }
                             else {
-                                AlertService.consoleDebug(
-                                    "[rifd-view-d3riskGraph2.js] riskGraph: " + scope.name + 
-                                    " no change in risk graph data; watchCount: " + 
-                                    watchCount);
+//                                AlertService.consoleDebug(
+//                                    "[rifd-view-d3riskGraph2.js] riskGraph: " + scope.name + 
+//                                    " no change in risk graph data; watchCount: " + 
+//                                    watchCount);
                                 if (watchCount > 0) {
                                     watchCount=0;
                                 }
