@@ -601,13 +601,12 @@ angular.module("RIF")
                             }
                             else if (marginHeightWidth.innerWidth && marginHeightWidth.innerHeight) {
                                 width=marginHeightWidth.innerWidth*0.65;
-                                height=marginHeightWidth.innerHeight*0.55;
+                                height=marginHeightWidth.innerHeight*0.60;
                                 marginHeightWidth.using = "$window.innerWidth, $window.innerHeight";
                                 
                                 if (marginHeightWidth.hSplitTag == "#hSplit3") { // viewer: set hSplit3
                                     var hSplit3=document.getElementById("hSplit3");
                                     if (hSplit3) { 
-//                                        height = height - 100; // To allow for chart header UNHELPFULL
                                         hSplit3.style.height = height + "px";
                                         hSplit3.style.width = width + "px";
                                     }
@@ -621,26 +620,20 @@ angular.module("RIF")
                                 
                             return marginHeightWidth;
                         }                      
-                         
-/*                      var tooltip = d3.select("#riskGraphTooltip");
-                        if (tooltip._group && tooltip._group[0] && tooltip._group[0][0] != null) { 
-                        }
-                        else {                                      
-                            tooltip = d3.select("#d3RiskGraphTooltip").append("div")
-                                .attr("id", "riskGraphTooltip")
-                                .attr("class", "riskGraph-tooltip")
-                                .style("visibility", "hidden");
-                        } */
-                                
-                        var tooltip = d3.select("#" + name + "Tooltip").append("div")
+                              
+                        var tooltip=d3.select("#" + name + "Tooltip")
+                        if (tooltip && tooltip.size() > 0) {
+                            tooltip.selectAll("div").remove(); 
+                        }                            
+                        tooltip = d3.select("#" + name + "Tooltip").append("div")
                                         .attr("class", "riskGraph-tooltip")
                                         .style("visibility", "hidden");                       
                         
                         var domainExtent=getDomain(data, gendersArray, riskFactorFieldName);
                         var marginHeightWidth = getMargin(modalWidth, modalHeight);
-                        AlertService.consoleDebug("[rifd-util-info.js] riskGraph: " + name + 
-                            "; domainExtent: " + JSON.stringify(domainExtent, null, 1) +
-                            "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
+//                        AlertService.consoleDebug("[rifd-util-info.js] riskGraph: " + name + 
+//                            "; domainExtent: " + JSON.stringify(domainExtent, null, 1) +
+//                            "; marginHeightWidth: " + JSON.stringify(marginHeightWidth, null, 1) );
                             
                         var xScale = d3.scaleLinear()
                                        .range([0, marginHeightWidth.width])
@@ -710,12 +703,12 @@ angular.module("RIF")
                             .text("RELATIVE RISK");  
                             
                         // Add title	  
-                        svg2.append("text")
-                            .attr("class", "homogeneityTitle")
-                            .attr("x", (marginHeightWidth.width / 2))
-                            .attr("y", 20)
-                            .style("text-anchor", "middle")
-                            .text("Risk Graph");
+//                        svg2.append("text")
+//                            .attr("class", "homogeneityTitle")
+//                            .attr("x", (marginHeightWidth.width / 2))
+//                            .attr("y", 20)
+//                            .style("text-anchor", "middle")
+//                            .text("Risk Graph");
                             
                         // Add legend   
                         var legend = svg2.append("g")

@@ -169,7 +169,7 @@ angular.module("RIF")
                                 " from parent window for save");
                             return;
                         }
-                        else if (attr.mapid === "riskGraph") {
+                        else if (attr.mapid === "riskGraph" || attr.mapid === "riskGraph2") {
                             container = opts.container;
                         }
                         else if (opts.container === "rrchart") {
