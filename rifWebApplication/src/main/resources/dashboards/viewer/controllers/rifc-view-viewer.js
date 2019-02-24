@@ -121,7 +121,7 @@ angular.module("RIF")
                     }, 50);
                 });
 
-                $scope.isDieaseMapping=true;
+                $scope.isDiseaseMapping=true;
                 $scope.isRiskAnalysis=false;	
                 $scope.testShow=true;                
                 $scope.gendersArray2=['males', 'females'];	

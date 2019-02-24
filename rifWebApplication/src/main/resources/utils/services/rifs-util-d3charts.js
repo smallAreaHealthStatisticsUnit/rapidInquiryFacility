@@ -216,32 +216,32 @@ angular.module("RIF")
                         } */
                         
                         /*
-                         * Function:    diffRiskGraphParameters()
-                         * Uses:        name, newRiskGraphParameters, riskGraphParameters
+                         * Function:    diffParameters2()
+                         * Uses:        name, graphName, newParameters, oldParameters
                          * Returns:     0 - same, 1+ differences
                          */
-                        function diffRiskGraphParameters(callNo) {
+                        function diffParameters2(callNo, graphName, newParameters, oldParameters) {
                             var differences=0;
                             
-                            if (!angular.equals(newRiskGraphParameters, riskGraphParameters[name])) {
-                                for (var key in riskGraphParameters[name]) {
-                                    if (riskGraphParameters[name] && riskGraphParameters[name][key] &&
-                                        newRiskGraphParameters[key] &&
-                                        !angular.equals(newRiskGraphParameters[key], riskGraphParameters[name][key])) {
+                            if (!angular.equals(newParameters, oldParameters)) {
+                                for (var key in oldParameters) {
+                                    if (oldParameters && oldParameters[key] &&
+                                        newParameters[key] &&
+                                        !angular.equals(newParameters[key], oldParameters[key])) {
                                         differences++;
-                                        AlertService.consoleDebug("[rifs-util-d3charts.js] " + name + 
+                                        AlertService.consoleDebug("[rifs-util-d3charts.js] " + graphName + 
                                             " [" + differences + 
                                             "] key: " + key +
                                             " has changed; callNo: " + callNo +
-                                            "; old: " + JSON.stringify(riskGraphParameters[name][key]) + " != " +
-                                            "; new: " + JSON.stringify(newRiskGraphParameters[key]));
+                                            "; old: " + JSON.stringify(oldParameters[key]) + " != " +
+                                            "; new: " + JSON.stringify(newParameters[key]));
                                     }
                                 }                                                                               
                             }  
                             if (differences == 0) {
 //                                AlertService.consoleDebug("[rifs-util-d3charts.js] callNo: " + callNo + 
-//                                    "; name: " + name + " no differences"/* + 
-//                                    JSON.stringify(riskGraphParameters[name]) */);
+//                                    "; name: " + graphName + " no differences"/* + 
+//                                    JSON.stringify(oldParameters) */);
                             }
                             
                             return differences;                            
@@ -259,13 +259,13 @@ angular.module("RIF")
                             riskGraphParameters[name] = angular.copy(newRiskGraphParameters);
                             hasRiskGraphDataChangedCallback(undefined /* No error */, true); // Initialisation
                         }
-                        else if (diffRiskGraphParameters(1) == 0) { // No change
+                        else if (diffParameters2(1, name, newRiskGraphParameters, riskGraphParameters[name]) == 0) { // No change
                             
                             if (timeoutPromise[name]) {
                                 $timeout.cancel(timeoutPromise[name]);  
                             }
                             timeoutPromise[name] = $timeout( function() { // To avoid Error: $rootScope:infdig Infinite $digest Loop errors
-                                var differences=diffRiskGraphParameters(2);
+                                var differences=diffParameters2(2, name, newRiskGraphParameters, riskGraphParameters[name]);
                                 hasRiskGraphDataChangedCallback(undefined /* No error */, 
                                     ((differences == 0) ? false : true)); // Maybe
                             }, 500 /* mS */);   
@@ -759,6 +759,10 @@ angular.module("RIF")
                         },
                         setupRiskGraphSelector: function (data, riskFactor2FieldName) {
                             return setupRiskGraphSelector2(data, riskFactor2FieldName);
+                        },
+                        diffParameters: function (graphName, newParameters, oldParameters) {
+                            return diffParameters2(1, graphName, newParameters, oldParameters);
                         }
+                        
                     };
                 }]);

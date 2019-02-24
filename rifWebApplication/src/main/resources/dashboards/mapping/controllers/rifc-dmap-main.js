@@ -260,6 +260,44 @@ angular.module("RIF")
                         container: "rrchart",
                         element: "#rr1",
                         filename: "risk2.png"
+                    },
+                    "riskGraph3": {
+                        container: "riskGraph3",
+                        element: "#rr1",
+                        filename: "riskGraph4.png"
+                    },
+                    "riskGraph4": {
+                        container: "riskGraph4",
+                        element: "#rr1",
+                        filename: "riskGraph4.png"
+                    }
+                };
+                $scope.isDiseaseMapping=true;
+                $scope.isRiskAnalysis=false;
+                $scope.riskGraphData3={
+                    diseasemap1: {
+                        name: undefined,
+                        width: 150,
+                        height: 150,
+                        gendersArray: ['males', 'females'],
+                        riskFactor: 'band',
+                        riskFactor2FieldName: {
+                            'average exposure': 'avgExposureValue', 
+                            'band': 'bandId', 
+                            'average distance from nearest source': 'avgDistanceFromNearestSource'
+                        }
+                    },
+                    diseasemap2: {
+                        name: undefined,
+                        width: 150,
+                        height: 150,
+                        gendersArray: ['males', 'females'],
+                        riskFactor: 'band',
+                        riskFactor2FieldName: {
+                            'average exposure': 'avgExposureValue', 
+                            'band': 'bandId', 
+                            'average distance from nearest source': 'avgDistanceFromNearestSource'
+                        }
                     }
                 };
 

@@ -337,7 +337,7 @@ angular.module("RIF")
 								else if (studySelection && studySelection.studyShapes) {
 									$scope.myService.getState().studyType[mapID] = "Disease Mapping";
                                     $scope.$parent.studyType[mapID]="DISEASE MAPPING";
-                                    $scope.$parent.isDieaseMapping=true;
+                                    $scope.$parent.isDiseaseMapping=true;
                                     $scope.$parent.isRiskAnalysis=false;
 									if (ParametersService.getParameters()[mapID]) { // Reset mapping defaults
 										$scope.parameters.mappingDefaults[mapID]=ParametersService.getParameters()[mapID];
@@ -347,7 +347,7 @@ angular.module("RIF")
 //										$scope.$parent.studyType[mapID]=$scope.studyID[mapID].riskAnalysisDescription.toUpperCase();
 										$scope.$parent.studyType[mapID]="RISK ANALYSIS";
 										$scope.myService.getState().studyType[mapID] = "Risk Analysis";
-                                        $scope.$parent.isDieaseMapping=false;
+                                        $scope.$parent.isDiseaseMapping=false;
                                         $scope.$parent.isRiskAnalysis=true;
 										$scope.parameters.mappingDefaults[mapID] = { // No Bayesian smoothing in risk analysis
 											method: 	'quantile', 
@@ -581,7 +581,7 @@ angular.module("RIF")
 									}
 									
 									$scope.$parent.studyType[mapID]="DISEASE MAPPING";
-                                    $scope.$parent.isDieaseMapping=true;
+                                    $scope.$parent.isDiseaseMapping=true;
                                     $scope.$parent.isRiskAnalysis=false;
 									$scope.myService.getState().studyType[mapID] = "Disease Mapping";
 //									ChoroService.resetState(mapID);
