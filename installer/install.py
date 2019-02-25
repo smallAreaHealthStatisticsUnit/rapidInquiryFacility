@@ -561,6 +561,8 @@ def save_pg_passwords(settings):
     # we make a backup copy of the original before creating the new one.
     if pass_file.exists():
         pass_file.rename(create_backup_file(pass_file))
+    else:
+        pass_file.mkdir(parents=True, exist_ok=True)
 
     with pass_file.open("w"):
         pass_file.write_text(pass_file_content)
