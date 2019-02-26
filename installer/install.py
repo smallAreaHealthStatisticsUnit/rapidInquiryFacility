@@ -83,79 +83,91 @@ def main():
 
     initialise_config()
 
-    # This sends output to the specified file as well as stdout.
-    with Logger("install.log"):
+    settings = get_settings()
 
-        settings = get_settings()
+    # prompt for go/no-go
+    print("About to install with the following settings:"
+          "\n\tDevelopment mode: {}"
+          "\n\tDB: {} "
+          "\n\tScripts directory: {} "
+          "\n\tTomcat home directory: {}"
+          "\n\tWAR files directory: {}"
+          "\n\tExtract directory: {}".format(bool(settings.dev_mode),
+                                             long_db_name(settings.db_type),
+                                             settings.script_root,
+                                             settings.cat_home,
+                                             settings.war_dir,
+                                             settings.extract_dir))
 
-        # prompt for go/no-go
-        print("About to install with the following settings:"
-              "\n\tDevelopment mode: {}"
-              "\n\tDB: {} "
-              "\n\tScripts directory: {} "
-              "\n\tTomcat home directory: {}"
-              "\n\tWAR files directory: {}"
-              "\n\tExtract directory: {}".format(
-            bool(settings.dev_mode),
-            long_db_name(settings.db_type),
-            settings.script_root,
-            settings.cat_home,
-            settings.war_dir,
-            settings.extract_dir))
+    if go("Continue? [No]: "):
 
-        if go("Continue? [No]: "):
+        # This sends output to the specified file as well as stdout.
+        sys.stdout = Tee("install.log")
 
-            # Run SQL scripts
-            if settings.db_type == "pg":
-                db_scripts = get_pg_scripts(settings)
-                save_pg_passwords(settings)
-            else:
-                # Assumes both that it's SQL Server, and that we're
-                # running on Windows. Linux versions of SQLServer
-                # exist, but we'll deal with them later if necessary.
+        # Run SQL scripts
+        if settings.db_type == "pg":
+            db_scripts = get_pg_scripts(settings)
+            save_pg_passwords(settings)
+        else:
+            # Assumes both that it's SQL Server, and that we're
+            # running on Windows. Linux versions of SQLServer
+            # exist, but we'll deal with them later if necessary.
 
-                # Some files need to have special permissions granted,
-                # or the database loading steps fail
-                set_special_db_permissions()
-                db_scripts = get_windows_scripts(settings)
+            # Some files need to have special permissions granted,
+            # or the database loading steps fail
+            set_special_db_permissions()
+            db_scripts = get_windows_scripts(settings)
 
-            db_created = False
-            for script, parent in db_scripts:
-                print("About to run {}; switching to {}".format(script,
-                                                                parent))
-                result = subprocess.run(script.split(), cwd=parent,
-                                        capture_output=True)
+        db_created = False
+        for script, parent in db_scripts:
+            print("About to run {}; switching to {}".format(script,
+                                                            parent))
 
-                if result.returncode is not None and result.returncode != 0:
-                    db_created = False
-                    msg = """Something went wrong when running the script {} 
-                          
-                          Output from script: {}
-                          
-                          Errors from script: {} 
-                          
-                          
-                          Database creation failed"""
-                    banner(msg.format(script, result.stdout, result.stderr),
-                           120)
-                    break
-                db_created = True
+            # Subprocess capturing, along with the Tee class below, copied
+            # from https://stackoverflow.com/questions/1936996/
+            # interactive-python-script-output-stored-in-some-file
+            process = subprocess.Popen(script.split(), cwd=parent,
+                                       shell=True, stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT)
+            so, se = process.communicate()
+            process.wait()
+            print(so)
 
-            if db_created:
-                # Write out the log of the database creation
+            # for  line in result.stdout:
+            #     sys.stdout.write(line)
 
-                # Deploy WAR files
-                for f in get_war_files(settings):
-                    shutil.copy(f, settings.cat_home / "webapps")
+            # retvalue = result.returncode
+            # result = subprocess.run(script.split(), cwd=parent,
+            #                         capture_output=True)
 
-                # Generate RIF startup properties file
-                create_properties_file(settings)
+            if process.returncode is not None and process.returncode != 0:
+                db_created = False
+                msg = """Something went wrong when running the script {} 
+                      
+                      Output from script: {}
+                      
+                      Errors from script: {} 
+                      
+                      
+                      Database creation failed"""
+                banner(msg.format(script, process.stdout, process.stderr),
+                       120)
+                break
+            db_created = True
 
-                banner("Installation complete.", 30)
-                if settings.db_type == "ms":
-                    banner("Remember to create an ODBC datasource as "
-                           "per the installation instructions, before "
-                           "running the RIF.", 60)
+        if db_created:
+            # Deploy WAR files
+            for f in get_war_files(settings):
+                shutil.copy(f, settings.cat_home / "webapps")
+
+            # Generate RIF startup properties file
+            create_properties_file(settings)
+
+            banner("Installation complete.", 30)
+            if settings.db_type == "ms":
+                banner("Remember to create an ODBC datasource as "
+                       "per the installation instructions, before "
+                       "running the RIF.", 60)
 
 
 def initialise_config():
@@ -224,8 +236,8 @@ def get_settings():
     if running_bundled:
         settings.script_root = base_path
     else:
-        settings.script_root = Path(get_value_from_user(SCRIPT_HOME,
-                                                        is_path=True)).resolve()
+        settings.script_root = Path(get_value_from_user(
+            SCRIPT_HOME, is_path=True)).resolve()
 
     # Tomcat home: if it's not set we use the environment variable
     settings.cat_home = get_value_from_user(TOMCAT_HOME, is_path=True)
@@ -252,8 +264,8 @@ def get_settings():
         settings.db_superuser_pass = get_password_from_user(
             POSTGRES_PASSWORD,
             confirm=False).strip()
-        while not check_db_user(settings.db_superuser_name,
-                                settings.db_superuser_pass):
+        while not check_postgres_user(settings.db_superuser_name,
+                                      settings.db_superuser_pass):
             print("Incorrect password. Please try again.")
             settings.db_superuser_pass = get_password_from_user(
                 POSTGRES_PASSWORD,
@@ -270,13 +282,13 @@ def get_settings():
     return settings
 
 
-def check_db_user(user, password):
+def check_postgres_user(user, password):
     """Check that the user and password work for the database."""
     # Copied from https://pynative.com/python-postgresql-tutorial/
 
     success = False
     connection = None
-    cursor= None
+    cursor = None
     try:
         connection = psycopg2.connect(user=user,
                                       password=password,
@@ -317,7 +329,8 @@ def get_value_from_user(key, is_path=False, extra=""):
         current_value = default_config[key]
 
     base_prompt = prompt_strings.get(key)
-    prompt = "{} [{}]{} ".format(base_prompt.format(extra), current_value,
+    prompt = "{} [{}]{} ".format(base_prompt.format(extra),
+                                 current_value,
                                  "" if base_prompt.endswith("?") else ":")
     reply = input(prompt)
     if reply is None or reply.strip() == "":
@@ -551,7 +564,8 @@ def get_pg_scripts(settings):
 def format_postgres_script(settings, template, script_root, script_name,
                            user=None, db=None):
     """Create the full runnable form of a script for PostgreSQL, from a
-    template."""
+       template.
+    """
 
     script = template.format(settings.db_superuser_name if user is None else
                              user,
@@ -832,43 +846,21 @@ class Settings():
     db_superuser_pass: str = ""
 
 
-class Logger(object):
-    """Lumberjack class - duplicates sys.stdout to a log file and it's okay."""
+class Tee(object):
+    def __init__(self, fn='/tmp/foo.txt'):
+        self.o = sys.stdout
+        self.f = open(fn, 'w')
 
-    # I got this from https://stackoverflow.com/a/24583265/1517620
-
-    def __init__(self, filename="install.log", mode="ab", buff=0):
-        self.stdout = sys.stdout
-        self.file = open(filename, mode, buff)
-        sys.stdout = self
-
-    def __del__(self):
-        self.close()
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, *args):
-        self.close()
-
-    def write(self, message):
-        self.stdout.write(message)
-        self.file.write(message.encode("utf-8"))
+    def write(self, s):
+        self.o.write(s)
+        self.f.write(s)
 
     def flush(self):
-        self.stdout.flush()
-        self.file.flush()
-        os.fsync(self.file.fileno())
-
-    def close(self):
-        if self.stdout is not None:
-            sys.stdout = self.stdout
-            self.stdout = None
-
-        if self.file is not None:
-            self.file.close()
-            self.file = None
+        self.f.flush()
 
 
 if __name__ == "__main__":
+    # Reset stdout, stderr, because we redirected them above.
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
     sys.exit(main())
