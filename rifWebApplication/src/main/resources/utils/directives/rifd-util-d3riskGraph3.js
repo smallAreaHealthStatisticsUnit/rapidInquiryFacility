@@ -118,49 +118,48 @@ angular.module("RIF")
 									}
 								
 									var elementName="#" + newValue.name;                         
-									if (svg == undefined || svg.size() == 0) {
-										if (svg && svg.size() > 0) {
-											AlertService.consoleDebug("[rifd-util-d3riskGraph.js] map: " + newValue.mapID + 
-												"; has " + numDataChanges + " data changes result: " + 
-												"; svg remove: " + newValue.name);
-											svg.remove();
-										}
-										svg = d3.select(element[0]).append("svg");
-										
-										var hSplit;
-										if (newValue.hSplitTag) {
-											hSplit=d3.select("#" + newValue.hSplitTag);
-										}
-										var riskGraphChartCurrentHeight;
-										var riskGraphChartCurrentWidth;
-										if (hSplit && hSplit.size() > 0) {
-											riskGraphChartCurrentHeight = hSplit.node().getBoundingClientRect().height;
-											riskGraphChartCurrentWidth = hSplit.node().getBoundingClientRect().width;
-										}
-										
-										callGetD3RiskGraph = function(mapID, callCount) {
-											if (!processing) {
-												processing=true;
-												AlertService.consoleDebug("[rifd-util-d3riskGraph3.js] map: " + newValue.mapID + 
-													"; call: " + callCount + " getD3RiskGraph() " +
-													"; gendersArray: " + JSON.stringify(newValue.gendersArray) + 
-													"; riskFactor: " + newValue.riskFactor +
-													"; name: " + newValue.name +
-													"; hSplitTag: " + newValue.hSplitTag +
-													"; width: " + (newValue.width || riskGraphChartCurrentWidth) +
-													"; height: " + (newValue.height || riskGraphChartCurrentHeight) +
-													"; riskFactor: " + newValue.riskFactor2FieldName[newValue.riskFactor]);
-												D3ChartsService.getD3RiskGraph2(svg, elementName, mapID, newValue, riskGraphCallback);
-											}
-											else {
-												$scope.consoleDebug("[rifc-util-d3riskGraph3.js] map: " + newValue.mapID + 
-													"; call: " + callCount + " getD3RiskGraph() " +
-													"; chart busy for mapID: " + mapID);	
-												setTimeout(callGetD3RiskGraph, 1000, newValue.mapID, (callCount+1));	
-											}
-										}
-										setTimeout(callGetD3RiskGraph, 1000, newValue.mapID, 1);	
+									if (svg && svg.size() > 0) {
+										AlertService.consoleDebug("[rifd-util-d3riskGraph.js] map: " + newValue.mapID + 
+											"; has " + numDataChanges + " data changes result: " + 
+											"; svg remove: " + newValue.name);
+										svg.remove();
 									}
+									svg = d3.select(element[0]).append("svg");
+									
+									var hSplit;
+									if (newValue.hSplitTag) {
+										hSplit=d3.select("#" + newValue.hSplitTag);
+									}
+									var riskGraphChartCurrentHeight;
+									var riskGraphChartCurrentWidth;
+									if (hSplit && hSplit.size() > 0) {
+										riskGraphChartCurrentHeight = hSplit.node().getBoundingClientRect().height;
+										riskGraphChartCurrentWidth = hSplit.node().getBoundingClientRect().width;
+									}
+									
+									callGetD3RiskGraph = function(mapID, callCount) {
+										if (!processing) {
+											processing=true;
+											AlertService.consoleDebug("[rifd-util-d3riskGraph3.js] map: " + newValue.mapID + 
+												"; call: " + callCount + " getD3RiskGraph() " +
+												"; gendersArray: " + JSON.stringify(newValue.gendersArray) + 
+												"; riskFactor: " + newValue.riskFactor +
+												"; name: " + newValue.name +
+												"; hSplitTag: " + newValue.hSplitTag +
+												"; width: " + (newValue.width || riskGraphChartCurrentWidth) +
+												"; height: " + (newValue.height || riskGraphChartCurrentHeight) +
+												"; riskFactor: " + newValue.riskFactor2FieldName[newValue.riskFactor]);
+											D3ChartsService.getD3RiskGraph2(svg, elementName, mapID, newValue, riskGraphCallback);
+										}
+										else {
+											$scope.consoleDebug("[rifc-util-d3riskGraph3.js] map: " + newValue.mapID + 
+												"; call: " + callCount + " getD3RiskGraph() " +
+												"; chart busy for mapID: " + mapID);	
+											setTimeout(callGetD3RiskGraph, 1000, newValue.mapID, (callCount+1));	
+										}
+									}
+									setTimeout(callGetD3RiskGraph, 1000, newValue.mapID, 1);	
+	
 									nullCount=0;
 								}
 								else {
