@@ -38,8 +38,10 @@
 /* global L, key, topojson, d3 */
 
 angular.module("RIF")
-        .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService', 'mapTools', 'ParametersService',
-            function ($scope, $timeout, MappingStateService, ChoroService, MappingService, mapTools, ParametersService) {
+        .controller('MappingCtrl', ['$scope', 'user', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService', 'mapTools', 
+			'ParametersService', 'D3ChartsService',
+            function ($scope, user, $timeout, MappingStateService, ChoroService, MappingService, mapTools, 
+				ParametersService, D3ChartsService) {
 
                 //Reference the child scope (controller is embedded)
                 //child scope will be on either the mapping or viewer dashboards
@@ -174,21 +176,29 @@ angular.module("RIF")
                     $scope.currentHeight1 = d3.select("#rr1").node().getBoundingClientRect().height;
                     $scope.currentWidth2 = d3.select("#rr2").node().getBoundingClientRect().width;
                     $scope.currentHeight2 = d3.select("#rr2").node().getBoundingClientRect().height;
+                    $scope.riskGraphData3['diseasemap1'].width = d3.select("#rr1").node().getBoundingClientRect().width;
+                    $scope.riskGraphData3['diseasemap1'].height = d3.select("#rr1").node().getBoundingClientRect().height;
+                    $scope.riskGraphData3['diseasemap2'].width = d3.select("#rr2").node().getBoundingClientRect().width;
+                    $scope.riskGraphData3['diseasemap2'].height = d3.select("#rr2").node().getBoundingClientRect().height;
                 };
 
                 $scope.getD3FramesOnResize = function (beforeContainer, afterContainer) {
                     if (beforeContainer.id === "hSplit1") {
                         MappingStateService.getState().hSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                         $scope.currentHeight1 = d3.select("#rr1").node().getBoundingClientRect().height;
+						$scope.riskGraphData3['diseasemap1'].height = d3.select("#rr1").node().getBoundingClientRect().height;
                     }
                     if (beforeContainer.id === "vSplit1") {
                         MappingStateService.getState().vSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                         $scope.currentWidth1 = d3.select("#rr1").node().getBoundingClientRect().width;
                         $scope.currentWidth2 = d3.select("#rr2").node().getBoundingClientRect().width;
+						$scope.riskGraphData3['diseasemap1'].width = d3.select("#rr1").node().getBoundingClientRect().width;
+						$scope.riskGraphData3['diseasemap2'].width = d3.select("#rr2").node().getBoundingClientRect().width;
                     }
                     if (beforeContainer.id === "hSplit2") {
                         MappingStateService.getState().hSplit2 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                         $scope.currentHeight2 = d3.select("#rr2").node().getBoundingClientRect().height;
+						$scope.riskGraphData3['diseasemap2'].height = d3.select("#rr2").node().getBoundingClientRect().height;
                     }
                 };
 
@@ -272,11 +282,18 @@ angular.module("RIF")
                         filename: "riskGraph4.png"
                     }
                 };
-                $scope.isDiseaseMapping=true;
-                $scope.isRiskAnalysis=false;
+                $scope.isDiseaseMappingStudy = {
+					"diseasemap1": true,
+					"diseasemap2": true
+				};
+				
                 $scope.riskGraphData3={
                     diseasemap1: {
-                        name: undefined,
+						riskGraphData: undefined,
+						mapID: "diseasemap1",
+						hSplitTag: "hSplit2",
+						studyID: -1,
+                        name: "riskGraph",
                         width: 150,
                         height: 150,
                         gendersArray: ['males', 'females'],
@@ -288,7 +305,11 @@ angular.module("RIF")
                         }
                     },
                     diseasemap2: {
-                        name: undefined,
+						riskGraphData: undefined,
+						mapID: "diseasemap2",
+						hSplitTag: "hSplit2",
+						studyID: -1,
+                        name: "riskGraph",
                         width: 150,
                         height: 150,
                         gendersArray: ['males', 'females'],
@@ -307,7 +328,9 @@ angular.module("RIF")
                 //draw rr chart from d3 directive 'rrZoom'
                 $scope.getD3chart = function (mapID, attribute) {
 					
-					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; attribute: " + attribute + "; data rows: " + $scope.child.tableData[mapID].length);
+					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; study type: " + $scope.studyType[mapID] +
+						"; isDiseaseMappingStudy: " + $scope.isDiseaseMappingStudy[mapID] +
+						"; attribute: " + attribute + "; data rows: " + $scope.child.tableData[mapID].length);
                     //reset brush handles        
                     MappingStateService.getState().brushEndLoc[mapID] = null;
                     MappingStateService.getState().brushStartLoc[mapID] = null;
@@ -355,7 +378,7 @@ angular.module("RIF")
                                     }()
                                 }
                         );
-                    }
+                    } // End of for loop
 
 		//			$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + 
 		//				"; rs[0]: " + JSON.stringify(rs[0], null, 2) + 
@@ -375,6 +398,37 @@ angular.module("RIF")
 					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + 
 						"; $scope.rrChartData[mapID][0]: " + JSON.stringify($scope.rrChartData[mapID][0], null, 0) + 
 						"; length: " + $scope.rrChartData[mapID].length);
+
+					//get risk graph data
+					if (!$scope.isDiseaseMappingStudy[mapID]) {
+						user.getRiskGraph(user.currentUser, $scope.studyID[mapID].study_id).then(function (res) {
+							if (res && res.data && Object.keys(res.data).length > 0 && 
+								$scope.riskGraphData3[mapID].riskFactor2FieldName) {
+								var selector=D3ChartsService.setupRiskGraphSelector(
+									res.data, $scope.riskGraphData3[mapID].riskFactor2FieldName);
+								var newRiskGraphData3 = angular.copy($scope.riskGraphData3[mapID]);
+								for (var key in selector) { // Copy to scope
+									newRiskGraphData3[key]=angular.copy(selector[key]);
+								}
+								newRiskGraphData3.riskFactorFieldName=newRiskGraphData3.riskFactor2FieldName[selector.riskFactor];
+                                newRiskGraphData3.riskFactorFieldDesc=selector.riskFactor;
+								newRiskGraphData3.riskGraphData=res.data;    
+								newRiskGraphData3.studyID = $scope.studyID[mapID].study_id;
+								$scope.riskGraphData3[mapID] = angular.copy(newRiskGraphData3);								
+								$scope.consoleDebug("[rifc-dmap-main.js] d3RisKGraph map: " + mapID + 
+									"; study: " + $scope.studyID[mapID].study_id +
+									"; got risk graph data: " + JSON.stringify($scope.riskGraphData3[mapID], 0, 0) + 
+									"; selector: " + JSON.stringify(selector, 0, 1));
+							}
+							else {
+								throw new Error("[rifc-dmap-main.js] no risk graph data error for field: " +
+									($scope.riskGraphData3[mapID].riskFactor2FieldName ? 
+										$scope.riskGraphData3[mapID].riskFactor2FieldName : "Not defined"));
+							}
+						}, function () {
+							$scope.showError("[rifc-dmap-main.js] get risk graph data error");
+						});
+					}						
                 }; // End of getD3chart()
 
                 //key events to move the dropline

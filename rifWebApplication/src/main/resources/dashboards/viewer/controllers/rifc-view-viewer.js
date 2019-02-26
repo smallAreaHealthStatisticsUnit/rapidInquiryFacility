@@ -123,6 +123,10 @@ angular.module("RIF")
 
                 $scope.isDiseaseMapping=true;
                 $scope.isRiskAnalysis=false;	
+                $scope.isDiseaseMappingStudy = { 
+					"viewermap": true
+				};
+				
                 $scope.testShow=true;                
                 $scope.gendersArray2=['males', 'females'];	
                 $scope.riskFactor2FieldName2 = {
@@ -218,6 +222,8 @@ angular.module("RIF")
                 $scope.domain = {
                     "viewermap": []
                 };
+				
+				
                 $scope.optionsd3 = {
                     "poppyramid": {
                         container: "poppyramid",
@@ -240,7 +246,12 @@ angular.module("RIF")
                  * D3
                  */
                 //Draw the attribute histogram
-                $scope.getD3chart = function (mapID, attribute) {
+                $scope.getD3chart = function (mapID, attribute) {	
+					
+					$scope.consoleDebug("[rifc-view-viewer.js] getD3chart, map: " + mapID + "; study type: " + $scope.studyType[mapID] +
+						"; isDiseaseMappingStudy: " + $scope.isDiseaseMappingStudy[mapID] +
+						"; attribute: " + attribute + "; data rows: " + $scope.child.tableData[mapID].length);
+						
                     $scope.distHistoName = ChoroService.getMaps("viewermap").feature;
                     $scope.histoData["viewermap"].length = 0;
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
