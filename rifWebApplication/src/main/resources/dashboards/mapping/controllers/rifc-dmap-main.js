@@ -200,6 +200,8 @@ angular.module("RIF")
                         $scope.currentHeight2 = d3.select("#rr2").node().getBoundingClientRect().height;
 						$scope.riskGraphData3['diseasemap2'].height = d3.select("#rr2").node().getBoundingClientRect().height;
                     }
+					
+					$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: resize"}); // Restart watcher
                 };
 
                 /*
@@ -296,6 +298,7 @@ angular.module("RIF")
                         name: "riskGraph",
                         width: 150,
                         height: 150,
+						gotCount: 1,
                         gendersArray: ['males', 'females'],
                         riskFactor: 'band',
                         riskFactor2FieldName: {
@@ -312,6 +315,7 @@ angular.module("RIF")
                         name: "riskGraph",
                         width: 150,
                         height: 150,
+						gotCount: 1,
                         gendersArray: ['males', 'females'],
                         riskFactor: 'band',
                         riskFactor2FieldName: {
@@ -414,11 +418,18 @@ angular.module("RIF")
                                 newRiskGraphData3.riskFactorFieldDesc=selector.riskFactor;
 								newRiskGraphData3.riskGraphData=res.data;    
 								newRiskGraphData3.studyID = $scope.studyID[mapID].study_id;
+								newRiskGraphData3.width=$scope.riskGraphData3[mapID].width;
+								newRiskGraphData3.height=$scope.riskGraphData3[mapID].height;
+								$scope.riskGraphData3[mapID].gotCount++;
+								newRiskGraphData3.gotCount=$scope.riskGraphData3[mapID].gotCount;
+								
 								$scope.riskGraphData3[mapID] = angular.copy(newRiskGraphData3);								
 								$scope.consoleDebug("[rifc-dmap-main.js] d3RisKGraph map: " + mapID + 
 									"; study: " + $scope.studyID[mapID].study_id +
 									"; got risk graph data: " + JSON.stringify($scope.riskGraphData3[mapID], 0, 0) + 
 									"; selector: " + JSON.stringify(selector, 0, 1));
+									
+								$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});  // Restart watcher
 							}
 							else {
 								throw new Error("[rifc-dmap-main.js] no risk graph data error for field: " +

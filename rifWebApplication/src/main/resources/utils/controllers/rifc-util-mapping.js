@@ -1230,7 +1230,6 @@ angular.module("RIF")
 					
                     //draw histogram [IT MUST BW HERE OR D3 GETS CONFUSED!]
 					callGetD3chart = function(mapID) {
-						$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
 						
 						if ($scope.tableData[mapID].length == 0) {
 							$scope.consoleDebug("[rifc-util-mapping.js] map data not ready for mapID: " + mapID);	
@@ -1238,6 +1237,7 @@ angular.module("RIF")
 						}
 						else {
 							$scope.getD3chart(mapID, $scope.attr[mapID]); // Crashes firefox	
+							$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
 						
 							$scope.consoleDebug("[rifc-util-mapping.js] refresh completed for mapID: " + mapID);	
 						}
