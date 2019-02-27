@@ -124,26 +124,12 @@ def main():
             print("About to run {}; switching to {}".format(script,
                                                             parent))
 
-            # Subprocess capturing, along with the Tee class below, copied
-            # from https://stackoverflow.com/questions/1936996/
-            #   interactive-python-script-output-stored-in-some-file
-            # process = subprocess.Popen(script.split(), cwd=parent,
-            #                            shell=True, stdout=subprocess.PIPE,
-            #                            stderr=subprocess.STDOUT)
-            # so, se = process.communicate()
-            # process.wait()
-            # print(so)
-
-            # for line in result.stdout:
-            #     sys.stdout.write(line)
-
-            # retvalue = result.returncode
             process = subprocess.run(script.split(), cwd=parent,
                                      capture_output=True,
                                      text=True)
 
             print(process.stdout)
-            
+
             if process.returncode is not None and process.returncode != 0:
                 db_created = False
                 msg = """Something went wrong when running the script {} 
