@@ -45,7 +45,8 @@
  *    rifd-util-d3riskGraph.js. Resizing should now work!
  * 5. Remove rrZoomReset anti memory leak functionality. It should no longer be needed;
  * 6. Multiple redraws in the mapping panes should be remove when the fetch code is all converted to use promises;
- * 7. Add rr-zoom, dist-histo and pyramid to the info modal.
+ * 7. Add rr-zoom, dist-histo and pyramid to the info modal;
+ * 8. Add "NONE" to second gender selector in info risk graph. The work around is to set both to the same;
  */
 
 /* global d3 */
