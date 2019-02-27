@@ -82,7 +82,6 @@ def main():
         return
 
     initialise_config()
-
     settings = get_settings()
 
     # prompt for go/no-go
@@ -102,7 +101,9 @@ def main():
     if go("Continue? [No]: "):
 
         # This sends output to the specified file as well as stdout.
-        sys.stdout = Tee("install.log")
+        outfile = Tee("install.log")
+        sys.stdout = outfile
+        sys.stderr = outfile
 
         # Run SQL scripts
         if settings.db_type == "pg":
@@ -114,7 +115,7 @@ def main():
             # exist, but we'll deal with them later if necessary.
 
             # Some files need to have special permissions granted,
-            # or the database loading steps fail
+            # or the database loading steps fail.
             set_special_db_permissions()
             db_scripts = get_windows_scripts(settings)
 
@@ -125,21 +126,24 @@ def main():
 
             # Subprocess capturing, along with the Tee class below, copied
             # from https://stackoverflow.com/questions/1936996/
-            # interactive-python-script-output-stored-in-some-file
-            process = subprocess.Popen(script.split(), cwd=parent,
-                                       shell=True, stdout=subprocess.PIPE,
-                                       stderr=subprocess.STDOUT)
-            so, se = process.communicate()
-            process.wait()
-            print(so)
+            #   interactive-python-script-output-stored-in-some-file
+            # process = subprocess.Popen(script.split(), cwd=parent,
+            #                            shell=True, stdout=subprocess.PIPE,
+            #                            stderr=subprocess.STDOUT)
+            # so, se = process.communicate()
+            # process.wait()
+            # print(so)
 
-            # for  line in result.stdout:
+            # for line in result.stdout:
             #     sys.stdout.write(line)
 
             # retvalue = result.returncode
-            # result = subprocess.run(script.split(), cwd=parent,
-            #                         capture_output=True)
+            process = subprocess.run(script.split(), cwd=parent,
+                                     capture_output=True,
+                                     text=True)
 
+            print(process.stdout)
+            
             if process.returncode is not None and process.returncode != 0:
                 db_created = False
                 msg = """Something went wrong when running the script {} 
@@ -168,6 +172,8 @@ def main():
                 banner("Remember to create an ODBC datasource as "
                        "per the installation instructions, before "
                        "running the RIF.", 60)
+
+        outfile.close()
 
 
 def initialise_config():
@@ -245,6 +251,9 @@ def get_settings():
     # In development we assume that this script is being run from installer/
     # under the project root. The root directory is thus one level up.
     if settings.dev_mode:
+
+        # TODO: this should actually use the parent of the directory of the
+        #  current script, not of the current working directory.
         settings.war_dir = Path.cwd().resolve().parent
     else:
         settings.war_dir = base_path / "warfiles"
@@ -256,14 +265,13 @@ def get_settings():
         settings.db_name = get_value_from_user(DATABASE_NAME).strip()
         settings.db_user = get_value_from_user(DATABASE_USER,
                                                extra=settings.db_name).strip()
-        settings.db_pass = get_password_from_user(DATABASE_PASSWORD, extra=
-        settings.db_user).strip()
+        settings.db_pass = get_password_from_user(
+            DATABASE_PASSWORD, extra=settings.db_user).strip()
         settings.db_owner_name = "rif40"
         settings.db_owner_pass = get_password_from_user(RIF40_PASSWORD).strip()
         settings.db_superuser_name = "postgres"
         settings.db_superuser_pass = get_password_from_user(
-            POSTGRES_PASSWORD,
-            confirm=False).strip()
+            POSTGRES_PASSWORD, confirm=False).strip()
         while not check_postgres_user(settings.db_superuser_name,
                                       settings.db_superuser_pass):
             print("Incorrect password. Please try again.")
@@ -272,10 +280,8 @@ def get_settings():
                 confirm=False).strip()
 
     # Update the user's config file
-    # user_config["key"] = "reply"
-    # user_parser
-    props_file = open(user_props, "w")
-    user_parser.write(props_file)
+    with user_props.open("w") as props_file:
+        user_parser.write(props_file)
 
     print("Settings: {}".format(settings))
 
@@ -846,10 +852,14 @@ class Settings():
     db_superuser_pass: str = ""
 
 
-class Tee(object):
-    def __init__(self, fn='/tmp/foo.txt'):
+class Tee:
+    """Write stdout to a selected file, as well as to the system stdout"""
+    # Adapted from Stack Overflow answer:
+    # https://stackoverflow.com/a/1937063/1517620
+
+    def __init__(self, log_file):
         self.o = sys.stdout
-        self.f = open(fn, 'w')
+        self.f = open(log_file, 'w')
 
     def write(self, s):
         self.o.write(s)
@@ -858,9 +868,16 @@ class Tee(object):
     def flush(self):
         self.f.flush()
 
+    def close(self):
+        self.flush()
+        self.f.close()
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
+
 
 if __name__ == "__main__":
+    main()
     # Reset stdout, stderr, because we redirected them above.
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
-    sys.exit(main())
+    sys.exit()
