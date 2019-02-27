@@ -125,11 +125,15 @@ docs/tileMaker.html
 # R projects
 **/*.Rproj*
 
+# Log files
+**/*.log
+
 # Jekyll stuff for GitHub Pages
 **/Gemfile*
 **/.jekyll-metadata
 **/.sass-cache
 **/_site
+**/_plugins
 docs/RIF_Data_Loader_Manual.pdf
 docs/RIF_v40_Manual.pdf
 docs/source-documents/~$F v4 0 Manual.docx
