@@ -33,6 +33,19 @@
 
 /*
  * DIRECTIVE for D3 risk graph - common version
+ *
+ * Still to do:
+ *
+ * 1. Convert to info and viewer risk graphs to using common version with a single data source. Rename rifd-util-d3riskGraph3.js to 
+ *    rifd-util-d3riskGraph.js and remove rifd-util-d3riskGraph2.js;
+ * 2. Fix info scaler to use d3.select("#???????").node().getBoundingClientRect().height/width. This removes a known bug. Also test with
+ *    window resizing;
+ * 3. Remove non d3 code from rifs-util-d3charts.js (functionality now in rifd-util-d3riskGraph3.js), rename to rifs-util-d3riskgraph.js;
+ * 4. Convert rr-zoom, dist-histo and pyramid directive so the d3 code is in a utils service and now use same the methods as 
+ *    rifd-util-d3riskGraph.js. Resizing should now work!
+ * 5. Remove rrZoomReset anti memory leak functionality. It should no longer be needed;
+ * 6. Multiple redraws in the mapping panes should be remove when the fetch code is all converted to use promises;
+ * 7. Add rr-zoom, dist-histo and pyramid to the info modal.
  */
 
 /* global d3 */
@@ -56,7 +69,14 @@ angular.module("RIF")
 					var changeCount=0;
 					var timeoutPromise;
 					var watcherCount=0;
-					
+
+				    /*
+					 * Function:    riskGraphCallback()
+					 * Parameters:  err, svg, elementName, mapID, newData
+					 * Description:	Async callback function. Terminates watcher on error. Checks if SVG graphic was created.
+					 *				newData is provided so you can provided your own watcher.
+					 * Returns:     N/A
+					 */					
                     var riskGraphCallback = function(err, svg, elementName, mapID, newData) {
                         if (err) {
                             AlertService.showError("rifd-util-d3riskGraph3.js] riskGraph: " + 
@@ -99,7 +119,13 @@ angular.module("RIF")
                         }
 						oldData[mapID]=angular.copy(newData); // Only save now when the data has been used
                     }
-                   
+ 
+				    /*
+					 * Function:    riskGraphCallback()
+					 * Parameters:  newValue, oldValue
+					 * Description:	Async watcher listener function. Creates SVG graphic on data cnange
+					 * Returns:     N/A
+					 */	                  
 					var riskGraphListener = function(newValue, oldValue) {
 						try {
 							var svg=d3.select(element[0]).select("svg");
@@ -107,10 +133,11 @@ angular.module("RIF")
 							if (newValue && newValue.name && 
 								newValue.riskGraphData && Object.keys(newValue.riskGraphData).length > 0) {
 									
+								// Check data really has changed
 								var numDataChanges=D3ChartsService.diffParameters(newValue.name, newValue, oldValue);
 								if (numDataChanges > 0) {
 											 
-									if (angular.isUndefined(newValue.width)) {
+									if (angular.isUndefined(newValue.width)) { // Rubbish defaults
 										newValue.width=150;
 									}
 									if (angular.isUndefined(newValue.height)) {
@@ -118,7 +145,7 @@ angular.module("RIF")
 									}
 								
 									var elementName="#" + newValue.name;                         
-									if (svg && svg.size() > 0) {
+									if (svg && svg.size() > 0) { // Remove old SVG
 										AlertService.consoleDebug("[rifd-util-d3riskGraph.js] map: " + newValue.mapID + 
 											"; has " + numDataChanges + " data changes result: " + 
 											"; svg remove: " + newValue.name);
@@ -137,6 +164,7 @@ angular.module("RIF")
 										riskGraphChartCurrentWidth = hSplit.node().getBoundingClientRect().width;
 									}
 									
+									// Create SVG graphic
 									callGetD3RiskGraph = function(mapID, callCount) {
 										if (!processing) {
 											processing=true;
@@ -190,46 +218,10 @@ angular.module("RIF")
                             unregister();
 						}							
                     }
-										
-                    var riskGraphWatcher = function(mapID, newData) {
-						watcherCount++;
-						try {
-							if (watcherCount > 1000) {
-								throw new Error("[rifd-util-d3riskGraph3.js] map: " + mapID + 
-									" AAAA; changeCount: " + changeCount);
-							}
-							if (oldData && oldData[mapID] && oldData[mapID].riskGraphData &&
-								Object.keys(oldData[mapID].riskGraphData).length > 0) {
-								if (newData && newData.riskGraphData && Object.keys(newData.riskGraphData).length > 0) {
-									if (!angular.equals(newData, oldData[mapID])) {
-										changeCount++;						
-									AlertService.consoleDebug("[rifd-util-d3riskGraph3.js] map: " + mapID + 
-										" change; changeCount: " + changeCount);				
-									}
-								}
-							}
-							else if (newData && newData.riskGraphData && Object.keys(newData.riskGraphData).length > 0) { // First run
-								AlertService.consoleDebug("[rifd-util-d3riskGraph3.js] map: " + mapID + 
-									" first run; changeCount: " + changeCount);
-								changeCount++;
-							}
-							
-							return changeCount;
-						}
-						catch (e) {
-							AlertService.showError("[rifd-util-d3riskGraph3.js] map: " + scope.riskGraphData.mapID + 
-								"; caught exception: " + e.toString());
-                            unregister();
-						}	
-					}
-					
+						
+					// Watcher function						
                     var unregister = scope.$watch('riskGraphData', riskGraphListener, true /* Uses angular.equals */);
-//                    var unregister = scope.$watch(function() {
-//						return riskGraphWatcher(
-//							((scope.riskGraphData && scope.riskGraphData.mapID) ? scope.riskGraphData.mapID : "unknown"), 
-//							scope.riskGraphData);
-//					}, riskGraphListener, false /* Uses angular.equals */);
-                }
+				}
             };
             return directiveDefinitionObject;
         }]);
