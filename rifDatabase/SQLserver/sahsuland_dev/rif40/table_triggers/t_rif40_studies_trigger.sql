@@ -242,21 +242,21 @@ BEGIN
 	
 	-- This is trouble as is causes: Table name: [rif40].[t_rif40_studies] , UPDATE failed - non IG UPDATE not allowed on T_RIF40_STUDIES by user: (peter)
 	-- if you do not change the record. This may need changing in future
-	IF @is_state_change IS NULL AND @is_ig_update IS NULL AND @is_printselectstate IS NULL
-	BEGIN TRY
-
-		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @state_change;
-		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @inserted;
-		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @deleted;
-
-		rollback;
-		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51015, SUSER_NAME());
-		THROW 51015, @err_msg3, 1;
-	END TRY
-	BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
-		THROW 51015, @err_msg3, 1;
-	END CATCH;
+--	IF @is_state_change IS NULL AND @is_ig_update IS NULL AND @is_printselectstate IS NULL
+--	BEGIN TRY
+--
+--		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @state_change;
+--		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @inserted;
+--		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @deleted;
+--
+--		rollback;
+--		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51015, SUSER_NAME());
+--		THROW 51015, @err_msg3, 1;
+--	END TRY
+--	BEGIN CATCH
+--		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_studies]';
+--		THROW 51015, @err_msg3, 1;
+--	END CATCH;
 	
 END;
 

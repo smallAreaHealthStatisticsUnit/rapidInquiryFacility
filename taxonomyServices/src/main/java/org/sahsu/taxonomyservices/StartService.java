@@ -34,8 +34,7 @@ public class StartService {
 
 				FederatedTaxonomyService federatedTaxonomyService =
 						FederatedTaxonomyService.getFederatedTaxonomyService();
-				Path classesPath = AppFile .getTaxonomyInstance(".").path();
-				federatedTaxonomyService.initialise(classesPath);
+				federatedTaxonomyService.initialise();
 
 				running = true;
 

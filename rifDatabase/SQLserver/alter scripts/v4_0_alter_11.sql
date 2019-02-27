@@ -91,10 +91,10 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_study_areas'
                   AND column_name  = 'intersect_count') BEGIN
-	ALTER TABLE t_rif40_study_areas ADD intersect_count INTEGER NULL;
+	ALTER TABLE rif40.t_rif40_study_areas ADD intersect_count INTEGER NULL;
 END
 ELSE  BEGIN
-	ALTER TABLE t_rif40_study_areas ALTER COLUMN intersect_count INTEGER NULL;
+	ALTER TABLE rif40.t_rif40_study_areas ALTER COLUMN intersect_count INTEGER NULL;
 END;
 GO		
 
@@ -119,10 +119,10 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_study_areas'
                   AND column_name  = 'distance_from_nearest_source') BEGIN
-	ALTER TABLE t_rif40_study_areas ADD distance_from_nearest_source NUMERIC NULL;
+	ALTER TABLE rif40.t_rif40_study_areas ADD distance_from_nearest_source NUMERIC NULL;
 END
 ELSE  BEGIN
-	ALTER TABLE t_rif40_study_areas ALTER COLUMN distance_from_nearest_source NUMERIC NULL;
+	ALTER TABLE rif40.t_rif40_study_areas ALTER COLUMN distance_from_nearest_source NUMERIC NULL;
 END;
 GO		
 
@@ -147,7 +147,7 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_study_areas'
                   AND column_name  = 'nearest_rifshapepolyid') BEGIN
-	ALTER TABLE t_rif40_study_areas ADD nearest_rifshapepolyid NVARCHAR(MAX) NULL;
+	ALTER TABLE rif40.t_rif40_study_areas ADD nearest_rifshapepolyid NVARCHAR(MAX) NULL;
 END;
 GO		
 
@@ -175,7 +175,7 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_study_areas'
                   AND column_name  = 'exposure_value') BEGIN
-	ALTER TABLE t_rif40_study_areas ADD exposure_value NUMERIC NULL;
+	ALTER TABLE rif40.t_rif40_study_areas ADD exposure_value NUMERIC NULL;
 END;
 GO	
 
@@ -200,7 +200,7 @@ IF NOT EXISTS (SELECT column_name
                 WHERE table_schema = 'rif40'
                   AND table_name   = 't_rif40_studies'
                   AND column_name  = 'risk_analysis_exposure_field') BEGIN
-	ALTER TABLE t_rif40_studies ADD risk_analysis_exposure_field VARCHAR(30) NULL;
+	ALTER TABLE rif40.t_rif40_studies ADD risk_analysis_exposure_field VARCHAR(30) NULL;
 END;
 GO	
 
