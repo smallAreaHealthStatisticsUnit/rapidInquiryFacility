@@ -332,7 +332,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
-			ArrayList<CalculationMethod> calculationMethods
+			List<CalculationMethod> calculationMethods
 					= studySubmissionService.getAvailableCalculationMethods(user);
 
 			//Convert results to support JSON
@@ -394,7 +394,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
-			ArrayList<Project> projects
+			List<Project> projects
 					= studySubmissionService.getProjects(user);
 
 			//Convert results to support JSON
@@ -446,7 +446,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
-			ArrayList<Project> projects
+			List<Project> projects
 					= studySubmissionService.getProjects(user);
 
 			//Convert results to support JSON
@@ -534,7 +534,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
 
-			ArrayList<HealthTheme> healthThemes
+			List<HealthTheme> healthThemes
 					= studySubmissionService.getHealthThemes(
 					user,
 					geography);
@@ -587,7 +587,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 					= getRIFStudySubmissionService();
-			ArrayList<Sex> sexes
+			List<Sex> sexes
 					= studySubmissionService.getSexes(
 					user);
 
@@ -645,34 +645,31 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 		String result;
 
 		try {
-			//Convert URL parameters to RIF service API parameters
+			// Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance(geoLevelToMapName);
 
 			RIFStudySubmissionAPI studySubmissionService = getRIFStudySubmissionService();
-			ArrayList<AbstractCovariate> covariates = studySubmissionService.getCovariates(
+			List<AbstractCovariate> covariates = studySubmissionService.getCovariates(
 					user, geography, geoLevelToMap);
 
-			//Convert results to support JSON
-			ArrayList<CovariateProxy> covariateProxies = new ArrayList<>();
+			// Convert results to support JSON
+			List<CovariateProxy> covariateProxies = new ArrayList<>();
 			for (AbstractCovariate covariate : covariates) {
 				CovariateProxy covariateProxy = new CovariateProxy();
 
-				if (covariate instanceof AdjustableCovariate) {
-					covariateProxy.setCovariateType("adjustable");
-				} else {
-					covariateProxy.setCovariateType("exposure");
-				}
+				covariateProxy.setCovariateType(covariate.getType().toString());
 				covariateProxy.setName(covariate.getName());
 				covariateProxy.setMinimumValue(covariate.getMinimumValue());
 				covariateProxy.setMaximumValue(covariate.getMaximumValue());
+				covariateProxy.setDescription(covariate.getDescription());
 				covariateProxies.add(covariateProxy);
 			}
 
 			result = serialiseArrayResult(servletRequest, covariateProxies);
 		} catch(Exception exception) {
-			//Convert exceptions to support JSON
+			// Convert exceptions to support JSON
 			result = serialiseException(servletRequest, exception);
 		}
 

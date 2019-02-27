@@ -44,7 +44,7 @@
 --
 -- Peter Hambly, SAHSU
 --
-\set ECHO off
+\set ECHO none
 \set ON_ERROR_STOP ON
 \timing off
 \pset pager off

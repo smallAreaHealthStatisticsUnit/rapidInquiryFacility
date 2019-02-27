@@ -25,6 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.services.concepts.AbstractCovariate;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -1408,9 +1409,17 @@ public class GetStudyJSON {
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvCovariatesQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet;
-		rifInvCovariatesQueryFormatter.addQueryLine(0, "SELECT covariate_name,min,max,geography,study_geolevel_name");
-		rifInvCovariatesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_covariates");
-		rifInvCovariatesQueryFormatter.addQueryLine(0, " WHERE study_id = ? AND inv_id = ?");
+		rifInvCovariatesQueryFormatter.addQueryLine(
+				0, "SELECT i.covariate_name,i.min,i.max,i.geography,"
+				   + "i.study_geolevel_name,c.type");
+		rifInvCovariatesQueryFormatter.addQueryLine(
+				0, "  FROM rif40.rif40_inv_covariates i "
+				   + "JOIN rif40.rif40_covariates c");
+		rifInvCovariatesQueryFormatter.addQueryLine(
+				0, " ON i.covariate_name = c.covariate_name AND "
+				   + "i.geography = c.geography AND i.study_geolevel_name = c.geolevel_name ");
+		rifInvCovariatesQueryFormatter.addQueryLine(
+				0,"WHERE i.study_id = ? AND i.inv_id = ?");
 		PreparedStatement statement = manager.createPreparedStatement(connection,
 				rifInvCovariatesQueryFormatter);
 		
@@ -1423,7 +1432,10 @@ public class GetStudyJSON {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
 
-				do {			
+				do {
+					String covariateName = null;
+					String geographyName = null;
+					String geoLevelName = null;
 					JSONObject covariate=new JSONObject();
 					JSONObject adjustableCovariate=new JSONObject();
 					
@@ -1438,6 +1450,7 @@ public class GetStudyJSON {
 						switch (name) {
 							case "covariate_name":
 								covariate.put("name", value);
+								covariateName = value;
 								break;
 							case "min":
 								covariate.put("minimum_value", value);
@@ -1445,20 +1458,37 @@ public class GetStudyJSON {
 							case "max":
 								covariate.put("maximum_value", value);
 								break;
+							case "type":
+								covariate.put("covariate_type", AbstractCovariate.Type.fromNumber(
+										resultSet.getDouble(i)));
+								break;
+							case "study_geolevel_name":
+								geoLevelName = value;
+								covariate.put(name, value);
+								break;
+							case "geography":
+								geographyName = value;
+								covariate.put(name, value);
+								break;
 							default:
 								covariate.put(name, value);
 								break;
 						}
 					}		
-					covariate.put("covariate_type", "adjustable");
-					adjustableCovariate.put("adjustable_covariate", covariate);					
+
+					String description = new CovariateDescription(manager, connection,
+					                                              geographyName, geoLevelName,
+					                                              covariateName).get();
+					covariate.put("description", description);
+					adjustableCovariate.put("adjustable_covariate", covariate);
 					covariateArray.put(adjustableCovariate);
 				} while (resultSet.next());
 			}			
 		}
 		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifInvCovariatesQueryFormatter.generateQuery(),
-				exception);
+			rifLogger.error(this.getClass(),
+			                "Error in SQL Statement: >>> " + lineSeparator
+			                + rifInvCovariatesQueryFormatter.generateQuery(), exception);
 			throw exception;
 		}
 		finally {

@@ -1,6 +1,6 @@
 package org.sahsu.rif.services.test.services.pg;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 import org.sahsu.rif.generic.concepts.User;
@@ -102,7 +102,7 @@ public final class GetProjects extends CommonRIFServiceTestCase {
 	public void getProjects_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
-			ArrayList<Project> results
+			List<Project> results
 				= rifStudySubmissionService.getProjects(validUser);
 			assertEquals(2, results.size());
 		}

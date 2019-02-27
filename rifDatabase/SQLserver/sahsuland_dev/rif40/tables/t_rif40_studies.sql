@@ -77,6 +77,8 @@ CREATE TABLE [rif40].[t_rif40_studies](
 	[authorised_notes] [varchar](200) NULL,
 	[audsid] [varchar](90) NOT NULL DEFAULT (@@spid),
 	[stats_method] [varchar](4) NOT NULL DEFAULT (('NONE')),
+	[print_state] NVARCHAR(MAX) NULL,
+	[select_state] NVARCHAR(MAX) NULL,
  CONSTRAINT [t_rif40_studies_pk] PRIMARY KEY CLUSTERED 
 (
 	[study_id] ASC

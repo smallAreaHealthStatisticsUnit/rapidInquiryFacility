@@ -2,17 +2,18 @@
 package org.sahsu.taxonomyservices;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.sahsu.rif.generic.fileformats.AppFile;
+import org.sahsu.rif.generic.fileformats.ClasspathFilePath;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
 import org.sahsu.rif.generic.util.TaxonomyLogger;
 
-public final class TaxonomyServiceConfigurationXMLReader {
+final class TaxonomyServiceConfigurationXMLReader {
 
 	private TaxonomyServiceContentHandler taxonomyServiceContentHandler;
 
@@ -21,7 +22,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 	/**
      * Instantiates a new RIF job submission xml reader.
      */
-	public TaxonomyServiceConfigurationXMLReader() {
+	TaxonomyServiceConfigurationXMLReader() {
 
 		taxonomyServiceContentHandler = new TaxonomyServiceContentHandler();
 	}
@@ -29,14 +30,12 @@ public final class TaxonomyServiceConfigurationXMLReader {
 	/**
 	 * Read file.
 	 *
-	 * @param defaultResourceDirectoryPath the directory
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	List<TaxonomyServiceConfiguration> readFile(final Path defaultResourceDirectoryPath)
-			throws RIFServiceException {
+	List<TaxonomyServiceConfiguration> readFile() throws RIFServiceException {
 
-		File taxonomyServiceConfigurationFile = defaultResourceDirectoryPath.resolve(
-				"TaxonomyServicesConfiguration.xml").toFile();
+		File taxonomyServiceConfigurationFile = AppFile.getTaxonomyInstance(
+				"TaxonomyServicesConfiguration.xml").asFile();
 
 		try {
 

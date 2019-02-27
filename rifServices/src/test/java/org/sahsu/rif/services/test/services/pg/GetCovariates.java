@@ -1,6 +1,6 @@
 package org.sahsu.rif.services.test.services.pg;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -118,7 +118,7 @@ public final class GetCovariates extends CommonRIFServiceTestCase {
 		Geography validGeography = cloneValidGeography();
 		GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 
-		ArrayList<AbstractCovariate> results
+		List<AbstractCovariate> results
 			= rifStudySubmissionService.getCovariates(
 				validUser,
 				validGeography,

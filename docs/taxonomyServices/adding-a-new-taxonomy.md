@@ -28,13 +28,14 @@ Put this file into the `conf` directory under Tomcat's main directory: `$CATALIN
 
 ### The Configuration File
 
-Under Tomcat's `webapps` directory, find `taxonomies` (`$CATALINA_HOME/webapps/taxonomies` or `%CATALINA_HOME%\webapps\taxonomies`). In that directory there will be a file called `TaxonomyServicesConfiguration.xml`. Copy that file to the `conf` directory described above.
+Under Tomcat's `webapps` directory, find `taxonomies`, and within that the `WEB_INF/classes` directory (`$CATALINA_HOME/webapps/taxonomies/WEB_INF/classes` or `%CATALINA_HOME%\webapps\taxonomies\WEB_INF\classes`). In that directory there will be a file called `TaxonomyServicesConfiguration.xml`. Copy that file to the `conf` directory described above.
 
-Open the newly copied file in a text editor. Copy the existing `<taxonomy_service>` block for the ICD 9 taxonomy -- everything from `<taxonomy_service>` to `</taxonomy_service>`, inclusive -- and paste it in before the `</taxonomy_services>` (note the plural) line.
+Open the newly copied file in a text editor (or an XML editor). Copy the existing `<taxonomy_service>` block for the ICD 9 taxonomy -- everything from `<taxonomy_service>` to `</taxonomy_service>`, inclusive -- and paste it in before the `</taxonomy_services>` (note the plural) line.
 
-Then change the newly-pasted block to have appropriate values for your new taxonomy, including the name of the CSV file you created above. Here's our example:
+Then change the newly-pasted block to have appropriate values for your new taxonomy -- specifically the name of the CSV file you created above. Here's our example:
 
 ```
+...
 	<taxonomy_service>
 		<identifier>
 			lamb
@@ -62,6 +63,7 @@ Then change the newly-pasted block to have appropriate values for your new taxon
 			</parameter>
 		</parameters>
 	</taxonomy_service>
+</taxonomy_services>
 ```
 
 Save the files, stop and restart Tomcat, and your new taxonomy should appear in the dropdown list with the others. Here's a screenshot of our fictional one in action:

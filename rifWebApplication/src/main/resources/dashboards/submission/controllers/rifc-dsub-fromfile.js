@@ -481,8 +481,11 @@ angular.module("RIF")
 									var tmp = [];
 									for (var i = 0; i < res.data.length; i++) {
 										tmp.push(res.data[i].name);
-										tmp.push({name: res.data[i].name, minimum_value: res.data[i].minimumValue,
-											maximum_value: res.data[i].maximumValue, covariate_type: res.data[i].covariateType});
+										tmp.push({name: res.data[i].name,
+										    minimum_value: res.data[i].minimumValue,
+										    maximum_value: res.data[i].maximumValue,
+										    covariate_type: res.data[i].covariateType,
+										    description: res.data[i].description});
 									}
 									ParameterStateService.getState().possibleCovariates = tmp;
 									return true;

@@ -44,7 +44,7 @@ public class BaseSQLManager implements SQLManager {
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final Set<String> registeredUserIDs = new HashSet<>();
-	private static final Set<String> userIDsToBlock = new HashSet<>();;
+	private static final Set<String> userIDsToBlock = new HashSet<>();
 
 	private static final Map<String, ConnectionQueue> readOnlyConnectionsFromUser
 			= new HashMap<>();
@@ -96,7 +96,7 @@ public class BaseSQLManager implements SQLManager {
 	 * @param tableComponentName the table component name
 	 * @return the string
 	 */
-	protected String useAppropriateTableNameCase(
+	String useAppropriateTableNameCase(
 			final String tableComponentName) {
 		
 		//TODO: KLG - find out more about when we will need to convert
@@ -286,27 +286,36 @@ public class BaseSQLManager implements SQLManager {
 
 	/**
 	 * Get column comment from data dictionary
-	 *
-	 * @param connection,
+	 *  @param connection,
 	 * @param schemaName,
 	 * @param tableName,
 	 * @param columnName
 	 */
 	@Override
 	public String getColumnComment(Connection connection, String schemaName, String tableName,
-			String columnName) throws Exception {
+			String columnName) throws SQLException {
 		
 		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();
 		ResultSet resultSet;
 		if (databaseType == DatabaseType.POSTGRESQL) {
+
+			// We convert all the WHERE clauses to upper case, below, because we are querying the
+			// contents of columns in the system schemas, which means the select is case-sensitive.
 			columnCommentQueryFormatter.addQueryLine(0, // Postgres
-				"SELECT pg_catalog.col_description(c.oid, cols.ordinal_position::int) AS column_comment");
-			columnCommentQueryFormatter.addQueryLine(0, "  FROM pg_catalog.pg_class c, information_schema.columns cols");
-			columnCommentQueryFormatter.addQueryLine(0, " WHERE cols.table_catalog = current_database()");
-			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_schema  = ?");
-			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_name    = ?");
-			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_name    = c.relname");
-			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.column_name   = ?");
+				"SELECT pg_catalog.col_description(c.oid, cols.ordinal_position::int) "
+				+ "AS column_comment");
+			columnCommentQueryFormatter.addQueryLine(
+					0, "  FROM pg_catalog.pg_class c, information_schema.columns cols");
+			columnCommentQueryFormatter.addQueryLine(
+					0, " WHERE UPPER(cols.table_catalog) = UPPER(current_database())");
+			columnCommentQueryFormatter.addQueryLine(
+					0, "   AND UPPER(cols.table_schema)  = UPPER(?)");
+			columnCommentQueryFormatter.addQueryLine(
+					0, "   AND UPPER(cols.table_name)    = UPPER(?)");
+			columnCommentQueryFormatter.addQueryLine(
+					0, "   AND UPPER(cols.table_name)    = UPPER(c.relname)");
+			columnCommentQueryFormatter.addQueryLine(
+					0, "   AND UPPER(cols.column_name)   = UPPER(?)");
 		}
 		else if (databaseType == DatabaseType.SQL_SERVER) {
 			columnCommentQueryFormatter.addQueryLine(0, "SELECT CAST(value AS VARCHAR(2000)) AS column_comment"); // SQL Server
@@ -316,7 +325,7 @@ public class BaseSQLManager implements SQLManager {
 			columnCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'view', ?, 'column', ?)");
 		}
 		else {
-			throw new Exception("getColumnComment(): invalid databaseType: " +
+			throw new SQLException("getColumnComment(): invalid databaseType: " +
 				databaseType);
 		}
 		PreparedStatement statement = createPreparedStatement(connection, columnCommentQueryFormatter);
@@ -337,7 +346,7 @@ public class BaseSQLManager implements SQLManager {
 			if (resultSet.next()) {
 				columnComment=resultSet.getString(1);
 				if (resultSet.next()) {
-					throw new Exception("getColumnComment() database: " + databaseType +
+					throw new SQLException("getColumnComment() database: " + databaseType +
 						"; expected 1 row, got >1");
 				}
 			}
@@ -346,7 +355,7 @@ public class BaseSQLManager implements SQLManager {
 					"; expected 1 row, got none");
 			}
 		}
-		catch (Exception exception) {
+		catch (SQLException exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
 				lineSeparator + columnCommentQueryFormatter.generateQuery(),
 				exception);
@@ -1095,6 +1104,12 @@ public class BaseSQLManager implements SQLManager {
 		}
 
 		registeredUserIDs.clear();
+	}
+
+	@Override
+	public DatabaseType getDbType() {
+
+		return rifDatabaseProperties.getDatabaseType();
 	}
 
 	public void reclaimPooledReadConnection(

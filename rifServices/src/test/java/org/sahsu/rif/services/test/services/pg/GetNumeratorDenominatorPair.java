@@ -1,6 +1,6 @@
 package org.sahsu.rif.services.test.services.pg;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -111,7 +111,7 @@ public final class GetNumeratorDenominatorPair extends CommonRIFServiceTestCase 
 		User validUser = cloneValidUser();
 		Geography validGeography = cloneValidGeography();
 		HealthTheme validHealthTheme = cloneValidHealthTheme();
-		ArrayList<NumeratorDenominatorPair> ndPairs
+		List<NumeratorDenominatorPair> ndPairs
 			= rifStudySubmissionService.getNumeratorDenominatorPairs(
 				validUser,
 				validGeography,
