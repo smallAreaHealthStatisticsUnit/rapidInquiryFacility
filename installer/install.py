@@ -125,7 +125,9 @@ def main():
                                                             parent))
 
             process = subprocess.run(script.split(), cwd=parent,
-                                     capture_output=True,
+                                     # capture_output=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
                                      text=True)
 
             print(process.stdout)
@@ -858,6 +860,11 @@ class Tee:
         self.f.write(s)
 
         # We don't want the output to be buffered
+        self.flush()
+
+    def writelines(self, s):
+        self.o.writelines(s)
+        self.f.writelines(s)
         self.flush()
 
     def flush(self):
