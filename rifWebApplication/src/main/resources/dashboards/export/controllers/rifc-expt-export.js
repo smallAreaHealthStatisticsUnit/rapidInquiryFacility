@@ -47,6 +47,7 @@ angular.module("RIF")
 
 				$scope.exportTAG="Export Study Tables";
 				$scope.disableMapListButton=false;
+				$scope.myMaps = ["exportmap"];
 				
                 //study 
                 $scope.studyIDs = [];
@@ -187,14 +188,16 @@ angular.module("RIF")
                             if (res.data.smoothed_results[i].study_state === "S") { // New success
                                 var thisStudy = {
                                     "study_id": res.data.smoothed_results[i].study_id,
-                                    "name": res.data.smoothed_results[i].study_name
+                                    "name": res.data.smoothed_results[i].study_name,
+                                    "study_type": res.data.smoothed_results[i].study_type
                                 };
                                 $scope.studyIDs.push(thisStudy);
                             }
                             else if (res.data.smoothed_results[i].study_state === "R") { // Old success
                                 var thisStudy = {
                                     "study_id": res.data.smoothed_results[i].study_id,
-                                    "name": res.data.smoothed_results[i].study_name
+                                    "name": res.data.smoothed_results[i].study_name,
+                                    "study_type": res.data.smoothed_results[i].study_type
                                 };
                                 $scope.studyIDs.push(thisStudy);
                             }

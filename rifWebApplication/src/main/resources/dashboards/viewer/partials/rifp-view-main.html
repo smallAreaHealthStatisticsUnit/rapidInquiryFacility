@@ -64,11 +64,18 @@ HTML partial for ui-router Viewer
 </div>
 <div ng-controller="leafletLayersCtrl" ui-layout="{flow : 'column'}">
 <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
-    <div ui-layout="{flow : 'row'}">
+    <div ui-layout="{flow : 'row'}">  
         <div ui-layout-container id="hSplit1" max-size="100%" class="js-back" size="{{hSplit1}}%">
-            <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="distHisto"></button>
-            <dist-histo chart-data="histoData['viewermap']" name="distHistoName" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
-        </div>
+            <div ng-show="isDiseaseMapping">
+                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="distHisto"></button>
+                <dist-histo chart-data="histoData['viewermap']" name="distHistoName" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
+            </div>  
+            <div ng-hide="isDiseaseMapping">      
+                <div id="riskGraph2Tooltip"></div>
+                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="riskGraph"></button>
+                <risk-graph2 risk-graph-data="riskGraphData2" name='riskGraphChartName2' width="riskGraphChartCurrentWidth2" height="riskGraphChartCurrentHeight2" genders-array="gendersArray2" risk-factor="riskFactor2" risk-factor2-field-name="riskFactor2FieldName2"></risk-graph2> 
+            </div>
+        </div>  
         <div ui-layout-container id="hSplit2" max-size="100%" class="js-back">
             <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="poppyramid"></button>
             <pyramid chart-data="populationData['viewermap']" width="pyramidCurrentWidth" height="pyramidCurrentHeight"></pyramid> 

@@ -77,6 +77,21 @@ public interface UserService {
 			Geography _geography)
 					throws RIFServiceException;		
 					
+	String getHomogeneity(
+			User _user,
+			String studyID)
+					throws RIFServiceException;	
+					
+	String getCovariateLossReport(
+			User _user,
+			String studyID)
+					throws RIFServiceException;	
+                    
+	String getRiskGraph(
+			User _user,
+			String studyID)
+					throws RIFServiceException;	
+					
 	String getSelectState(
 			User _user,
 			String studyID)
