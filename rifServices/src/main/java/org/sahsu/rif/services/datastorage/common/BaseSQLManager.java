@@ -1135,7 +1135,7 @@ public class BaseSQLManager implements SQLManager {
 		return errorMessage;
 	}
 	
-	private Connection createConnection(
+	public Connection createConnection(
 		final String userID,
 		final String password,
 		final boolean isFirstConnectionForUser,
@@ -1316,12 +1316,12 @@ public class BaseSQLManager implements SQLManager {
 
 	}
 
-	String applySchemaPrefixIfNeeded(String dbItemName) {
+	public String applySchemaPrefixIfNeeded(String dbItemName) {
 
 		return (prefixSchemaName ? SCHEMA_PREFIX : "") + dbItemName;
 	}
 
-	String applySchemaDataPrefixIfNeeded(String dbItemName) {
+	public String applySchemaDataPrefixIfNeeded(String dbItemName) {
 
 		return (prefixSchemaName ? SCHEMA_DATA_PREFIX : "") + dbItemName;
 	}

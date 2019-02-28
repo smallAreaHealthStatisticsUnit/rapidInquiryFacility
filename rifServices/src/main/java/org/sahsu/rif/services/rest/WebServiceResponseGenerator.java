@@ -7,6 +7,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import java.util.Base64;
+import java.util.Base64.Decoder;
+
 import org.sahsu.rif.generic.util.RIFLogger;
 
 //TOUR_WEB_SERVICES-7
@@ -198,6 +201,8 @@ final public class WebServiceResponseGenerator {
 	// Section Constants
 	// ==========================================
 
+	private static String lineSeparator = System.getProperty("line.separator");
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -219,23 +224,64 @@ final public class WebServiceResponseGenerator {
 	public Response generateWebServiceResponse(
 			final HttpServletRequest servletRequest,
 			final String data) {
-			
-			if (clientBrowserIsInternetExplorer(servletRequest)) {
-				ResponseBuilder responseBuilder 
-					= Response.ok(
-						data, 
-						MediaType.TEXT_PLAIN);
-				return responseBuilder.build();			
+				
+			ResponseBuilder responseBuilder = null;
+			try {
+				if (clientBrowserIsInternetExplorer(servletRequest)) {
+					responseBuilder = Response.ok(
+							data, 
+							MediaType.TEXT_PLAIN);	
+				}
+				else {
+					responseBuilder = Response.ok(
+							data, 
+							MediaType.APPLICATION_JSON);	
+				}
 			}
-			else {
-				ResponseBuilder responseBuilder 
-					= Response.ok(
-						data, 
-						MediaType.APPLICATION_JSON);
-				return responseBuilder.build();				
+			catch (Exception exception) {
+				
+				rifLogger.error(this.getClass(), "generateWebServiceResponse() error",
+					exception);
+				
+				responseBuilder = Response.status(500).entity("generateWebServiceResponse(): Error in response generation: " + 
+					exception.getMessage());
+				responseBuilder.type("text/plain");
+			}
+			finally {
+				return responseBuilder.build();		
 			}
 		}
 
+		public Response generateWebServicePngResponse(
+			final HttpServletRequest servletRequest,
+			final String data) {
+			
+			ResponseBuilder responseBuilder = null;
+			try {
+				byte[] bytes = Base64.getDecoder().decode(data);
+				responseBuilder = Response.ok(
+						bytes, 
+						MediaType.WILDCARD_TYPE);
+				responseBuilder.header("Cache-Control", "max-age=2592000"); //30days (60sec * 60min * 24hours * 30days)
+
+				responseBuilder.type("image/png");
+			}
+			catch (Exception exception) {
+				
+				rifLogger.error(this.getClass(), "generateWebServicePdfResponse() error",
+					exception);
+				
+				responseBuilder = Response.status(500).entity("generateWebServicePdfResponse(): Error in PNG generation: " + 
+					exception.getMessage() + lineSeparator +
+//					"Stack >>>" + lineSeparator + exception.getStack() + lineSeparator +
+					"Data: " + data);
+					
+				responseBuilder.type("text/plain");
+			}
+			finally {
+				return responseBuilder.build();		
+			}				
+		}
 		
 	public Response generateWebServiceResponse( // streaming version
 			final HttpServletRequest servletRequest,

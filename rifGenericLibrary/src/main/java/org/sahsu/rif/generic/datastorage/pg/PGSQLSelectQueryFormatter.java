@@ -284,7 +284,25 @@ public final class PGSQLSelectQueryFormatter extends AbstractSQLQueryFormatter
 		                              + "=?";
 		whereConditions.add(whereCondition);
 	}
+	
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param tableName the table name
+	 * @param fieldName the field name
+	 * @param inValues: Array of String values
+	 */	
+	public void addWhereIn(
+			final String tableName,
+			final String fieldName,
+			final ArrayList<String> inValues) {
 
+		final String whereCondition = getSchemaTableName(tableName)
+		                              + "."
+		                              + fieldName
+		                              + " IN ('" + String.join("', '", inValues) + "')";
+		whereConditions.add(whereCondition);
+	}
 	
 	/**
 	 * Adds the order by condition.

@@ -1,5 +1,7 @@
 package org.sahsu.rif.generic.datastorage;
 
+import java.util.ArrayList;
+
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLSelectQueryFormatter;
 
@@ -153,7 +155,19 @@ public interface SelectQueryFormatter extends QueryFormatter {
 	void addWhereParameter(
 			String tableName,
 			String fieldName);
-
+			
+	/**
+	 * Adds the where parameter.
+	 *
+	 * @param tableName the table name
+	 * @param fieldName the field name
+	 * @param inValues: Array of String values
+	 */			
+	public void addWhereIn(
+			final String tableName,
+			final String fieldName,
+			final ArrayList<String> inValues);
+			
 	/**
 	 * Adds the order by condition.
 	 *

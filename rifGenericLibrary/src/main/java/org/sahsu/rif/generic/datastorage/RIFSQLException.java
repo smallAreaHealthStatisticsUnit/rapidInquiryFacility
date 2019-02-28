@@ -47,13 +47,13 @@ public class RIFSQLException extends RIFServiceException {
 		
 		super((exception != null && exception.getMessage() != null) ? exception.getMessage() : "RIFSQLException: no error message",
 			exception != null ? exception.getCause() : null);
-		this.sqlQueryText = sqlQueryText;
+		this.sqlQueryText = ((sqlQueryText != null) ? sqlQueryText : "No sqlQueryText");
 		
 		rifLogger.error(className, "RIFSQLException: " + 
 			((statement != null) ? 
 				"Warnings/Messages >>>" + lineSeparator + SQLQueryUtility.printWarnings(statement) + lineSeparator + "<<<" + lineSeparator :
                 "No PreparedStatement") +	
-			sqlQueryText + lineSeparator +
+			 sqlQueryText + lineSeparator +
 			"exception: " + exception.getMessage(), exception);
 	}
 	

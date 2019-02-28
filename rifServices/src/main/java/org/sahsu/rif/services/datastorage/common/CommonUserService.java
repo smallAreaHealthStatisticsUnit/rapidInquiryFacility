@@ -1,6 +1,7 @@
 package org.sahsu.rif.services.datastorage.common;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -10,6 +11,7 @@ import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
@@ -1689,7 +1691,8 @@ public class CommonUserService implements UserService {
 			final GeoLevelSelect _geoLevelSelect,
 			final Integer zoomlevel,
 			final Integer x,
-			final Integer y)
+			final Integer y,
+			final String tileType)
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -1782,14 +1785,14 @@ public class CommonUserService implements UserService {
 					geoLevelSelect,
 					zoomlevel,
 					x,
-					y);
+					y,
+					tileType);
 		} 
+		catch (SQLException sqlException) {
+			throw new RIFSQLException(this.getClass(), sqlException, null, null);
+		}
 		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getTileMakerTiles",
-				rifServiceException);			
+			throw rifServiceException; // Do not Log		
 		}
 		finally {
 			//Reclaim pooled connection
