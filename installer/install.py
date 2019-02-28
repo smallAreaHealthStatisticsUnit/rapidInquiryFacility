@@ -76,8 +76,8 @@ user_props = Path()
 
 def main():
     banner("WARNING: This will DELETE any existing database named "
-           "'sahsuland').\n\n Proceed with caution.",
-           60)
+           "'sahsuland'.\n\n Proceed with caution.",
+           55)
     if not go("Continue? [Default: No]: "):
         return
 
@@ -857,8 +857,12 @@ class Tee:
         self.o.write(s)
         self.f.write(s)
 
+        # We don't want the output to be buffered
+        self.flush()
+
     def flush(self):
         self.f.flush()
+        self.o.flush()
 
     def close(self):
         self.flush()
