@@ -75,8 +75,8 @@ user_props = Path()
 
 
 def main():
-    banner("WARNING: This will DELETE any existing database of the "
-           "name specified (default: sahsuland).\n\n Proceed with caution.",
+    banner("WARNING: This will DELETE any existing database named "
+           "'sahsuland').\n\n Proceed with caution.",
            60)
     if not go("Continue? [Default: No]: "):
         return
@@ -246,13 +246,16 @@ def get_settings():
 
     settings.extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
+    # Database name is hardcoded for now.
+    # settings.db_name = get_value_from_user(DATABASE_NAME).strip()
+    settings.db_name = "sahsuland"
+    settings.db_user = get_value_from_user(DATABASE_USER,
+                                           extra=settings.db_name).strip()
+    settings.db_pass = get_password_from_user(
+        DATABASE_PASSWORD, extra=settings.db_user).strip()
+
     # For now the next few are only for Postgres
     if settings.db_type == "pg":
-        settings.db_name = get_value_from_user(DATABASE_NAME).strip()
-        settings.db_user = get_value_from_user(DATABASE_USER,
-                                               extra=settings.db_name).strip()
-        settings.db_pass = get_password_from_user(
-            DATABASE_PASSWORD, extra=settings.db_user).strip()
         settings.db_owner_name = "rif40"
         settings.db_owner_pass = get_password_from_user(RIF40_PASSWORD).strip()
         settings.db_superuser_name = "postgres"
@@ -662,7 +665,9 @@ def get_windows_scripts(settings):
 
     win_root = settings.script_root / "SQLserver"
     main_script = win_root / "installation" / "rebuild_all.bat"
-    scripts = [(str(main_script), main_script.parent)]
+    main_script_string = "{} {} {}".format(str(main_script),
+                                           settings.db_user, settings.db_pass)
+    scripts = [(main_script_string, main_script.parent)]
     alter_script = win_root / "alter scripts" / "run_alter_scripts.bat"
     scripts.append((str(alter_script), alter_script.parent))
     return scripts

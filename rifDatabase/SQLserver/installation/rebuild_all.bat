@@ -76,7 +76,7 @@ REM
 REM Get DB settings
 REM
 echo Creating development RIF databases
-SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+SET NEWUSER=%1
 SET NEWDB=sahsuland
 REM
 REM Passwords tests: see test_pw.txt
@@ -86,20 +86,11 @@ REM
 SET "XNEWPW=Peter!^@#$%^^^&*:.\`^|/?=+-_[]{}()^<^>"
 SET "NEWPW=Peter!@$%^~"
 REM
-SET /P NEWPW=New user password [default %NEWPW%]: %=% || SET "NEWPW=%NEWPW%"
+SET NEWPW=%2
 SET REBUILD_ALL=Y
 SET SNEWUSER=%NEWUSER%
 SET "SNEWPW=%NEWPW%"
 SET SNEWDB=%NEWDB%
-ECHO ##########################################################################################
-ECHO #
-ECHO # WARNING! this script will the drop and create the RIF40 sahsuland and sahusland_dev databases.
-ECHO # Type control-C to abort.
-ECHO #
-ECHO # Test user: %NEWUSER%; password: %NEWPW%
-ECHO #
-ECHO ##########################################################################################
-PAUSE
 
 REM
 REM Create development database
