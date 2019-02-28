@@ -224,6 +224,19 @@ public final class MSSQLSelectQueryFormatter extends AbstractSQLQueryFormatter
 		whereConditions.add(whereCondition);
 	}
 
+
+	@Override
+	public void addWhereIn(
+			final String tableName,
+			final String fieldName,
+			final ArrayList<String> inValues) {
+
+		final String whereCondition = getSchemaTableName(tableName)
+		                              + "."
+		                              + fieldName
+		                              + " IN ('" + String.join("', '", inValues) + "')";
+		whereConditions.add(whereCondition);
+	}
 	
 	@Override
 	public void addOrderByCondition(

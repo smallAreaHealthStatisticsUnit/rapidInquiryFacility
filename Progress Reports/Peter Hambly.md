@@ -3428,6 +3428,7 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
   6. Multiple redraws in the mapping panes should be remove when the fetch code is all converted to use promises;
   7. Add rr-zoom, dist-histo and pyramid to the info modal;
   8. Add "NONE" to second gender selector in info risk graph. The work around is to set both to the same;
+* Merged pull #118 and #135. Updated multiple covariate branch: issue/#124_Add_support_for_multiple_covariates
 
 TODO this week:
 

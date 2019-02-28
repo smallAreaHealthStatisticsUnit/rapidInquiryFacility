@@ -195,7 +195,7 @@ abstract class CommonLogger {
 		
 		if (log != null) {
 			log.error("["+callingClassName+"]:" + lineSeparator + 
-				errorHeading + lineSeparator + errorString);
+				errorHeading + lineSeparator + errorString + " [NO STACK]");
 		}
 		else {	
 			System.out.println("ERROR(no CommonLogger):" + lineSeparator + "["+callingClassName+"]" + 

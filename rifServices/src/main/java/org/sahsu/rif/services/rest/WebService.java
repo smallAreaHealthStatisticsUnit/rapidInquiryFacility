@@ -53,6 +53,7 @@ import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLWriter;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.graphics.RIFTilesException;
 
 public class WebService {
 
@@ -783,6 +784,84 @@ public class WebService {
 			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
 	}
 	
+	protected Response getHomogeneity(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getHomogeneity(
+						user, studyID);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getHomogeneity error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+	
+	protected Response getRiskGraph(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getRiskGraph(
+						user, studyID);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getRiskGraph error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+    
+	protected Response getCovariateLossReport(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				result = studyResultRetrievalService.getCovariateLossReport(
+						user, studyID);
+				
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getCovariateLossReport error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+		
 	protected Response getSelectState(
 			final HttpServletRequest servletRequest,
 			final String userID,
@@ -1029,15 +1108,21 @@ public class WebService {
 		final String geoLevelSelectName,
 		final Integer zoomlevel,
 		final Integer x,
-		final Integer y) {
+		final Integer y,
+		final String tileType) {
 		
 		String result;
+		boolean isAnError=false;
 		
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect = GeoLevelSelect.newInstance(geoLevelSelectName);
+			
+			if (tileType != null && !tileType.equals("geojson") && !tileType.equals("topojson") && !tileType.equals("png")) {
+				throw new Exception("Invalid tileType: " + tileType);
+			}
 			
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
@@ -1049,9 +1134,19 @@ public class WebService {
 					geoLevelSelect,
 					zoomlevel,
 					x,
-					y);
+					y,
+					tileType);
+		}
+		catch(RIFTilesException rifTilesException) {
+			isAnError=true;
+			rifLogger.warning(this.getClass(), rifTilesException.getMessage());
+			result
+				= serialiseException(
+					servletRequest,
+					rifTilesException);
 		}
 		catch(Exception exception) {
+			isAnError=true;
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
 			                                ".getTileMakerTiles error", exception);
 			result
@@ -1060,10 +1155,19 @@ public class WebService {
 					exception);
 		}
 		
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-				servletRequest,
-				result);
+		Response response;
+		if (!isAnError && tileType != null && tileType.equals("png")) { // PNG tile create
+			response = webServiceResponseGenerator.generateWebServicePngResponse(
+					servletRequest,
+					result);
+		}
+		else { // Usual JSON response
+			response = webServiceResponseGenerator.generateWebServiceResponse(
+					servletRequest,
+					result);			
+		}
+				
+		return response;
 	}
 	
 	Response getStudySubmission(

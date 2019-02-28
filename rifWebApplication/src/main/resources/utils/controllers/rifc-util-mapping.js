@@ -336,7 +336,10 @@ angular.module("RIF")
 								}
 								else if (studySelection && studySelection.studyShapes) {
 									$scope.myService.getState().studyType[mapID] = "Disease Mapping";
-									$scope.$parent.studyType[mapID]="DISEASE MAPPING";
+                                    $scope.$parent.studyType[mapID]="DISEASE MAPPING";
+                                    $scope.$parent.isDiseaseMapping=true;
+                                    $scope.$parent.isRiskAnalysis=false;
+									$scope.$parent.isDiseaseMappingStudy[mapID] = true;
 									if (ParametersService.getParameters()[mapID]) { // Reset mapping defaults
 										$scope.parameters.mappingDefaults[mapID]=ParametersService.getParameters()[mapID];
 									}
@@ -345,6 +348,9 @@ angular.module("RIF")
 //										$scope.$parent.studyType[mapID]=$scope.studyID[mapID].riskAnalysisDescription.toUpperCase();
 										$scope.$parent.studyType[mapID]="RISK ANALYSIS";
 										$scope.myService.getState().studyType[mapID] = "Risk Analysis";
+                                        $scope.$parent.isRiskAnalysis=true;
+                                        $scope.$parent.isDiseaseMapping=false;
+										$scope.$parent.isDiseaseMappingStudy[mapID] = false;
 										$scope.parameters.mappingDefaults[mapID] = { // No Bayesian smoothing in risk analysis
 											method: 	'quantile', 
 											feature:	'relative_risk',
@@ -577,6 +583,9 @@ angular.module("RIF")
 									}
 									
 									$scope.$parent.studyType[mapID]="DISEASE MAPPING";
+                                    $scope.$parent.isDiseaseMapping=true;
+                                    $scope.$parent.isRiskAnalysis=false;
+									$scope.$parent.isDiseaseMappingStudy[mapID] = true;
 									$scope.myService.getState().studyType[mapID] = "Disease Mapping";
 //									ChoroService.resetState(mapID);
 									ChoroService.setType(mapID, $scope.myService.getState().studyType[mapID]);
@@ -1221,19 +1230,19 @@ angular.module("RIF")
 					
                     //draw histogram [IT MUST BW HERE OR D3 GETS CONFUSED!]
 					callGetD3chart = function(mapID) {
-						$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
 						
 						if ($scope.tableData[mapID].length == 0) {
 							$scope.consoleDebug("[rifc-util-mapping.js] map data not ready for mapID: " + mapID);	
-							setTimeout(callGetD3chart, 500, mapID);		
+							setTimeout(callGetD3chart, 1000, mapID);		
 						}
 						else {
 							$scope.getD3chart(mapID, $scope.attr[mapID]); // Crashes firefox	
+							$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
 						
 							$scope.consoleDebug("[rifc-util-mapping.js] refresh completed for mapID: " + mapID);	
 						}
 					}
-					setTimeout(callGetD3chart, 500, mapID);		 
+					setTimeout(callGetD3chart, 1000, mapID);		 
                 }; //End of refresh(0)
 
                 //remove rsub layer

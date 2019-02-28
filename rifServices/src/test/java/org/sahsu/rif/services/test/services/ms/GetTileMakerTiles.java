@@ -133,7 +133,8 @@ public final class GetTileMakerTiles
 					validGeoLevelSelect,
 					validZoomFactor,
 					validXtile,
-					validYtile);
+					validYtile,
+					"geojson");
 			assertNotNull(result);
 			
 			System.out.println(result);

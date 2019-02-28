@@ -68,6 +68,12 @@ angular.module("RIF")
                         }
 
                         var margin = {top: 60, right: 60, bottom: 80, left: 80};
+                        if (angular.isUndefined(scope.width)) {
+                            scope.width=150;
+                        }
+                        if (angular.isUndefined(scope.height)) {
+                            scope.height=150;
+                        }
                         var width = scope.width - margin.left - margin.right;
                         var height = scope.height - margin.top - margin.bottom;
 

@@ -49,8 +49,9 @@ import org.sahsu.rif.services.concepts.Sex;
 import org.sahsu.rif.services.graphics.RIFGraphicsOutputType;
 import org.sahsu.rif.services.graphics.RIFMaps;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.datastorage.common.RifWellKnownText;
 
-import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -72,6 +73,7 @@ public class RifGeospatialOutputs {
 	private static GeometryFactory geometryFactory = null;
 	private static GeometryJSON geoJSONWriter = null;
 
+	private static RifWellKnownText rifWellKnownText = null;
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = null;
 	private RIFMaps rifMaps = null;
 	private static int roundDP=3;
@@ -91,6 +93,7 @@ public class RifGeospatialOutputs {
 		geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 		geoJSONWriter = new GeometryJSON();
 		
+		RifWellKnownText rifWellKnownText = new RifWellKnownText();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		try {
@@ -117,8 +120,8 @@ public class RifGeospatialOutputs {
 	 * @param String baseStudyName,
 	 * @param String zoomLevel,
 	 * @param RIFStudySubmission rifStudySubmission,
-	 * @param CachedRowSetImpl rif40Studies,
-	 * @param CachedRowSetImpl rif40Investigations,
+	 * @param CachedRowSet rif40Studies,
+	 * @param CachedRowSet rif40Investigations,
 	 * @param Locale locale
 	 *
 	 * @returns String
@@ -129,8 +132,8 @@ public class RifGeospatialOutputs {
 			final String baseStudyName,
 			final String zoomLevel,
 			final RIFStudySubmission rifStudySubmission,
-			final CachedRowSetImpl rif40Studies,
-			final CachedRowSetImpl rif40Investigations,
+			final CachedRowSet rif40Studies,
+			final CachedRowSet rif40Investigations,
 			final Locale locale)
 					throws Exception {
 						
@@ -311,13 +314,13 @@ public class RifGeospatialOutputs {
 	 * Create HTML to view maps in ZIP html app
      *  
 	 * @param String studyID
-	 * @param CachedRowSetImpl rif40Investigations
+	 * @param CachedRowSet rif40Investigations
 	 *
 	 * @returns HTML as string
 	 */	
 	private String createMapsHTML(
 		final String studyID,
-		final CachedRowSetImpl rif40Investigations,
+		final CachedRowSet rif40Investigations,
 		final boolean isDiseaseMappingStudy)
 			throws Exception {
 			
@@ -460,7 +463,7 @@ public class RifGeospatialOutputs {
 	 * @param String studyID, 
 	 * @param String areaTableName
 	 */	
-	private CachedRowSetImpl getRif40Geolevels(
+	private CachedRowSet getRif40Geolevels(
 			final Connection connection,
 			final String studyID,
 			final String areaTableName)
@@ -490,7 +493,7 @@ public class RifGeospatialOutputs {
 		
 		int[] params = new int[1];
 		params[0]=Integer.parseInt(studyID);
-		CachedRowSetImpl cachedRowSet=manager.createCachedRowSet(connection, geolevelQueryFormatter,
+		CachedRowSet cachedRowSet=manager.createCachedRowSet(connection, geolevelQueryFormatter,
 			"writeMapQueryTogeoJSONFile", params);	
 		
 		return cachedRowSet;
@@ -551,13 +554,13 @@ public class RifGeospatialOutputs {
 	 * (i.e. re-projection required)
 	 *
 	 * @param RIFStudySubmission rifStudySubmission
-	 * @param CachedRowSetImpl rif40Geolevels
+	 * @param CachedRowSet rif40Geolevels
 	 *
 	 * @returns CoordinateReferenceSystem
      */	
 	private CoordinateReferenceSystem getCRS(
 			final RIFStudySubmission rifStudySubmission, 
-			final CachedRowSetImpl rif40Geolevels) 
+			final CachedRowSet rif40Geolevels) 
 				throws Exception {
 		
 		CoordinateReferenceSystem crs=null;
@@ -617,29 +620,7 @@ public class RifGeospatialOutputs {
 		return bufferedWriter;
 	}
 	
-	/** 
-	 * Create geometry from Well known text.
-	 *
-	 * Would need to ST_Transform to shapefile SRID is not WGS84
-	 *
-	 * @param String wkt
-     *
-	 * @returns Geometry
-     */	
-	private Geometry createGeometryFromWkt(final String wkt)
-			throws Exception {
-		Geometry geometry = null;
-		if (wkt != null) {
 
-			WKTReader reader = new WKTReader(geometryFactory);
-			geometry = reader.read(wkt); // Geotools JTS
-		}			
-		else {
-			throw new Exception("Null wkt for record: " + 1);
-		}		
-		
-		return geometry;
-	}
 	
 	/** 
 	 * Get referenced envelope for map, using the map study area extent
@@ -878,7 +859,15 @@ public class RifGeospatialOutputs {
 				int columnCount = rsmd.getColumnCount();
 				i++;
 				
-				Geometry geometry = createGeometryFromWkt(resultSet.getString(1));
+				String areaId = "(????)";
+				for (int j = 2; j <= columnCount; j++) {		
+					String name = rsmd.getColumnName(j);
+					if (name.equals("area_id")) {
+						areaId = resultSet.getString(j);
+					}
+				}				
+				Geometry geometry = rifWellKnownText.createGeometryFromWkt(resultSet.getString(1), geolevel, Integer.parseInt(zoomLevel), 
+					areaId);
 				if (i == 1) {
 					simpleFeatureType=setupShapefile(rsmd, columnCount, shapeDataStore, null /* areaType */, 
 						outputFileName, geometry, rif40GeographiesCRS);
@@ -1057,7 +1046,7 @@ public class RifGeospatialOutputs {
 		FeatureWriter<SimpleFeatureType, SimpleFeature> shapefileWriter = null; 
 			// Created once feature types are defined
 		
-		CachedRowSetImpl rif40Geolevels=getRif40Geolevels(connection, studyID, areaTableName);	
+		CachedRowSet rif40Geolevels=getRif40Geolevels(connection, studyID, areaTableName);	
 			//get geolevel
 		String geolevel=manager.getColumnFromResultSet(rif40Geolevels, "geolevel_id");
 		String geolevelName = manager.getColumnFromResultSet(rif40Geolevels, "geolevel_name");
@@ -1131,7 +1120,28 @@ public class RifGeospatialOutputs {
 				int columnCount = rsmd.getColumnCount();
 				i++;
 				
-				Geometry geometry = createGeometryFromWkt(resultSet.getString(1));
+				String areaId = "(????)";
+				for (int j = 2; j <= columnCount; j++) {		
+					String name = rsmd.getColumnName(j);
+					if (name.equals("area_id")) {
+						areaId = resultSet.getString(j);
+					}
+				}		
+				Geometry geometry = null;
+				if (rifWellKnownText == null) {
+					rifWellKnownText = new RifWellKnownText();
+				}
+				try {
+					String wkt=resultSet.getString(1);
+					int zl=Integer.parseInt(zoomLevel);
+					geometry = rifWellKnownText.createGeometryFromWkt(
+						wkt, geolevel, zl, areaId);
+				}
+				catch (Exception exception) {
+					rifLogger.error(getClass(), "Error in createGeometryFromWkt for areaId: " + areaId, exception);
+					throw exception;
+				}
+				
 				stringFeature.append("{\"type\":\"Feature\",\"geometry\":"); // GeoJSON feature header 	
 				stringFeature.append(geoJSONWriter.toString(geometry));
 				if (i == 1) {
@@ -1159,23 +1169,7 @@ public class RifGeospatialOutputs {
 				if (ad instanceof GeometryDescriptor) { 
 					// Need to handle CoordinateReferenceSystem
 					if (CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
-						Geometries geomType = Geometries.get(geometry);
-						switch (geomType) {
-							case POLYGON: // Convert POLYGON to MULTIPOLYGON
-								GeometryBuilder geometryBuilder = new GeometryBuilder(geometryFactory);
-								Polygon polygons[] = new Polygon[1];
-								polygons[0]=(Polygon)geometry;
-								MultiPolygon multipolygon=geometryBuilder.multiPolygon(polygons);
-								shapefileFeature.setAttribute(0, multipolygon); 
-								builder.set(0, multipolygon); 
-								break;
-							case MULTIPOLYGON:
-								shapefileFeature.setAttribute(0, geometry); 
-								builder.set(0, geometry); 
-								break;
-							default:
-								throw new Exception("Unsupported Geometry:" + geomType.toString());
-						}
+						// Multipolygon conversion now done by RifWellKnownText
 					} 
 					else if (transform == null) {
 						throw new Exception("Null transform from: " + CRS.toSRS(rif40GeographiesCRS) + " to: " +
