@@ -927,21 +927,21 @@ textarea.description {
 
 /* Investigation parameter modal dialog  */
 .pboxInv {
-    margin: 1% 1% 0% 2%;
+    margin: 1% 1% 0% 1%;
     float: left;
     background-color: #d9f1fd; 
-    width: 41%;
-    height: 180px;
+    width: 44%;
+    height: 120px;
     border-radius: 10px 10px 10px 10px;
     -moz-border-radius: 10px 10px 10px 10px;
     -webkit-border-radius: 10px 10px 10px 10px;
     border: 1px solid #cccccc;
 }
 .pboxCovariates {
-    margin: 1% 1% 0% 2%;
+    margin: 1% 1% 0% 1%;
     float: right;
     background-color: #d9f1fd; 
-    width: 53%;
+    width: 52%;
     height: 330px;
     border-radius: 10px 10px 10px 10px;
     -moz-border-radius: 10px 10px 10px 10px;
@@ -949,11 +949,12 @@ textarea.description {
     border: 1px solid #cccccc;
 }
 .pbox {
-    margin: 1% 1% 0% 2%;
+    margin: 1% 1% 0% 1%;
+    padding: 10px;
     float: left;
     background-color: #d9f1fd; 
-    width: 19%;
-    height: 140px;
+    width: 21%;
+    height: 200px;
     border-radius: 10px 10px 10px 10px;
     -moz-border-radius: 10px 10px 10px 10px;
     -webkit-border-radius: 10px 10px 10px 10px;
@@ -977,13 +978,15 @@ textarea.description {
     -moz-border-radius: 4px;
     border:1px solid #cccccc;
     margin-left: 5%;
+    margin-top: 14px; 
 }
 
 .pboxDrop {
     text-transform: uppercase;
-    width: 50%;
+    width: 65%;
     margin-left: 5%;
     margin-bottom: 2px; 
+    margin-top: 10px; 
     display: inline-block;
     padding: 10px;
     border-radius: 4px;
@@ -996,11 +999,11 @@ textarea.description {
 
 .pboxDropMulti {
     text-transform: uppercase;
-    width: 50%;
+    width: 90%;
     margin-left: 5%;
     margin-bottom: 2px; 
     display: inline-block;
-    padding: 10px;
+    padding: 2px;
     border-radius: 4px;
     -moz-border-radius: 4px;
     font-size: 1.1em;
@@ -1012,7 +1015,7 @@ textarea.description {
 .pboxCaption {
     font-size: 14px;
     display:inline-block;
-    margin-left: 5px;
+    margin-left: 5%;
 }
 .pboxLabel2 {
     font-size: 14px;

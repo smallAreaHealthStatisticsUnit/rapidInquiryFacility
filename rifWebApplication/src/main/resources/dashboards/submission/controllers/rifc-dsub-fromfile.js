@@ -37,10 +37,10 @@
 angular.module("RIF")
         .controller('ModalRunFileCtrl', ['$q', 'user', '$scope', '$uibModal',
             'StudyAreaStateService', 'CompAreaStateService', 'SubmissionStateService', 'StatsStateService', 
-			'ParameterStateService', 'SelectStateService',
+			'ParameterStateService', 'SelectStateService', 'AlertService', 
             function ($q, user, $scope, $uibModal,
                     StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, 
-					ParameterStateService, SelectStateService) {
+					ParameterStateService, SelectStateService, AlertService) {
 
                 // Magic number for the always-included first method (see rifp-dsub-stats.html).
                 const FIXED_NO_SMOOTHING_METHOD_POSITION  = -1;
@@ -64,7 +64,8 @@ angular.module("RIF")
                 var tmpEnd;
                 var tmpInterval;
                 var tmpSex;
-                var tmpCovariate;
+                var tmpCovariates;
+                var tmpAdditionals;
 				var fromFileErrorCount=0;
 
                 /*
@@ -429,11 +430,85 @@ angular.module("RIF")
 						tmpEnd = inv[0].year_range.upper_bound;
 						tmpInterval = inv[0].years_per_interval;
 						tmpSex = inv[0].sex;
-						var cv = "";
-						if (!angular.isUndefined(inv[0].covariates[0])) {
-							cv = inv[0].covariates[0].adjustable_covariate.name;
+						var cv = [];
+						var ad = [];
+						if (!angular.isUndefined(inv[0].covariates)) {
+                            var covariateErrorCount=0;
+                            for (var i=0; i<inv[0].covariates.length; i++) {
+                                if (inv[0].covariates[i].adjustable_covariate) {
+                                    if (inv[0].covariates[i].adjustable_covariate.covariate_type == "INTEGER_SCORE") {
+                                        cv.push(inv[0].covariates[i].adjustable_covariate.name);
+                                    }
+                                    else if (inv[0].covariates[i].adjustable_covariate.covariate_type == "adjustable") {
+                                        inv[0].covariates[i].adjustable_covariate.covariate_type = "INTEGER_SCORE"; // Fix
+                                        cv.push(inv[0].covariates[i].adjustable_covariate.name);
+                                    }
+                                    else if (inv[0].covariates[i].adjustable_covariate.covariate_type == "additional" ||
+                                             inv[0].covariates[i].adjustable_covariate.covariate_type == "CONTINUOUS_VARIABLE") {
+                                        AlertService.consoleError(
+                                            "[rifc-dsub-fromfile.js] " + 
+                                            inv[0].covariates[i].adjustable_covariate.covariate_type + 
+                                            " covariate type found where INTEGER_SCORE expected for adjustable covariate record: " +
+                                            i + "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
+                                        covariateErrorCount++;
+                                    }
+                                    else {
+                                        AlertService.consoleError(
+                                            "[rifc-dsub-fromfile.js] unknown covariate type: " + 
+                                            inv[0].covariates[i].adjustable_covariate.covariate_type + 
+                                            " found where adjustable expected for record: " +
+                                            i + "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
+                                        covariateErrorCount++;
+                                    }
+                                }
+                                else if (inv[0].covariates[i].additional_covariate) {
+                                    if (inv[0].covariates[i].additional_covariate.covariate_type == "INTEGER_SCORE") {
+                                        cv.push(inv[0].covariates[i].additional_covariate.name);
+                                    }
+                                    else if (inv[0].covariates[i].additional_covariate.covariate_type == "adjustable") {
+                                        inv[0].covariates[i].additional_covariate.covariate_type = "INTEGER_SCORE"; // Fix
+                                        cv.push(inv[0].covariates[i].additional_covariate.name);
+                                    }
+                                    else if (inv[0].covariates[i].additional_covariate.covariate_type == "CONTINUOUS_VARIABLE") {
+                                        ad.push(inv[0].covariates[i].additional_covariate.name);
+                                    }
+                                    else if (inv[0].covariates[i].additional_covariate.covariate_type == "additional") {
+                                        inv[0].covariates[i].additional_covariate.covariate_type = "CONTINUOUS_VARIABLE"; // Fix
+                                        ad.push(inv[0].covariates[i].additional_covariate.name);
+                                    }
+                                    else {
+                                        AlertService.consoleError(
+                                            "[rifc-dsub-fromfile.js] unknown covariate type: " + 
+                                            inv[0].covariates[i].additional_covariate.covariate_type + 
+                                            " found for record: " +
+                                            i + "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
+                                        covariateErrorCount++;
+                                    }
+                                }
+                                else {
+                                    AlertService.consoleError("[rifc-dsub-fromfile.js] adjustable_covariate/additional_covariate not found for record: " +
+                                        i + "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
+                                    covariateErrorCount++;
+                                }
+                            } // End of for loop
+                            
+                            for (var i=0; i<cv.length; i++) {
+                                for (var j=0; j<ad.length; j++) {
+                                    if (cv[i] == ad[j]) {
+                                        AlertService.consoleError("[rifc-dsub-fromfile.js] covariate: " +
+                                            cv[i] + " appears in both covariates and additionals lists " + 
+                                            JSON.stringify(inv[0].covariates, 0, 1));
+                                        covariateErrorCount++;
+                                    }
+                                }
+                            }
+                            if (covariateErrorCount > 0) {
+                                throw new Error(covariateErrorCount + " error(s) occurred processing " + 
+                                    inv[0].covariates.length + " covariates");
+                            }
 						}
-						tmpCovariate = cv;
+						tmpCovariates = cv;
+						tmpAdditionals = ad;
 						return true;	
                     } catch (e) {
                         return "Could not upload and check investigations: " + (e.message||"(no message)");
@@ -594,7 +669,8 @@ angular.module("RIF")
 						ParameterStateService.getState().upperAge = inv[0].age_band.upper_age_group.name;
 						ParameterStateService.getState().interval = inv[0].years_per_interval;
 						ParameterStateService.getState().sex = inv[0].sex;
-						ParameterStateService.getState().covariate = tmpCovariate;
+						ParameterStateService.getState().covariates = tmpCovariates;
+						ParameterStateService.getState().additionals = tmpAdditionals;
 						ParameterStateService.getState().activeHealthTheme = rifJob[studyType].investigations.investigation[0].health_theme.name;
 						ParameterStateService.getState().terms = tmpFullICDselection;
 						if (tmpFullICDselection.length !== 0) {

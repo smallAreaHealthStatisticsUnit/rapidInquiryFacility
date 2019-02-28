@@ -139,21 +139,45 @@ angular.module("RIF")
                     $scope.years = [];
                     $scope.sexes = [];
                     $scope.covariates = [];
-                    $scope.additionals = [{name: 'NONE'}];
+                    $scope.covariateList = [];
+                    $scope.additionals = [];
+                    $scope.covariateList.push({
+                        name: "NONE", 
+                        minimum_value: -1,
+                        maximum_value: -1,
+                        covariate_type: undefined,
+                        description: "NONE"});
                     $scope.selectedAges = [];
                     $scope.ages = [];
                     $scope.taxonomyServices = [];
-                    $scope.covariate = ParameterStateService.getState().covariate;
-                    if ($scope.covariate === "") {
-                        $scope.covariate = "NONE";
+                    var ParameterStateServiceState=ParameterStateService.getState();
+                    if (ParameterStateServiceState) {
+                        if (ParameterStateServiceState.errors > 0) {
+                            AlertService.showError("[rifc-dsub-params.js] ParameterStateService has " +
+                                ParameterStateServiceState.errors + " errors");
+                        }
+                        AlertService.consoleDebug("[rifc-dsub-params.js] $scope.fillContents() ParameterStateService.getState(): " +
+                            JSON.stringify(ParameterStateServiceState, 0, 1));
+                        $scope.covariates = ParameterStateServiceState.covariates;
+                        if (Array.isArray($scope.covariates) && $scope.covariates.length == 0) {
+                            $scope.covariates.push("NONE");
+                        }
+                        $scope.additionals = ParameterStateServiceState.additionals;
+                        if (Array.isArray($scope.additionals) && $scope.additionals.length == 0) {
+                            $scope.additionals.push("NONE");
+                        }
+                        AlertService.consoleDebug("[rifc-dsub-params.js] covariates: " + 
+                            JSON.stringify($scope.covariates));
+                        AlertService.consoleDebug("[rifc-dsub-params.js] additionals: " + 
+                            JSON.stringify($scope.additionals));
+                        $scope.title = ParameterStateServiceState.title;
+                        $scope.sex = ParameterStateServiceState.sex;
+                        $scope.startYear = Number(ParameterStateServiceState.start);
+                        $scope.endYear = Number(ParameterStateServiceState.end);
+                        $scope.yearInterval = Number(ParameterStateServiceState.interval);
+                        $scope.lowerAge = ParameterStateServiceState.lowerAge;
+                        $scope.upperAge = ParameterStateServiceState.upperAge;
                     }
-                    $scope.title = ParameterStateService.getState().title;
-                    $scope.sex = ParameterStateService.getState().sex;
-                    $scope.startYear = Number(ParameterStateService.getState().start);
-                    $scope.endYear = Number(ParameterStateService.getState().end);
-                    $scope.yearInterval = Number(ParameterStateService.getState().interval);
-                    $scope.lowerAge = ParameterStateService.getState().lowerAge;
-                    $scope.upperAge = ParameterStateService.getState().upperAge;
 
                     //covariates
                     var d1 = $q.defer();
@@ -196,10 +220,13 @@ angular.module("RIF")
 
                 //handle fill covariates box
                 function fillCovariates() {
-                    $scope.covariates.length = 0;
-                    $scope.additionals.length = 0;
-                    $scope.covariates.push("NONE");
-//                    $scope.additionals.push("NONE");
+                    $scope.covariateList.length = 0;
+                    $scope.covariateList.push({
+                        name: "NONE", 
+                        minimum_value: -1,
+                        maximum_value: -1,
+                        covariate_type: undefined,
+                        description: "NONE"});
                     var tmp = [];
                     if (thisGeoLevel !== "") {
                         user.getCovariates(user.currentUser, thisGeography, thisGeoLevel).then(fillHandleCovariates, handleParameterError);
@@ -207,20 +234,30 @@ angular.module("RIF")
                         return "Cannot display available covariates until you select a study resolution in Study Area";
                     }
                     function fillHandleCovariates(res) {
-                        if (!angular.isUndefined(res.data)) {
+                        if (!angular.isUndefined(res.data)) { 
                             for (var i = 0; i < res.data.length; i++) {
-//                              if (res.data[i].covariateType == "1") {
-                                    $scope.covariates.push(res.data[i].name);
-//                              }
-                                $scope.additionals.push({name: res.data[i].name, minimum_value: res.data[i].minimumValue,
-                                    maximum_value: res.data[i].maximumValue, covariate_type: res.data[i].covariateType});
-                                tmp.push({name: res.data[i].name, minimum_value: res.data[i].minimumValue,
+                                var description=(res.data[i].description ? 
+                                        res.data[i].name + " (" + res.data[i].description + ")" : 
+                                        res.data[i].name);
+                                $scope.covariateList.push({
+                                    name: res.data[i].name, 
+                                    minimum_value: res.data[i].minimumValue,
+                                    maximum_value: res.data[i].maximumValue, 
+                                    covariate_type: res.data[i].covariateType,
+                                    description: description});
+                                tmp.push({
+                                    name: res.data[i].name, 
+                                    minimum_value: res.data[i].minimumValue,
                                     maximum_value: res.data[i].maximumValue,
                                     covariate_type: res.data[i].covariateType,
-                                    description: res.data[i].description});
+                                    description: description});
+                            } // End of for loop
+                            if (ParameterStateService.getState()) {
+                                ParameterStateService.getState().possibleCovariates = tmp;
+                                AlertService.consoleDebug("[rifc-dsub-params.js] fillHandleCovariates() ParameterStateService.getState().possibleCovariates: " +
+                                    JSON.stringify(ParameterStateService.getState().possibleCovariates, 0, 1));
                             }
                         }
-                        ParameterStateService.getState().possibleCovariates = tmp;
                     }
                     return true;
                 }
@@ -320,6 +357,17 @@ angular.module("RIF")
                     }
                 };
 
+                $scope.covariatesChanged = function (covariates) {
+                    AlertService.consoleDebug("[rifc-dsub-params.js] covariatesChanged() covariates: " +
+                        JSON.stringify(covariates) +
+                        "; scope.covariates: " + JSON.stringify($scope.covariates));
+                }
+                $scope.additionalsChanged = function (additionals) {
+                    AlertService.consoleDebug("[rifc-dsub-params.js] additionalsChanged() additionals: " +
+                        JSON.stringify(additionals) +
+                        "; scope.additionals: " + JSON.stringify($scope.additionals));
+                }
+                
                 /*
                  * ICD SEARCH
                  */
@@ -537,7 +585,8 @@ angular.module("RIF")
                     ParameterStateService.getState().end = $scope.endYear;
                     ParameterStateService.getState().interval = $scope.yearInterval;
                     ParameterStateService.getState().sex = $scope.sex;
-                    ParameterStateService.getState().covariate = $scope.covariate;
+                    ParameterStateService.getState().covariates = $scope.covariates;
+                    ParameterStateService.getState().additionals = $scope.additionals;
                     ParameterStateService.getState().lowerAge = $scope.lowerAge;
                     ParameterStateService.getState().upperAge = $scope.upperAge;
                     $scope.submit();
