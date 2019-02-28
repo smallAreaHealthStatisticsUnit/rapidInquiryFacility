@@ -30,22 +30,78 @@
 
  * David Morley
  * @author dmorley
+ *
+ * Peter Hambly
+ * @author phambly
  */
 -->
 
 <!-- 
 HTML partial for study info
 -->
-<div class="modal-body">
+<div class="modal-body" id="util-info-body">
     <div class="msettings">
         <div class="msettings-ct">
             <div class="msettings-header">
-                <h2>Study Summary</h2>
+                <h2>{{reportTitle}}</h2>
                 <a class="modal_close" ng-click="close()"></a>
             </div>
             <div class='modalContainer'>
-                <div class="modelViewer">
-                    <p ng-bind-html="summary"></p>
+                <div class="modelViewer">  
+                    <div>
+                        <div  class='styleUnderline dropdowns availablesWrapper'>
+                            <select type="text" ng-model="reportType" id='report' class='dropdownSelect' ng-options="s for s in reportList" ng-change="reportChange(reportType)">
+                            </select>
+                            <div id='reportAvailables' class='availables'></div>
+                            <div class="dropDownLabel">Report Type
+                                <md-tooltip md-direction="right" md-delay="1000">{{reportDescription}}</md-tooltip>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-show="showSummary">
+                        <p ng-bind-html="summary"></p>
+                    </div>
+                    <div ng-show="showCovariateLossReport">
+                        <div  class='styleUnderline dropdowns availablesWrapper'>
+                            <select type="text" ng-model="covariateType" id='covariate' class='dropdownSelect' ng-options="s for s in covariateList" ng-change="covariateChange(covariateType)">
+                            </select>
+                            <div id='covariateAvailables' class='availables'></div>
+                            <div class="dropDownLabel">Covariate
+                                <md-tooltip md-direction="right" md-delay="1000">{{covariateDescription[covariate]}}</md-tooltip>
+                            </div>
+                        </div>
+                        <p ng-bind-html="covariateLossReport"></p>
+                    </div>
+                    <div ng-show="showHomogeneityTests">
+                        <p ng-bind-html="homogeneityTests"></p>
+                    </div>
+                    <div ng-show="showRiskFactorCharts">
+                        <div id="riskFactorChartSelector">
+                            <div id="riskFactorSelector">
+                                <div>Risk Factor:</div>
+                                <select type="text" ng-model="riskFactor" id="riskFactor" class="riskFactorChartSelect1" ng-options="s for s in riskFactorList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
+                                </select>
+                            </div>
+                            <div id="gender1Selector">
+                                <div>Gender 1:</div>
+                                <select type="text" ng-model="gendersName1" id="gender1" class="riskFactorChartSelect2" ng-options="s for s in gendersList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
+                                </select>
+                            </div>
+                            <div ng-show="riskGraphHasBothMalesAndFemales" id="gender2Selector">
+                                <div>Gender 2:</div>
+                                <select type="text" ng-model="gendersName2" id="gender2" class="riskFactorChartSelect2" ng-options="s for s in gendersList" ng-change="d3RiskGraphChange(gendersName1, gendersName2, riskFactor)">
+                                </select>
+                            </div>
+                        </div>
+                        <div id="riskFactorCharts">
+                            <p ng-bind-html="riskFactorChartHeader"></p>
+                            <div id="hSplit3" max-size="100%" class="js-back" size="100%">
+                                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="riskGraph"></button>
+                                <div id="riskGraphTooltip"></div>
+                                <risk-graph risk-graph-data="riskGraphData" name="riskGraphChartName1" width="riskGraphChartCurrentWidth" height="riskGraphChartCurrentHeight" genders-array="gendersArray" risk-factor="riskFactor" risk-factor2-field-name="riskFactor2FieldName"></risk-graph> 
+                            </div>
+                        </div>
+                    </div>
                 </div>                
             </div>
         </div>

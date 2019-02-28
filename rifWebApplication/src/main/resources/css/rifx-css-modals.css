@@ -622,6 +622,187 @@
     overflow: hidden;
 }
 
+.info-caution {
+    font-size: 2em !important;
+    color: #ff0000 !important;
+    font-weight: bold !important;
+    text-transform: capitalize !important;
+    margin: 2px !important;
+}
+
+.info-header {
+    font-size: 1.6em !important;
+    font-weight: italic !important;
+    text-transform: capitalize !important;
+}
+.info-table {
+    font-size: 1.1em !important;
+    font-weight: bold !important;
+	padding-left: 10px !important;
+	padding-right: 10px !important;
+
+    width: -moz-calc(100% - 90px);
+    /* WebKit */
+
+    width: -webkit-calc(100% - 90px);
+    /* Opera */
+
+    width: -o-calc(100% - 90px);
+    /* Standard */
+
+    width: calc(100% - 90px);
+}
+
+circle {
+  fill: #ff6600;
+}
+
+.riskFactorCharts {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#riskFactorChartTable {
+  width: 100%;
+  position: relative;
+}
+
+#riskFactorChartSelector {
+  width: 100%;
+  height: 80px;
+}
+#riskFactorSelector {
+  position: absolute;
+  width: 40%;
+}
+#gender1Selector {
+  position: absolute;
+  width: 30%;
+
+  left: -moz-calc(50%);
+    /* WebKit */
+
+  left: -webkit-calc(50%);
+    /* Opera */
+
+  left: -o-calc(50%);
+    /* Standard */
+
+   left: calc(50%);
+}
+#gender2Selector {
+  position: absolute;
+  width: 30%;
+
+  left: -moz-calc(70%);
+    /* WebKit */
+
+  left: -webkit-calc(70%);
+    /* Opera */
+
+  left: -o-calc(70%);
+    /* Standard */
+
+   left: calc(70%);
+}
+
+#riskFactor {
+    margin: 2px;
+    font-size: 18px !important;
+    color: #8DB6CD;
+    width: -moz-calc(95%) !important;
+    /* WebKit */
+
+    width: -webkit-calc(95%) !important;
+    /* Opera */
+
+    width: -o-calc(95%) !important;
+    /* Standard */
+
+    width: calc(95%) !important;
+}
+#gender1 {
+    margin: 2px;
+    font-size: 18px !important;
+    color: #8DB6CD;
+    width: 120px !important;
+}
+#gender2 {
+    margin: 2px;
+    font-size: 18px !important;
+    color: #8DB6CD;
+    width: 120px !important;
+}
+
+.riskGraphChartTitle {
+    font-size: 1.6em;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.riskGraphLegend rect {
+  fill:white;
+  stroke:black;
+  opacity:0.8;
+}
+
+.riskGraph-error-line {
+  stroke: #b30059;
+  stroke-width: 2px;
+  stroke-dasharray: 2,2;
+}
+
+.riskGraph-error-cap {
+  stroke: #b30059;
+  stroke-width: 2px;
+  stroke-type: solid;
+}
+
+.riskGraph-bg {
+   fill: #fff0e6;
+}
+ 
+.riskGraph-tooltip {
+   position: absolute;
+   height: auto;
+   width: auto;
+   padding: 15px;
+   color: white;
+   font-family: Monospace, Serif;
+   pointer-events: none;
+} 
+
+.riskGraph2-tooltip {
+   position: absolute;
+   height: auto;
+   width: auto;
+   padding: 15px;
+   color: white;
+   font-family: Monospace, Serif;
+   pointer-events: none;
+}
+
+.riskGraph-tooltip:after {
+   content: " ";
+   position: absolute;
+   top: 50%;
+   right: 100%; /* To the left of the tooltip */
+   margin-top: -10px;
+   border-width: 10px;
+   border-style: solid;
+   border-color: transparent #000000 transparent transparent;
+}
+.riskGraph-tooltip2:after {
+   content: " ";
+   position: absolute;
+   top: 50%;
+   right: 100%; /* To the left of the tooltip */
+   margin-top: -10px;
+   border-width: 10px;
+   border-style: solid;
+   border-color: transparent #000000 transparent transparent;
+}
 
 #exposureSelect {
     width: 150px;

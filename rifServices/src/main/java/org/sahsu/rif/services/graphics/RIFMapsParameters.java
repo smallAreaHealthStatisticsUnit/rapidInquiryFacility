@@ -16,7 +16,7 @@ import org.sahsu.rif.services.datastorage.common.SQLManager;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.util.Json5Parse;
 
-import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
 
 /**
  *
@@ -252,7 +252,7 @@ public class RIFMapsParameters {
      * Constructor.
      * 
      */
-	public RIFMapsParameters(final SQLManager manager, final CachedRowSetImpl rif40Studies) {
+	public RIFMapsParameters(final SQLManager manager, final CachedRowSet rif40Studies) {
 		try {
 			setupDefaultMapParameters(manager, rif40Studies);
 			retrieveFrontEndParameters(manager, rif40Studies);
@@ -291,7 +291,7 @@ public class RIFMapsParameters {
 	/**
 	 * Setup default map parameters
 	 */
-	private void setupDefaultMapParameters(final SQLManager manager, final CachedRowSetImpl rif40Studies) 
+	private void setupDefaultMapParameters(final SQLManager manager, final CachedRowSet rif40Studies) 
 		throws Exception {
 		
 		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");
@@ -348,7 +348,7 @@ public class RIFMapsParameters {
 	/**
 	 * Retrieve front end parameters
 	 */	
-	private void retrieveFrontEndParameters(final SQLManager manager, final CachedRowSetImpl rif40Studies) 
+	private void retrieveFrontEndParameters(final SQLManager manager, final CachedRowSet rif40Studies) 
 			throws Exception {
 
 		String studyID=manager.getColumnFromResultSet(rif40Studies, "study_id");

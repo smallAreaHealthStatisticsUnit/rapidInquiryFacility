@@ -10,6 +10,7 @@ import java.text.NumberFormat;
 import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -19,8 +20,10 @@ import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.UpdateQueryFormatter;
+import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
@@ -33,10 +36,13 @@ import org.sahsu.rif.services.rest.RIFResultTableJSONGenerator;
 
 public class ResultsQueryManager extends BaseSQLManager {
 
+	private RIFServiceStartupOptions options;
+	
 	public ResultsQueryManager(final RIFServiceStartupOptions options) {
 
 		super(options);
-
+		this.options = options;
+		
 		FunctionCallerQueryFormatter getTilesQueryFormatter = new FunctionCallerQueryFormatter();
 		configureQueryFormatterForDB(getTilesQueryFormatter);
 		getTilesQueryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
@@ -170,8 +176,646 @@ public class ResultsQueryManager extends BaseSQLManager {
 			SQLQueryUtility.close(statement1);
 			SQLQueryUtility.close(resultSet1);
 		}
-	}		
+	}	
+	
+	/** 
+	 * Get the covariate loss report for a study
+	 * <p>	 
+	 * This will LEFT OUTER JOIN the numerator and covariate tables, filter by the study and comparison areas respectively, and 
+	 * filter the covariates the max and min ranges defined for the covariate to produce:
+	 * Study or Comparison areas (S or C);
+	 * Covariate name;
+	 * Number of areas at mapping (covariate table) geolevel;
+	 * Number of areas that join the numerator to the study or Comparison area for the study defined year and age sex group range;
+	 * Number of areas that join the covariate to the study or Comparison area for defined covariate max/min limits;
+	 *
+     * Returns two x number of covariates records for a risk analysis study using covariates; otherwise raise an error;
+	 *
+	 * Returned JSON:
+	 * {
+	 * 	"S": [{
+	 * 			"missingyears": "0",
+	 * 			"covariateTableDescription": "socio-economic status",
+	 * 			"extractminyear": "1995",
+	 * 			"studydenominatorcount": 1622176,
+	 * 			"extractyears": "2",
+	 * 			"denominatorminyear": 1995,
+	 * 			"missingstudydenominatorareas": "0",
+	 * 			"missingdenominator": 0,
+	 * 			"missingstudycovariateareas": "21",
+	 * 			"denominatormaxyear": 1996,
+	 * 			"extractmaxyear": "1996",
+	 * 			"covariatetablename": "COVAR_SAHSULAND_COVARIATES4",
+	 * 			"studymappinggeolevelareas": "82",
+	 * 			"covariatename": "SES",
+	 * 			"missingstudynumeratorcovariatecount": 198,
+	 * 			"studyorcomparison": "S",
+	 * 			"missingstudydenominatorcovariatecount": 305656,
+	 *		    "covariatetablename": "COVAR_SAHSULAND_COVARIATES4",
+	 *	   	    "agesexgroupfilter": "age_sex_group BETWEEN 100 AND 221",
+	 *		    "icdfilter": "icd LIKE 'C33%' AND icd LIKE 'C340%' AND icd LIKE 'C341%' AND icd LIKE 'C342%' AND icd LIKE 'C343%' AND icd LIKE 'C348%' AND icd LIKE 'C349%' AND icd LIKE '1620%' AND icd LIKE '1622%' AND icd LIKE '1623%' AND icd LIKE '1624%' AND icd LIKE '1625%' AND icd LIKE '1628%' AND icd LIKE '1629%',
+	 * 			"studynumeratorcount": 1088
+	 * 		}
+	 * 	],
+	 * 	"C": [{
+	 * 			"comparisonnumeratorcount": 12892,
+	 * 			"covariateTableDescription": "socio-economic status",
+	 * 			"extractminyear": "1995",
+	 * 			"missingcomparisondenominatorareas": "0",
+	 * 			"extractyears": "2",
+	 * 			"denominatorMaxYear": 1996,
+	 * 			"missingstudycovariateareas": "0",
+	 * 			"denominatorMinYear": 1995,
+	 * 			"missingDenominator": 0,
+	 * 			"comparisonmappinggeolevelareas": "1",
+	 * 			"extractmaxyear": "1996",
+	 * 			"covariatetablename": "COVAR_SAHSULAND_COVARIATES4",
+	 * 			"covariatename": "SES",
+	 * 			"missingstudynumeratorcovariatecount": 1458,
+	 * 			"studyorcomparison": "C",
+	 * 			"missingstudydenominatorcovariatecount": 2888240,
+	 * 			"missingYears": "0",
+	 *		    "covariatetablename": "COVAR_SAHSULAND_COVARIATES4",
+	 *	   	    "agesexgroupfilter": "age_sex_group BETWEEN 100 AND 221",
+	 *		    "icdfilter": "icd LIKE 'C33%' AND icd LIKE 'C340%' AND icd LIKE 'C341%' AND icd LIKE 'C342%' AND icd LIKE 'C343%' AND icd LIKE 'C348%' AND icd LIKE 'C349%' AND icd LIKE '1620%' AND icd LIKE '1622%' AND icd LIKE '1623%' AND icd LIKE '1624%' AND icd LIKE '1625%' AND icd LIKE '1628%' AND icd LIKE '1629%',
+	 * 			"comparisondenominatorcount": 2.1073598E7
+	 * 		}
+	 * 	]
+	 * }
+	 * </p>
+	 *
+	 * @param connection			JDBC Connection
+	 * @param studyID				studyID string
+	 *
+	 * @return JSONObject as a string
+	 *
+	 * @throws RIFServiceException RIF error
+	 * @throws RIFSQLException RIF SQL error
+     */		
+	String getCovariateLossReport(
+			final Connection connection,
+			final String studyID)
+					throws RIFServiceException {
+						
+		String result="{}";
+		
+		CovariateLossReport covariateLossReport = new CovariateLossReport(options);
+		HashMap<String, SQLGeneralQueryFormatter> getCovariateLossReportHash = 
+			covariateLossReport.getSelectQueryFormatters(connection, studyID);
+			
+		JSONObject covariateLossReportJson = new JSONObject();
+		
+		for (String key : getCovariateLossReportHash.keySet()) {
+			PreparedStatement statement1 = null;
+			ResultSet resultSet1 = null;
+			String sqlQueryText = null;
+			try {
+				SQLGeneralQueryFormatter getCovariateLossReportFormatter1 = getCovariateLossReportHash.get(key);
+				sqlQueryText = logSQLQuery("getCovariateLossReport", getCovariateLossReportFormatter1);
+
+				statement1 = connection.prepareStatement(getCovariateLossReportFormatter1.generateQuery());
+				resultSet1 = statement1.executeQuery();
+				if (!resultSet1.next()) {
+					throw new RIFServiceException(
+						RIFServiceError.DATABASE_QUERY_FAILED,
+						"getHomogeneity query 1; expected 1+ rows, got NONE for study_id: " + studyID);
+				}
+				do {
 					
+					ResultSetMetaData rsmd = resultSet1.getMetaData();
+					int columnCount = rsmd.getColumnCount();
+					// The column count starts from 1
+                    JSONObject studyOrComparisonCovariate = new JSONObject();
+					String studyOrComparison = null;
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i); 
+						String value = resultSet1.getString(i);
+						String columnType = rsmd.getColumnTypeName(i);
+						if (name.equals("study_or_comparison")) {
+							studyOrComparison=value;
+						}
+						
+						if (value != null && (
+								 columnType.equals("integer") || 
+								 columnType.equals("bigint") || 
+								 columnType.equals("int4") ||
+								 columnType.equals("int") ||
+								 columnType.equals("smallint"))) {
+							try { // Use normal decimal formatting - will cause confusion with coordinates
+								Long longVal=Long.parseLong(resultSet1.getString(i));
+								studyOrComparisonCovariate.put(jsonCapitalise(name), String.valueOf(longVal));
+							}
+							catch (Exception exception) {	
+								throw new RIFServiceException(
+									RIFServiceError.DATABASE_DATATYPE_ERROR,
+									"Unable to parseLong(" + 
+									columnType + "): " + resultSet1.getString(i) + " for study_id: " + studyID, exception);
+							}
+						}
+						else if (value != null && (
+								 columnType.equals("float") || 
+								 columnType.equals("float8") || 
+								 columnType.equals("double precision") ||
+								 columnType.equals("numeric"))) {
+							try { // Ditto
+								Double doubleVal=Double.parseDouble(resultSet1.getString(i));
+								studyOrComparisonCovariate.put(jsonCapitalise(name), String.valueOf(doubleVal));
+							}
+							catch (Exception exception) {
+								throw new RIFServiceException(
+									RIFServiceError.DATABASE_DATATYPE_ERROR,
+									"Unable to parseDouble(" + 
+									columnType + "): " + resultSet1.getString(i) + " for study_id: " + studyID, exception);
+							}
+						}
+						else {
+							studyOrComparisonCovariate.put(jsonCapitalise(name), value);
+						}
+					} /* End of for column loop */
+
+                    String covariateName;
+                    try {
+                        covariateName=studyOrComparisonCovariate.getString("covariateName");
+                        String covariateTableName=studyOrComparisonCovariate.getString("covariateTableName");
+                        String covariateTableDescription=null;
+                        if (covariateName != null && covariateTableName != null) {
+                            covariateTableDescription=getColumnComment(connection, "rif_data", 
+                                covariateTableName.toLowerCase(), covariateName.toLowerCase());
+                            if (covariateTableDescription != null) {
+                                studyOrComparisonCovariate.put("covariateTableDescription", covariateTableDescription);
+                            }
+                        }
+                        else {
+                            throw new RIFServiceException(
+                                RIFServiceError.DATABASE_QUERY_FAILED,
+                                "NULL covariateName or covariateTableName; covariate: " + studyOrComparisonCovariate.toString());
+                        }
+                    }
+                    catch (Exception exception) {
+                        throw new RIFServiceException(
+                            RIFServiceError.DATABASE_QUERY_FAILED,
+                                "JSON/Database error in covariateTableDescription; covariate: " + studyOrComparisonCovariate.toString(),
+                                exception);
+                    }
+					
+					if (studyOrComparison == null) {
+						throw new RIFServiceException(
+							RIFServiceError.DATABASE_QUERY_FAILED,
+							"NULL studyOrComparison; covariate: " + studyOrComparisonCovariate.toString());
+					}
+					else {
+                        JSONObject covariate;
+                        if (covariateLossReportJson.has(covariateName)) {
+                            covariate = covariateLossReportJson.getJSONObject(covariateName);
+                        }
+                        else {
+                            covariate = new JSONObject();
+                            covariateLossReportJson.put(covariateName, covariate);
+                        }
+                        if (covariate.has(studyOrComparison)) {
+                            throw new RIFServiceException(
+                                RIFServiceError.DATABASE_QUERY_FAILED,
+                                "covariate has \"" + studyOrComparison + "\": " + covariate.toString());
+                        }
+                        else {
+                            covariate.put(studyOrComparison, studyOrComparisonCovariate);
+                        }
+                    }                        
+				} while (resultSet1.next()); /* Covariate S/C areas list */
+                
+				connection.commit();
+			} catch(RIFServiceException rifServiceException) {
+				throw rifServiceException;
+			} catch(SQLException sqlException) {
+				//Record original exception, throw sanitised, human-readable version
+				throw new RIFSQLException(this.getClass(), sqlException, statement1, sqlQueryText);
+			}  finally {
+				//Cleanup database resources
+				SQLQueryUtility.close(statement1);
+				SQLQueryUtility.close(resultSet1);
+			}
+		} /* End of hash iterator */	
+				
+		result=covariateLossReportJson.toString();
+		return result;
+	}		
+    
+	/** 
+	 * Get the Risk Graph data for a study
+	 * <p>	 
+	 * Example JSON:
+     * {
+	 *     "males": [{
+     *         "studyAreas": "528",
+     *          "relativeRisk": "0.906289",
+     *          "bandId": "1.0",
+     *          "adjusted": "1.0",
+     *          "expected": "134.614918",
+     *          "genders": "1.0",
+     *          "lower95": "0.758929",
+     *          "observed": "122.0",
+     *          "upper95": "1.082262"
+     *         },
+     *         {
+     *          "studyAreas": "836",
+     *          "relativeRisk": "0.956601",
+     *          "bandId": "2.0",
+     *          "adjusted": "1.0",
+     *          "expected": "160.986693",
+     *          "genders": "1.0",
+     *          "lower95": "0.816841",
+     *          "observed": "154.0",
+     *          "upper95": "1.120273"
+     *         },
+     *         {
+     *          "studyAreas": "2244",
+     *          "relativeRisk": "1.07338",
+     *          "bandId": "3.0",
+     *          "adjusted": "1.0",
+     *          "expected": "398.740546",
+     *          "genders": "1.0",
+     *          "lower95": "0.976356",
+     *          "observed": "428.0",
+     *          "upper95": "1.180045"
+     *         }
+     *        ],
+	 *        females: [ ... ],
+	 *        both: [ ... ]
+	 * }		
+	 * 
+     * Example SQL:     
+	 * WITH b AS (
+	 *     SELECT band_id, sex AS genders,
+	 *            AVG(exposure_value) AS avg_exposure_value,
+	 * 		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source,
+	 * 		   COUNT(area_id) AS study_areas
+ 	 *      FROM rif_studies.s196_extract
+	 * 	 WHERE study_or_comparison = 'S'
+	 *      GROUP BY band_id, sex
+	 * 	UNION
+	 *     SELECT band_id, 3 AS genders,
+	 *            AVG(exposure_value) AS avg_exposure_value,
+	 * 		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source,
+	 *            COUNT(area_id) AS study_areas
+	 *       FROM rif_studies.s196_extract
+	 * 	 WHERE study_or_comparison = 'S'
+	 *      GROUP BY band_id
+	 * ), a AS (
+	 *     SELECT a.genders, a.band_id, a.adjusted, observed, expected, lower95, upper95, relative_risk,
+	 * 	       b.avg_exposure_value,
+	 * 		   b.avg_distance_from_nearest_source,
+	 *            b.study_areas
+	 *       FROM rif_studies.s196_map a
+	 * 		LEFT OUTER JOIN b ON (a.band_id = b.band_id AND a.genders = b.genders)
+	 * )
+	 * SELECT * FROM a
+	 *  ORDER BY 1, 2, 3
+	 * </p>
+	 *
+	 * @param connection			JDBC Connection
+	 * @param studyID				studyID string
+	 *
+	 * @return JSONObject as a string
+	 *
+	 * @throws RIFServiceException RIF error
+	 * @throws RIFSQLException RIF SQL error
+     */		
+	String getRiskGraph(
+			final Connection connection,
+			final String studyID)
+					throws RIFServiceException {
+						
+		String result="{}";
+		
+        SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+        
+        PreparedStatement statement1 = null;
+        ResultSet resultSet1 = null;
+        String sqlQueryText = null;
+        
+        JSONObject riskGraphJson = new JSONObject();
+        JSONArray riskGraphMales = new JSONArray();
+        JSONArray riskGraphFemales = new JSONArray();
+        JSONArray riskGraphBoth = new JSONArray();
+        try {
+            
+            boolean hasExposureValue=false;
+            boolean hasDistanceFromNearestSource=false;
+            try {
+                hasDistanceFromNearestSource=doesColumnExist(connection, 
+                    "rif_studies", "s" + studyID + "_extract", "distance_from_nearest_source"); 
+                hasExposureValue=doesColumnExist(connection, 
+                    "rif_studies", "s" + studyID + "_extract", "exposure_value");
+            }
+            catch (Exception exception) {            
+                throw new RIFServiceException(
+                    RIFServiceError.DATABASE_QUERY_FAILED,
+                    "getRiskGraph unable to determine columns present in extract for study_id: " + studyID, exception);
+            }
+
+            queryFormatter.addQueryLine(0, "WITH b AS (");
+            queryFormatter.addQueryLine(0, "    SELECT band_id, sex AS genders,");
+            if (hasExposureValue) {
+                queryFormatter.addQueryLine(0, "           AVG(exposure_value) AS avg_exposure_value,"); 
+            }
+            if (hasDistanceFromNearestSource) {
+                queryFormatter.addQueryLine(0, "		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source,");
+            }
+            queryFormatter.addQueryLine(0, "		   COUNT(area_id) AS study_areas");
+            queryFormatter.addQueryLine(0, "      FROM rif_studies.s" + studyID + "_extract");
+            queryFormatter.addQueryLine(0, "	 WHERE study_or_comparison = 'S'");
+            queryFormatter.addQueryLine(0, "     GROUP BY band_id, sex");
+            queryFormatter.addQueryLine(0, "	UNION");
+            queryFormatter.addQueryLine(0, "    SELECT band_id, 3 AS genders,");
+            if (hasExposureValue) {
+                queryFormatter.addQueryLine(0, "           AVG(exposure_value) AS avg_exposure_value,"); 
+            }
+            if (hasDistanceFromNearestSource) {
+                queryFormatter.addQueryLine(0, "		   AVG(distance_from_nearest_source) AS avg_distance_from_nearest_source,");
+            }
+            queryFormatter.addQueryLine(0, "           COUNT(area_id) AS study_areas");
+            queryFormatter.addQueryLine(0, "      FROM rif_studies.s" + studyID + "_extract");
+            queryFormatter.addQueryLine(0, "	 WHERE study_or_comparison = 'S'");
+            queryFormatter.addQueryLine(0, "     GROUP BY band_id");
+            queryFormatter.addQueryLine(0, "), a AS (");
+            queryFormatter.addQueryLine(0, "    SELECT a.genders, a.band_id, a.adjusted, observed, expected, lower95, upper95, relative_risk,"); 
+            if (hasExposureValue) {
+                queryFormatter.addQueryLine(0, "	       b.avg_exposure_value,");
+            }
+            if (hasDistanceFromNearestSource) {
+                queryFormatter.addQueryLine(0, "		   b.avg_distance_from_nearest_source,");
+            }
+            queryFormatter.addQueryLine(0, "           b.study_areas");
+            queryFormatter.addQueryLine(0, "      FROM rif_studies.s" + studyID + "_map a");
+            queryFormatter.addQueryLine(0, "		LEFT OUTER JOIN b ON (a.band_id = b.band_id AND a.genders = b.genders)");
+            queryFormatter.addQueryLine(0, ")");
+            queryFormatter.addQueryLine(0, "SELECT * FROM a");
+            queryFormatter.addQueryLine(0, " ORDER BY 1, 2, 3");
+        
+            sqlQueryText = logSQLQuery("getRiskGraph", queryFormatter);
+
+            statement1 = connection.prepareStatement(queryFormatter.generateQuery());
+            resultSet1 = statement1.executeQuery();
+            if (!resultSet1.next()) {
+                throw new RIFServiceException(
+                    RIFServiceError.DATABASE_QUERY_FAILED,
+                    "getRiskGraph query 1; expected 1+ rows, got NONE for study_id: " + studyID);
+            }
+            do {
+                
+                ResultSetMetaData rsmd = resultSet1.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+                // The column count starts from 1
+                JSONObject riskGraphRow = new JSONObject();
+                int genders=-1;
+                
+                for (int i = 1; i <= columnCount; i++ ) {
+                    String name = rsmd.getColumnName(i); 
+                    String value = resultSet1.getString(i);
+                    String columnType = rsmd.getColumnTypeName(i);
+                    if (name.equals("genders")) {
+                        genders=resultSet1.getInt(i);
+                    }
+                    
+                    if (value != null && (
+                             columnType.equals("integer") || 
+                             columnType.equals("bigint") || 
+                             columnType.equals("int4") ||
+                             columnType.equals("int") ||
+                             columnType.equals("smallint"))) {
+                        try { // Use normal decimal formatting - will cause confusion with coordinates
+                            Long longVal=Long.parseLong(resultSet1.getString(i));
+                            riskGraphRow.put(jsonCapitalise(name), String.valueOf(longVal));
+                        }
+                        catch (Exception exception) {	
+                            throw new RIFServiceException(
+                                RIFServiceError.DATABASE_DATATYPE_ERROR,
+                                "Unable to parseLong(" + 
+                                columnType + "): " + resultSet1.getString(i) + " for study_id: " + studyID, exception);
+                        }
+                    }
+                    else if (value != null && (
+                             columnType.equals("float") || 
+                             columnType.equals("float8") || 
+                             columnType.equals("double precision") ||
+                             columnType.equals("numeric"))) {
+                        try { // Ditto
+                            Double doubleVal=Double.parseDouble(resultSet1.getString(i));
+                            riskGraphRow.put(jsonCapitalise(name), String.valueOf(doubleVal));
+                        }
+                        catch (Exception exception) {
+                            throw new RIFServiceException(
+                                RIFServiceError.DATABASE_DATATYPE_ERROR,
+                                "Unable to parseDouble(" + 
+                                columnType + "): " + resultSet1.getString(i) + " for study_id: " + studyID, exception);
+                        }
+                    }
+                    else {
+                        riskGraphRow.put(jsonCapitalise(name), value);
+                    }
+                } /* End of for column loop */
+              
+                switch (genders) {
+                    case 1: /* Males */
+                        riskGraphMales.put(riskGraphRow);
+                        break;
+                    case 2: /* Females */
+                        riskGraphFemales.put(riskGraphRow);
+                        break;
+                    case 3: /* Both */
+                        riskGraphBoth.put(riskGraphRow);
+                        break;
+                    default:
+                        throw new RIFServiceException(
+                            RIFServiceError.DATABASE_DATATYPE_ERROR,
+                            "Invalid value for genders: " + genders);
+                }
+            } while (resultSet1.next()); /* riskGraphRow */
+            
+            connection.commit();
+        } catch(RIFServiceException rifServiceException) {
+            throw rifServiceException;
+        } catch(SQLException sqlException) {
+            //Record original exception, throw sanitised, human-readable version
+            throw new RIFSQLException(this.getClass(), sqlException, statement1, sqlQueryText);
+        }  finally {
+            //Cleanup database resources
+            SQLQueryUtility.close(statement1);
+            SQLQueryUtility.close(resultSet1);
+        }
+        
+        riskGraphJson.put("females", riskGraphFemales);
+        riskGraphJson.put("males", riskGraphMales);
+        riskGraphJson.put("both", riskGraphBoth);
+        
+		result=riskGraphJson.toString();            
+		return result;
+	}		
+    
+	/** 
+	 * Get the rif40_homogeneity data for a study
+	 * <p>	 
+	 * Returned JSON:
+	 * "adjusted": {
+	 *      "females": {
+	 * 	    	"linearityP": 0,
+	 * 	    	"linearityChi2": 0,
+	 * 	    	"explt5": 0,
+	 * 	    	"homogeneityDof": 2,
+	 * 	    	"homogeneityP": 1.95058679437527E-4,
+	 * 	    	"homogeneityChi2": 17.084420248951
+	 * 	    },
+	 * 	    "males": {
+	 * 	    	"linearityP": 0,
+	 * 	    	"linearityChi2": 0,
+	 * 	    	"explt5": 0,
+	 * 	    	"homogeneityDof": 2,
+	 * 	    	"homogeneityP": 0.178163986654135,
+	 * 	    	"homogeneityChi2": 3.45010175892807
+	 * 	    },
+	 * 	    "both": {
+	 * 	    	"linearityP": 0,
+	 * 	    	"linearityChi2": 0,
+	 * 	    	"explt5": 0,
+	 * 	    	"homogeneityDof": 2,
+	 * 	    	"homogeneityP": 0.00337359835580779,
+	 * 	    	"homogeneityChi2": 11.3835506858045
+	 *      }
+	 * },
+	 * "unadjusted": {
+     * ...
+	 * }
+	 * </p>
+	 *
+	 * @param connection			JDBC Connection
+	 * @param studyID				studyID string
+	 *
+	 * @return JSONObject as a string
+	 *
+	 * @throws RIFServiceException RIF error
+	 * @throws RIFSQLException RIF SQL error
+     */		
+	String getHomogeneity(
+			final Connection connection,
+			final String studyID)
+					throws RIFServiceException {
+						
+		String result="{}";
+		
+		SelectQueryFormatter getHomogeneityQueryFormatter1 =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+
+		getHomogeneityQueryFormatter1.setDatabaseSchemaName("rif40");
+		getHomogeneityQueryFormatter1.addSelectField("genders");
+		getHomogeneityQueryFormatter1.addSelectField("homogeneity_dof");
+		getHomogeneityQueryFormatter1.addSelectField("homogeneity_chi2");
+		getHomogeneityQueryFormatter1.addSelectField("homogeneity_p");
+		getHomogeneityQueryFormatter1.addSelectField("linearity_chi2");
+		getHomogeneityQueryFormatter1.addSelectField("linearity_p");
+		getHomogeneityQueryFormatter1.addSelectField("explt5");
+		getHomogeneityQueryFormatter1.addSelectField("adjusted");
+		
+		getHomogeneityQueryFormatter1.addFromTable("rif40_homogeneity");
+		getHomogeneityQueryFormatter1.addWhereParameter("study_id");
+
+		String sqlQueryText = logSQLQuery("getHomogeneity", getHomogeneityQueryFormatter1, studyID);
+	
+		PreparedStatement statement1 = null;
+		ResultSet resultSet1 = null;		
+
+		try {
+			statement1 = connection.prepareStatement(getHomogeneityQueryFormatter1.generateQuery());
+			statement1.setInt(1, Integer.parseInt(studyID));
+			resultSet1 = statement1.executeQuery();
+		
+			JSONObject homogeneity = new JSONObject();
+			JSONObject adjusted = new JSONObject();
+			JSONObject unadjusted = new JSONObject();
+			for (int i=0; i<3; i++) {
+				if (!resultSet1.next() || i >= 6) {
+					throw new RIFServiceException(
+						RIFServiceError.DATABASE_QUERY_FAILED,
+						"getHomogeneity query 1; expected 3-6 rows, got " + i + " for study_id: " + studyID);
+				}
+				int genders = resultSet1.getInt(1);
+				double homogeneityDof = resultSet1.getDouble(2);
+				double homogeneityChi2 = resultSet1.getDouble(3);
+				double homogeneityP = resultSet1.getDouble(4);
+				double linearityChi2 = resultSet1.getDouble(5);
+				double linearityP = resultSet1.getDouble(6);
+				double explt5 = resultSet1.getDouble(7);
+				int adjustedValue = resultSet1.getInt(8);
+				
+				JSONObject homogeneityItem = new JSONObject();
+				homogeneityItem.put("homogeneityDof", homogeneityDof);
+				homogeneityItem.put("homogeneityChi2", homogeneityChi2);
+				homogeneityItem.put("homogeneityP", homogeneityP);
+				homogeneityItem.put("linearityChi2", linearityChi2);
+				homogeneityItem.put("linearityP", linearityP);
+				homogeneityItem.put("explt5", explt5);
+                if (adjustedValue == 1) {
+                    if (genders == 1) {
+                        adjusted.put("males", homogeneityItem);
+                    }
+                    else if (genders == 2) {
+                        adjusted.put("females", homogeneityItem);
+                    }
+                    else if (genders == 3) {
+                        adjusted.put("both", homogeneityItem);
+                    }
+                    else {
+                        String errorMessage
+                                = RIFServiceMessages.getMessage(
+                                "sqlResultsQueryManager.invalidHomogeneityGender",
+                                Integer.toString(genders),
+                                studyID);
+                        throw new RIFServiceException(
+                                RIFServiceError.DATABASE_QUERY_FAILED,
+                                errorMessage);			
+                    }
+                }
+                else {
+
+                    if (genders == 1) {
+                        unadjusted.put("males", homogeneityItem);
+                    }
+                    else if (genders == 2) {
+                        unadjusted.put("females", homogeneityItem);
+                    }
+                    else if (genders == 3) {
+                        unadjusted.put("both", homogeneityItem);
+                    }
+                    else {
+                        String errorMessage
+                                = RIFServiceMessages.getMessage(
+                                "sqlResultsQueryManager.invalidHomogeneityGender",
+                                Integer.toString(genders),
+                                studyID);
+                        throw new RIFServiceException(
+                                RIFServiceError.DATABASE_QUERY_FAILED,
+                                errorMessage);			
+                    }
+                }                    
+			}
+			homogeneity.put("adjusted", adjusted);
+			homogeneity.put("unadjusted", unadjusted);
+            
+			connection.commit();
+			result=homogeneity.toString();	
+			
+			return result;
+		} catch(RIFServiceException rifServiceException) {
+			throw rifServiceException;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			throw new RIFSQLException(this.getClass(), sqlException, statement1, sqlQueryText);
+		}  finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement1);
+			SQLQueryUtility.close(resultSet1);
+		}
+	}		
+	
 	String getPrintState(
 			final Connection connection,
 			final String studyID)

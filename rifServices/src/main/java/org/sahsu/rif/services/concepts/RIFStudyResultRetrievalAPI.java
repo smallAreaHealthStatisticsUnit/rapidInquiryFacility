@@ -20,10 +20,25 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Geography geography)
 					throws RIFServiceException;		
 					
-	String getSelectState(
+	String getHomogeneity(
+			final User user,
+			final String studyID)
+					throws RIFServiceException;	
+					
+	String getCovariateLossReport(
 			final User user,
 			final String studyID)
 					throws RIFServiceException;		
+					
+	String getRiskGraph(
+			final User user,
+			final String studyID)
+					throws RIFServiceException;		
+					
+	String getSelectState(
+			final User user,
+			final String studyID)
+					throws RIFServiceException;	
 					
 	String getPrintState(
 			final User user,

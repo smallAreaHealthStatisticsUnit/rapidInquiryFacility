@@ -50,7 +50,7 @@ import org.sahsu.rif.services.graphics.RIFGraphicsOutputType;
 import org.sahsu.rif.services.graphics.RIFMaps;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
-import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -117,8 +117,8 @@ public class RifGeospatialOutputs {
 	 * @param String baseStudyName,
 	 * @param String zoomLevel,
 	 * @param RIFStudySubmission rifStudySubmission,
-	 * @param CachedRowSetImpl rif40Studies,
-	 * @param CachedRowSetImpl rif40Investigations,
+	 * @param CachedRowSet rif40Studies,
+	 * @param CachedRowSet rif40Investigations,
 	 * @param Locale locale
 	 *
 	 * @returns String
@@ -129,8 +129,8 @@ public class RifGeospatialOutputs {
 			final String baseStudyName,
 			final String zoomLevel,
 			final RIFStudySubmission rifStudySubmission,
-			final CachedRowSetImpl rif40Studies,
-			final CachedRowSetImpl rif40Investigations,
+			final CachedRowSet rif40Studies,
+			final CachedRowSet rif40Investigations,
 			final Locale locale)
 					throws Exception {
 						
@@ -311,13 +311,13 @@ public class RifGeospatialOutputs {
 	 * Create HTML to view maps in ZIP html app
      *  
 	 * @param String studyID
-	 * @param CachedRowSetImpl rif40Investigations
+	 * @param CachedRowSet rif40Investigations
 	 *
 	 * @returns HTML as string
 	 */	
 	private String createMapsHTML(
 		final String studyID,
-		final CachedRowSetImpl rif40Investigations,
+		final CachedRowSet rif40Investigations,
 		final boolean isDiseaseMappingStudy)
 			throws Exception {
 			
@@ -460,7 +460,7 @@ public class RifGeospatialOutputs {
 	 * @param String studyID, 
 	 * @param String areaTableName
 	 */	
-	private CachedRowSetImpl getRif40Geolevels(
+	private CachedRowSet getRif40Geolevels(
 			final Connection connection,
 			final String studyID,
 			final String areaTableName)
@@ -490,7 +490,7 @@ public class RifGeospatialOutputs {
 		
 		int[] params = new int[1];
 		params[0]=Integer.parseInt(studyID);
-		CachedRowSetImpl cachedRowSet=manager.createCachedRowSet(connection, geolevelQueryFormatter,
+		CachedRowSet cachedRowSet=manager.createCachedRowSet(connection, geolevelQueryFormatter,
 			"writeMapQueryTogeoJSONFile", params);	
 		
 		return cachedRowSet;
@@ -551,13 +551,13 @@ public class RifGeospatialOutputs {
 	 * (i.e. re-projection required)
 	 *
 	 * @param RIFStudySubmission rifStudySubmission
-	 * @param CachedRowSetImpl rif40Geolevels
+	 * @param CachedRowSet rif40Geolevels
 	 *
 	 * @returns CoordinateReferenceSystem
      */	
 	private CoordinateReferenceSystem getCRS(
 			final RIFStudySubmission rifStudySubmission, 
-			final CachedRowSetImpl rif40Geolevels) 
+			final CachedRowSet rif40Geolevels) 
 				throws Exception {
 		
 		CoordinateReferenceSystem crs=null;
@@ -1057,7 +1057,7 @@ public class RifGeospatialOutputs {
 		FeatureWriter<SimpleFeatureType, SimpleFeature> shapefileWriter = null; 
 			// Created once feature types are defined
 		
-		CachedRowSetImpl rif40Geolevels=getRif40Geolevels(connection, studyID, areaTableName);	
+		CachedRowSet rif40Geolevels=getRif40Geolevels(connection, studyID, areaTableName);	
 			//get geolevel
 		String geolevel=manager.getColumnFromResultSet(rif40Geolevels, "geolevel_id");
 		String geolevelName = manager.getColumnFromResultSet(rif40Geolevels, "geolevel_name");
