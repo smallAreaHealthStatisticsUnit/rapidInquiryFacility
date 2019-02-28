@@ -7,7 +7,7 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceError;
 
-import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
 
 import java.sql.ResultSetMetaData;
 import java.sql.Connection;
@@ -59,11 +59,11 @@ public class CovariateLossReport extends BaseSQLManager {
 
         HashMap<String, SQLGeneralQueryFormatter> getCovariateLossReportHash = new HashMap<>();
 
-        CachedRowSetImpl rif40Studies;
-        CachedRowSetImpl rif40Investigations;
-        CachedRowSetImpl rif40Covariates;
-		CachedRowSetImpl rif40TablesNumerTab;
-        CachedRowSetImpl rif40TablesDenomTab;
+        CachedRowSet rif40Studies;
+        CachedRowSet rif40Investigations;
+        CachedRowSet rif40Covariates;
+		CachedRowSet rif40TablesNumerTab;
+        CachedRowSet rif40TablesDenomTab;
 
         try {
             rif40Studies=getRifViewData(connection, false /* column is a String */, "study_id", studyID, "rif40_studies",
@@ -175,7 +175,7 @@ public class CovariateLossReport extends BaseSQLManager {
                     throw new Exception("studyGeography is NULL");
                 }
 
-                CachedRowSetImpl rif40Geolevels = getRifViewData(connection, true /* column is a String */,
+                CachedRowSet rif40Geolevels = getRifViewData(connection, true /* column is a String */,
                         "geolevel_name", studyGeolevelName,
                         "geography", studyGeography,
                         "rif40_geolevels",
@@ -282,7 +282,7 @@ public class CovariateLossReport extends BaseSQLManager {
         final String studyID) throws RIFServiceException {
 
         String icdFilter = null;
-        CachedRowSetImpl rif40InvConditions = null;
+        CachedRowSet rif40InvConditions = null;
         try {
             rif40InvConditions=getRifViewData(connection, false /* column is a String */, "study_id", studyID, "rif40_inv_conditions",
                     "condition");

@@ -10,7 +10,7 @@ import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
 
-import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
 
 public interface SQLManager {
 
@@ -33,20 +33,20 @@ public interface SQLManager {
         
 	String jsonCapitalise(String name);
      
-	CachedRowSetImpl createCachedRowSet(
+	CachedRowSet createCachedRowSet(
 			Connection connection,
 			QueryFormatter queryFormatter,
 			String queryName)
 				throws Exception;
 	
-	CachedRowSetImpl createCachedRowSet(
+	CachedRowSet createCachedRowSet(
 			Connection connection,
 			QueryFormatter queryFormatter,
 			String queryName,
 			int[] params)
 				throws Exception;
 				
-	CachedRowSetImpl createCachedRowSet(
+	CachedRowSet createCachedRowSet(
 			Connection connection,
 			QueryFormatter queryFormatter,
 			String queryName,
@@ -54,12 +54,12 @@ public interface SQLManager {
 				throws Exception;
 	
 	String getColumnFromResultSet(
-			CachedRowSetImpl cachedRowSet,
+			CachedRowSet cachedRowSet,
 			String columnName)
 			throws Exception;
 	
 	String getColumnFromResultSet(
-			CachedRowSetImpl cachedRowSet,
+			CachedRowSet cachedRowSet,
 			String columnName,
 			boolean allowNulls,
 			boolean allowNoRows)
@@ -69,7 +69,7 @@ public interface SQLManager {
 			String schemaName, String tableName, String columnName)
 			throws Exception;
 			
-	CachedRowSetImpl getRifViewData(
+	CachedRowSet getRifViewData(
 			final Connection connection,
 			final boolean columnsAreString,
 			final String columnName1,
@@ -78,7 +78,7 @@ public interface SQLManager {
 			final String columnList)
 			throws Exception;
 			
-	CachedRowSetImpl getRifViewData(
+	CachedRowSet getRifViewData(
 			final Connection connection,
 			final boolean columnsAreString,
 			final String columnName1,

@@ -46,7 +46,7 @@ import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
-import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
 
 public class RifZipFile {
 
@@ -362,8 +362,8 @@ public class RifZipFile {
 			else { // No zip file - can be created 
 				submissionZipOutputStream = new ZipOutputStream(new FileOutputStream(submissionZipSavFile));
 							
-				CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);	
-				CachedRowSetImpl rif40Investigations=getRif40Investigations(connection, studyID);	
+				CachedRowSet rif40Studies=getRif40Studies(connection, studyID);	
+				CachedRowSet rif40Investigations=getRif40Investigations(connection, studyID);	
 					// Assumes one study at present
 				rifLogger.info(this.getClass(), 
 					"Create study extract for: " + studyID + "; databaseType: " + databaseType);
@@ -790,7 +790,7 @@ public class RifZipFile {
 			final String studyID,
 			final int headerLevel,
 			final Locale locale,
-			CachedRowSetImpl rif40Studies
+			CachedRowSet rif40Studies
 			)
 			throws Exception {
 				
@@ -803,7 +803,7 @@ public class RifZipFile {
 		int yearStart=Integer.parseInt(manager.getColumnFromResultSet(rif40Studies, "year_start"));
 		int yearStop=Integer.parseInt(manager.getColumnFromResultSet(rif40Studies, "year_stop"));
 		
-		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
+		CachedRowSet rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
 		int minYear=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
 		int maxYear=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
 		int minSex=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
@@ -883,7 +883,7 @@ public class RifZipFile {
 			final String studyID,
 			final int headerLevel,
 			final Locale locale,
-			CachedRowSetImpl rif40Studies
+			CachedRowSet rif40Studies
 			)
 			throws Exception {
 					
@@ -916,7 +916,7 @@ public class RifZipFile {
 				studyDescription="No study name or description";
 			}
 		}
-		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
+		CachedRowSet rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
 		int minYear=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
 		int maxYear=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
 		int minSex=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
@@ -1102,7 +1102,7 @@ public class RifZipFile {
 		return htmlFileText.toString();
 	}
 		
-	private CachedRowSetImpl getStudyStartEndYear(
+	private CachedRowSet getStudyStartEndYear(
 			final Connection connection,
 			final String extractTable)
 			throws Exception {
@@ -1113,13 +1113,13 @@ public class RifZipFile {
 		extractTableQueryFormatter.addQueryLine(0, "  FROM rif_studies." + extractTable.toLowerCase());
 		extractTableQueryFormatter.addQueryLine(0, " WHERE study_or_comparison = 'S'");
 
-		CachedRowSetImpl cachedRowSet=manager.createCachedRowSet(connection, extractTableQueryFormatter,
+		CachedRowSet cachedRowSet=manager.createCachedRowSet(connection, extractTableQueryFormatter,
 			"getStudyStartEndYear");	
 		
 		return cachedRowSet;
 	}
 	
-	private CachedRowSetImpl getRif40Studies(
+	private CachedRowSet getRif40Studies(
 			final Connection connection,
 			final String studyID)
 			throws Exception {
@@ -1132,7 +1132,7 @@ public class RifZipFile {
 
 		int[] params = new int[1];
 		params[0]=Integer.parseInt(studyID);
-		CachedRowSetImpl cachedRowSet=manager.createCachedRowSet(connection, rif40StudiesQueryFormatter,
+		CachedRowSet cachedRowSet=manager.createCachedRowSet(connection, rif40StudiesQueryFormatter,
 			"getRif40Studies", params);	
 		
 		return cachedRowSet;
@@ -1145,9 +1145,9 @@ public class RifZipFile {
 	 * @param: Connection connection,
 	 * @param: String studyID
 	 *
-	 * @returns: CachedRowSetImpl
+	 * @returns: CachedRowSet
 	 */
-	private CachedRowSetImpl getRif40Investigations(
+	private CachedRowSet getRif40Investigations(
 			final Connection connection,
 			final String studyID)
 			throws Exception {
@@ -1172,7 +1172,7 @@ public class RifZipFile {
 	 * @param: Connection connection,
 	 * @param: String studyID
 	 *
-	 * @returns: CachedRowSetImpl
+	 * @returns: CachedRowSet
 	 */	
 	private void addStudyAndComparisonAreas(
 			final StringBuilder htmlFileText,

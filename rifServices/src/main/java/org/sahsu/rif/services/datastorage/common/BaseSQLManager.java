@@ -33,6 +33,9 @@ import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
+
+import  com.google.common.base.CaseFormat;
 
 public class BaseSQLManager implements SQLManager {
 
@@ -136,16 +139,16 @@ public class BaseSQLManager implements SQLManager {
 	 * @param queryFormatter,
 	 * @param queryName
 	 *
-	 * @return CachedRowSetImpl cached row set
+	 * @return CachedRowSet cached row set
 	 */
 	@Override
-	public CachedRowSetImpl createCachedRowSet(
+	public CachedRowSet createCachedRowSet(
 			final Connection connection,
 			QueryFormatter queryFormatter,
 			final String queryName)
 				throws Exception {
 			
-		CachedRowSetImpl cachedRowSet=null;	
+		CachedRowSet cachedRowSet=null;	
 		ResultSet resultSet=null;
 		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
 		try {
@@ -177,17 +180,17 @@ public class BaseSQLManager implements SQLManager {
 	 * @param queryName,
 	 * @param params
 	 *
-	 * @return CachedRowSetImpl cached row set
+	 * @return CachedRowSet cached row set
 	 */
 	@Override
-	public CachedRowSetImpl createCachedRowSet(
+	public CachedRowSet createCachedRowSet(
 			final Connection connection,
 			QueryFormatter queryFormatter,
 			final String queryName,
 			final String[] params)
 				throws Exception {
 			
-		CachedRowSetImpl cachedRowSet=null;	
+		CachedRowSet cachedRowSet=null;	
 		ResultSet resultSet;
 		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
 		try {
@@ -222,17 +225,17 @@ public class BaseSQLManager implements SQLManager {
 	 * @param queryName,
 	 * @param params
 	 *
-	 * @return CachedRowSetImpl cached row set
+	 * @return CachedRowSet cached row set
 	 */
 	@Override
-	public CachedRowSetImpl createCachedRowSet(
+	public CachedRowSet createCachedRowSet(
 			final Connection connection,
 			QueryFormatter queryFormatter,
 			final String queryName,
 			final int[] params)
 				throws Exception {
 			
-		CachedRowSetImpl cachedRowSet=null;	
+		CachedRowSet cachedRowSet=null;	
 		ResultSet resultSet;
 		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
 		try {
@@ -269,7 +272,7 @@ public class BaseSQLManager implements SQLManager {
 	 */
 	@Override
 	public String getColumnFromResultSet(
-			final CachedRowSetImpl cachedRowSet,
+			final CachedRowSet cachedRowSet,
 			final String columnName)
 			throws Exception {
 		return getColumnFromResultSet(cachedRowSet, columnName, 
@@ -290,7 +293,7 @@ public class BaseSQLManager implements SQLManager {
 	 */
 	@Override
 	public String getColumnFromResultSet(
-			final CachedRowSetImpl cachedRowSet,
+			final CachedRowSet cachedRowSet,
 			final String columnName,
 			final boolean allowNulls,
 			final boolean allowNoRows)
@@ -341,10 +344,10 @@ public class BaseSQLManager implements SQLManager {
 	 * @param: tableName 		String,
 	 * @param: columnList 		String
 	 *
-	 * @returns: CachedRowSetImpl
+	 * @returns: CachedRowSet
 	 */
 	@Override
-	public CachedRowSetImpl getRifViewData(
+	public CachedRowSet getRifViewData(
 			final Connection connection,
 			final boolean columnsAreString,
 			final String columnName1,
@@ -355,7 +358,7 @@ public class BaseSQLManager implements SQLManager {
 			final String columnList)
 			throws Exception {
 		SQLGeneralQueryFormatter rifViewDataQueryFormatter = new SQLGeneralQueryFormatter();			
-		CachedRowSetImpl cachedRowSet;
+		CachedRowSet cachedRowSet;
 		
 		rifViewDataQueryFormatter.addQueryLine(0, "SELECT " + columnList);
 		rifViewDataQueryFormatter.addQueryLine(0, "  FROM rif40." + tableName.toLowerCase());
@@ -391,10 +394,10 @@ public class BaseSQLManager implements SQLManager {
 	 * @param: tableName 		String,
 	 * @param: columnList 		String
 	 *
-	 * @returns: CachedRowSetImpl
+	 * @returns: CachedRowSet
 	 */	
 	@Override
-	public CachedRowSetImpl getRifViewData(
+	public CachedRowSet getRifViewData(
 			final Connection connection,
 			final boolean columnsAreString,
 			final String columnName1,
@@ -403,7 +406,7 @@ public class BaseSQLManager implements SQLManager {
 			final String columnList)
 			throws Exception {
 		SQLGeneralQueryFormatter rifViewDataQueryFormatter = new SQLGeneralQueryFormatter();			
-		CachedRowSetImpl cachedRowSet;
+		CachedRowSet cachedRowSet;
 		
 		rifViewDataQueryFormatter.addQueryLine(0, "SELECT " + columnList);
 		rifViewDataQueryFormatter.addQueryLine(0, "  FROM rif40." + tableName.toLowerCase());
@@ -509,19 +512,8 @@ public class BaseSQLManager implements SQLManager {
 	 * @return JSONObject style name as a string
      */
 	@Override
-    public String jsonCapitalise(String name) {
-        
-        String rval = "";
-        for (int i=0; i < name.length(); i++) {
-            if (name.charAt(i) == '_') {
-                rval+=Character.toString(name.charAt(i+1)).toUpperCase();
-                i++;
-            }
-            else {
-                rval+=Character.toString(name.charAt(i));
-            }
-        }
-        return rval;
+    public String jsonCapitalise(String name) {      
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name.toLowerCase());
     }
 	
 	@Override
