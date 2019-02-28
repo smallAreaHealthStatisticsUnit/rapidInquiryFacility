@@ -562,6 +562,7 @@ angular.module("RIF")
 										    covariate_type: res.data[i].covariateType,
 										    description: res.data[i].description});
 									}
+                                    tmp.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
 									ParameterStateService.getState().possibleCovariates = tmp;
 									return true;
 								} else {

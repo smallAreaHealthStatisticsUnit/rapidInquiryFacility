@@ -182,6 +182,9 @@ angular.module("RIF")
                                             }
                                         }
                                     }
+                                    
+                                    thisInv.covariates.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
+                                    thisInv.additionals.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
                                 }
                                 for (var k = 0; k < s.terms.length; k++) {
                                     var thisID = s.terms[k][0].split('-');

@@ -138,10 +138,21 @@ angular.module("RIF")
                     //defaults
                     $scope.years = [];
                     $scope.sexes = [];
+                    $scope.covariate = {
+                       covariates: [],
+                       additionals: []
+                    };
                     $scope.covariates = [];
                     $scope.covariateList = [];
+                    $scope.additionalList = [];
                     $scope.additionals = [];
                     $scope.covariateList.push({
+                        name: "NONE", 
+                        minimum_value: -1,
+                        maximum_value: -1,
+                        covariate_type: undefined,
+                        description: "NONE"});
+                    $scope.additionalList.push({
                         name: "NONE", 
                         minimum_value: -1,
                         maximum_value: -1,
@@ -166,10 +177,6 @@ angular.module("RIF")
                         if (Array.isArray($scope.additionals) && $scope.additionals.length == 0) {
                             $scope.additionals.push("NONE");
                         }
-                        AlertService.consoleDebug("[rifc-dsub-params.js] covariates: " + 
-                            JSON.stringify($scope.covariates));
-                        AlertService.consoleDebug("[rifc-dsub-params.js] additionals: " + 
-                            JSON.stringify($scope.additionals));
                         $scope.title = ParameterStateServiceState.title;
                         $scope.sex = ParameterStateServiceState.sex;
                         $scope.startYear = Number(ParameterStateServiceState.start);
@@ -227,25 +234,41 @@ angular.module("RIF")
                         maximum_value: -1,
                         covariate_type: undefined,
                         description: "NONE"});
+                    $scope.additionalList.length = 0;
+                    $scope.additionalList.push({
+                        name: "NONE", 
+                        minimum_value: -1,
+                        maximum_value: -1,
+                        covariate_type: undefined,
+                        description: "NONE"});
                     var tmp = [];
                     if (thisGeoLevel !== "") {
                         user.getCovariates(user.currentUser, thisGeography, thisGeoLevel).then(fillHandleCovariates, handleParameterError);
                     } else {
                         return "Cannot display available covariates until you select a study resolution in Study Area";
                     }
+                    
                     function fillHandleCovariates(res) {
                         if (!angular.isUndefined(res.data)) { 
                             for (var i = 0; i < res.data.length; i++) {
                                 var description=(res.data[i].description ? 
                                         res.data[i].name + " (" + res.data[i].description + ")" : 
                                         res.data[i].name);
-                                $scope.covariateList.push({
+                                if (res.data[i].covariateType == "INTEGER_SCORE") {
+                                    $scope.covariateList.push({
+                                        name: res.data[i].name, 
+                                        minimum_value: res.data[i].minimumValue,
+                                        maximum_value: res.data[i].maximumValue, 
+                                        covariate_type: res.data[i].covariateType,
+                                        description: description});
+                                }
+                                $scope.additionalList.push({
                                     name: res.data[i].name, 
                                     minimum_value: res.data[i].minimumValue,
                                     maximum_value: res.data[i].maximumValue, 
                                     covariate_type: res.data[i].covariateType,
                                     description: description});
-                                tmp.push({
+                                tmp.push({ // possibleCovariates
                                     name: res.data[i].name, 
                                     minimum_value: res.data[i].minimumValue,
                                     maximum_value: res.data[i].maximumValue,
@@ -253,9 +276,14 @@ angular.module("RIF")
                                     description: description});
                             } // End of for loop
                             if (ParameterStateService.getState()) {
+                                tmp.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
                                 ParameterStateService.getState().possibleCovariates = tmp;
                                 AlertService.consoleDebug("[rifc-dsub-params.js] fillHandleCovariates() ParameterStateService.getState().possibleCovariates: " +
                                     JSON.stringify(ParameterStateService.getState().possibleCovariates, 0, 1));
+                                $scope.covariate.covariates = angular.copy($scope.covariates); 
+                                $scope.covariate.additionals = angular.copy($scope.additionals); 
+                                AlertService.consoleDebug("[rifc-dsub-params.js] covariates: " + 
+                                    JSON.stringify($scope.covariate));
                             }
                         }
                     }
@@ -360,12 +388,46 @@ angular.module("RIF")
                 $scope.covariatesChanged = function (covariates) {
                     AlertService.consoleDebug("[rifc-dsub-params.js] covariatesChanged() covariates: " +
                         JSON.stringify(covariates) +
-                        "; scope.covariates: " + JSON.stringify($scope.covariates));
+                        "; scope.covariate: " + JSON.stringify($scope.covariate));
+                    for (var i=0; i<covariates.length; i++) {
+                        if (covariates[i] == "NONE") {
+                            $scope.covariates.length=0;
+                            $scope.covariate.covariates=0;
+                            return;
+                        }
+                    }
+                    for (var i=0; i<covariates.length; i++) {
+                        for (var j=($scope.covariate.additionals.length-1); j>=0; j--) {
+                            if (covariates[i] == $scope.covariate.additionals[j]) { // Remove from additionals
+                                $scope.covariate.additionals.splice(j, 1);
+                                AlertService.consoleDebug("[rifc-dsub-params.js] remove additionals[" + j + "]: " +
+                                    $scope.covariate.additionals[j]);
+                            }
+                        }
+                    }
+                    $scope.additionals=angular.copy($scope.covariate.additionals);
                 }
                 $scope.additionalsChanged = function (additionals) {
                     AlertService.consoleDebug("[rifc-dsub-params.js] additionalsChanged() additionals: " +
                         JSON.stringify(additionals) +
-                        "; scope.additionals: " + JSON.stringify($scope.additionals));
+                        "; scope.covariate: " + JSON.stringify($scope.covariate));
+                    for (var i=0; i<additionals.length; i++) {
+                        if (additionals[i] == "NONE") {
+                            $scope.additionals.length=0;
+                            $scope.covariate.additionals=0;
+                            return;
+                        }
+                    }
+                    for (var i=0; i<additionals.length; i++) {
+                        for (var j=($scope.covariate.covariates.length-1); j>=0; j--) {
+                            if (additionals[i] == $scope.covariate.covariates[j]) { // Remove from covariates
+                                 AlertService.consoleDebug("[rifc-dsub-params.js] remove covariates[" + j + "]: " +
+                                    $scope.covariate.covariates[j]);
+                                $scope.covariate.covariates.splice(j, 1);
+                            }
+                        }
+                    }
+                    $scope.covariates=angular.copy($scope.covariate.covariates);
                 }
                 
                 /*
