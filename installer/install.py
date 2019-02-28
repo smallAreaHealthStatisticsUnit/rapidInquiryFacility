@@ -116,7 +116,7 @@ def main():
 
             # Some files need to have special permissions granted,
             # or the database loading steps fail.
-            set_special_db_permissions()
+            set_special_db_permissions(settings)
             db_scripts = get_windows_scripts(settings)
 
         db_created = False
@@ -680,23 +680,24 @@ def friendly_system():
     return s
 
 
-def set_special_db_permissions():
-    """Set special permissions that are needed for the Windows scripts to run.
-
-       Several scripts are used by the BULK LOAD SQL command, and the early
-       versions of this script failed because of not having permission to
-       read those scripts. The complexity is that the permission is needed
-       by the user that runs the SQL Server service, not the current user.
-       As a precaution we grant all permissions, and as we can't easily know
-       the user in question, we grant it to the special "Everyone" account.
-
-       Lastly one of the scripts creates a backup of the database, and the
-       same service user needs write access to the directory where that is
-       created.
+def set_special_db_permissions(settings):
     """
-    backup_path = base_path / "SQLserver" / "production"
-    geo_path = base_path / "GeospatialData" / "tileMaker"
-    data_loader_path = base_path / "DataLoaderData" / "SAHSULAND"
+    Set special permissions that are needed for the Windows scripts to run.
+
+    Several scripts are used by the BULK LOAD SQL command, and the early
+    versions of this script failed because of not having permission to
+    read those scripts. The complexity is that the permission is needed
+    by the user that runs the SQL Server service, not the current user.
+    As a precaution we grant all permissions, and as we can't easily know
+    the user in question, we grant it to the special "Everyone" account.
+
+    Lastly one of the scripts creates a backup of the database, and the
+    same service user needs write access to the directory where that is
+    created.
+    """
+    backup_path = settings.script_root / "SQLserver" / "production"
+    geo_path = settings.script_root / "GeospatialData" / "tileMaker"
+    data_loader_path = settings.script_root / "DataLoaderData" / "SAHSULAND"
     files_to_permit = [f for f in geo_path.glob("mssql_*") if f.is_file()]
     files_to_permit.extend(
         f for f in data_loader_path.iterdir() if f.is_file())
