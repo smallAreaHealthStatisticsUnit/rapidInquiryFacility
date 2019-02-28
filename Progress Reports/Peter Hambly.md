@@ -3351,9 +3351,9 @@ Further changes are needed to support risk analysis:
 ## Tasks:
 
 19.	Support the development of a roadmap for RIF developments in 2019 in a 2019 development roadmap document – Oct-Jan 2019. 
-    Estimated time: 1 day;
+    Estimated time: 1 day [DONE];
 20.	Support the import of Swedish geographies and data into the RIF 4.0 for Ulf Stromberg and colleagues based on the agreed 
-    timeframe – Jan 2019. Estimated time: 2-3 days;
+    timeframe – Jan 2019. Estimated time: 2-3 days [DONE: geographies: took 3 days];
 21.	Plan and commence implantation of functionality so that all the covariates available can easily be added to the data extract and 
     hence exported from the RIF 4.0. The end user should be able to specify the content and the extract must be able to contain up to 
 	10 continuous or discrete variables in compatible format for use in STATA/R or other appropriate software – Jan 2019. Estimated 
@@ -3364,16 +3364,16 @@ Further changes are needed to support risk analysis:
     Estimated time: 2-3 days;
 24.	Test and document end-users data access permissions and SQL statement auditing with middleware log examples – Jan 2019. Estimated 
     time: 2 days;
-25.	Plan and commence implementation of a front end "report", based on the visible displays in the RIF 3.2, for point source exposures 
-    (minimum displayed dataset to include observed counts, expected counts, relative risk, trend test for each site, and adjusted 
-	by region with heterogeneity testing and meta-analysis function. The content and layout should be discussed with FP – Jan 2019. 
-	Estimated time: 5-10 days;
+25.	Plan and commence implementation of a front end "report", based on the visible displays in the RIF 3.2, for point 
+    source exposures  (minimum displayed dataset to include observed counts, expected counts, relative risk, trend 
+    test for each site, and adjusted by region with heterogeneity testing and meta-analysis function. The content and layout should be discussed with FP – Jan 2019. 
+	Estimated time: 5-10 days [DONE];
 26.	Plan adding support for multiple covariates in the disease mapping and risk analysis functionalities of the RIF 4.0 – Jan 2019. 
-    Estimated time: 1 day;
+    Estimated time: 1 day [DONE];
 27.	Using a provided specification plan adding support for region-specific details around point sources – Jan 2019. Estimated time: 
     1 day;
 28.	Ensure that all IG training is completed and up to date for potential future access to SAHSU’s private network – Jan 2019. Estimated 
-    time: 1-2 days.
+    time: 1-2 days [DONE].
 
 Total time estimates for additional items 16 to 28: 18-30 days; time available: 16 days.
 
@@ -3400,3 +3400,57 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 * Covariant Loss report REST call, SQL Server fixes
 * Covariate loss report and homogeneity front end, experimental D3 chart
 * RIF meeting
+
+### 11th to 15th February
+
+* Multiple covariate database changes,. agree specification for study submission XML and enhanced REST calls;
+* RIF meeting, multiple covariate mockups;
+* Risk graph REST Call.
+
+### 18th to 22nd February
+
+* Risk graph D3/Angular integration;
+* Fixed Angular $watch call to remove continuous rebuilds of SVGs (and therefore potential leaks);
+* Scaling and size detection;
+
+### 25th February to 1st March
+
+* RIF meeting, mapping risk graphs integration;
+* Mapping risk graph directive improvements, scalability fixes;
+* Created pull #135 for issue #127 Risk Analysis specific D3 graphs. Have also fixed export info modal. D3 graphs todo 
+  is issue #134:
+
+  1. Convert to info and viewer risk graphs to using common version with a single data source. Rename rifd-util-d3riskGraph3.js to rifd-util-d3riskGraph.js and remove rifd-util-d3riskGraph2.js;
+  2. Fix info scaler to use d3.select("#???????").node().getBoundingClientRect().height/width. This removes a known bug. Also test with window resizing;
+  3. Remove non d3 code from rifs-util-d3charts.js (functionality now in rifd-util-d3riskGraph3.js), rename to rifs-util-d3riskgraph.js; 
+  4. Convert rr-zoom, dist-histo and pyramid directive so the d3 code is in a utils service and now use same the methods as rifd-util-d3riskGraph.js. Resizing should now work!
+  5. Remove rrZoomReset anti memory leak functionality. It should no longer be needed;
+  6. Multiple redraws in the mapping panes should be remove when the fetch code is all converted to use promises;
+  7. Add rr-zoom, dist-histo and pyramid to the info modal;
+  8. Add "NONE" to second gender selector in info risk graph. The work around is to set both to the same;
+
+TODO this week:
+
+* Multiple covariates front end;
+* Plans for March and April:
+  
+  Outstanding tasks:
+  
+  20. Support the import of Swedish geographies and data into the RIF 4.0 for Ulf Stromberg and colleagues based on 
+      the agreed timeframe – Jan 2019. Estimated time: 2-3 days [TODO: Data];
+  21. Plan and commence implantation of functionality so that all the covariates available can easily be added to the data extract and 
+      hence exported from the RIF 4.0. The end user should be able to specify the content and the extract must be able to contain up to 
+	  10 continuous or discrete variables in compatible format for use in STATA/R or other appropriate software – Jan 2019. Estimated 
+	  time: 5-10 days [Priority; by 13th March];
+  22. Support SAHSU’s database team as required to enable access of the RIF 4.0 to a pseudonymised version of HES and ultimately, other 
+      health databases. – Jan 2019. Estimated time: 2-3 days [Priority; by 20th March];
+  23. Set up the RIF 4.0 for linkage to SAHSU’s health database, for example through the use of template dummy data. – Jan 2019. 
+      Estimated time: 2-3 days [Priority; by 20th March];
+  24. Test and document end-users data access permissions and SQL statement auditing with middleware log examples – Jan 2019. Estimated 
+      time: 2 days [March/April];
+  27. Using a provided specification plan adding support for region-specific details around point sources – Jan 2019. Estimated time: 
+      1 day [March/April];
+
+* Also: Postcode point/area data integration      
+ 
+
