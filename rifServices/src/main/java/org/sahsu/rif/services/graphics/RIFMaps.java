@@ -74,7 +74,7 @@ import org.sahsu.rif.services.datastorage.common.SQLManager;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.w3c.dom.Document;
 
-import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
 import com.vividsolutions.jts.geom.Polygon;
 
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
@@ -112,7 +112,7 @@ public class RIFMaps {
 	private double coordinateDisplayFontSize=80.0;
 	
 	public RIFMaps(final RIFServiceStartupOptions rifServiceStartupOptions,
-			final SQLManager manager, final CachedRowSetImpl rif40Studies) {
+			final SQLManager manager, final CachedRowSet rif40Studies) {
 		
 		this.manager = manager;
 		rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
@@ -163,8 +163,8 @@ public class RIFMaps {
 	 * @param String baseStudyName,
 	 * @param String zoomLevel,
 	 * @param RIFStudySubmission rifStudySubmission,
-	 * @param CachedRowSetImpl rif40Studies,
-	 * @param CachedRowSetImpl rif40Investigations,
+	 * @param CachedRowSet rif40Studies,
+	 * @param CachedRowSet rif40Investigations,
 	 * @param Locale locale
 	 */		
 	public void writeResultsMaps(
@@ -174,8 +174,8 @@ public class RIFMaps {
 			final String baseStudyName,
 			final String zoomLevel,
 			final RIFStudySubmission rifStudySubmission,
-			final CachedRowSetImpl rif40Studies,
-			final CachedRowSetImpl rif40Investigations,
+			final CachedRowSet rif40Studies,
+			final CachedRowSet rif40Investigations,
 			final Locale locale)
 					throws Exception {
 	

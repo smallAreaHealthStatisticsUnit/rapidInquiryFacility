@@ -671,7 +671,7 @@ angular.module("RIF")
                                 CommonMappingStateService.getState("areamap").map.removeLayer($scope.geoJSON);
                             }
 
-                            var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt); //  With no x/y/z returns URL
+                            var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt, "topojson"); //  With no x/y/z returns URL
                             latlngList = []; // centroids!
                             $scope.latlngListById = []; // centroids!
                             centroidMarkers = new L.layerGroup();
@@ -723,6 +723,11 @@ angular.module("RIF")
 										promisesErrorHandler("mapInitialise", err); // Abort												
 									}).then(function (res) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] mapInitialise OK: " + 
+											(res ? res : "no status"))
+										// Add topoJSON tiles to map
+										return asyncCreateTileLayer(topojsonURL);
+									}).then(function (res) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] TileLayer OK: " + 
 											(res ? res : "no status"))
 										// Add topoJSON tiles to map
 										return asyncCreateTopoJsonLayer(topojsonURL);
@@ -1017,13 +1022,93 @@ angular.module("RIF")
 							}); // End of $q constructor
 						}
 							
+						function asyncCreateTileLayer(topojsonURL) {
+							return $q(function(resolve, reject) {
+								if ($scope.noMouseClocks && 
+								    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
+									var pngURL=topojsonURL.replace('&tileType=topojson', '&tileType=png');
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] TileLayer enabled; pngURL: " +
+										pngURL);
+                                    // Needs to handle PNG creation timeouts, e.g: https://jsfiddle.net/rendrom/0bef9r7z/                                     
+									$scope.pngTiles = new L.TileLayer(pngURL, {
+										attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+										interactive: true,
+                                        maxNativeZoom: 11 // Avoid: Error code is 'INVALID_ZOOM_FACTOR'. Message list is: 
+                                                    // '12 is an invalid zoom factor.  It must be a number in [0,11].'
+									}); // End of L.TileLayer
+									var pngTileErrorCount=0;
+                                    
+									if ($scope.pngTiles == undefined) {
+										reject("failed to create TileLayer");
+									}
+									else {
+										$scope.pngTiles.on('load', function(layer) {
+                                            var zoomLevel = CommonMappingStateService.getState("areamap").map.getZoom();
+                                            if (pngTileErrorCount > 0) {
+                                                alertScope.showWarning("PNG TileLayer loaded zoomlevel " + zoomLevel + 
+                                                    " with " + pngTileErrorCount + " errors (please re-try in one minute)");
+                                                pngTileErrorCount=0;
+                                            }
+                                            else {
+                                                alertScope.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
+                                                    " tileLayer: " + pngURL + " loaded");
+                                            }
+											resolve("topoJsonGridLayer enable areaId filtering: added TileLayer");
+										});
+										$scope.pngTiles.on('moveend', function(layer) {
+                                            var zoomLevel = CommonMappingStateService.getState("areamap").map.getZoom();
+                                            if (pngTileErrorCount > 0) {
+                                                alertScope.showWarning("Zoomlevel " + zoomLevel + 
+                                                    " PNG TileLayer moved with " + 
+                                                    pngTileErrorCount + " errors (please re-try in one minute)");
+                                                pngTileErrorCount=0;
+                                            }
+                                            else {
+                                                alertScope.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
+                                                    " tileLayer: " + pngURL + " moved");
+                                            }
+										});
+										$scope.pngTiles.on('zoomend', function(layer) {
+                                            var zoomLevel = CommonMappingStateService.getState("areamap").map.getZoom();
+                                            if (pngTileErrorCount > 0) {
+                                                alertScope.showWarning("Zoomlevel " + zoomLevel + 
+                                                    " PNG TileLayer zoomed with " + 
+                                                    pngTileErrorCount + " errors (please re-try in one minute)");
+                                                pngTileErrorCount=0;
+                                            }
+                                            else {
+                                                alertScope.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
+                                                    " tileLayer: " + pngURL + " zoomed");
+                                            }
+										});
+										$scope.pngTiles.on('tileerror', function(error) {
+                                            var zoomLevel = CommonMappingStateService.getState("areamap").map.getZoom();
+                                            pngTileErrorCount++;
+											alertScope.consoleError("[rifc-util-mapping.js] Error[" + pngTileErrorCount + 
+                                                "]: loading PNG tile using URL: " + pngURL +
+                                                "; zoomLevel: " + zoomLevel + 
+                                                "; error: " + ((error && error.message && error.error.message) ? error.error.message : "N/A") +
+                                                "; tile coordinates: " + 
+                                                ((error && error.coords) ? JSON.stringify(error.coords) : "UNK"));	
+						
+										});
+										CommonMappingStateService.getState("areamap").map.addLayer($scope.pngTiles);
+									}
+								}
+								else {
+									resolve("topoJsonGridLayer enable areaId filtering disabled");
+								}
+							});							
+						}
+						
 						function asyncCreateTopoJsonLayer(topojsonURL) {
 							$scope.geoJSONLoadCount=0;
 							return $q(function(resolve, reject) {
 								
 								var latlngListDups=0;
 								var areaIdObj={};
-								if ($scope.noMouseClocks && CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
+								if ($scope.noMouseClocks && 
+								    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering");
 									areaIdObj=CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name);
 								}
@@ -1041,6 +1126,8 @@ angular.module("RIF")
 								   },
                                    attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
                                    interactive: true,
+                                   maxNativeZoom: 11, // Avoid: Error code is 'INVALID_ZOOM_FACTOR'. Message list is: 
+                                                // '12 is an invalid zoom factor.  It must be a number in [0,11].'
 								   layers: {
                                         default: {
                                             renderer: L.canvas(),

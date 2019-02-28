@@ -11,7 +11,7 @@ import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
 
-import com.sun.rowset.CachedRowSetImpl;
+import javax.sql.rowset.CachedRowSet;
 
 public interface SQLManager {
 
@@ -31,27 +31,36 @@ public interface SQLManager {
 			Connection connection,
 			QueryFormatter queryFormatter)
 		throws SQLException;
-	
-	CachedRowSetImpl createCachedRowSet(
+        
+	String jsonCapitalise(String name);
+     
+	CachedRowSet createCachedRowSet(
 			Connection connection,
 			QueryFormatter queryFormatter,
 			String queryName)
 				throws Exception;
 	
-	CachedRowSetImpl createCachedRowSet(
+	CachedRowSet createCachedRowSet(
 			Connection connection,
 			QueryFormatter queryFormatter,
 			String queryName,
 			int[] params)
 				throws Exception;
+				
+	CachedRowSet createCachedRowSet(
+			Connection connection,
+			QueryFormatter queryFormatter,
+			String queryName,
+			String[] params)
+				throws Exception;
 	
 	String getColumnFromResultSet(
-			CachedRowSetImpl cachedRowSet,
+			CachedRowSet cachedRowSet,
 			String columnName)
 			throws Exception;
 	
 	String getColumnFromResultSet(
-			CachedRowSetImpl cachedRowSet,
+			CachedRowSet cachedRowSet,
 			String columnName,
 			boolean allowNulls,
 			boolean allowNoRows)
@@ -60,7 +69,27 @@ public interface SQLManager {
 	String getColumnComment(Connection connection,
 			String schemaName, String tableName, String columnName)
 			throws SQLException;
-	
+			
+	CachedRowSet getRifViewData(
+			final Connection connection,
+			final boolean columnsAreString,
+			final String columnName1,
+			final String columnValue1,
+			final String tableName,
+			final String columnList)
+			throws Exception;
+			
+	CachedRowSet getRifViewData(
+			final Connection connection,
+			final boolean columnsAreString,
+			final String columnName1,
+			final String columnValue1,
+			final String columnName2,
+			final String columnValue2,
+			final String tableName,
+			final String columnList)
+			throws Exception;
+			
 	void enableDatabaseDebugMessages(
 			Connection connection)
 		throws RIFServiceException;

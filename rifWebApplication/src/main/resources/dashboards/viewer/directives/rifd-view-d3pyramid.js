@@ -60,6 +60,13 @@ angular.module("RIF")
 
                     scope.renderBase = function () {
 
+                        if (angular.isUndefined(scope.width)) {
+                            scope.width=150;
+                        }
+                        if (angular.isUndefined(scope.height)) {
+                            scope.height=150;
+                        }
+                        
                         /* General dimensions of canvas */
                         var margins = {top: 60, right: 60, bottom: 80, left: 80};
                         var chartWidth = scope.width - margins.left - margins.right;

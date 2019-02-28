@@ -359,7 +359,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
 		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(min_condition) AS total");
 		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
-		countTableRowsQueryFormatter.addQueryLine(1, "rif40_inv_conditions");
+		countTableRowsQueryFormatter.addQueryLine(1, "rif40.rif40_inv_conditions");
 		countTableRowsQueryFormatter.addQueryLine(1, "WHERE study_id = ?");
 
 		SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(

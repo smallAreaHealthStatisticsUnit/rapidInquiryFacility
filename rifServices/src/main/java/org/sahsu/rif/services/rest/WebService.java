@@ -770,6 +770,84 @@ public class WebService {
 		return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
 	}
 
+	protected Response getHomogeneity(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {
+		String result;
+
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService =
+					getRIFStudyResultRetrievalService();
+
+			result = studyResultRetrievalService.getHomogeneity(
+					user, studyID);
+
+		} catch(Exception exception) {
+			rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getHomogeneity error", exception);
+			result = serialiseException(servletRequest, exception);
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+
+	protected Response getRiskGraph(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {
+		String result;
+
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService =
+					getRIFStudyResultRetrievalService();
+
+			result = studyResultRetrievalService.getRiskGraph(
+					user, studyID);
+
+		} catch(Exception exception) {
+			rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getRiskGraph error", exception);
+			result = serialiseException(servletRequest, exception);
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+
+	protected Response getCovariateLossReport(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) {
+		String result;
+
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService =
+					getRIFStudyResultRetrievalService();
+
+			result = studyResultRetrievalService.getCovariateLossReport(
+					user, studyID);
+
+		} catch(Exception exception) {
+			rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getCovariateLossReport error", exception);
+			result = serialiseException(servletRequest, exception);
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+	}
+
 	protected Response getSelectState(
 			final HttpServletRequest servletRequest,
 			final String userID,
@@ -1014,7 +1092,8 @@ public class WebService {
 			final String geoLevelSelectName,
 			final Integer zoomlevel,
 			final Integer x,
-			final Integer y) {
+			final Integer y,
+			final String tileType) {
 
 		String result;
 
@@ -1034,7 +1113,8 @@ public class WebService {
 					geoLevelSelect,
 					zoomlevel,
 					x,
-					y);
+					y,
+					tileType);
 		} catch (Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
 			                                 ".getTileMakerTiles error", exception);

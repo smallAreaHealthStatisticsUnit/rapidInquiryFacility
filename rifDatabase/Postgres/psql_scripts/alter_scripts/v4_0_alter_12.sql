@@ -15,7 +15,7 @@
 --
 -- Description:
 --
--- Rapid Inquiry Facility (RIF) - RIF alter script 12 - More risk Analysis Enhancements, additional covariate support; 
+-- Rapid Inquiry Facility (RIF) - RIF alter script 12 - More risk Analysis Enhancements, additional covariate support;
 --
 -- Copyright:
 --
@@ -60,7 +60,7 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Running SAHSULAND schema alter script #12 More risk Analysis Enhancements, additional covariate support; ; 
+\echo Running SAHSULAND schema alter script #12 More risk Analysis Enhancements, additional covariate support; ;
 
 /*
 
@@ -68,7 +68,7 @@
 
  1. rif40_homogeneity view grants
  2. Additional covariate support
- 
+
  */
 BEGIN;
 
@@ -263,6 +263,7 @@ SELECT geography, covariate_name, covariate_type, COUNT(*) AS total
 --
 -- Testing stop
 --
+
 DO LANGUAGE plpgsql $$
 BEGIN
 	RAISE EXCEPTION 'Stop processing';

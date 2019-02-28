@@ -434,8 +434,9 @@ public class StudyResultRetrievalServiceResource extends WebService {
 			@QueryParam("geoLevelSelectName") String geoLevelSelectName, //LEVEL2
 			@QueryParam("zoomlevel") Integer zoomlevel,	//3
 			@QueryParam("x") Integer x, //3
-			@QueryParam("y") Integer y) { //2
-
+			@QueryParam("y") Integer y, //2 
+			@QueryParam("tileType") String tileType /* null (topojson), topojson, geojson or png */) 
+				{
 		return super.getTileMakerTiles(
 				servletRequest,
 				userID,
@@ -443,7 +444,8 @@ public class StudyResultRetrievalServiceResource extends WebService {
 				geoLevelSelectName,
 				zoomlevel,
 				x,
-				y);
+				y,
+				tileType);
 	}
 
 	@GET
@@ -475,6 +477,42 @@ public class StudyResultRetrievalServiceResource extends WebService {
 		return super.getMapBackground(servletRequest, userID, geographyName);
 	}	
 		
+	@GET
+	@Produces({"application/json"})
+	@Path("/getHomogeneity")
+	public Response getHomogeneity(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID
+			) { 
+
+		return super.getHomogeneity(servletRequest, userID, studyID);
+	}	
+	
+	@GET
+	@Produces({"application/json"})
+	@Path("/getCovariateLossReport")
+	public Response getCovariateLossReport(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID
+			) { 
+
+		return super.getCovariateLossReport(servletRequest, userID, studyID);
+	}	
+	
+	@GET
+	@Produces({"application/json"})
+	@Path("/getRiskGraph")
+	public Response getRiskGraph(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID
+			) { 
+
+		return super.getRiskGraph(servletRequest, userID, studyID);
+	}		
+	
 	@GET
 	@Produces({"application/json"})
 	@Path("/getSelectState")

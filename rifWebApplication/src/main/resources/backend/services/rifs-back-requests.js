@@ -212,10 +212,13 @@ angular.module("RIF")
                 };
                 //get the map tiles from Tile-Maker
                 //returns a string not a promise, is resolved in Leaflet GridLayer
-                self.getTileMakerTiles = function (username, geography, geoLevel) {
+                self.getTileMakerTiles = function (username, geography, geoLevel, tileType) {
+					if (tileType && tileType != "geojson" && tileType != "topojson" && tileType != "png") {
+						throw new Error("Invalid tileType: " + tileType);
+					}
                     //'http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}';
                     return (servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
-                            '&zoomlevel={z}&x={x}&y={y}');
+                            '&zoomlevel={z}&x={x}&y={y}&tileType=' + (tileType || 'topojson')); // String 
                 };
                 //get 'global' geography for attribute table (DO NOT USE THE TILE DATA AT HIGH RESOLUTIONS; SMALL AREAS WILL HAVE BEEN OPTIMISED OUT
 				// self.getTileMakerAttributes is a replacement
@@ -223,7 +226,7 @@ angular.module("RIF")
                 self.getTileMakerTilesAttributes = function (username, geography, geoLevel) {
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + 
 							'&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
-                            '&zoomlevel=1&x=0&y=0', config);
+                            '&zoomlevel=1&x=0&y=0&tileType=topojson', config);
                 };
                 //get 'global' geography attribute table
 				/* Instead of the topoJSON tile returned by getTileMakerTiles... it returns:
@@ -242,7 +245,7 @@ angular.module("RIF")
                 };				
                 //get all the centroids for the current geolevel
                 self.getTileMakerCentroids = function (username, geography, geoLevel) {
-                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getTileMakerCentroids?userID=dwmorley&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL4
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerCentroids?userID=dwmorley&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL4
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerCentroids?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel);
                 };
 				
@@ -262,17 +265,17 @@ angular.module("RIF")
                 };
                 //get details of a completed study
                 self.getDetailsForProcessedStudy = function (username, studyID) {
-                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getDetailsForProcessedStudy?userID=dwmorley&studyID=35
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getDetailsForProcessedStudy?userID=dwmorley&studyID=35
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getDetailsForProcessedStudy?userID=' + username + '&studyID=' + studyID);
                 };
                 //get health codes used in a completed study
                 self.getHealthCodesForProcessedStudy = function (username, studyID) {
-                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getHealthCodesForProcessedStudy?userID=dwmorley&studyID=35
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getHealthCodesForProcessedStudy?userID=dwmorley&studyID=35
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getHealthCodesForProcessedStudy?userID=' + username + '&studyID=' + studyID);
                 };
                 //get map or extract table preview of a completed study
                 self.getStudyTableForProcessedStudy = function (username, studyID, type, stt, stp) {
-                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getStudyTableForProcessedStudy?userID=dwmorley&studyID=35&type=extract&stt=2&stp=100
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getStudyTableForProcessedStudy?userID=dwmorley&studyID=35&type=extract&stt=2&stp=100
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getStudyTableForProcessedStudy?userID=' + username + '&studyID=' + studyID +
                             '&type=' + type + '&stt=' + stt + '&stp=' + stp);
                 };
@@ -301,17 +304,32 @@ angular.module("RIF")
 
 				// Get map background
 				self.getMapBackground = function (username, geography) {
-                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getMapBackground?userID=dwmorley&geography=sahsuland
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getMapBackground?userID=dwmorley&geography=sahsuland
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getMapBackground?userID=' + username + '&geographyName=' + geography);
                 };   		
 				// Get JSON study select state
 				self.getSelectState = function (username, studyID) {
-                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getSelectState?userID=dwmorley&studyID=46
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getSelectState?userID=dwmorley&studyID=46
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getSelectState?userID=' + username + '&studyID=' + studyID);
+                };  		
+				// Get the rif40_homogeneity data for a study
+				self.getHomogeneity = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getHomogeneity?userID=peter&studyID=55
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getHomogeneity?userID=' + username + '&studyID=' + studyID);
+                };   		
+				// Get Covariate Loss Report
+				self.getCovariateLossReport = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getCovariateLossReport?userID=dwmorley&studyID=46
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getCovariateLossReport?userID=' + username + '&studyID=' + studyID);
+                };  		
+				// Get Risk Graph
+				self.getRiskGraph = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getRiskGraph?userID=dwmorley&studyID=46
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getRiskGraph?userID=' + username + '&studyID=' + studyID);
                 };   		
 				// Get JSON study print state
 				self.getPrintState = function (username, studyID) {
-                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getPrintState?userID=dwmorley&studyID=46
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getPrintState?userID=dwmorley&studyID=46
                     return $http.get(servicesConfig.studyResultRetrievalURL + 'getPrintState?userID=' + username + '&studyID=' + studyID);
                 }; 
 				// Set JSON study print state

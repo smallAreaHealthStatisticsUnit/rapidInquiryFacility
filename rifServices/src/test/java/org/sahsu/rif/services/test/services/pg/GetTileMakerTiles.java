@@ -130,7 +130,8 @@ public final class GetTileMakerTiles extends CommonRIFServiceTestCase {
 				validGeoLevelSelect,
 				validZoomFactor,
 				validXtile,
-				validYtile);
+				validYtile,
+				"geojson");
 		assertNotNull(result);
 
 		System.out.println(result);

@@ -91,10 +91,17 @@ HTML partial disease mapping
             <div ui-layout-container class="leaflet-box" id="hSplit1" max-size="100%" size="{{hSplit1}}%">
                 <div id="diseasemap1"></div>
             </div>
-            <div ui-layout-container class="rr-back" id="rr1" max-size="100%">            
-                <!--d3 RR chart1 and table data -->
-                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="diseasemap1"></button>
-                <rr-zoom id="rrMap1" chart-data="rrChartData['diseasemap1']" options="optionsRR['diseasemap1']" width="currentWidth1" height="currentHeight1"></rr-zoom>           
+            <div ui-layout-container class="rr-back" id="rr1" max-size="100%">   
+                <div ng-show="isDiseaseMappingStudy['diseasemap1']">         
+                    <!--d3 RR chart1 and table data -->
+                    <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="diseasemap1"></button>
+                    <rr-zoom id="rrMap1" chart-data="rrChartData['diseasemap1']" options="optionsRR['diseasemap1']" width="currentWidth1" height="currentHeight1"></rr-zoom>           
+                </div>  
+                <div ng-hide="isDiseaseMappingStudy['diseasemap1']">      
+                    <div id="riskGraph3Tooltip"></div>
+                    <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="riskGraph3"></button>
+                    <risk-graph3 risk-graph-data="riskGraphData3['diseasemap1']"></risk-graph3> 
+                </div>
             </div>
         </div>
     </div>
@@ -103,10 +110,17 @@ HTML partial disease mapping
             <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
                 <div id="diseasemap2"></div>
             </div>
-            <div ui-layout-container class="rr-back" id="rr2" max-size="100%">            
-                <!--d3 RR chart2 and table data -->
-                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="diseasemap2"></button>
-                <rr-zoom id="rrMap2" chart-data="rrChartData['diseasemap2']" options="optionsRR['diseasemap2']" width="currentWidth2" height="currentHeight2"></rr-zoom>    
+            <div ui-layout-container class="rr-back" id="rr2" max-size="100%">     
+                <div ng-show="isDiseaseMappingStudy['diseasemap2']">       
+                    <!--d3 RR chart2 and table data -->
+                    <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="diseasemap2"></button>
+                    <rr-zoom id="rrMap2" chart-data="rrChartData['diseasemap2']" options="optionsRR['diseasemap2']" width="currentWidth2" height="currentHeight2"></rr-zoom>    
+                </div>  
+                <div ng-hide="isDiseaseMappingStudy['diseasemap2']">      
+                    <div id="riskGraph4Tooltip"></div>
+                    <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="riskGraph4"></button>
+                    <risk-graph3 risk-graph-data="riskGraphData3['diseasemap2']"></risk-graph3> 
+                </div>
             </div>
         </div>
     </div>

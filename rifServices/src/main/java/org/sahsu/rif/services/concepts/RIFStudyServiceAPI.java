@@ -25,6 +25,16 @@ public interface RIFStudyServiceAPI {
 			RIFServiceException rifServiceException)
 										throws RIFServiceException;
 
+	String getTileMakerTiles(
+			User _user,
+			Geography _geography,
+			GeoLevelSelect _geoLevelSelect,
+			Integer zoomlevel,
+			Integer x,
+			Integer y,
+			String tileType)
+		throws RIFServiceException;
+
 	String getTileMakerAttributes(
 			User _user,
 			Geography _geography,
@@ -32,15 +42,6 @@ public interface RIFStudyServiceAPI {
 								throws RIFServiceException;
 
 	void setServiceName(String serviceName);
-
-	String getTileMakerTiles(
-			User _user,
-			Geography _geography,
-			GeoLevelSelect _geoLevelSelect,
-			Integer zoomlevel,
-			Integer x,
-			Integer y)
-								throws RIFServiceException;
 
 	RIFResultTable getTileMakerCentroids(
 			User _user,
@@ -70,6 +71,21 @@ public interface RIFStudyServiceAPI {
 			User _user,
 			String studyID)
 					throws RIFServiceException;
+
+	String getHomogeneity(
+			User _user,
+			String studyID)
+			throws RIFServiceException;
+
+	String getCovariateLossReport(
+			User _user,
+			String studyID)
+			throws RIFServiceException;
+
+	String getRiskGraph(
+			User _user,
+			String studyID)
+			throws RIFServiceException;
 
 	String getSelectState(
 			User _user,
