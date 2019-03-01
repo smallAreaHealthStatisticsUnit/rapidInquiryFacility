@@ -3428,11 +3428,9 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
   6. Multiple redraws in the mapping panes should be remove when the fetch code is all converted to use promises;
   7. Add rr-zoom, dist-histo and pyramid to the info modal;
   8. Add "NONE" to second gender selector in info risk graph. The work around is to set both to the same;
-* Merged pull #118 and #135. Updated multiple covariate branch: issue/#124_Add_support_for_multiple_covariates
-
-TODO this week:
-
+* Merged pull #118 and #135. Updated multiple covariate branch: issue/#124_Add_support_for_multiple_covariates;
 * Multiple covariates front end;
+
 * Plans for March and April:
   
   Outstanding tasks:
@@ -3451,7 +3449,29 @@ TODO this week:
       time: 2 days [March/April];
   27. Using a provided specification plan adding support for region-specific details around point sources – Jan 2019. Estimated time: 
       1 day [March/April];
+	  This is [Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
+	  Currently the RIF analyses there in N bands with all the sites as one. It is proposed to extend the RIF to support:
+	  * Individual site analysis;
+	  * Pooled analysis (1 or more groups of sites). Groups would be defined from a categorisation variable in the shapefile. Would require 
+		changes to:
+		* Shapefile load screen and controller;
+		* JSON study definition format;  
+		* Study extract and result tables;
+		* R risk analysis code.
+	  
+* For the work queue when the above are complete: 
+  * Postcode point/area data integration;
+  * Issue #89 Local caching of base maps 
+  * Issue #134 D3 graphs todo; 
+  * Issue #130 Risk analysis fault/issues (branch: risk-analysis-fixes-2); 
+  * Issue #66 GeoJSON mouse over support with shapefile shapes
+  * Issue #75 IE 11 only works with a browser console only;
+  * Issue #66 GeoJSON mouse over support with shapefile shapes;
+  
+### 4th to 8th March
 
-* Also: Postcode point/area data integration      
+TODO this week:
+* Swedish Data;
+   
  
 
