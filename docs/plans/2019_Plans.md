@@ -138,7 +138,7 @@ These are a priority for end of February 2019, in priority order:
   * Confirm multiple covariates appear in the extract and in the data viewer extract table;
   
 * [Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
-  Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
+  Currently the RIF analyses there in N bands with all the sites as one. It is proposed to extend the RIF to support:
   * Individual site analysis;
   * Pooled analysis (1 or more groups of sites). Groups would be defined from a categorisation variable in the shapefile. Would require 
     changes to:
