@@ -50,6 +50,7 @@ import org.sahsu.rif.services.datastorage.common.SampleTestObjectGenerator;
 import org.sahsu.rif.services.datastorage.common.ServiceBundle;
 import org.sahsu.rif.services.datastorage.common.ServiceResources;
 import org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLWriter;
+import org.sahsu.rif.services.graphics.RIFTilesException;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
@@ -1096,12 +1097,17 @@ public class WebService {
 			final String tileType) {
 
 		String result;
+		boolean isAnError=false;
 
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect = GeoLevelSelect.newInstance(geoLevelSelectName);
+
+			if (tileType != null && !tileType.equals("geojson") && !tileType.equals("topojson") && !tileType.equals("png")) {
+				throw new Exception("Invalid tileType: " + tileType);
+			}
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
@@ -1115,7 +1121,17 @@ public class WebService {
 					x,
 					y,
 					tileType);
-		} catch (Exception exception) {
+		}
+		catch(RIFTilesException rifTilesException) {
+			isAnError=true;
+			rifLogger.warning(this.getClass(), rifTilesException.getMessage());
+			result
+				= serialiseException(
+					servletRequest,
+					rifTilesException);
+		}
+		catch(Exception exception) {
+			isAnError=true;
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
 			                                 ".getTileMakerTiles error", exception);
 			result
@@ -1124,9 +1140,19 @@ public class WebService {
 					exception);
 		}
 
-		return webServiceResponseGenerator.generateWebServiceResponse(
+		Response response;
+		if (!isAnError && tileType != null && tileType.equals("png")) { // PNG tile create
+			response = webServiceResponseGenerator.generateWebServicePngResponse(
 				servletRequest,
 				result);
+	}
+		else { // Usual JSON response
+			response = webServiceResponseGenerator.generateWebServiceResponse(
+					servletRequest,
+					result);
+		}
+
+		return response;
 	}
 
 	Response getStudySubmission(

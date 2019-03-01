@@ -14,50 +14,50 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Geography geography,
 			final GeoLevelSelect geoLevelSelect)
 					throws RIFServiceException;
-					
+
 	String getMapBackground(
 			final User user,
 			final Geography geography)
 					throws RIFServiceException;
-					
+
 	String getHomogeneity(
 			final User user,
 			final String studyID)
-					throws RIFServiceException;	
-					
+					throws RIFServiceException;
+
 	String getCovariateLossReport(
 			final User user,
 			final String studyID)
-					throws RIFServiceException;		
-					
+					throws RIFServiceException;
+
 	String getRiskGraph(
 			final User user,
 			final String studyID)
-					throws RIFServiceException;		
-					
+					throws RIFServiceException;
+
 	String getSelectState(
 			final User user,
 			final String studyID)
-					throws RIFServiceException;	
-					
+					throws RIFServiceException;
+
 	String getPrintState(
 			final User user,
 			final String studyID)
-					throws RIFServiceException;		
-					
+					throws RIFServiceException;
+
 	void setPrintState(
 			final User user,
 			final String studyID,
 			final String printStateText)
-					throws RIFServiceException;		
-					
+					throws RIFServiceException;
+
 	String getPostalCodes(
 			final User user,
 			final Geography geography,
 			final String postcode,
 			final Locale locale)
-					throws RIFServiceException;		
-					
+					throws RIFServiceException;
+
 	String getPostalCodeCapabilities(
 			final User user,
 			final Geography geography)
@@ -78,7 +78,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Geography geography,
 			final GeoLevelSelect geoLevelSelect)
 					throws RIFServiceException;
-					
+
 	ArrayList<Integer> getYearsForStudy(
 			final User user,
 			final String studyID)
@@ -97,7 +97,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	RIFResultTable getSmoothedResults(
 			final User user,
 			final String studyID,
-			final String sex) 
+			final String sex)
 					throws RIFServiceException;
 
 	RIFResultTable getPopulationPyramidData(
@@ -114,7 +114,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final User user,
 			final String studyID)
 					throws RIFServiceException;
-	
+
 	RIFResultTable getStudyTableForProcessedStudy(
 			final User user,
 			final String studyID,
@@ -122,10 +122,11 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final String stt,
 			final String stp)
 					throws RIFServiceException;
-	
+
 	String[] getHealthCodesForProcessedStudy(
 			final User user,
 			final String studyID)
 					throws RIFServiceException;
 
+	RIFServiceInformation getRIFServiceInformation(User user) throws RIFServiceException;
 }

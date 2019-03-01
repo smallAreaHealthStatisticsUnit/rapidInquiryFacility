@@ -481,6 +481,11 @@ def get_pg_scripts(settings):
                                             "v4_0_alter_11.sql",
                                             db="sahsuland",
                                             user=settings.db_owner_name)
+    alter12_script = format_postgres_script(settings, script_template,
+                                            script_root / "alter_scripts",
+                                            "v4_0_alter_12.sql",
+                                            db="sahsuland",
+                                            user=settings.db_owner_name)
 
     return [(s, script_root) for s in [main_script, sahsuland_script,
                                        dump_script, restore_script,
@@ -491,7 +496,7 @@ def get_pg_scripts(settings):
                                        #alter6_script,
                                        alter7_script, alter8_script,
                                        alter9_script, alter10_script,
-                                       alter11_script]
+                                       alter11_script, alter12_script]
             ]
 
 
