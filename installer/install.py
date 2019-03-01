@@ -103,7 +103,7 @@ def main():
         # This sends output to the specified file as well as stdout.
         outfile = Tee("install.log")
         sys.stdout = outfile
-        sys.stderr = outfile
+        # sys.stderr = outfile
 
         # Run SQL scripts
         if settings.db_type == "pg":
@@ -127,7 +127,7 @@ def main():
             process = subprocess.run(script.split(), cwd=parent,
                                      # capture_output=True,
                                      stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT,
                                      text=True)
 
             print(process.stdout)
