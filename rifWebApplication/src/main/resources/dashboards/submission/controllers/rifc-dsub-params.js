@@ -385,49 +385,61 @@ angular.module("RIF")
                     }
                 };
 
+                
                 $scope.covariatesChanged = function (covariates) {
                     AlertService.consoleDebug("[rifc-dsub-params.js] covariatesChanged() covariates: " +
                         JSON.stringify(covariates) +
                         "; scope.covariate: " + JSON.stringify($scope.covariate));
-                    for (var i=0; i<covariates.length; i++) {
-                        if (covariates[i] == "NONE") {
-                            $scope.covariates.length=0;
-                            $scope.covariate.covariates=0;
-                            return;
-                        }
-                    }
-                    for (var i=0; i<covariates.length; i++) {
-                        for (var j=($scope.covariate.additionals.length-1); j>=0; j--) {
-                            if (covariates[i] == $scope.covariate.additionals[j]) { // Remove from additionals
-                                $scope.covariate.additionals.splice(j, 1);
-                                AlertService.consoleDebug("[rifc-dsub-params.js] remove additionals[" + j + "]: " +
-                                    $scope.covariate.additionals[j]);
-                            }
-                        }
-                    }
-                    $scope.additionals=angular.copy($scope.covariate.additionals);
+                    multipleCovariateChange(covariates, "covariates", "additionals");
                 }
+
                 $scope.additionalsChanged = function (additionals) {
                     AlertService.consoleDebug("[rifc-dsub-params.js] additionalsChanged() additionals: " +
                         JSON.stringify(additionals) +
                         "; scope.covariate: " + JSON.stringify($scope.covariate));
-                    for (var i=0; i<additionals.length; i++) {
-                        if (additionals[i] == "NONE") {
-                            $scope.additionals.length=0;
-                            $scope.covariate.additionals=0;
-                            return;
+                    multipleCovariateChange(additionals, "additionals", "covariates");
+                }
+                
+                function multipleCovariateChange(covariatesOrAdditionals, myTag, otherTag) {
+
+                    // None means NONE
+                    for (var i=0; i<covariatesOrAdditionals.length; i++) {
+                        if (covariatesOrAdditionals[i] == "NONE") {
+                            $scope[myTag].length=0;
+                            $scope.covariate[myTag].length=0;
                         }
                     }
-                    for (var i=0; i<additionals.length; i++) {
-                        for (var j=($scope.covariate.covariates.length-1); j>=0; j--) {
-                            if (additionals[i] == $scope.covariate.covariates[j]) { // Remove from covariates
-                                 AlertService.consoleDebug("[rifc-dsub-params.js] remove covariates[" + j + "]: " +
-                                    $scope.covariate.covariates[j]);
-                                $scope.covariate.covariates.splice(j, 1);
+                    // Add remove NONE from param state list
+                    if ($scope.covariate[myTag][0] == "NONE") {
+                        $scope.covariate[myTag].splice(0, 1);
+                    }
+                    // Remove covariate from other list
+                    for (var i=0; i<covariatesOrAdditionals.length; i++) {
+                        for (var j=($scope.covariate[otherTag].length-1); j>=0; j--) {
+                            if (covariatesOrAdditionals[i] == $scope.covariate[otherTag][j]) { // Remove from additionals
+                                $scope.covariate[otherTag].splice(j, 1);
+                                AlertService.consoleDebug("[rifc-dsub-params.js] remove " + otherTag + "[" + j + "]: " +
+                                    $scope.covariate[otherTag][j]);
                             }
                         }
                     }
-                    $scope.covariates=angular.copy($scope.covariate.covariates);
+                    
+                    // Add in NONE if list empty
+                    if ($scope.covariate.additionals.length == 0) {
+                        $scope.covariate.additionals = ["NONE"];
+                    }
+                    if ($scope.covariate.covariates.length == 0) {
+                        $scope.covariate.covariates = ["NONE"];
+                    }             
+
+                    // Sync modal list $scope.covariate with ParameterStateService lists: $scope.additionals, $scope.covariates          
+                    $scope.additionals=angular.copy($scope.covariate.additionals);
+                    $scope.covariates=angular.copy($scope.covariate.covariates); 
+
+                    AlertService.consoleDebug("[rifc-dsub-params.js] multipleCovariateChange() $scope.covariate: " +
+                        JSON.stringify($scope.covariate) +
+                        "; scope.covariates: " + JSON.stringify($scope.covariates) +
+                        "; scope.additionals: " + JSON.stringify($scope.additionals));                    
                 }
                 
                 /*

@@ -158,7 +158,7 @@ angular.module("RIF")
                                         }
                                     }                                    
                                     for (var k = 0; k < s.additionals.length; k++) {
-                                        if (s.possibleCovariates[i].name === s.additionals[j] &&
+                                        if (s.possibleCovariates[i].name === s.additionals[k] &&
                                             s.possibleCovariates[i].name != "NONE") {
                                             
                                             if (s.possibleCovariates[i].covariate_type == "CONTINUOUS_VARIABLE") {
@@ -183,6 +183,7 @@ angular.module("RIF")
                                         }
                                     }
                                     
+                                    // Sort alphabetically
                                     thisInv.covariates.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
                                     thisInv.additionals.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
                                 }

@@ -1458,7 +1458,7 @@ getParameter("p 1")     yes     c d
 			reader.close();
 
 			JSONObject jsonObject = new JSONObject(buffer.toString());
-			rifLogger.debug(this.getClass(),
+			rifLogger.info(this.getClass(),
 			                "ARWS - JSON from UI==" + lineSeparator + jsonObject.toString(2)
 			                + lineSeparator + "==");
 
