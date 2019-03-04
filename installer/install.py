@@ -488,74 +488,29 @@ def get_pg_scripts(settings):
     dump_script = format_postgres_script(settings, dump_template,
                                          script_root, "", db="sahsuland_dev")
     restore_script = format_postgres_script(settings, restore_template,
-                                            script_root, "", db="sahsuland")
-    alter1_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_1.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter2_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_2.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter3_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_3.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter4_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_4.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter5_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_5.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter6_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_6.sql",
-                                           user=settings.db_owner_name,
-                                           db="sahsuland")
-    alter7_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_7.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter8_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_8.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter9_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_9.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter10_script = format_postgres_script(settings, script_template,
-                                            script_root / "alter_scripts",
-                                            "v4_0_alter_10.sql",
-                                            db="sahsuland",
-                                            user=settings.db_owner_name)
-    alter11_script = format_postgres_script(settings, script_template,
-                                            script_root / "alter_scripts",
-                                            "v4_0_alter_11.sql",
-                                            db="sahsuland",
-                                            user=settings.db_owner_name)
+                                            script_root, "",
+                                            db=settings.db_name)
 
-    return [(s, script_root) for s in [main_script, sahsuland_script,
-                                       dump_script, restore_script,
-                                       alter1_script, alter2_script,
-                                       # alter3_script,
-                                       # alter4_script,
-                                       alter5_script,
-                                       # alter6_script,
-                                       alter7_script, alter8_script,
-                                       alter9_script, alter10_script,
-                                       alter11_script]
-            ]
+    # Note that not all the numbered scripts are used here, because some
+    # would not run -- and did not seem to be necessary -- at the time of
+    # writing, which was Feb-Mar 2019.
+    alter_script_names = ["v4_0_alter_1.sql", "v4_0_alter_2.sql",
+                          "v4_0_alter_5.sql", "v4_0_alter_7.sql",
+                          "v4_0_alter_8.sql", "v4_0_alter_9.sql",
+                          "v4_0_alter_10.sql", "v4_0_alter_11.sql",
+                          "v4_0_alter_12.sql"]
+
+    alter_scripts = [format_postgres_script(settings, script_template,
+                                            script_root / "alter_scripts",
+                                            script_name,
+                                            db=settings.db_name,
+                                            user=settings.db_owner_name)
+                     for script_name in alter_script_names]
+
+    scripts = [main_script, sahsuland_script, dump_script, restore_script]
+    scripts.extend(alter_scripts)
+
+    return [(script, script_root) for script in scripts]
 
 
 def format_postgres_script(settings, template, script_root, script_name,
