@@ -92,7 +92,6 @@ ECHO #
 ECHO # Test user: %NEWUSER%; password: %NEWPW%
 ECHO #
 ECHO ##########################################################################################
-PAUSE
 
 REM
 REM Create production database

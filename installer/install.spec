@@ -19,6 +19,9 @@ installer_names = {"Linux": "rifInstaller_linux",
                    "Windows": "rifInstaller"}
 installer_name = installer_names[platform.system()]
 
+# Set stdout and stderr as unbuffered
+options = [('u', None, 'OPTION')]
+
 a = Analysis(['install.py'],
             pathex=['.'],
             binaries=[],
@@ -38,7 +41,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          [],
+          options,
           name=installer_name,
           debug=False,
           bootloader_ignore_signals=False,
