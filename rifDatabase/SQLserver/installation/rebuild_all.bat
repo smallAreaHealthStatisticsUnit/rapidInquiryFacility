@@ -54,7 +54,7 @@ if %errorlevel% equ 0 (
 	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
 	if %errorlevel% neq 0 {
 		ECHO NOT AN ADMIN!
-		exit /b 1
+		exit 1
 	}
 	else {
 		ECHO Power user PRIVILEGES Detected! 
@@ -76,7 +76,7 @@ REM
 REM Get DB settings
 REM
 echo Creating development RIF databases
-SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+SET NEWUSER=%1
 SET NEWDB=sahsuland
 REM
 REM Passwords tests: see test_pw.txt
@@ -86,20 +86,11 @@ REM
 SET "XNEWPW=Peter!^@#$%^^^&*:.\`^|/?=+-_[]{}()^<^>"
 SET "NEWPW=Peter!@$%^~"
 REM
-SET /P NEWPW=New user password [default %NEWPW%]: %=% || SET "NEWPW=%NEWPW%"
+SET NEWPW=%2
 SET REBUILD_ALL=Y
 SET SNEWUSER=%NEWUSER%
 SET "SNEWPW=%NEWPW%"
 SET SNEWDB=%NEWDB%
-ECHO ##########################################################################################
-ECHO #
-ECHO # WARNING! this script will the drop and create the RIF40 sahsuland and sahusland_dev databases.
-ECHO # Type control-C to abort.
-ECHO #
-ECHO # Test user: %NEWUSER%; password: %NEWPW%
-ECHO #
-ECHO ##########################################################################################
-PAUSE
 
 REM
 REM Create development database
@@ -108,7 +99,7 @@ ECHO Create development database...
 sqlcmd -E -b -m-1 -e -r1 -i rif40_development_creation.sql -v newuser="%NEWUSER%"
 if %errorlevel% neq 0 (
 	ECHO rif40_development_creation.sql exiting with %errorlevel%
-	exit /b 1
+	exit 1
 ) else (
 	ECHO rif40_development_creation.sql built OK %errorlevel%
 )
@@ -116,7 +107,7 @@ if %errorlevel% neq 0 (
 CALL rif40_sahsuland_dev_install.bat 
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_dev_install.bat exiting with %errorlevel%
-	exit /b 1
+	exit 1
 ) else (
 	ECHO rif40_sahsuland_dev_install.bat built OK %errorlevel%
 )
@@ -127,7 +118,7 @@ REM
 CALL rif40_sahsuland_install.bat 
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_install.bat exiting with %errorlevel%
-	exit /b 1
+	exit 1
 ) else (
 	ECHO rif40_sahsuland_install.bat built OK %errorlevel%
 )
@@ -139,7 +130,7 @@ ECHO Create development user...
 sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser="%SNEWUSER%" -v newpw="%SNEWPW%"
 if %errorlevel% neq 0  (
 	ECHO rif40_development_user.sql exiting with %errorlevel%
-	exit /b 1
+	exit 1
 ) else (
 	ECHO rif40_development_user.sql built OK %errorlevel%
 )
@@ -151,7 +142,7 @@ ECHO Create production user...
 sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser="%SNEWUSER%" -v newdb="%SNEWDB%" -v newpw="%SNEWPW%"
 if %errorlevel% neq 0  (
 	ECHO rif40_production_user.sql exiting with %errorlevel%
-	exit /b 1
+	exit 1
 ) else (
 	ECHO rif40_production_user.sql built OK %errorlevel%
 )
@@ -178,7 +169,7 @@ REM	(SET SQLCMDPASSWORD=)
 	(SET REBUILD_ALL=)
 
 	ECHO rif40_run_study.sql exiting with %errorlevel%
-	exit /b 1
+	exit 1
 ) else (
 	ECHO rif40_run_study.sql ran OK %errorlevel%
 	ECHO Both %SNEWDB% and sahsuland_dev built OK

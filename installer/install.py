@@ -12,6 +12,7 @@ __email__ = "m.mccallion@imperial.ac.uk"
 import hashlib
 import os
 import platform
+import psycopg2
 import re
 import shutil
 import subprocess
@@ -37,18 +38,24 @@ RIF40_PASSWORD = "db_rif40_password"
 POSTGRES_PASSWORD = "db_pg_password"
 
 prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
-                  DB_TYPE: "Database type (pg or ms)",
+                  DB_TYPE: "Database type (pg or ms for PostgreSQL or MS "
+                           "SQL Server)",
                   SCRIPT_HOME: "Directory for SQL scripts",
                   TOMCAT_HOME: "Home directory for Tomcat",
                   WAR_FILES_LOCATION: "Directory containing the WAR files",
-                  EXTRACT_DIRECTORY: "Directory for files extracted by studies",
-                  DATABASE_NAME: "Name of the new database (default: "
-                                 "sahsuland)",
-                  DATABASE_USER: "User name for the new database (and the "
-                                 "RIF)",
-                  DATABASE_PASSWORD: "Password for the new user",
-                  RIF40_PASSWORD: "Password for the 'rif40' user",
-                  POSTGRES_PASSWORD: "Password for the 'postgres' user"
+                  EXTRACT_DIRECTORY: "Please specify a directory where files "
+                                     "extracted by studies should be created",
+                  DATABASE_NAME: "What do you want to call the new database? "
+                                 "(the default is 'sahsuland')",
+                  DATABASE_USER: "We will create a new user in the {} "
+                                 "database, which will also be your RIF user "
+                                 "name; what do you want to call it?",
+                  DATABASE_PASSWORD: "Please set a password for the '{}' user",
+                  RIF40_PASSWORD: "Please set a password for the 'rif40' "
+                                  "user, which we will also create",
+                  POSTGRES_PASSWORD: "Please give the password for the "
+                                     "'postgres' user, which is the "
+                                     "administrator of the Postgres system"
                   }
 
 # We have the default settings file in the current directory and the user's
@@ -56,10 +63,10 @@ prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
 # settings, and the database-specific ones and the [NOPROMPT] one.
 default_parser = ConfigParser(allow_no_value=True,
                               interpolation=ExtendedInterpolation())
-default_parser.optionxform = str # Preserve case in keys
+default_parser.optionxform = str  # Preserve case in keys
 user_parser = ConfigParser(allow_no_value=True,
                            interpolation=ExtendedInterpolation())
-user_parser.optionxform = str # Preserve case in keys
+user_parser.optionxform = str  # Preserve case in keys
 default_config = ConfigParser()
 user_config = ConfigParser()
 
@@ -68,86 +75,93 @@ user_props = Path()
 
 
 def main():
-
-    banner("WARNING: This will DELETE any existing database of the "
-           "name specified (default: Sahsuland).\n\n Proceed with caution.",
-           60)
+    banner("WARNING: This will DELETE any existing database named "
+           "'sahsuland'.\n\n Proceed with caution.",
+           55)
     if not go("Continue? [Default: No]: "):
         return
 
     initialise_config()
+    settings = get_settings()
 
-    # This sends output to the specified file as well as stdout.
-    with Logger("install.log"):
+    # prompt for go/no-go
+    print("About to install with the following settings:"
+          "\n\tDevelopment mode: {}"
+          "\n\tDB: {} "
+          "\n\tScripts directory: {} "
+          "\n\tTomcat home directory: {}"
+          "\n\tWAR files directory: {}"
+          "\n\tExtract directory: {}".format(bool(settings.dev_mode),
+                                             long_db_name(settings.db_type),
+                                             settings.script_root,
+                                             settings.cat_home,
+                                             settings.war_dir,
+                                             settings.extract_dir))
 
-        settings = get_settings()
+    if go("Continue? [No]: "):
 
-        # prompt for go/no-go
-        print("About to install with the following settings:"
-              "\n\tDevelopment mode: {}"
-              "\n\tDB: {} "
-              "\n\tScripts directory: {} "
-              "\n\tTomcat home directory: {}"
-              "\n\tWAR files directory: {}"
-              "\n\tExtract directory: {}"
-                .format(bool(settings.dev_mode),
-                        long_db_name(settings.db_type),
-                        settings.script_root,
-                        settings.cat_home,
-                        settings.war_dir,
-                        settings.extract_dir))
+        # This sends output to the specified file as well as stdout.
+        outfile = Tee("install.log")
+        sys.stdout = outfile
+        # sys.stderr = outfile
 
-        if go("Continue? [No]: "):
+        # Run SQL scripts
+        if settings.db_type == "pg":
+            db_scripts = get_pg_scripts(settings)
+            save_pg_passwords(settings)
+        else:
+            # Assumes both that it's SQL Server, and that we're
+            # running on Windows. Linux versions of SQLServer
+            # exist, but we'll deal with them later if necessary.
 
-            # Run SQL scripts
-            if settings.db_type == "pg":
-                db_scripts = get_pg_scripts(settings)
-                save_pg_passwords(settings)
-            else:
-                # Assumes both that it's SQL Server, and that we're
-                # running on Windows. Linux versions of SQLServer
-                # exist, but we'll deal with them later if necessary.
+            # Some files need to have special permissions granted,
+            # or the database loading steps fail.
+            set_special_db_permissions(settings)
+            db_scripts = get_windows_scripts(settings)
 
-                # Some files need to have special permissions granted,
-                # or the database loading steps fail
-                set_special_db_permissions()
-                db_scripts = get_windows_scripts(settings)
+        db_created = False
+        for script, parent in db_scripts:
+            print("About to run {}; switching to {}".format(script,
+                                                            parent))
 
-            db_created = False
-            for script, parent in db_scripts:
-                print("About to run {}; switching to {}".format(script,
-                                                                parent))
-                result = subprocess.run(script.split(), cwd=parent,
-                                        stderr=subprocess.STDOUT)
+            process = subprocess.run(script.split(), cwd=parent,
+                                     # capture_output=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT,
+                                     text=True)
 
-                if result.returncode is not None and result.returncode != 0:
-                    db_created = False
-                    msg = """Something went wrong when running the script {} 
-                          
-                          Output from script: {}
-                          
-                          Errors from script: {} 
-                          
-                          
-                          Database creation failed"""
-                    banner(msg.format(script, result.stdout, result.stderr),
-                           120)
-                    break
-                db_created = True
+            print(process.stdout)
 
-            if db_created:
-                # Deploy WAR files
-                for f in get_war_files(settings):
-                    shutil.copy(f, settings.cat_home / "webapps")
+            if process.returncode is not None and process.returncode != 0:
+                db_created = False
+                msg = """Something went wrong when running the script {} 
+                      
+                      Output from script: {}
+                      
+                      Errors from script: {} 
+                      
+                      
+                      Database creation failed"""
+                banner(msg.format(script, process.stdout, process.stderr),
+                       120)
+                break
+            db_created = True
 
-                # Generate RIF startup properties file
-                create_properties_file(settings)
+        if db_created:
+            # Deploy WAR files
+            for f in get_war_files(settings):
+                shutil.copy(f, settings.cat_home / "webapps")
 
-                banner("Installation complete.", 30)
-                if settings.db_type == "ms":
-                    banner("Remember to create an ODBC datasource as "
-                           "per the installation instructions, before "
-                           "running the RIF.", 60)
+            # Generate RIF startup properties file
+            create_properties_file(settings)
+
+            banner("Installation complete.", 30)
+            if settings.db_type == "ms":
+                banner("Remember to create an ODBC datasource as "
+                       "per the installation instructions, before "
+                       "running the RIF.", 60)
+
+        outfile.close()
 
 
 def initialise_config():
@@ -216,8 +230,8 @@ def get_settings():
     if running_bundled:
         settings.script_root = base_path
     else:
-        settings.script_root = Path(get_value_from_user(SCRIPT_HOME,
-                                                  is_path=True)).resolve()
+        settings.script_root = Path(get_value_from_user(
+            SCRIPT_HOME, is_path=True)).resolve()
 
     # Tomcat home: if it's not set we use the environment variable
     settings.cat_home = get_value_from_user(TOMCAT_HOME, is_path=True)
@@ -225,40 +239,84 @@ def get_settings():
     # In development we assume that this script is being run from installer/
     # under the project root. The root directory is thus one level up.
     if settings.dev_mode:
+
+        # TODO: this should actually use the parent of the directory of the
+        #  current script, not of the current working directory.
         settings.war_dir = Path.cwd().resolve().parent
     else:
         settings.war_dir = base_path / "warfiles"
 
     settings.extract_dir = get_value_from_user(EXTRACT_DIRECTORY, is_path=True)
 
+    # Database name is hardcoded for now.
+    # settings.db_name = get_value_from_user(DATABASE_NAME).strip()
+    settings.db_name = "sahsuland"
+    settings.db_user = get_value_from_user(DATABASE_USER,
+                                           extra=settings.db_name).strip()
+    settings.db_pass = get_password_from_user(
+        DATABASE_PASSWORD, extra=settings.db_user).strip()
+
     # For now the next few are only for Postgres
     if settings.db_type == "pg":
-        settings.db_name = get_value_from_user(DATABASE_NAME).strip()
-        settings.db_user = get_value_from_user(DATABASE_USER).strip()
-        settings.db_pass = get_password_from_user(DATABASE_PASSWORD).strip()
         settings.db_owner_name = "rif40"
         settings.db_owner_pass = get_password_from_user(RIF40_PASSWORD).strip()
         settings.db_superuser_name = "postgres"
-        settings.db_superuser_pass = get_password_from_user(POSTGRES_PASSWORD,
-                                               confirm=False).strip()
+        settings.db_superuser_pass = get_password_from_user(
+            POSTGRES_PASSWORD, confirm=False).strip()
+        while not check_postgres_user(settings.db_superuser_name,
+                                      settings.db_superuser_pass):
+            print("Incorrect password. Please try again.")
+            settings.db_superuser_pass = get_password_from_user(
+                POSTGRES_PASSWORD,
+                confirm=False).strip()
 
     # Update the user's config file
-    # user_config["key"] = "reply"
-    # user_parser
-    props_file = open(user_props, "w")
-    user_parser.write(props_file)
-
+    with user_props.open("w") as props_file:
+        user_parser.write(props_file)
 
     print("Settings: {}".format(settings))
 
     return settings
 
 
-def get_value_from_user(key, is_path=False):
+def check_postgres_user(user, password):
+    """Check that the user and password work for the database."""
+    # Copied from https://pynative.com/python-postgresql-tutorial/
+
+    success = False
+    connection = None
+    cursor = None
+    try:
+        connection = psycopg2.connect(user=user,
+                                      password=password,
+                                      host="localhost",
+                                      port="5432",
+                                      database="postgres")
+        cursor = connection.cursor()
+        # Print PostgreSQL Connection properties
+        print(connection.get_dsn_parameters(), "\n")
+        # Print PostgreSQL version
+        cursor.execute("SELECT version();")
+        record = cursor.fetchone()
+        success = True
+        print("You are connected to - ", record, "\n")
+    except Exception as error:
+        print("Error while connecting to PostgreSQL", error)
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+            print("PostgreSQL connection is closed")
+    return success
+
+
+def get_value_from_user(key, is_path=False, extra=""):
     """Get a new value from the user, prompting with the current value
        from the config files if one exists.
        :param key: the setting being processed
        :param is_path: whether or not the setting is a path-like object
+       :param extra: optional string value to be inserted into the prompt
+       string
     """
 
     current_value = ""
@@ -266,7 +324,12 @@ def get_value_from_user(key, is_path=False):
         current_value = user_config[key]
     elif key in default_config:
         current_value = default_config[key]
-    reply = input("{} [{}] ".format(prompt_strings.get(key), current_value))
+
+    base_prompt = prompt_strings.get(key)
+    prompt = "{} [{}]{} ".format(base_prompt.format(extra),
+                                 current_value,
+                                 "" if base_prompt.endswith("?") else ":")
+    reply = input(prompt)
     if reply is None or reply.strip() == "":
         reply = current_value
 
@@ -281,7 +344,8 @@ def get_value_from_user(key, is_path=False):
                 print("CATALINA_HOME is not set in the environment and no "
                       "value given for {}."
                       .format(prompt_strings.get(TOMCAT_HOME)))
-                reply = input("{} [{}] ".format(prompt_strings.get(key), current_value))
+                reply = input(
+                    "{} [{}] ".format(prompt_strings.get(key), current_value))
             else:
                 reply = tomcat_home_str
 
@@ -299,7 +363,7 @@ def get_value_from_user(key, is_path=False):
     return returned_reply
 
 
-def get_password_from_user(key, confirm=True):
+def get_password_from_user(key, confirm=True, extra=""):
     """Get a password from the user, with suitable prompting, hidden input,
        and the standard confirmation dialogue.
     """
@@ -308,7 +372,7 @@ def get_password_from_user(key, confirm=True):
     p2 = "y"
     while p1.strip() != p2.strip():
         print()
-        p1 = getpass(prompt_strings.get(key))
+        p1 = getpass(prompt_strings.get(key).format(extra))
         if not confirm:
             return p1
         p2 = getpass("Confirm password")
@@ -316,6 +380,7 @@ def get_password_from_user(key, confirm=True):
             print()
             print("Passwords do not match")
     return p1
+
 
 def get_war_files(settings):
     """Return a list of the WAR files to deploy"""
@@ -374,12 +439,10 @@ def create_properties_file(settings):
 
 
 def long_db_name(db):
-
     return "Microsoft SQL Server" if db.strip() == "ms" else "PostgreSQL"
 
 
 def short_db_name(db):
-
     return "MSSQL" if db.strip() == "ms" else "POSTGRES"
 
 
@@ -425,80 +488,36 @@ def get_pg_scripts(settings):
     dump_script = format_postgres_script(settings, dump_template,
                                          script_root, "", db="sahsuland_dev")
     restore_script = format_postgres_script(settings, restore_template,
-                                            script_root, "", db="sahsuland")
-    alter1_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_1.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter2_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_2.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter3_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_3.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter4_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_4.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter5_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_5.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter6_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_6.sql",
-                                           user=settings.db_owner_name,
-                                           db="sahsuland")
-    alter7_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_7.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter8_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_8.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter9_script = format_postgres_script(settings, script_template,
-                                           script_root / "alter_scripts",
-                                           "v4_0_alter_9.sql",
-                                           db="sahsuland",
-                                           user=settings.db_owner_name)
-    alter10_script = format_postgres_script(settings, script_template,
-                                            script_root / "alter_scripts",
-                                            "v4_0_alter_10.sql",
-                                            db="sahsuland",
-                                            user=settings.db_owner_name)
-    alter11_script = format_postgres_script(settings, script_template,
-                                            script_root / "alter_scripts",
-                                            "v4_0_alter_11.sql",
-                                            db="sahsuland",
-                                            user=settings.db_owner_name)
+                                            script_root, "",
+                                            db=settings.db_name)
 
-    return [(s, script_root) for s in [main_script, sahsuland_script,
-                                       dump_script, restore_script,
-                                       alter1_script, alter2_script,
-                                       #alter3_script,
-                                       #alter4_script,
-                                       alter5_script,
-                                       #alter6_script,
-                                       alter7_script, alter8_script,
-                                       alter9_script, alter10_script,
-                                       alter11_script]
-            ]
+    # Note that not all the numbered scripts are used here, because some
+    # would not run -- and did not seem to be necessary -- at the time of
+    # writing, which was Feb-Mar 2019.
+    alter_script_names = ["v4_0_alter_1.sql", "v4_0_alter_2.sql",
+                          "v4_0_alter_5.sql", "v4_0_alter_7.sql",
+                          "v4_0_alter_8.sql", "v4_0_alter_9.sql",
+                          "v4_0_alter_10.sql", "v4_0_alter_11.sql",
+                          "v4_0_alter_12.sql"]
+
+    alter_scripts = [format_postgres_script(settings, script_template,
+                                            script_root / "alter_scripts",
+                                            script_name,
+                                            db=settings.db_name,
+                                            user=settings.db_owner_name)
+                     for script_name in alter_script_names]
+
+    scripts = [main_script, sahsuland_script, dump_script, restore_script]
+    scripts.extend(alter_scripts)
+
+    return [(script, script_root) for script in scripts]
 
 
 def format_postgres_script(settings, template, script_root, script_name,
                            user=None, db=None):
     """Create the full runnable form of a script for PostgreSQL, from a
-    template."""
+       template.
+    """
 
     script = template.format(settings.db_superuser_name if user is None else
                              user,
@@ -529,10 +548,19 @@ def encrypt_password(user, pwd):
 def save_pg_passwords(settings):
     """Save the captured passwords to the .pgpass or pgpass.conf file."""
 
-    if platform.system() == "Windows":
-        pass_file = Path(os.environ["APPDATA"]) / "postgresql" / "pgpass.conf"
+    # The standard location can be overridden by an environment variable.
+    # It can also be overridden by a parameter passed to pg_ctl, but working
+    # out whether that has been set is out of scope for now (because it
+    # would be too hard).
+    password_file_name = os.getenv("PGPASSFILE", None)
+    if password_file_name:
+        pass_file = Path(password_file_name)
     else:
-        pass_file = Path().home() / ".pgpass"
+        if platform.system() == "Windows":
+            pass_file = Path(
+                os.environ["APPDATA"]) / "postgresql" / "pgpass.conf"
+        else:
+            pass_file = Path().home() / ".pgpass"
 
     line = "{}:{}:{}:{}:{}\n"
 
@@ -554,13 +582,17 @@ def save_pg_passwords(settings):
         pass_file_lines.append(line.format("localhost", "5432",
                                            settings.db_name,
                                            settings.db_user,
-                                           settings.db_user_pass))
+                                           settings.db_pass))
     pass_file_content = "".join(pass_file_lines)
 
     # If the password file doesn't exist we just create it. But if it does,
     # we make a backup copy of the original before creating the new one.
     if pass_file.exists():
         pass_file.rename(create_backup_file(pass_file))
+    else:
+        if not pass_file.parent.exists():
+            pass_file.parent.mkdir(parents=True, exist_ok=True)
+        pass_file.touch(exist_ok=True)
 
     with pass_file.open("w"):
         pass_file.write_text(pass_file_content)
@@ -578,7 +610,8 @@ def create_backup_file(file):
 
     while True:
         backup_file_name = "{}.{}.bak".format(file.name,
-                                           time.strftime("%Y-%m-%d-%H-%M-%S"))
+                                              time.strftime(
+                                                  "%Y-%m-%d-%H-%M-%S"))
         backup_file = Path(file.parent) / backup_file_name
         if not backup_file.exists():
             return backup_file
@@ -589,7 +622,9 @@ def get_windows_scripts(settings):
 
     win_root = settings.script_root / "SQLserver"
     main_script = win_root / "installation" / "rebuild_all.bat"
-    scripts = [(str(main_script), main_script.parent)]
+    main_script_string = "{} {} {}".format(str(main_script),
+                                           settings.db_user, settings.db_pass)
+    scripts = [(main_script_string, main_script.parent)]
     alter_script = win_root / "alter scripts" / "run_alter_scripts.bat"
     scripts.append((str(alter_script), alter_script.parent))
     return scripts
@@ -607,25 +642,27 @@ def friendly_system():
     return s
 
 
-def set_special_db_permissions():
-    """Set special permissions that are needed for the Windows scripts to run.
-
-       Several scripts are used by the BULK LOAD SQL command, and the early
-       versions of this script failed because of not having permission to
-       read those scripts. The complexity is that the permission is needed
-       by the user that runs the SQL Server service, not the current user.
-       As a precaution we grant all permissions, and as we can't easily know
-       the user in question, we grant it to the special "Everyone" account.
-
-       Lastly one of the scripts creates a backup of the database, and the
-       same service user needs write access to the directory where that is
-       created.
+def set_special_db_permissions(settings):
     """
-    backup_path = base_path / "SQLserver" / "production"
-    geo_path = base_path / "GeospatialData" / "tileMaker"
-    data_loader_path = base_path / "DataLoaderData" / "SAHSULAND"
+    Set special permissions that are needed for the Windows scripts to run.
+
+    Several scripts are used by the BULK LOAD SQL command, and the early
+    versions of this script failed because of not having permission to
+    read those scripts. The complexity is that the permission is needed
+    by the user that runs the SQL Server service, not the current user.
+    As a precaution we grant all permissions, and as we can't easily know
+    the user in question, we grant it to the special "Everyone" account.
+
+    Lastly one of the scripts creates a backup of the database, and the
+    same service user needs write access to the directory where that is
+    created.
+    """
+    backup_path = settings.script_root / "SQLserver" / "production"
+    geo_path = settings.script_root / "GeospatialData" / "tileMaker"
+    data_loader_path = settings.script_root / "DataLoaderData" / "SAHSULAND"
     files_to_permit = [f for f in geo_path.glob("mssql_*") if f.is_file()]
-    files_to_permit.extend(f for f in data_loader_path.iterdir() if f.is_file())
+    files_to_permit.extend(
+        f for f in data_loader_path.iterdir() if f.is_file())
     files_to_permit.append(backup_path)
     for f in files_to_permit:
         print("Granting Windows permissions for {}".format(f))
@@ -654,14 +691,15 @@ def set_windows_permissions(file_name):
     entries[0]['AccessPermissions'] = ntsecuritycon.GENERIC_ALL
     entries[0]['Trustee']['Identifier'] = "Everyone"
 
-    sd = win32security.GetNamedSecurityInfo(file_name, win32security.SE_FILE_OBJECT,
-            win32security.DACL_SECURITY_INFORMATION)
+    sd = win32security.GetNamedSecurityInfo(file_name,
+                                            win32security.SE_FILE_OBJECT,
+                                            win32security.DACL_SECURITY_INFORMATION)
     dacl = sd.GetSecurityDescriptorDacl()
     dacl.SetEntriesInAcl(entries)
     win32security.SetNamedSecurityInfo(file_name, win32security.SE_FILE_OBJECT,
-        win32security.DACL_SECURITY_INFORMATION |
-        win32security.UNPROTECTED_DACL_SECURITY_INFORMATION,
-        None, None, dacl, None)
+                                       win32security.DACL_SECURITY_INFORMATION |
+                                       win32security.UNPROTECTED_DACL_SECURITY_INFORMATION,
+                                       None, None, dacl, None)
 
 
 def normalise_path_separators(p):
@@ -763,42 +801,41 @@ class Settings():
     db_superuser_pass: str = ""
 
 
-class Logger(object):
-    """Lumberjack class - duplicates sys.stdout to a log file and it's okay."""
-    # I got this from https://stackoverflow.com/a/24583265/1517620
+class Tee:
+    """Write stdout to a selected file, as well as to the system stdout"""
+    # Adapted from Stack Overflow answer:
+    # https://stackoverflow.com/a/1937063/1517620
 
-    def __init__(self, filename="install.log", mode="ab", buff=0):
-        self.stdout = sys.stdout
-        self.file = open(filename, mode, buff)
-        sys.stdout = self
+    def __init__(self, log_file):
+        self.o = sys.stdout
+        self.f = open(log_file, 'w')
 
-    def __del__(self):
-        self.close()
+    def write(self, s):
+        self.o.write(s)
+        self.f.write(s)
 
-    def __enter__(self):
-        pass
+        # We don't want the output to be buffered
+        self.flush()
 
-    def __exit__(self, *args):
-        self.close()
-
-    def write(self, message):
-        self.stdout.write(message)
-        self.file.write(message.encode("utf-8"))
+    def writelines(self, s):
+        self.o.writelines(s)
+        self.f.writelines(s)
+        self.flush()
 
     def flush(self):
-        self.stdout.flush()
-        self.file.flush()
-        os.fsync(self.file.fileno())
+        self.f.flush()
+        self.o.flush()
 
     def close(self):
-        if self.stdout is not None:
-            sys.stdout = self.stdout
-            self.stdout = None
-
-        if self.file is not None:
-            self.file.close()
-            self.file = None
+        self.flush()
+        self.f.close()
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
+    # Reset stdout, stderr, because we redirected them above.
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    sys.exit()
