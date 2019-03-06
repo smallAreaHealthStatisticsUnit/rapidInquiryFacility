@@ -1320,7 +1320,7 @@ parameter in *RIFServiceStartupProperties.properties* restart the RIF tomcat web
 the *tileGeneratorUsername*. The tiles are in the **extractDirectory**```\scratchSpace\tiles```, e.g. ```c:\\rifDemo\\scratchSpace\\scratchSpace\tiles```
 in the usual Slippy map tiles structure: ```<geography>\<geolevel>\<zoomlevel>\<x>\<y>.png```, e.g.
  
-![tiles\EWS2011\COA2011\3\3\2.png]({{ site.baseurl }}/rifWebApplication/EWS2011-COA2011-3-3-2.png)
+![tiles\EWS2011\COA2011\3\3\2.png]({{ site.baseurl }}/rifWebApplication/EWS2011-COA2011-3-3-2.png){:width="512px"}
  
 ```
 #
