@@ -140,3 +140,4 @@ docs/source-documents/~$F v4 0 Manual.docx
 **/Thumbs.db
 rifDatabase/Postgres/production/cmdbat.bat
 rifDatabase/Postgres/production/rif40_database_install - Copy.bat
+venv

@@ -113,7 +113,7 @@ $$;
 \qecho -- Peter Hambly, SAHSU
 \qecho --
 \qecho '\\set ECHO all'
-SELECT 'VACUUM ANALYZE VERBOSE '||schemaname||'.'||tablename||';' AS sql_stmt
+SELECT 'VACUUM (ANALYZE, VERBOSE) '||schemaname||'.'||tablename||';' AS sql_stmt
   FROM pg_tables
  WHERE tableowner = USER
    AND schemaname NOT LIKE 'pg_temp%'
