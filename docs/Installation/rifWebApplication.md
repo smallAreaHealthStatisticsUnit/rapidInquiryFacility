@@ -1306,6 +1306,30 @@ This setup will support:
 * [Setting up on Windows](/Installation/R_setup_on_Windows)
 * [Setting up on Mac](/Installation/R_setup_on_Mac).
 
+## PNG Tile Generation
+
+The RIF will generate and use PNG tiles if your geolevel (e.g. MSOA2011) has more than 5000 areas. The topoJSON for the 
+selected areas will then be overlaid on top of the PNG tiles. This massively improves load times. You can alter the point
+at which this happens by changing the *frontEndParameters.json5* parameter ```disableMouseClicksAt```:
+```
+disableMouseClicksAt: 5000 // Areas
+```
+
+The tile generator itself runs as a thread on rifService *startup*. You will need to define the *tileGeneratorUsername*
+parameter in *RIFServiceStartupProperties.properties* restart the RIF tomcat web services and then logon as the 
+the *tileGeneratorUsername*. The tiles are in the *extractDirectory*```\scratchSpace\tiles```, e.g. ```c:\\rifDemo\\scratchSpaceC:\rifDemo\scratchSpace```
+in the usual Slippy map tiles structure: ```<geography>\<geolevel>\<zoomlevel>\<x>\<y>.png```, e.g. .
+ 
+![tiles\EWS2011\COA2011\3\3\2.png]({{ site.baseurl }}/rifWebApplication/EWS2011-COA2011-3-3-2.png){:width="100%"}
+ 
+```
+#
+# Tile generator: set if you need automatic tile generation for geolevels with more than 5000 areas 
+# (see: disableMouseClicksAt in frontEndParameters.json5)
+#
+tileGeneratorUsername=peter
+```
+
 ## Common Setup Errors
 
 The RIF middleware now uses Log4j version 2 for logging. The configuration file *log4j2.xml* (example in:
