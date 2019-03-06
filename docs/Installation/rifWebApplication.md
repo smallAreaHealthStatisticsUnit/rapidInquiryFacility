@@ -1317,10 +1317,10 @@ disableMouseClicksAt: 5000 // Areas
 
 The tile generator itself runs as a thread on rifService *startup*. You will need to define the *tileGeneratorUsername*
 parameter in *RIFServiceStartupProperties.properties* restart the RIF tomcat web services and then logon as the 
-the *tileGeneratorUsername*. The tiles are in the *extractDirectory*```\scratchSpace\tiles```, e.g. ```c:\\rifDemo\\scratchSpaceC:\rifDemo\scratchSpace```
-in the usual Slippy map tiles structure: ```<geography>\<geolevel>\<zoomlevel>\<x>\<y>.png```, e.g. .
+the *tileGeneratorUsername*. The tiles are in the **extractDirectory**```\scratchSpace\tiles```, e.g. ```c:\\rifDemo\\scratchSpace\\scratchSpace\tiles```
+in the usual Slippy map tiles structure: ```<geography>\<geolevel>\<zoomlevel>\<x>\<y>.png```, e.g.
  
-![tiles\EWS2011\COA2011\3\3\2.png]({{ site.baseurl }}/rifWebApplication/EWS2011-COA2011-3-3-2.png){:width="100%"}
+![tiles\EWS2011\COA2011\3\3\2.png]({{ site.baseurl }}/rifWebApplication/EWS2011-COA2011-3-3-2.png)
  
 ```
 #
