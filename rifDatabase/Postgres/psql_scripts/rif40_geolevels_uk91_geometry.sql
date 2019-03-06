@@ -216,15 +216,15 @@ ALTER TABLE uk91_ed91 ALTER COLUMN name SET NOT NULL;
 --
 -- Vaccum ANALYZE tables
 --
-VACUUM ANALYZE VERBOSE uk91_geography;
-VACUUM ANALYZE VERBOSE t_rif40_uk91_geometry;
-VACUUM ANALYZE VERBOSE uk91_scountry91;
-VACUUM ANALYZE VERBOSE uk91_country91;
-VACUUM ANALYZE VERBOSE uk91_region91;
-VACUUM ANALYZE VERBOSE uk91_county91;
-VACUUM ANALYZE VERBOSE uk91_district91;
-VACUUM ANALYZE VERBOSE uk91_ward91;
-VACUUM ANALYZE VERBOSE uk91_ed91;
+VACUUM (ANALYZE, VERBOSE) uk91_geography;
+VACUUM (ANALYZE, VERBOSE) t_rif40_uk91_geometry;
+VACUUM (ANALYZE, VERBOSE) uk91_scountry91;
+VACUUM (ANALYZE, VERBOSE) uk91_country91;
+VACUUM (ANALYZE, VERBOSE) uk91_region91;
+VACUUM (ANALYZE, VERBOSE) uk91_county91;
+VACUUM (ANALYZE, VERBOSE) uk91_district91;
+VACUUM (ANALYZE, VERBOSE) uk91_ward91;
+VACUUM (ANALYZE, VERBOSE) uk91_ed91;
 
 CREATE TABLE uk91_geography_orig AS SELECT * FROM uk91_geography;
 TRUNCATE TABLE uk91_geography_orig;
@@ -233,7 +233,7 @@ TRUNCATE TABLE uk91_geography_orig;
 --
 \COPY uk91_geography_orig(scountry91, country91, region91, county91, district91, ward91, ed91) FROM  '../sahsuv3_v4/data/uk91_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 CREATE UNIQUE INDEX uk91_geography_orig_pk ON uk91_geography_orig(oa2001);
-VACUUM ANALYZE VERBOSE uk91_geography_orig;
+VACUUM (ANALYZE, VERBOSE) uk91_geography_orig;
 
 --
 -- For vi's benefit

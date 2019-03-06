@@ -3,3 +3,4 @@ build
 cattest
 dist
 *.log
+recreate_sahsu_dev_tmp.sql
