@@ -3466,6 +3466,7 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
   * Issue #130 Risk analysis fault/issues (branch: risk-analysis-fixes-2); 
   * Issue #66 GeoJSON mouse over support with shapefile shapes
   * Issue #75 IE 11 only works with a browser console only;
+  * Issue #137: RIF WAR updates not applied because your browser cache needs to be emptied;
   
 ### 4th to 8th March
 
