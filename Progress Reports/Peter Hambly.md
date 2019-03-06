@@ -3478,4 +3478,5 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
   up for discussion Monday;
 * Document tile generator;
 * Document info button and risk graphs;
+* Create issue #137: RIF WAR updates not applied because your browser cache needs to be emptied;
 
