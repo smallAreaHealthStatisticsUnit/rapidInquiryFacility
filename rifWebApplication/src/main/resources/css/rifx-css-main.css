@@ -1006,11 +1006,19 @@ textarea.description {
     padding: 2px;
     border-radius: 4px;
     -moz-border-radius: 4px;
-    font-size: 1.1em;
+    font-size: 1.0em;
     background: #F7F7F7;
     border:1px solid #cccccc;
     color:#999999;
 }
+
+/* MS Edge ONLY */
+@supports (display:-ms-grid) { 
+    select.pboxDropMulti {
+    height: 80px !important;
+    } 
+}
+
 
 .pboxCaption {
     font-size: 14px;
