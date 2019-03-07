@@ -607,16 +607,13 @@ public class WebService {
 					healthTheme);
 
 			//Convert results to support JSON
-			ArrayList<NumeratorDenominatorPairProxy> ndPairProxies
-					= new ArrayList<NumeratorDenominatorPairProxy>();
+			ArrayList<NumeratorDenominatorPairProxy> ndPairProxies = new ArrayList<>();
 			for (NumeratorDenominatorPair ndPair : ndPairs) {
-				NumeratorDenominatorPairProxy ndPairProxy
-						= new NumeratorDenominatorPairProxy();
+				NumeratorDenominatorPairProxy ndPairProxy = new NumeratorDenominatorPairProxy();
 				ndPairProxy.setNumeratorTableName(ndPair.getNumeratorTableName());
 				ndPairProxy.setNumeratorTableDescription(ndPair.getNumeratorTableDescription());
 				ndPairProxy.setDenominatorTableName(ndPair.getDenominatorTableName());
-				ndPairProxy.setDenominatorTableDescription(ndPair.getDenominatorTableDescription
-						                                                  ());
+				ndPairProxy.setDenominatorTableDescription(ndPair.getDenominatorTableDescription());
 				ndPairProxies.add(ndPairProxy);
 			}
 			result
@@ -1463,20 +1460,17 @@ getParameter("p 1")     yes     c d
 				result);
 	}
 
-	private RIFStudySubmission getRIFSubmissionFromJSONSource(
-			final InputStream inputStream)
+	private RIFStudySubmission getRIFSubmissionFromJSONSource(final InputStream inputStream)
 			throws RIFServiceException {
 
 		String xmlString = null;
 		try {
 			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource start");
-			BufferedReader reader
-					= new BufferedReader(
-					new InputStreamReader(inputStream, "UTF-8"));
+			BufferedReader reader = new BufferedReader(
+					new InputStreamReader(inputStream, StandardCharsets.UTF_8));
 
 			StringBuilder buffer = new StringBuilder();
-			String currentInputLine
-					= reader.readLine();
+			String currentInputLine = reader.readLine();
 			while (currentInputLine != null) {
 				buffer.append(currentInputLine);
 				currentInputLine = reader.readLine();
@@ -1579,13 +1573,11 @@ getParameter("p 1")     yes     c d
 			                                 ".getRIFSubmissionFromJSONSource error XML=="
 			                                 + lineSeparator +
 			                                 xmlString + lineSeparator + "==", exception);
-			String errorMessage
-					= RIFServiceMessages
-							  .getMessage("webService.submitStudy.error.unableToConvertJSONToXML");
+			String errorMessage = RIFServiceMessages.getMessage(
+					"webService.submitStudy.error.unableToConvertJSONToXML");
 
-			throw new RIFServiceException(
-					RIFServiceError.UNABLE_TO_PARSE_JSON_SUBMISSION,
-					errorMessage);
+			throw new RIFServiceException(RIFServiceError.UNABLE_TO_PARSE_JSON_SUBMISSION,
+			                              errorMessage);
 		}
 
 	}

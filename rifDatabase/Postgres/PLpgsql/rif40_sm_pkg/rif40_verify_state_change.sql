@@ -266,7 +266,6 @@ BEGIN
 --
 -- Any not implemented WARNINGS become errors
 -- Functionality reduction restrictions. Restricted to:
---	One covariate
 -- 	No direct standardisation (rif40_studies.direct_stand_tab IS NULL)
 --	Disease mapping only
 --	AGE_SEX_GROUP column only (i.e. no separate AGE_GROUP/AGE/SEX columns)
@@ -282,15 +281,6 @@ BEGIN
 	END IF;
 	CLOSE c2_verst;
 --
-	IF c2_rec.max_inv_covariate_count > 1 THEN
-		not_implemented:=not_implemented+1;
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_verify_state_change', 
-			'[55013] Multiple covariates (% investigations()) not yet supported during attempted state transition (%=>%) for study %',
-			c2_rec.max_inv_covariate_count::VARCHAR,
-			old_study_state::VARCHAR,
-			new_study_state::VARCHAR,
-			study_id::VARCHAR);		
-	END IF;
 	IF c2_rec.direct_stand_tab IS NOT NULL THEN
 		not_implemented:=not_implemented+1;
 		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_verify_state_change', 

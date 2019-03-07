@@ -626,7 +626,7 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	}
 
 	/**
-	 * Gets the availaible covariates from the database for a given geography and level.
+	 * Gets the available covariates from the database for a given geography and level.
 	 * @param servletRequest an HTTP servlet request
 	 * @param userID the user
 	 * @param geographyName the geography name

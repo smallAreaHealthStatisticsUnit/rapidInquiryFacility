@@ -45,7 +45,7 @@ public final class CovariateManager extends BaseSQLManager {
 	}
 
 	/**
-	 * Gets the covariates.
+	 * Gets the available covariates for a given geography and level.
 	 *
 	 * @param connection the connection
 	 * @param geography the geography
@@ -181,7 +181,7 @@ public final class CovariateManager extends BaseSQLManager {
 	}
 	
 	void checkNonExistentCovariates(final Connection connection, final Geography geography,
-			final GeoLevelToMap geoLevelToMap, final ArrayList<AbstractCovariate> covariates)
+			final GeoLevelToMap geoLevelToMap, final List<AbstractCovariate> covariates)
 			throws RIFServiceException {
 		
 		if (covariates.size() == 0) {

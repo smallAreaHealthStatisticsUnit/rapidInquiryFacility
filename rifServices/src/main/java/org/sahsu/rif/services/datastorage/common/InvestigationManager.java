@@ -2,6 +2,7 @@ package org.sahsu.rif.services.datastorage.common;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -36,7 +37,7 @@ public class InvestigationManager extends BaseSQLManager {
 			GeoLevelToMap geoLevelToMap, Investigation investigation)
 			throws RIFServiceException {
 
-		ArrayList<AbstractCovariate> covariates = investigation.getCovariates();
+		List<AbstractCovariate> covariates = investigation.getCovariates();
 		covariateManager.checkNonExistentCovariates(connection, geography, geoLevelToMap,
 		                                            covariates);
 
