@@ -3466,11 +3466,18 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
   * Issue #130 Risk analysis fault/issues (branch: risk-analysis-fixes-2); 
   * Issue #66 GeoJSON mouse over support with shapefile shapes
   * Issue #75 IE 11 only works with a browser console only;
+  * Issue #137: RIF WAR updates not applied because your browser cache needs to be emptied;
   
 ### 4th to 8th March
 
-TODO this week:
+* Planning;
+* Multiple covariate Edge CSS fix;
 * Swedish Data;
-   
- 
+* Issue #75 IE 11 only works with a browser console only. Fixed on Windows 8.1; Windows 10 gives:
+  ```+4.5: [ERROR] AuthService.isLoggedIn() failed; transition from: state1 to state0; res: [{"result":"false"}]```
+* Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes - create a specification and a mock 
+  up for discussion Monday;
+* Document tile generator;
+* Document info button and risk graphs;
+* Create issue #137: RIF WAR updates not applied because your browser cache needs to be emptied;
 
