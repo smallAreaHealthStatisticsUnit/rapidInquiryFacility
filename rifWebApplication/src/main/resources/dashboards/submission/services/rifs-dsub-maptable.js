@@ -48,6 +48,7 @@ angular.module("RIF")
                         enableHorizontalScrollbar: 0,
                         selectionRowHeaderWidth: 35,
                         rowHeight: 25,
+                        minRowsToShow: 20,
                         multiSelect: true,
                         rowTemplate: rowTemplate()
                     };

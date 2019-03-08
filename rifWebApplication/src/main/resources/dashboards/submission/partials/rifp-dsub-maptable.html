@@ -58,11 +58,15 @@ Used by rifd-dsub-maptable.js
         <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
         <div class="dropDownLabel">Selection Resolution</div>
     </div>
+    <div id = "maptableDrop3" ng-if="isRiskAnalysis">
+        <select type="text" ng-model="input.stratifyTo" id='stratification' class='dropdownSelect' ng-options="l for l in stratificationList" ng-change="stratificationChange()"></select>
+        <div class="dropDownLabel">Multi Site Risk Stratification</div>
+    </div>
 </div>  
 
 <div class='modalAreaSelectionContent'>
     <div ng-controller="MultiSelectCtrl">
-        <div ng-if="!refresh" class="grid" ng-mouseleave="mouseleave($event)" ui-grid="gridOptions" ui-grid-selection ui-grid-resize-columns></div>
+        <div ng-if="!refresh" class="grid" ng-mouseleave="mouseleave($event)" ui-grid="gridOptions" ui-grid-auto-resize ui-grid-selection ui-grid-resize-columns></div>
     </div>
     <div id='areaSelectionMap'>
         <!-- Leaflet map -->

@@ -610,14 +610,21 @@ select {
     margin-right: 55px;
 }
 #maptableDrop1 {
-    width:22%;
+    width:20%;
     display: inline-block;
-    padding-right:2%;
+    padding-right:1%;
+    float: left;
 }
 #maptableDrop2 {
-    width:22%;
+    width:20%;
     display: inline-block;
-    padding-right:2%;
+    padding-right:1%;
+    float: left;
+}
+#maptableDrop3 {
+    width:20%;
+    display: inline-block;
+    padding-right:1%;
 }
 
 .mapListButton {

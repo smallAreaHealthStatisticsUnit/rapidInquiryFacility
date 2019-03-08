@@ -73,7 +73,12 @@ angular.module("RIF")
 						$scope.noMouseClocks=false;						
 //						$scope.geoJSONLayers = [];
 						$scope.selectionData = [];
-						
+                        $scope.stratificationList=["NONE"];
+                        $scope.isRiskAnalysis=false;                               
+						if ($scope.input.type == "Risk Analysis") {
+                            $scope.isRiskAnalysis=true;   
+                            $scope.input.stratifyTo = "NONE";
+                        }
 						CommonMappingStateService.getState("areamap").map = // Initialise if required
 							L.map("areamap", {condensedAttributionControl: false}).setView([0, 0], 1);	
                         $scope.areamap = CommonMappingStateService.getState("areamap").map;
@@ -110,6 +115,7 @@ angular.module("RIF")
                             $scope.input.selectAt = "";
                             $scope.input.studyResolution = "";
                             $scope.input.geography = thisGeography;
+                            $scope.input.stratifyTo = "NONE";
                         }
 						
 						// Also defined in rifs-util-leafletdraw.js
@@ -513,10 +519,16 @@ angular.module("RIF")
                          */
                         $scope.studyTypeChanged = function () {
 							alertScope.consoleDebug("[rifd-dsub-maptable.js] studyTypeChanged(): " +
-								"to input.type: "+ $scope.input.type + 
+								"to input.type: " + $scope.input.type + 
 								"; from SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType + 
 								"; and from StudyAreaStateService.getState().type: " + StudyAreaStateService.getState().type);
-								
+                            if ($scope.input.type == 'Risk Analysis') {
+                                $scope.isRiskAnalysis=true;
+                            }
+                            else {
+                                $scope.isRiskAnalysis=false;
+                            }
+                            
                             //clear selection
                             $scope.clear();
 							
@@ -1362,6 +1374,7 @@ angular.module("RIF")
 								
 								// Add back selected shapes
 								if (SelectStateService.getState().studySelection) {
+                                    
 									if ($scope.input.name == "ComparisionAreaMap") {
 										selectedShapes=SelectStateService.getState().studySelection.comparisonShapes;
 									}
@@ -1369,7 +1382,7 @@ angular.module("RIF")
 										selectedShapes=SelectStateService.getState().studySelection.studyShapes;
 									}
 								}
-								
+                                
 								if (selectedShapes) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() selectedShapes " + 
 										$scope.input.name + ": " + 
@@ -1559,13 +1572,22 @@ angular.module("RIF")
 											else {
 												resolve("added " + selectedShapes.length + " selected shapes; total time: " + elapsed + " S");
 											}
-										}); // End of async.eachOfSeries()				
+										}); // End of async.eachOfSeries()	
+                                    $scope.stratificationList=["NONE", "MULTIPOLYGON"];
+                                    for (var i=1; i<$scope.geoLevels.length; i++) {
+                                        if ($scope.input.studyResolution == $scope.geoLevels[i]) {
+                                            break; // Stop before resolution geolevel
+                                        }
+                                        $scope.stratificationList.push($scope.geoLevels[i]);
+                                    }			
 								}
 								else {
+                                    $scope.stratificationList=["NONE"];
 									resolve("map has no selected shapes");
 								}
+                                
 							});
-						}
+						} // End of addSelectedShapes()
 
 						function addCentroidsToMap() {
 
@@ -1715,7 +1737,13 @@ angular.module("RIF")
                         $scope.gridOptions.onRegisterApi = function (gridApi) {
                             $scope.gridApi = gridApi;
                         };
-						
+						                    
+                        function setMinRowsToShow(){
+                            //if data length is smaller, we shrink. otherwise we can do pagination.
+                            $scope.gridOptions.minRowsToShow = Math.min($scope.gridOptions.data.length, $scope.maxRowToShow);
+                            $scope.gridOptions.virtualizationThreshold = $scope.gridOptions.minRowsToShow ;
+                        }
+                        
                         //Set the user defined basemap
 						// Called from rifc-dmap-main.js
                         $scope.renderMap = function (mapID, currentBaseMapInUse) {
@@ -2078,7 +2106,20 @@ angular.module("RIF")
 										}
 									}
 								} // End of for shapes loop
-								
+                                
+								if (savedShapes.length > 0) {
+                                     $scope.stratificationList=["NONE", "MULTIPOLYGON"];
+                                     for (var i=1; i<$scope.geoLevels.length; i++) {
+                                        if ($scope.input.studyResolution == $scope.geoLevels[i]) {
+                                            break; // Stop before resolution geolevel
+                                        }
+                                        $scope.stratificationList.push($scope.geoLevels[i]);
+                                     }
+                                }
+                                else {
+                                    $scope.stratificationList=["NONE"];
+                                }
+                                
 								$scope.selectionData = [];
 								if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
 									CommonMappingStateService.getState("areamap").info.addTo(

@@ -59,17 +59,7 @@ Disease submission main 'trees' menu
                     <md-tooltip md-direction="right" md-delay="1000">{{studyDescription}}</md-tooltip>
                 </div>
             </div>
-        </div>  
-        <div>
-            <div class='styleUnderline dropdowns availablesWrapper'>
-                <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">
-                </select>
-                <div id='healthThemeAvailables' class='availables'></div>
-                <div class="dropDownLabel">Health Theme
-                    <md-tooltip md-direction="right" md-delay="1000">{{healthTheme.description}}</md-tooltip>
-                </div>
-            </div>
-        </div>
+        </div> 
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
                 <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies" ng-change="geographyChange()">
@@ -77,6 +67,16 @@ Disease submission main 'trees' menu
                 <div id='geographiesAvailables' class='availables'></div>
                 <div class="dropDownLabel">Geography
                     <md-tooltip md-direction="right" md-delay="1000">{{geography}}</md-tooltip>
+                </div>
+            </div>
+        </div> 
+        <div>
+            <div class='styleUnderline dropdowns availablesWrapper'>
+                <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">
+                </select>
+                <div id='healthThemeAvailables' class='availables'></div>
+                <div class="dropDownLabel">Health Theme
+                    <md-tooltip md-direction="right" md-delay="1000">{{healthTheme.description}}</md-tooltip>
                 </div>
             </div>
         </div>
