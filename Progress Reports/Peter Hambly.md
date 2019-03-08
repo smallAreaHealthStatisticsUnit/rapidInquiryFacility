@@ -3472,7 +3472,7 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 
 * Planning;
 * Multiple covariate Edge CSS fix;
-* Swedish Data;
+* Swedish Data [1 day: halted with age group query];
 * Issue #75 IE 11 only works with a browser console only. Fixed on Windows 8.1; Windows 10 gives:
   ```+4.5: [ERROR] AuthService.isLoggedIn() failed; transition from: state1 to state0; res: [{"result":"false"}]```
 * Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes - create a specification and a mock 
@@ -3480,4 +3480,4 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 * Document tile generator;
 * Document info button and risk graphs;
 * Create issue #137: RIF WAR updates not applied because your browser cache needs to be emptied;
-
+* Update plans for issue #129: Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes);
