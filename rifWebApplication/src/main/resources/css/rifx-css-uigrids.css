@@ -35,7 +35,7 @@
 
 .grid {
     width: 30%;
-/*    height: 90% !important; SETTING ANY HEIGH IS BAD - BREAKS GRID UI TABLE */
+/*    height: 90% !important; SETTING ANY HEIGHT IS BAD AS IT IS THE HEADER HEIGHT (2x30px) - BREAKS GRID UI TABLE */
     float: left;
 }
 .grid-status {

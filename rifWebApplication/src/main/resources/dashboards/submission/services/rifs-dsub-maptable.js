@@ -47,6 +47,7 @@ angular.module("RIF")
                         enableRowHeaderSelection: false,
                         enableHorizontalScrollbar: 0,
                         selectionRowHeaderWidth: 35,
+//                        headerRowHeight: 60,
                         rowHeight: 25,
                         minRowsToShow: 20,
                         multiSelect: true,
@@ -89,7 +90,13 @@ angular.module("RIF")
                             return rowCollection;
                         },
                         //set up table
-                        getAreaTableOptions: function () {
+                        getAreaTableOptions: function (minRowsToShow, headerRowHeight) {
+                            if (minRowsToShow > 5) {
+                                areaTableOptions.minRowsToShow=minRowsToShow;
+                            }
+                            if (headerRowHeight > 30) {
+                                areaTableOptions.headerRowHeight=headerRowHeight;
+                            }
                             return areaTableOptions;
                         },
                         getAreaTableColumnDefs: function () {

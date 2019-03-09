@@ -1731,7 +1731,17 @@ angular.module("RIF")
                         CommonMappingStateService.getState("areamap").map.addLayer(CommonMappingStateService.getState("areamap").shapes);
 
                         //Set up table (UI-grid)
-                        $scope.gridOptions = ModalAreaService.getAreaTableOptions();
+                        var minRowsToShow=20;
+                        var headerRowHeight=60;
+                        var height=d3.select("#areaSelectionMap").node().getBoundingClientRect().height;
+                        if (height) {
+                            minRowsToShow=Math.round((height-(2*headerRowHeight) /* Header */)/25 /* Row height */);
+                            headerRowHeight=Math.round((height-(25*minRowsToShow))/2);
+                        }
+                        alertScope.consoleLog("[rifd-dsub-maptable.js] areaSelectionMap height: " + height +
+                            "; minRowsToShow: " + minRowsToShow +
+                            "; headerRowHeight: " + headerRowHeight);
+                        $scope.gridOptions = ModalAreaService.getAreaTableOptions(minRowsToShow, headerRowHeight);
                         $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs();
                         //Enable row selections
                         $scope.gridOptions.onRegisterApi = function (gridApi) {
