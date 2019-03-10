@@ -44,6 +44,8 @@
 --
 -- Peter Hambly, SAHSU
 --
+-- psql -U rif40 -d sahsuland -w -e -f rifDatabase\Postgres\PLpgsql\rif40_sql_pkg\rif40_startup.sql
+--
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
@@ -100,7 +102,7 @@ SQL generated:
 
 a) User local numerator and denominator pairs
 
-CREATE TABLE peterh.t_rif40_num_denom (
+CREATE TABLE peter.t_rif40_num_denom (
         geography              VARCHAR(50)     NOT NULL,
         numerator_table        VARCHAR(30)     NOT NULL,
         denominator_table      VARCHAR(30)     NOT NULL);
@@ -224,16 +226,23 @@ SELECT n.geography,
   FROM d, n
  WHERE n.geography = d.geography
 UNION
-SELECT g.geography,
-       g.numerator_table,
-       n.description AS numerator_description,
-       'Local user theme' AS theme_description,
-       g.denominator_table,
+SELECT ta.geography,
+       ta.numerator_table,
+       ta.numerator_description,
+       COALESCE(h.description, 'Local user theme') AS theme_description,
+       ta.denominator_table,
        d.description AS denominator_description,
        0 automatic
-  FROM t_rif40_num_denom g
-        LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)
-        LEFT OUTER JOIN rif40_tables d ON (d.table_name = g.denominator_table)
+  FROM (SELECT g.geography,
+               g.numerator_table,
+               g.denominator_table,
+               n.description AS numerator_description,
+               n.theme
+          FROM peter.t_rif40_num_denom g
+                LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)
+        ) AS ta  
+        LEFT OUTER JOIN rif40_tables d ON (d.table_name = ta.denominator_table)
+        LEFT OUTER JOIN rif40_health_study_themes h ON (h.theme = ta.theme)
  ORDER BY 1, 2, 4;
 
 d) Temporary study and comparision area tables.  Used to speed up extracts. On Postgres they are not global and need to be created for each session
@@ -417,6 +426,7 @@ DECLARE
 	rif40_num_denom BOOLEAN:=FALSE;	
 	rif40_num_denom_errors BOOLEAN:=FALSE;	
 	t_rif40_num_denom BOOLEAN:=FALSE;	
+	recover_t_rif40_num_denom BOOLEAN:=FALSE;
 	g_rif40_study_areas BOOLEAN:=FALSE;	
 	g_rif40_comparison_areas BOOLEAN:=FALSE;	
 	rif40_user_version BOOLEAN:=FALSE;	
@@ -431,7 +441,7 @@ DECLARE
 --
 -- Revision control rebuild will blow up if you branch...
 --
-	cvs_revision VARCHAR:='$Revision: 1.11 $';	/* DO NOT EDIT THIS - IT IS FOR CVSs benefit */
+	cvs_revision VARCHAR:='$Revision: 1.15 $';	/* DO EDIT THIS - WE ARE NO LONGER USING CVS */
 BEGIN
 --
 -- Must be rif40 or have rif_user or rif_manager role
@@ -518,6 +528,7 @@ BEGIN
 			E'\t'||'area_id							VARCHAR(300) 	NOT NULL,'||E'\n'||
 			E'\t'||'band_id							INTEGER			NULL,'||E'\n'||
 			E'\t'||'intersect_count 				INTEGER 		NULL,'||E'\n'||
+			E'\t'||'risk_stratification 		    INTEGER 		NULL,'||E'\n'||
 			E'\t'||'distance_from_nearest_source 	NUMERIC 		NULL,'||E'\n'||
 			E'\t'||'nearest_rifshapepolyid 			VARCHAR 		NULL,'||E'\n'||
 			E'\t'||'exposure_value					NUMERIC			NULL) ON COMMIT PRESERVE ROWS';
@@ -529,6 +540,8 @@ BEGIN
 		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.area_id 	IS ''An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.band_id 	IS ''A band allocated to the area''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.risk_stratification IS ''Multi Site Risk Stratification: NONE, <rifshapepolyid: poygon identifier for band 1> or <geolevel code: usually a regional code>.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.intersect_count IS ''Number of intersects with shapes''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -691,6 +704,7 @@ BEGIN
 		t_rif40_num_denom:=TRUE;
 	END IF;
 	CLOSE c2;
+    
 	OPEN c2('rif40_user_version');
 	FETCH c2 INTO c2_rec;
 	IF c2_rec.table_or_view = 'rif40_user_version' THEN
@@ -772,9 +786,14 @@ BEGIN
 			j:=j+1;
 		END IF;
 		IF t_rif40_num_denom THEN
-			sql_stmt:='DROP TABLE t_rif40_num_denom';
+			sql_stmt:='DROP TABLE IF EXISTS '||USER||'.t_rif40_num_denom_old';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+            sql_stmt:='DROP INDEX rif40_num_denom_pk';
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+			sql_stmt:='ALTER TABLE '||USER||'.t_rif40_num_denom RENAME TO t_rif40_num_denom_old';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			t_rif40_num_denom:=FALSE;
+            recover_t_rif40_num_denom:=TRUE;
 			j:=j+1;
 		END IF;
 		IF rif40_run_study AND USER != 'rif40' THEN
@@ -839,6 +858,12 @@ E'\n'||
 		sql_stmt:=sql_stmt||E'\t'||'numerator_table        VARCHAR(30)     NOT NULL,'||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||'denominator_table      VARCHAR(30)     NOT NULL)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+        IF recover_t_rif40_num_denom THEN
+            sql_stmt:='INSERT INTO '||USER||'.t_rif40_num_denom(geography, numerator_table, denominator_table)'||E'\n';
+            sql_stmt:=sql_stmt||'SELECT geography, numerator_table, denominator_table FROM '||
+                USER||'.t_rif40_num_denom_old';
+            PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt); 
+        END IF;
 		sql_stmt:='CREATE UNIQUE INDEX rif40_num_denom_pk ON '||USER||'.t_rif40_num_denom(geography, numerator_table, denominator_table)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='ANALYZE VERBOSE '||USER||'.t_rif40_num_denom';
@@ -1027,16 +1052,23 @@ E'\n'||
 --
 		IF  USER != 'rif40' THEN
 			sql_stmt:=sql_stmt||'UNION'||E'\n'||
-				'SELECT g.geography,'||E'\n'||
-				'       g.numerator_table,'||E'\n'||
-				'       n.description AS numerator_description,'||E'\n'||
-				'       ''Local user theme'' AS theme_description,'||E'\n'||
-				'       g.denominator_table,'||E'\n'||
+				'SELECT ta.geography,'||E'\n'||
+				'       ta.numerator_table,'||E'\n'||
+				'       ta.numerator_description,'||E'\n'||
+				'       COALESCE(h.description, ''Local user theme'') AS theme_description,'||E'\n'||
+				'       ta.denominator_table,'||E'\n'||
 				'       d.description AS denominator_description,'||E'\n'||
 				'       0 automatic'||E'\n'||
-				'  FROM t_rif40_num_denom g'||E'\n'||
-				'	LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)'||E'\n'||
-				'	LEFT OUTER JOIN rif40_tables d ON (d.table_name = g.denominator_table)'||E'\n';
+				'  FROM (SELECT g.geography,'||E'\n'||
+				'               g.numerator_table,'||E'\n'||
+				'               g.denominator_table,'||E'\n'||
+				'               n.description AS numerator_description,'||E'\n'||
+				'               n.theme'||E'\n'||
+				'          FROM '||USER||'.t_rif40_num_denom g'||E'\n'||
+				'                LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)'||E'\n'||
+				'        ) AS ta'||E'\n'||  
+ 				'        LEFT OUTER JOIN rif40_tables d ON (d.table_name = ta.denominator_table)'||E'\n'||
+				'        LEFT OUTER JOIN rif40_health_study_themes h ON (h.theme = ta.theme)'||E'\n';                
  		END IF;
 		sql_stmt:=sql_stmt||' ORDER BY 1, 2, 4';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -1151,7 +1183,8 @@ a) User local numerator and denominator pairs
 CREATE TABLE peterh.t_rif40_num_denom (
         geography              VARCHAR(50)     NOT NULL,
         numerator_table        VARCHAR(30)     NOT NULL,
-        denominator_table      VARCHAR(30)     NOT NULL);
+        denominator_table      VARCHAR(30)     NOT NULL,
+        theme                  VARCHAR(30)     NULL);
 
 b) Errors in rif40_num_denom VIEW of valid numerator and denominator pairs
 
@@ -1272,18 +1305,25 @@ SELECT n.geography,
   FROM d, n
  WHERE n.geography = d.geography
 UNION
-SELECT g.geography,
-       g.numerator_table,
-       n.description AS numerator_description,
-       ''Local user theme'' AS theme_description,
-       g.denominator_table,
+SELECT ta.geography,
+       ta.numerator_table,
+       ta.numerator_description,
+       COALESCE(h.description, ''Local user theme'') AS theme_description,
+       ta.denominator_table,
        d.description AS denominator_description,
        0 automatic
-  FROM t_rif40_num_denom g
-        LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)
-        LEFT OUTER JOIN rif40_tables d ON (d.table_name = g.denominator_table)
+  FROM (SELECT g.geography,
+               g.numerator_table,
+               g.denominator_table,
+               n.description AS numerator_description,
+               n.theme
+          FROM peter.t_rif40_num_denom g
+                LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)
+        ) AS ta  
+        LEFT OUTER JOIN rif40_tables d ON (d.table_name = ta.denominator_table)
+        LEFT OUTER JOIN rif40_health_study_themes h ON (h.theme = ta.theme)
  ORDER BY 1, 2, 4;
-
+ 
 d) Temporary study and comparision area tables.  Used to speed up extracts. On Postgres they are not global and need to be created for each session
 
 CREATE GLOBAL TEMPORARY TABLE g_rif40_study_areas (
