@@ -32,7 +32,7 @@ import org.sahsu.rif.services.concepts.Sex;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
  
 /**
  * Main implementation of the RIF middleware.
@@ -363,7 +363,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	}
 
     	//Features for RIF Context
-	public JSONArray getRif40NumDenom(
+	public JSONObject getRif40NumDenom(
 		final User _user)
 		throws RIFServiceException {
 
@@ -375,7 +375,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			return null;
 		}
 
-		JSONArray results = new JSONArray();
+		JSONObject results = new JSONObject();
 		Connection connection = null;
 		try {
 

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.io.*;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -127,14 +127,14 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	
 
 	/**
-	 * Gets RIF40_NUM_DENOM as a JSONArray
+	 * Gets RIF40_NUM_DENOM as a JSONObject
 	 *
 	 * @param connection the connection
 	 * @param user the user
-	 * @return RIF40_NUM_DENOM as a JSONArray
+	 * @return RIF40_NUM_DENOM as a JSONObject
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public JSONArray getRif40NumDenom(
+	public JSONObject getRif40NumDenom(
 		final User user) 
 		throws RIFServiceException;
         

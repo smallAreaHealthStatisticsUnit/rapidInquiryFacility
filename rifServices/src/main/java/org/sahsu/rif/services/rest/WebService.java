@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -56,7 +55,7 @@ import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.graphics.RIFTilesException;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class WebService {
 
@@ -670,138 +669,10 @@ public class WebService {
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
-			JSONArray rif40NumDenomPairs = studySubmissionService.getRif40NumDenom(user);
-            JSONObject rif40NumDenom = new JSONObject();
-            
-/* Convert results to required JSON format
-rif40NumDenom = {
-    themes: {
-        "cancers": "covering various types of cancers",
-        "HEATHROW": "HEATHROW Study",
-        "SYDVAST_TEST": "South west Sweden test theme"
-    }
-    themeList: [
-        "covering various types of cancers",
-        "South west Sweden test theme"
-    ],
-    geographies: {
-        "South west Sweden test theme": {
-            geographyList: ["STOCKHOLM", "SWEDEN_COUNTY", "SYDVAST"],
-            geographyDescriptions: {
-                "STOCKHOLM": "Stockholm, Sweden",
-                "SWEDEN_COUNTY": "Sverige to county level",
-                "SYDVAST": "South West Sweden"
-            },
-            "STOCKHOLM": [{
-                    numerator_table: "STOCKHOLM_CANCER",
-                    numerator_description: "Stockholm Cancer data 19??-20??",
-                    denominator_table: "STOCKHOLM_POPULATION",
-                    denominator_description: "Stockholm Population 19??-20??.",
-                    automatic: 1
-                }
-            ],
-            "SWEDEN_COUNTY": [{
-                    numerator_table: "SWEDEN_CANCER",
-                    numerator_description: "Sweden Cancer data 19??-20??",
-                    denominator_table: "SWEDEN_POPULATION",
-                    denominator_description: "Sweden Population 19??-20??.",
-                    automatic: 1
-                }
-            ],
-            "SYDVAST": [{
-                    numerator_table: "SYDVAST_TEST_1",
-                    numerator_description: "Sydvast test 1 data 2008-2016",
-                    denominator_table: "SYDVAST_TEST_1_POPULATION",
-                    denominator_description: "Sydvast test 1 population 2008-2016.",
-                    automatic: 0
-                }, {
-                    numerator_table: "SYDVAST_TEST_2",
-                    numerator_description: "Sydvast test 2 data 2008-2016",
-                    denominator_table: "SYDVAST_TEST_2_POPULATION",
-                    denominator_description: "Sydvast test 2 population 2008-2016.",
-                    automatic: 0
-                }, {
-                    numerator_table: "SYDVAST_TEST_3",
-                    numerator_description: "Sydvast test 3 data 2008-2016",
-                    denominator_table: "SYDVAST_TEST_3_POPULATION",
-                    denominator_description: "Sydvast test 3 population 2008-2016.",
-                    automatic: 0
-                }, {
-                    numerator_table: "SYDVAST_TEST_4",
-                    numerator_description: "Sydvast test 4 data 2008-2016",
-                    denominator_table: "SYDVAST_TEST_4_POPULATION",
-                    denominator_description: "Sydvast test 4 population 2008-2016.",
-                    automatic: 0
-                }
-            ],
-        }
-        "covering various types of cancers": {
-            "geographyList": ["SAHSULAND"],
-            geographyDescriptions: {
-                "SAHSULAND": "SAHSU Example geography"
-            },
-            "SAHSULAND": [{
-                numerator_table: " NUM_SAHSULAND_CANCER ",
-                numerator_description: " cancer numerator "
-                denominator_table: " POP_SAHSULAND_POP ",
-                denominator_description: " population health file ",
-                automatic: 1
-                }
-            ]
-        }
-    }
-};
- */
-            JSONObject row;
-			HashMap<String, String> themeList = new HashMap<>();
-            for (int i=0; i<rif40NumDenomPairs.length(); i++) {
-                row=rif40NumDenomPairs.getJSONObject(i);
-                String themeDescription=row.optString("themeDescription");
-                String themeName=row.optString("themeName");
-                if (themeName != null && themeDescription != null) {
-                    themeList.put(themeDescription, themeName);
-                }
-            }
-            
-            JSONArray themeListJson=new JSONArray();
-            JSONObject themesJson=new JSONObject();
-            JSONObject geographiesJson=new JSONObject();
-            
-            for (HashMap.Entry<String, String> entry : themeList.entrySet()) {
-                String themeName=entry.getValue();
-                String themeDescription=entry.getKey();
-                themeListJson.put(themeDescription);
-                themesJson.put(themeName, themeDescription);
-            }
-            rif40NumDenom.put("themes", themesJson);
-            rif40NumDenom.put("themeList", themeListJson);
-            for (HashMap.Entry<String, String> entry : themeList.entrySet()) {
-                String themeName=entry.getValue();
-                String themeDescription=entry.getKey();
-                JSONArray geographyListJson=new JSONArray();
-                JSONObject geographyDescriptionsJson=new JSONObject();
-                JSONObject themeNumDenomJson=new JSONObject();
-                for (int i=0; i<rif40NumDenomPairs.length(); i++) {
-                    row=rif40NumDenomPairs.getJSONObject(i);
-                    String geographyDescription=row.optString("geographyDescription");
-                    String geographyName=row.optString("geographyName");
-                    if (geographyName != null && geographyDescription != null) {
-                        geographyListJson.put(geographyName);
-                        geographyDescriptionsJson.put(geographyName, geographyDescription);
-                    }
-                    for(int j=0; j<row.names().length(); j++) {
-                        themeNumDenomJson.put(row.names().getString(j), 
-                            row.optString(row.names().getString(j)));
-                    }
-                }
-                JSONObject themeDescriptionJson=new JSONObject();
-                themeDescriptionJson.put("geographyList", geographyListJson);
-                themeDescriptionJson.put("geographyDescriptions", geographyDescriptionsJson);
-                themeDescriptionJson.put(themeDescription, themeNumDenomJson);
-                geographiesJson.put(themeDescription, themeDescriptionJson);
-            }
-            rif40NumDenom.put("geographies", geographiesJson);
-			result = rif40NumDenom.toString();
+                
+			JSONObject rif40NumDenomServiceJson = studySubmissionService.getRif40NumDenom(user);
+           
+			result = rif40NumDenomServiceJson.toString();
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +

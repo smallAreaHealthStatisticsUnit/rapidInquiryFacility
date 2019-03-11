@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.AggregateValueQueryFormatter;
@@ -340,7 +340,7 @@ public class RIFContextManager extends BaseSQLManager {
 	 * @return RIF40_NUM_DENOM as a JSONArray
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public JSONArray getRif40NumDenom(
+	public JSONObject getRif40NumDenom(
 			final Connection connection,
 			final User user)
 			throws RIFServiceException {
