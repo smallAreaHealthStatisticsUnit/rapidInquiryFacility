@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.io.*;
 
-
+import org.json.JSONArray;
 
 /**
  *
@@ -125,7 +125,19 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final HealthTheme healthTheme) 
 		throws RIFServiceException;
 	
-	
+
+	/**
+	 * Gets RIF40_NUM_DENOM as a JSONArray
+	 *
+	 * @param connection the connection
+	 * @param user the user
+	 * @return RIF40_NUM_DENOM as a JSONArray
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public JSONArray getRif40NumDenom(
+		final User user) 
+		throws RIFServiceException;
+        
 	public NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
 		final User user,
 		final Geography geography,

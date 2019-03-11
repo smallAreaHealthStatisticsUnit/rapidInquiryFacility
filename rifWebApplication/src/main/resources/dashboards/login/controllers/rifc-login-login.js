@@ -39,11 +39,11 @@ angular.module("RIF")
         .controller('LoginCtrl', ['$scope', 'user', '$injector',
             'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
             'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService', 
-			'ParametersService', 'SelectStateService',
+			'ParametersService', 'SelectStateService', 'Rif40NumDenomService',
             function ($scope, user, $injector,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService, 
-					ParametersService, SelectStateService) {
+					ParametersService, SelectStateService, Rif40NumDenomService) {
 						
 				setFrontEndParameters = function(username) {
 					var getFrontEndParameters=undefined;
@@ -178,9 +178,6 @@ angular.module("RIF")
                 function handleLogin(res) {
                     try {
                         if (res.data[0].result === "User " + $scope.username + " logged in.") {
-                            //login success
-                            $injector.get('$state').transitionTo('state1');
-
                             //reset all services
                             SubmissionStateService.resetState();
                             StudyAreaStateService.resetState();
@@ -191,7 +188,16 @@ angular.module("RIF")
                             MappingStateService.resetState();
                             ExportStateService.resetState();
 							SelectStateService.resetState();
-
+                            
+                            Rif40NumDenomService.initialise().then(function(data) {
+                                //login success
+                                $injector.get('$state').transitionTo('state1');
+                            }, function(e) {
+                                $scope.showError('Could not initialise the RIF numerator/denominator service');
+                                $scope.consoleError(e);
+                                $scope.showSpinner = false;
+                            });
+                            
                             //initialise the taxonomy service
                             user.initialiseService().then(handleInitialise, handleInitialiseError);
                             function handleInitialise(res) {

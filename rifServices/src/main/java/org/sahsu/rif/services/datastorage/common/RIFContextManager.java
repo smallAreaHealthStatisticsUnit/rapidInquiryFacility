@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.AggregateValueQueryFormatter;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
@@ -27,12 +29,15 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 public class RIFContextManager extends BaseSQLManager {
 
+    private static RIFServiceStartupOptions options = null;
+    
 	/**
 	 * Instantiates a new SQLRIF context manager.
 	 */
 	public RIFContextManager(final RIFServiceStartupOptions options) {
 
 		super(options);
+        this.options=options;
 		if (rifDatabaseProperties == null) {
 			rifDatabaseProperties = options.getRIFDatabaseProperties();
 		}
@@ -326,7 +331,24 @@ public class RIFContextManager extends BaseSQLManager {
 		}
 
 	}
-
+    
+	/**
+	 * Gets RIF40_NUM_DENOM as a JSONArray
+	 *
+	 * @param connection the connection
+	 * @param user the user
+	 * @return RIF40_NUM_DENOM as a JSONArray
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public JSONArray getRif40NumDenom(
+			final Connection connection,
+			final User user)
+			throws RIFServiceException {
+            
+        Rif40NumDenomService rif40NumDenomService = new Rif40NumDenomService(this.options);
+        return rif40NumDenomService.get(connection, user);
+    }
+    
 	/**
 	 * Gets the numerator denominator pairs.
 	 *
@@ -352,7 +374,7 @@ public class RIFContextManager extends BaseSQLManager {
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
 		ArrayList<NumeratorDenominatorPair> results
-				= new ArrayList<>();;
+				= new ArrayList<>();
 
 		try {
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(

@@ -108,6 +108,9 @@ public interface SQLManager {
 	
 	boolean doesColumnExist(final Connection connection, final String schemaName, final String tableName, final String columnName)
 		throws Exception;
+        
+	boolean doesTableExist(final Connection connection, final String schemaName, final String tableName)
+		throws Exception;
 	
 	boolean isUserBlocked(final User user);
 	

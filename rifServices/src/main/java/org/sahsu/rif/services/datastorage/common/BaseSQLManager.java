@@ -742,7 +742,56 @@ public class BaseSQLManager implements SQLManager {
 		
 		return rVal;
 	}
+
+	@Override
+	public boolean doesTableExist(final Connection connection, final String schemaName, final String tableName) 
+		throws Exception {		
 	
+		boolean rVal=false;
+		
+		SQLGeneralQueryFormatter checkTableExistsQueryFormatter = new SQLGeneralQueryFormatter();
+		ResultSet resultSet;
+		
+		configureQueryFormatterForDB(checkTableExistsQueryFormatter);
+		checkTableExistsQueryFormatter.addQueryLine(0, "SELECT table_name");
+		checkTableExistsQueryFormatter.addQueryLine(0, "  FROM information_schema.tables");
+		checkTableExistsQueryFormatter.addQueryLine(0, " WHERE table_schema = ?");
+		checkTableExistsQueryFormatter.addQueryLine(0, "   AND table_name   = ?");
+
+		logSQLQuery(
+				"doesTableExist",
+				checkTableExistsQueryFormatter,
+				schemaName,
+				tableName);
+		PreparedStatement statement = createPreparedStatement(connection, checkTableExistsQueryFormatter);
+		
+		try {		
+			statement.setString(1, schemaName);
+			statement.setString(2, tableName);
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				String res=resultSet.getString(1);
+				if (resultSet.next()) {
+					throw new Exception("doesTableExist() database: " + databaseType +
+						"; expected 1 row, got >1");
+				}
+				rVal=true;
+			}
+			// Otherwise not found; i.e. false
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
+				lineSeparator + checkTableExistsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			closeStatement(statement);
+		}
+		
+		return rVal;
+	}
+		
 	@Override
 	public boolean isUserBlocked(
 			final User user) {

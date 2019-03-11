@@ -32,6 +32,8 @@ import org.sahsu.rif.services.concepts.Sex;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
+import org.json.JSONArray;
+ 
 /**
  * Main implementation of the RIF middleware.
  * <p>
@@ -360,6 +362,75 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		return results;
 	}
 
+    	//Features for RIF Context
+	public JSONArray getRif40NumDenom(
+		final User _user)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+
+		JSONArray results = new JSONArray();
+		Connection connection = null;
+		try {
+
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPair",
+				"user",
+				user);
+
+			//Check for security violations
+			validateUser(user);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getNumeratorDenominatorPairs",
+					user.getUserID(),
+					user.getIPAddress(),
+					"N/A",
+					"N/A");
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			RIFContextManager sqlRIFContextManager
+				= rifServiceResources.getSQLRIFContextManager();
+			results
+				= sqlRIFContextManager.getRif40NumDenom(
+					connection, user);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getNumeratorDenominatorPair",
+				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user,
+				connection);
+		}
+
+		return results;
+	}
+
+   
 	//Features for RIF Context
 	public ArrayList<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
 		final User _user,
