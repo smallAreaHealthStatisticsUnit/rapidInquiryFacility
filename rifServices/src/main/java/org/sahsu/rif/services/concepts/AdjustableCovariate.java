@@ -127,22 +127,19 @@ public final class AdjustableCovariate
 	 * @param name the name
 	 * @param minimumValue the minimum value
 	 * @param maximumValue the maximum value
-	 * @param covariateType the covariate type
 	 * @return the adjustable covariate
 	 */
 	public static AdjustableCovariate newInstance(
-		final String name,
-		final String minimumValue,
-		final String maximumValue,
-		final CovariateType covariateType) {
+			final String name,
+			final String minimumValue,
+			final String maximumValue) {
 		
 		AdjustableCovariate adjustableCovariate
 			= new AdjustableCovariate(
 				name, 
 				minimumValue, 
 				maximumValue);
-		adjustableCovariate.setCovariateType(covariateType);
-		return adjustableCovariate;		
+		return adjustableCovariate;
 	}
 
 	/**
@@ -163,7 +160,6 @@ public final class AdjustableCovariate
         cloneAdjustableCovariate.setName(adjustableCovariate.getName());
         cloneAdjustableCovariate.setMinimumValue(adjustableCovariate.getMinimumValue());
         cloneAdjustableCovariate.setMaximumValue(adjustableCovariate.getMaximumValue());
-        cloneAdjustableCovariate.setCovariateType(adjustableCovariate.getCovariateType());
 		return cloneAdjustableCovariate;
 	}	
 	

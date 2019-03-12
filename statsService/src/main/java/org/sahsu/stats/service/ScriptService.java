@@ -285,7 +285,7 @@ final class ScriptService {
 					logMsg.append(name).append("=XXXXXXXX").append(lineSeparator);
 					engine.assign(name, value);
 					break;
-				case "covariate_name":
+				case "covariate_names":
 					logMsg.append("names.adj.1=").append(value).append(lineSeparator);
 					engine.assign("names.adj.1", value);
 					logMsg.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);

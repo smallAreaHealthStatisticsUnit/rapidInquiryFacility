@@ -43,7 +43,7 @@ if (adj.1 == "TRUE") {
 if (names.adj.1 == "NONE") {
 	names.adj<-c('none')
 } else {
-	names.adj<-c(names.adj.1)
+	names.adj<-unlist(strsplit(c(names.adj.1), split = ','))
 }
 #CATALINA_HOME
 catalina_home<-Sys.getenv("CATALINA_HOME")

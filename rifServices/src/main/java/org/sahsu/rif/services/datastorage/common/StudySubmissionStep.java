@@ -1003,9 +1003,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			String studyGeoLevelName
 					= rifMappingStudyArea.getGeoLevelToMap().getName();
 
-			ArrayList<AbstractCovariate> covariates
-					= investigation.getCovariates();
-			ResultSet getMinMaxCovariateValueResultSet = null;
+			List<AbstractCovariate> covariates = investigation.getCovariates();
+			ResultSet getMinMaxCovariateValueResultSet;
 			for (AbstractCovariate covariate : covariates) {
 
 				sqlQueryText = logSQLQuery(

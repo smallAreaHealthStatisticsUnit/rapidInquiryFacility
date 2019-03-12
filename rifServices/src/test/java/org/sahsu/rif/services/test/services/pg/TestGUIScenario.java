@@ -147,7 +147,7 @@ public final class TestGUIScenario extends CommonRIFServiceTestCase {
 			System.out.println("We'll pick the SAHSU geography and get available health themes");
 			Geography sahsuGeography
 				= Geography.newInstance("SAHSU", "stuff about sahsuland");
-			ArrayList<HealthTheme> healthThemes
+			List<HealthTheme> healthThemes
 				= rifStudySubmissionService.getHealthThemes(testUser, sahsuGeography);
 			for (HealthTheme healthTheme : healthThemes) {
 				System.out.println("HEALTH THEME:=="+healthTheme.getDisplayName()+"==");			
@@ -157,7 +157,7 @@ public final class TestGUIScenario extends CommonRIFServiceTestCase {
 			System.out.println("We will pick the health theme of cancer and get ND pairs");
 			HealthTheme cancerHealthTheme
 				= HealthTheme.newInstance("SAHSU land cancer incidence example data", "");
-			ArrayList<NumeratorDenominatorPair> cancerNDPairs
+			List<NumeratorDenominatorPair> cancerNDPairs
 				= rifStudySubmissionService.getNumeratorDenominatorPairs(
 					testUser, 
 					sahsuGeography, 
@@ -232,7 +232,7 @@ public final class TestGUIScenario extends CommonRIFServiceTestCase {
 					
 			System.out.println();
 			System.out.println("Get sex values");
-			ArrayList<Sex> sexs
+			List<Sex> sexs
 				= rifStudySubmissionService.getSexes(testUser);
 			for (Sex sex : sexs) {
 				System.out.println("GENDER:=="+sex.getName()+"==");
@@ -241,7 +241,7 @@ public final class TestGUIScenario extends CommonRIFServiceTestCase {
 			System.out.println();
 			System.out.println("Get covariates using a geoLevelToMap of 'LEVEL4'");
 			GeoLevelToMap geoLevelToMap = GeoLevelToMap.newInstance("LEVEL4");
-			ArrayList<AbstractCovariate> covariates
+			List<AbstractCovariate> covariates
 				= rifStudySubmissionService.getCovariates(
 					testUser, 
 					sahsuGeography, 
