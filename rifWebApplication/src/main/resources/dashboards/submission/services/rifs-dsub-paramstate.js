@@ -45,7 +45,7 @@ angular.module("RIF")
                         interval: 1,
                         sex: "",
                         covariate: "NONE",
-                        terms: [],
+                        terms: [], // Health code terms: e.g. ICD codes
                         lowerAge: "",
                         upperAge: "",
                         possibleCovariates: [],

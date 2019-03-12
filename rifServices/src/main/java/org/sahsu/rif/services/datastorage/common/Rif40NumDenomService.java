@@ -24,6 +24,11 @@ import org.json.JSONObject;
 /**
  * Creates Rif40NumDenomService object JSON used by rifc-dsub-main.js
  *
+ * Todo (issue #???):
+ *
+ * - Needs to be extended to CREATE/re CREATE the users rif40_num_denom VIEW; preferably by diffing the VIEW text
+ * - The performance of the rif40_num_denom query needs improving
+ *
  * @author		Peter Hambly
  * @version 	1.0
  * @since 		4.0
@@ -71,14 +76,16 @@ public class Rif40NumDenomService extends BaseSQLManager {
         
 /* Convert results to required JSON format
 rif40NumDenomServiceJson = {
-themes: {
-    "cancers": "covering various types of cancers",
-    "HEATHROW": "HEATHROW Study",
-    "SYDVAST_TEST": "South west Sweden test theme"
-}
-themeList: [
-    "covering various types of cancers",
-    "South west Sweden test theme"
+themes: [{
+        "name": "cancers",
+        "description": "covering various types of cancers"
+    },{
+        "name": "HEATHROW",
+        "description": "HEATHROW Study"
+    },{
+        "name": "SYDVAST_TEST",
+        "description": "South west Sweden test theme"
+    }
 ],
 geographies: {
     "South west Sweden test theme": {
@@ -89,44 +96,44 @@ geographies: {
             "SYDVAST": "South West Sweden"
         },
         "STOCKHOLM": [{
-                numerator_table: "STOCKHOLM_CANCER",
-                numerator_description: "Stockholm Cancer data 19??-20??",
-                denominator_table: "STOCKHOLM_POPULATION",
-                denominator_description: "Stockholm Population 19??-20??.",
+                numerator_table_name: "STOCKHOLM_CANCER",
+                numerator_table_description: "Stockholm Cancer data 19??-20??",
+                denominator_table_name: "STOCKHOLM_POPULATION",
+                denominator_table_description: "Stockholm Population 19??-20??.",
                 automatic: 1
             }
         ],
         "SWEDEN_COUNTY": [{
-                numerator_table: "SWEDEN_CANCER",
-                numerator_description: "Sweden Cancer data 19??-20??",
-                denominator_table: "SWEDEN_POPULATION",
-                denominator_description: "Sweden Population 19??-20??.",
+                numerator_table_name: "SWEDEN_CANCER",
+                numerator_table_description: "Sweden Cancer data 19??-20??",
+                denominator_table_name: "SWEDEN_POPULATION",
+                denominator_table_description: "Sweden Population 19??-20??.",
                 automatic: 1
             }
         ],
         "SYDVAST": [{
-                numerator_table: "SYDVAST_TEST_1",
-                numerator_description: "Sydvast test 1 data 2008-2016",
-                denominator_table: "SYDVAST_TEST_1_POPULATION",
-                denominator_description: "Sydvast test 1 population 2008-2016.",
+                numerator_table_name: "SYDVAST_TEST_1",
+                numerator_table_description: "Sydvast test 1 data 2008-2016",
+                denominator_table_name: "SYDVAST_TEST_1_POPULATION",
+                denominator_table_description: "Sydvast test 1 population 2008-2016.",
                 automatic: 0
             }, {
-                numerator_table: "SYDVAST_TEST_2",
-                numerator_description: "Sydvast test 2 data 2008-2016",
-                denominator_table: "SYDVAST_TEST_2_POPULATION",
-                denominator_description: "Sydvast test 2 population 2008-2016.",
+                numerator_table_name: "SYDVAST_TEST_2",
+                numerator_table_description: "Sydvast test 2 data 2008-2016",
+                denominator_table_name: "SYDVAST_TEST_2_POPULATION",
+                denominator_table_description: "Sydvast test 2 population 2008-2016.",
                 automatic: 0
             }, {
-                numerator_table: "SYDVAST_TEST_3",
-                numerator_description: "Sydvast test 3 data 2008-2016",
-                denominator_table: "SYDVAST_TEST_3_POPULATION",
-                denominator_description: "Sydvast test 3 population 2008-2016.",
+                numerator_table_name: "SYDVAST_TEST_3",
+                numerator_table_description: "Sydvast test 3 data 2008-2016",
+                denominator_table_name: "SYDVAST_TEST_3_POPULATION",
+                denominator_table_description: "Sydvast test 3 population 2008-2016.",
                 automatic: 0
             }, {
-                numerator_table: "SYDVAST_TEST_4",
-                numerator_description: "Sydvast test 4 data 2008-2016",
-                denominator_table: "SYDVAST_TEST_4_POPULATION",
-                denominator_description: "Sydvast test 4 population 2008-2016.",
+                numerator_table_name: "SYDVAST_TEST_4",
+                numerator_table_description: "Sydvast test 4 data 2008-2016",
+                denominator_table_name: "SYDVAST_TEST_4_POPULATION",
+                denominator_table_description: "Sydvast test 4 population 2008-2016.",
                 automatic: 0
             }
         ],
@@ -137,10 +144,10 @@ geographies: {
             "SAHSULAND": "SAHSU Example geography"
         },
         "SAHSULAND": [{
-            numerator_table: " NUM_SAHSULAND_CANCER ",
-            numerator_description: " cancer numerator "
-            denominator_table: " POP_SAHSULAND_POP ",
-            denominator_description: " population health file ",
+            numerator_table_name: " NUM_SAHSULAND_CANCER ",
+            numerator_table_description: " cancer numerator "
+            denominator_table_name: " POP_SAHSULAND_POP ",
+            denominator_table_description: " population health file ",
             automatic: 1
             }
         ]
@@ -161,15 +168,16 @@ geographies: {
         }
         
         JSONArray themeListJson=new JSONArray();
-        JSONObject themesJson=new JSONObject();
         JSONObject geographiesJson=new JSONObject();
         
         // Build themes object and themeList array
         for (HashMap.Entry<String, String> entry : themeList.entrySet()) {
             String themeName=entry.getValue();
             String themeDescription=entry.getKey();
-            themeListJson.put(themeDescription);
-            themesJson.put(themeName, themeDescription);
+            JSONObject themesJson=new JSONObject();
+            themesJson.put("name", themeName);
+            themesJson.put("description", themeDescription);
+            themeListJson.put(themesJson);
         }
         
         // Foreach theme description build a list of RIF40_NUM_DENOM pairs by geography
@@ -218,8 +226,7 @@ geographies: {
         }
         
         JSONObject rif40NumDenomServiceJson = new JSONObject();
-        rif40NumDenomServiceJson.put("themes", themesJson);
-        rif40NumDenomServiceJson.put("themeList", themeListJson);
+        rif40NumDenomServiceJson.put("themes", themeListJson);
         rif40NumDenomServiceJson.put("geographies", geographiesJson);
         
         return rif40NumDenomServiceJson;
@@ -354,24 +361,24 @@ geographies: {
 	 * )
 	 * SELECT n.geography AS geography_name,
 	 *        n.geography_description,
-	 *        n.numerator_table,
-	 *        n.numerator_description,
+	 *        n.numerator_table AS numerator_table_name,
+	 *        n.numerator_description AS numerator_table_description,
 	 *        n.theme_name,
 	 *        n.theme_description,
-	 *        d.denominator_table,
- 	 *        d.denominator_description,
+	 *        d.denominator_table AS denominator_table_name,
+ 	 *        d.denominator_description AS denominator_table_description,
  	 *        n.automatic
 	 *   FROM n, d
 	 *  WHERE n.geography = d.geography
 	 * UNION
 	 * SELECT ta.geography AS geography_name,
 	 *        ta.geography_description,
-	 *        ta.numerator_table,
-	 *        ta.numerator_description,
+	 *        ta.numerator_table AS numerator_table_name,
+	 *        ta.numerator_description AS numerator_table_description,
 	 *        h.theme AS theme_name,
 	 *        h.description AS theme_description,
-	 *        ta.denominator_table,
-	 *        d.description AS denominator_description,
+	 *        ta.denominator_table AS denominator_table_name,
+	 *        d.description AS denominator_table_description,
 	 *        0 AS automatic
 	 *   FROM ( SELECT nd.geography,
 	 *                 g.description AS geography_description,
@@ -469,12 +476,12 @@ geographies: {
             queryFormatter.addQueryLine(0, ")");
             queryFormatter.addQueryLine(0, "SELECT n.geography AS geography_name,");
             queryFormatter.addQueryLine(0, "       n.geography_description,");
-            queryFormatter.addQueryLine(0, "       n.numerator_table,");
-            queryFormatter.addQueryLine(0, "       n.numerator_description,");
+            queryFormatter.addQueryLine(0, "       n.numerator_table AS numerator_table_name,");
+            queryFormatter.addQueryLine(0, "       n.numerator_description AS numerator_table_description,");
             queryFormatter.addQueryLine(0, "       n.theme_name,");
             queryFormatter.addQueryLine(0, "       n.theme_description,");
-            queryFormatter.addQueryLine(0, "       d.denominator_table,");
-            queryFormatter.addQueryLine(0, "       d.denominator_description,");
+            queryFormatter.addQueryLine(0, "       d.denominator_table AS denominator_table_name,");
+            queryFormatter.addQueryLine(0, "       d.denominator_description AS denominator_table_description,");
             queryFormatter.addQueryLine(0, "       n.automatic");
             queryFormatter.addQueryLine(0, "  FROM n, d");
             queryFormatter.addQueryLine(0, " WHERE n.geography = d.geography");
@@ -517,12 +524,12 @@ geographies: {
             queryFormatter.addQueryLine(0, "UNION");
             queryFormatter.addQueryLine(0, "SELECT ta.geography AS geography_name,");
             queryFormatter.addQueryLine(0, "       ta.geography_description,");
-            queryFormatter.addQueryLine(0, "       ta.numerator_table,");
-            queryFormatter.addQueryLine(0, "       ta.numerator_description,");
+            queryFormatter.addQueryLine(0, "       ta.numerator_table AS numerator_table_name,");
+            queryFormatter.addQueryLine(0, "       ta.numerator_description AS numerator_table_description,");
             queryFormatter.addQueryLine(0, "       h.theme AS theme_name,");
             queryFormatter.addQueryLine(0, "       h.description AS theme_description,");
-            queryFormatter.addQueryLine(0, "       ta.denominator_table,");
-            queryFormatter.addQueryLine(0, "       d.description AS denominator_description,");
+            queryFormatter.addQueryLine(0, "       ta.denominator_table AS denominator_table_name,");
+            queryFormatter.addQueryLine(0, "       d.description AS denominator_table_description,");
             queryFormatter.addQueryLine(0, "       0 AS automatic");
             queryFormatter.addQueryLine(0, "  FROM ( SELECT nd.geography,");
             queryFormatter.addQueryLine(0, "                g.description AS geography_description,");

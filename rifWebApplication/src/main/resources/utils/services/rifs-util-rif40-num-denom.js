@@ -40,7 +40,7 @@ angular.module("RIF")
                     var rif40NumDenom = undefined;
                     
                     initialiseRif40NumDenomService = function () {
-                        return $q(function(resolve, reject) {
+                        return $q(function(resolve, reject) { // A promise
                             user.getRif40NumDenom(user.currentUser).then(
                                 function(res) {
                                     AlertService.consoleDebug("[rifs-util-rif40-num-denom.js] getRif40NumDenom: " +
