@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.sahsu.rif.generic.concepts.User;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
@@ -67,7 +68,7 @@ public interface SQLManager {
 	
 	String getColumnComment(Connection connection,
 			String schemaName, String tableName, String columnName)
-			throws Exception;
+			throws SQLException;
 			
 	CachedRowSet getRifViewData(
 			final Connection connection,
@@ -137,6 +138,8 @@ public interface SQLManager {
 	void logout(final User user) throws RIFServiceException;
 	
 	void deregisterAllUsers() throws RIFServiceException;
+
+	DatabaseType getDbType();
 	
 	default CallableStatement createPreparedCall(final Connection connection, final String query)
 			throws SQLException {

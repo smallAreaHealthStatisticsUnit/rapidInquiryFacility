@@ -7,7 +7,6 @@ import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
 import org.sahsu.rif.services.concepts.ComparisonArea;
-import org.sahsu.rif.services.concepts.CovariateType;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
@@ -43,25 +42,24 @@ public final class TestDiseaseMappingStudy extends AbstractRIFTestCase {
 		masterDiseaseMappingStudy 
 			= generator.createSampleDiseaseMappingStudy();
 
-		CovariateType covariateType = CovariateType.CONTINUOUS_VARIABLE;
 		masterNearDistCovariate
 			= AdjustableCovariate.newInstance(
 				"NEAR_DIST", 
 				String.valueOf("358.28"), 
-				String.valueOf("78786.62"), 
-				covariateType);	
+				String.valueOf("78786.62")
+			                                 );
 		masterSESCovariate
 			= AdjustableCovariate.newInstance(
 				"SES", 
 				String.valueOf("1"), 
-				String.valueOf("5"), 
-				covariateType);	
+				String.valueOf("5")
+			                                 );
 		masterTri1KMCovariate
 			= AdjustableCovariate.newInstance(
 				"TRI_1KM", 
 				String.valueOf("0"), 
-				String.valueOf("1"), 
-				covariateType);			
+				String.valueOf("1")
+			                                 );
 		
 	}
 

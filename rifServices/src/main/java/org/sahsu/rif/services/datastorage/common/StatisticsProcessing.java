@@ -4,10 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.LogManager;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -94,8 +94,7 @@ public class StatisticsProcessing extends CommonRService {
 		addParameter("investigationName",
 		             createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
 
-		String covariateName = getCovariateName(studySubmission);
-		addParameter("covariate_name", covariateName);
+		addParameter("covariate_names", getCovariateNames(studySubmission));
 
 		Integer investigationID;
 		try {
@@ -160,27 +159,20 @@ public class StatisticsProcessing extends CommonRService {
 		}
 	}
 
-	/*
-	 * @TODO: KLG - Currently the study submission data model allows for it to have a study with multiple investigations,
-	 * each of which can have multiple different covariates.  In practice, we are finding that we are using one covariate.
-	 * This is a method that should be migrated into the RIFStudySubmission class.
-	 */
-	private String getCovariateName(final RIFStudySubmission studySubmission) {
-		AbstractStudy study
-		= studySubmission.getStudy();
-		ArrayList<Investigation> investigations = study.getInvestigations();
-		//Get the covariates from the first investigation
-		ArrayList<AbstractCovariate> covariates = investigations.get(0).getCovariates();
+	private String getCovariateNames(final RIFStudySubmission studySubmission) {
 
+		AbstractStudy study = studySubmission.getStudy();
+		List<Investigation> investigations = study.getInvestigations();
 
-		//This just takes the first covariate of the first investigation and returns its name.  That's the one we will
-		//assume will appear in the extract table.  Note though that this needs to be changed in future because at the 
-		//moment our model accommodates multiple covariates in multiple investigations.
+		// Get the covariates from the first investigation
+		List<AbstractCovariate> covariates = investigations.get(0).getCovariates();
+
 		if (covariates.isEmpty()) {
 			return "NONE";
 		}
 
-		return covariates.get(0).getName();
+		return covariates.stream().map(AbstractCovariate::getName)
+				                .collect(Collectors.joining(","));
 	}
 
 

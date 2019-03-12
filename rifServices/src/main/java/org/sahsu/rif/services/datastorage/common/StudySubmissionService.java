@@ -16,12 +16,13 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AgeGroup;
 import org.sahsu.rif.services.concepts.AgeGroupSortingOption;
 import org.sahsu.rif.services.concepts.CalculationMethod;
+import org.sahsu.rif.services.concepts.GeoLevelToMap;
 import org.sahsu.rif.services.concepts.Geography;
 import org.sahsu.rif.services.concepts.HealthTheme;
 import org.sahsu.rif.services.concepts.NumeratorDenominatorPair;
@@ -29,375 +30,97 @@ import org.sahsu.rif.services.concepts.Project;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.concepts.RIFStudySubmissionAPI;
 import org.sahsu.rif.services.concepts.Sex;
+import org.sahsu.rif.services.concepts.YearRange;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 import org.json.JSONObject;
- 
-/**
- * Main implementation of the RIF middleware.
- * <p>
- * The main roles of this class are to support:
- * <ul>
- * <li>
- * use final parameters for all API methods to help minimise concurrency issues.
- * </li>
- * <li>
- * defensively copy method parameters to minimise concurrency and security issues
- * </li>
- * <li>
- * detect any empty method parameters
- * <li>
- * <li>
- * detect any security violations (eg: injection attacks)
- * </li>
- * </ul>
- *<p>
- *Most methods in the class perform the same sequence of steps:
- *<ol>
- *<li><b>Defensively copy parameter values<b>.  This step ensures that parameter values passed by the
- *client will not change any of their values while the method executes.  Defensive copying helps
- *minimise problems of multiple threads altering parameter values that are passed to the methods.  The
- *technique also helps reduce the likelihood of certain types of security attacks.
- *</li>
- *<li>
- *Ensure none of the required parameter values are empty.  By empty, we mean they are either null, or in the case
- *of Strings, null or an empty string.  This step helps minimise the effort the service has to spend recovering from
- *null pointer exceptions.
- *</li>
- *<li>
- *Scan every parameter value for malicious field values.  Sometimes this just means scanning a String parameter value
- *for text that could be used as part of a malicous code attack.  In this step, the <code>checkSecurityViolations(..)</code>
- *methods for business objects are called.  Note that the <code>checkSecurityViolations</code> method of a business
- *object will scan each text field for malicious field values, and recursively call the same method in any child
- *business objects it may possess.
- *</li>
- *<li>
- *Obtain a connection object from the {@link SQLManager}.
- *</li>
- *<li>
- *Delegate to a manager class, using a method with the same name.  Pass the connection object as part of the call.
- *</li>
- *<li>
- *Return the connection object to the connection pool.
- *<li>
- *
- *<h2>Security</h2>
- *The RIF software contains many different types of checks which are designed to detect or prevent malicious code
- *attacks.  Defensive copying prevents an attacker from trying to change parameter values sometime when the method
- *has not finished executing.  The use of PreparedStatement objects, and trigger checks that are part of the database
- *should eliminate the prospect of a malicious attack.  However, calls to the <code>checkSecurityViolations(..)</code>
- *methods are intended to identify an attack anyway.  We feel that we should not merely prevent malicious attacks but
- *log any attempts to do so.  If the method throws a {@link RIFServiceSecurityException},
- *then this class will log it and continue to pass it to client application.
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
 
-public class StudySubmissionService extends CommonUserService implements RIFStudySubmissionAPI {
+public class StudySubmissionService extends StudyService implements RIFStudySubmissionAPI {
 
 	private static String lineSeparator = System.getProperty("line.separator");
 
-	/**
-	 * Instantiates a new production rif job submission service.
-	 */
 	public StudySubmissionService() {
 
-		String serviceName = RIFServiceMessages.getMessage("rifStudySubmissionService.name");
-		setServiceName(serviceName);
-		String serviceDescription = RIFServiceMessages.getMessage(
-				"rifStudySubmissionService.description");
-		setServiceDescription(serviceDescription);
-		String serviceContactEmail = RIFServiceMessages.getMessage(
-				"rifStudySubmissionService.contactEmail");
-		setServiceContactEmail(serviceContactEmail);
 	}
 
-	public void test(final User user, String url)
+	@Override
+	public YearRange getYearRange(
+			final User _user,
+			final Geography _geography,
+			final NumeratorDenominatorPair _ndPair)
 		throws RIFServiceException {
 
-		//Defensively copy parameters and guard against blocked users
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-
-		Connection connection = null;
-		ExecutorService exec = Executors.newSingleThreadExecutor();
-		try {
-
-			//Assign pooled connection
-			connection = sqlConnectionManager.assignPooledWriteConnection(user);
-			String password=sqlConnectionManager.getUserPassword(user);
-
-			SampleTestObjectGenerator testDataGenerator = new SampleTestObjectGenerator();
-			RIFStudySubmission studySubmission = testDataGenerator.createSampleRIFJobSubmission();
-
-			//Delegate operation to a specialised manager class
-			RIFServiceStartupOptions rifServiceStartupOptions = getRIFServiceStartupOptions();
-			RunStudyThread runStudyThread = new RunStudyThread();
-			runStudyThread.initialise(
-				connection,
-				user,
-				password,
-				studySubmission,
-				rifServiceStartupOptions,
-				rifServiceResources,
-				url);
-
-			exec.execute(runStudyThread);
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-			//Audit failure of operation
-			logException(
-				user,
-				"test",
-				rifServiceException);
-		}
-		finally {
-
-			exec.shutdown();
-
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user,
-				connection);
-		}
-
-	}
-
-	public ArrayList<CalculationMethod> getAvailableCalculationMethods(
-		final User _user)
-		throws RIFServiceException {
+		//TOUR_SECURITY
+		/*
+		 * The client code may be able to change the value of a parameter object within the
+		 * period between when this method starts and when it finishes.  Theoretically, a
+		 * malicious client could attempt to change harmless parameter values into malicious values
+		 * some time after security checks have been done but before a database operation is actually
+		 * being executed.  Safe copying takes a snapshot of the parameter values and uses that for
+		 * the rest of the method's code block.
+		 *
+		 */
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
+			//TOUR SECURITY
+			/*
+			 * The first most important security task is to check whether the user has
+			 * already been blacklisted because of some prior security exception.  This
+			 * check is designed to ensure that malicious attacks use the least amount of
+			 * computational resources as possible.
+			 */
 			return null;
 		}
-
-		ArrayList<CalculationMethod> results
-			= new ArrayList<CalculationMethod>();
-		try {
-
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getAvailableCalculationMethods",
-				"user",
-				user);
-
-			//Check for security violations
-			validateUser(user);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getAvailableCalculationMethods",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-			//Delegate operation to a specialised manager class
-			SampleTestObjectGenerator generator
-				= new SampleTestObjectGenerator();
-			results = generator.getSampleCalculationMethods();
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getAvailableCalculationMethods",
-				rifServiceException);
-		}
-
-		return results;
-	}
-
-	public List<AgeGroup> getAgeGroups(
-		final User _user,
-		final Geography _geography,
-		final NumeratorDenominatorPair _ndPair,
-		final AgeGroupSortingOption sortingOrder)
-		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-		Geography geography = Geography.createCopy(_geography);
+		Geography geography
+			= Geography.createCopy(_geography);
 		NumeratorDenominatorPair ndPair
 			= NumeratorDenominatorPair.createCopy(_ndPair);
-		//no need to defensively copy sortingOrder because
-		//it is an enumerated type
 
-		List<AgeGroup> results = new ArrayList<>();
+		YearRange result = YearRange.newInstance();
 		Connection connection = null;
 		try {
+
 			//Check for empty parameters
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"getAgeGroups",
+				"getYearRange",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
-				"getAgeGroups",
+				"getYearRange",
 				"geography",
 				geography);
 			fieldValidationUtility.checkNullMethodParameter(
-				"getAgeGroups",
+				"getYearRange",
 				"numeratorDenominatorPair",
 				ndPair);
 
-			//sortingOrder can be null, it just means that the
-			//order will be ascending lower limit
 
+			//TOUR_SECURITY
+			/*
+			 * Here we go through each of the method parameter objects that are instantiated from
+			 * concepts classes.  "checkSecurityViolations()" is meeant to recursively
+			 * check through all the String field values and check whether they have patterns
+			 * which could match known types of malicious code attacks.
+			 */
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
 			ndPair.checkSecurityViolations();
 
-
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getAgeGroups",
+				= SERVICE_MESSAGES.getMessage("logging.getYearRange",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName(),
-					ndPair.getDisplayName(),
-					sortingOrder.name());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-
-			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledReadConnection(user);
-
-			//Delegate operation to a specialised manager class
-			AgeGenderYearManager sqlAgeGenderYearManager
-				= rifServiceResources.getSqlAgeGenderYearManager();
-			results = sqlAgeGenderYearManager.getAgeGroups(user, connection, geography, ndPair,
-			                                               sortingOrder);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getAgeGroups",
-				rifServiceException);
-		}
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user,
-				connection);
-		}
-
-		return results;
-
-	}
-
-	public ArrayList<Sex> getSexes(
-		final User _user)
-		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-
-		ArrayList<Sex> results = new ArrayList<Sex>();
-		try {
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getSexes",
-				"user",
-				user);
-
-			//Check for security violations
-			validateUser(user);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getSexes",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-
-			//Delegate operation to a specialised manager class
-			AgeGenderYearManager sqlAgeGenderYearManager
-				= rifServiceResources.getSqlAgeGenderYearManager();
-			results
-				= sqlAgeGenderYearManager.getGenders();
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getSexes",
-				rifServiceException);
-		}
-
-		return results;
-	}
-
-    	//Features for RIF Context
-	public JSONObject getRif40NumDenom(
-		final User _user)
-		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-
-		JSONObject results = new JSONObject();
-		Connection connection = null;
-		try {
-
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getNumeratorDenominatorPair",
-				"user",
-				user);
-
-			//Check for security violations
-			validateUser(user);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getNumeratorDenominatorPairs",
-					user.getUserID(),
-					user.getIPAddress(),
-					"N/A",
-					"N/A");
+					ndPair.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -407,17 +130,27 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			RIFContextManager sqlRIFContextManager
-				= rifServiceResources.getSQLRIFContextManager();
-			results
-				= sqlRIFContextManager.getRif40NumDenom(
-					connection, user);
+			AgeGenderYearManager sqlAgeGenderYearManager
+				= rifServiceResources.getSqlAgeGenderYearManager();
+			result
+				= sqlAgeGenderYearManager.getYearRange(
+					user,
+					connection,
+					geography,
+					ndPair);
 		}
 		catch(RIFServiceException rifServiceException) {
+
+			//TOUR_SECURITY
+			/*
+			 * logException(...) will determine whether the error is a security exception
+			 * or not.  If it is, the middleware will blacklist the user
+			 */
+
 			//Audit failure of operation
 			logException(
 				user,
-				"getNumeratorDenominatorPair",
+				"getYearRange",
 				rifServiceException);
 		}
 		finally {
@@ -427,15 +160,14 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 				connection);
 		}
 
-		return results;
+		return result;
 	}
 
-   
-	//Features for RIF Context
-	public ArrayList<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
-		final User _user,
-		final Geography _geography,
-		final HealthTheme _healthTheme)
+
+	@Override
+	public List<HealthTheme> getHealthThemes(
+			final User _user,
+			final Geography _geography)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -446,10 +178,8 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
-		HealthTheme healthTheme = HealthTheme.createCopy(_healthTheme);
 
-		ArrayList<NumeratorDenominatorPair> results =
-			new ArrayList<NumeratorDenominatorPair>();
+		ArrayList<HealthTheme> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 
@@ -457,31 +187,31 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"getNumeratorDenominatorPair",
+				"getHealthThemes",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
-				"getNumeratorDenominatorPair",
-				"healthTheme",
-				healthTheme);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getNumeratorDenominatorPair",
+				"getHealthThemes",
 				"geography",
 				geography);
 
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
-			healthTheme.checkSecurityViolations();
 
+
+			//TOUR_CONCURRENCY
+			/*
+			 * The logging facility here is an example of a shared resource that
+			 * will be a source of contention.  The logger is managed as a single
+			 * instance that will be used by all threads.
+			 */
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getNumeratorDenominatorPairs",
+				= SERVICE_MESSAGES.getMessage("logging.getHealthThemes",
 					user.getUserID(),
 					user.getIPAddress(),
-					geography.getDisplayName(),
-					healthTheme.getDisplayName());
+					geography.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -494,17 +224,13 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
 			results
-				= sqlRIFContextManager.getNumeratorDenominatorPairs(
-					connection,
-					geography,
-					healthTheme,
-					user);
+				= sqlRIFContextManager.getHealthThemes(connection, geography);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
 				user,
-				"getNumeratorDenominatorPair",
+				"getHealthThemes",
 				rifServiceException);
 		}
 		finally {
@@ -518,264 +244,70 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	}
 
 
-	/**
-	 * Convenience method to obtain everything that is needed to get
-	 * @param u
-	 * @param geog
-	 * @param numeratorTableName
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
-		final User u,
-		final Geography geog,
-		final String numeratorTableName)
-		throws RIFServiceException {
+
+	@Override
+	public List<AbstractCovariate> getCovariates(final User _user, final Geography _geography,
+			final GeoLevelToMap _geoLevelToMap) throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(u);
-		SQLManager sqlConnectionManager =
-						rifServiceResources.getSqlConnectionManager();
-
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
-		Geography geography = Geography.createCopy(geog);
-		NumeratorDenominatorPair result = NumeratorDenominatorPair.newInstance();
+		Geography geography = Geography.createCopy(_geography);
+		GeoLevelToMap geoLevelToMap = GeoLevelToMap.createCopy(_geoLevelToMap);
+
+		List<AbstractCovariate> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 
 			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getNumeratorDenominatorPairFromNumeratorTable",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getNumeratorDenominatorPairFromNumeratorTable",
-				"geography",
-				geography);
+			FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter("getCovariates", "user", user);
+			fieldValidationUtility.checkNullMethodParameter("getCovariates", "geography",
+			                                                geography);
 
-			fieldValidationUtility.checkNullMethodParameter(
-				"getNumeratorDenominatorPairFromNumeratorTable",
-				"numeratorTableName",
-				numeratorTableName);
+			fieldValidationUtility.checkNullMethodParameter("getCovariates", "geoLevelToMap",
+			                                                geoLevelToMap);
 
 			//Check for security violations
 			validateUser(user);
 			geography.checkSecurityViolations();
-			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getNumeratorDenominatorPairFromNumeratorTable",
-				"numeratorTableName",
-				numeratorTableName);
+			geoLevelToMap.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage(
-					"logging.getNumeratorDenominatorPairFromNumeratorTable",
-					user.getUserID(),
-					user.getIPAddress(),
-					geography.getDisplayName(),
-					numeratorTableName);
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledReadConnection(user);
-
-			//Delegate operation to a specialised manager class
-			RIFContextManager sqlRIFContextManager
-				= rifServiceResources.getSQLRIFContextManager();
-			result
-				= sqlRIFContextManager.getNDPairFromNumeratorTableName(
-					user,
-					connection,
-					geography,
-					numeratorTableName);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getNumeratorDenominatorPair",
-				rifServiceException);
-		}
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user,
-				connection);
-		}
-
-		return result;
-
-	}
-
-	public ArrayList<Project> getProjects(
-		final User _user) throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-
-		ArrayList<Project> results = new ArrayList<Project>();
-		Connection connection = null;
-		try {
-
-			//Part II: Check for empty parameter values
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getProjects",
-				"user",
-				user);
-
-			//Check for security violations
-			validateUser(user);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage(
-					"logging.getProjects",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-			//Assign pooled connection
-			connection
-				= sqlConnectionManager.assignPooledReadConnection(user);
-
-			//Delegate operation to a specialised manager class
-			DiseaseMappingStudyManager sqlDiseaseMappingStudyManager
-				= rifServiceResources.getSqlDiseaseMappingStudyManager();
-
-			results
-				= sqlDiseaseMappingStudyManager.getProjects(
-					connection,
-					user);
-
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getProjects",
-				rifServiceException);
-		}
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user,
-				connection);
-		}
-
-		return results;
-	}
-
-
-	public String submitStudy(final User _user, final RIFStudySubmission rifStudySubmission,
-			final File _outputFile, final String url) throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-
-		String result = null;
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return null;
-		}
-		// RIFStudySubmission rifStudySubmission
-		// 	= RIFStudySubmission.createCopy(_rifStudySubmission);
-
-		File outputFile = null;
-		if (_outputFile != null) {
-			outputFile = new File(_outputFile.getAbsolutePath());
-		}
-
-		Connection connection = null;
-		ExecutorService exec = Executors.newSingleThreadExecutor();
-		try {
-
-			//Part II: Check for empty parameter values
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"submitStudy",
-				"user",
-				user);
-			fieldValidationUtility.checkNullMethodParameter(
-				"submitStudy",
-				"rifStudySubmission",
-				rifStudySubmission);
-
-			//Check for security violations
-			validateUser(user);
-			rifStudySubmission.checkSecurityViolations();
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			String outputFileName = "";
-			if (outputFile != null) {
-				outputFileName = outputFile.getAbsolutePath();
-			}
-
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.submittingStudy",
-					user.getUserID(),
-					user.getIPAddress(),
-					rifStudySubmission.getDisplayName(),
-					outputFileName);
+			String auditTrailMessage = SERVICE_MESSAGES.getMessage("logging.getCovariates",
+			                                                       user.getUserID(),
+			                                                       user.getIPAddress(),
+			                                                       geography.getDisplayName(),
+			                                                       geoLevelToMap.getDisplayName());
 			rifLogger.info(getClass(), auditTrailMessage);
 
-			//Assign pooled connection
-			connection = sqlConnectionManager.assignPooledWriteConnection(user);
-			String password=sqlConnectionManager.getUserPassword(user);
+			// Assign pooled connection
+			connection = sqlConnectionManager.assignPooledReadConnection(user);
 
-			//Delegate operation to a specialised manager class
-			RIFServiceStartupOptions rifServiceStartupOptions = getRIFServiceStartupOptions();
-			RunStudyThread runStudyThread = new RunStudyThread();
-			runStudyThread.initialise(
-				connection,
-				user,
-				password,
-				rifStudySubmission,
-				rifServiceStartupOptions,
-				rifServiceResources,
-				url);
+			// Delegate operation to a specialised manager class
+			CovariateManager sqlCovariateManager = rifServiceResources.getSqlCovariateManager();
+			results = sqlCovariateManager.getCovariates(connection, geography, geoLevelToMap);
 
-			exec.execute(runStudyThread);
 		}
 		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"submitStudy",
-				rifServiceException);
+			// Audit failure of operation
+			logException(user, "getCovariates", rifServiceException);
 		}
 		finally {
-
-			exec.shutdown();
-
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledWriteConnection(
-				user,
-				connection);
+			// Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(user, connection);
 		}
 
-		return result;
+		return results;
+	}
+
+	@Override
+	public RIFServiceStartupOptions getRIFServiceStartupOptions() {
+		return rifServiceResources.getRIFServiceStartupOptions();
 	}
 
 	/**
@@ -936,9 +468,9 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 			//Audit attempt to do operation
 			String auditTrailMessage
 			= RIFServiceMessages.getMessage("logging.getExtractStatus",
-					user.getUserID(),
-					user.getIPAddress(),
-					studyID);
+			                                user.getUserID(),
+			                                user.getIPAddress(),
+			                                studyID);
 			rifLogger.info(
 					getClass(),
 					auditTrailMessage);
@@ -974,6 +506,690 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 
 		return result;
 	}
+
+    	//Features for RIF Context
+	public JSONObject getRif40NumDenom(
+		final User _user)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+
+		JSONObject results = new JSONObject();
+		Connection connection = null;
+		try {
+
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPair",
+				"user",
+				user);
+
+			//Check for security violations
+			validateUser(user);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getNumeratorDenominatorPairs",
+					user.getUserID(),
+					user.getIPAddress(),
+					"N/A",
+					"N/A");
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			RIFContextManager sqlRIFContextManager
+				= rifServiceResources.getSQLRIFContextManager();
+			results
+				= sqlRIFContextManager.getRif40NumDenom(
+					connection, user);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getNumeratorDenominatorPair",
+				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user,
+				connection);
+		}
+
+		return results;
+	}
+
+/*
+	//Features for RIF Context
+	public ArrayList<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
+		final User _user,
+		final Geography _geography,
+		final HealthTheme _healthTheme)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+
+		ArrayList<Project> results = new ArrayList<Project>();
+		Connection connection = null;
+		try {
+
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getProjects",
+				"user",
+				user);
+
+			//Check for security violations
+			validateUser(user);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage(
+					"logging.getProjects",
+					user.getUserID(),
+					user.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			DiseaseMappingStudyManager sqlDiseaseMappingStudyManager
+				= rifServiceResources.getSqlDiseaseMappingStudyManager();
+
+			results
+				= sqlDiseaseMappingStudyManager.getProjects(
+					connection,
+					user);
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getProjects",
+				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user,
+				connection);
+		}
+
+		return results;
+	}
+*/
+	public String getStudyExtractFIleName(
+			final User user,
+			final String studyID) {
+
+			StudyExtractManager studyExtractManager
+			= rifServiceResources.getSQLStudyExtractManager();
+			return studyExtractManager.getStudyExtractFIleName(
+					user,
+					studyID);
+		}
+
+	public void createStudyExtract(final User user, final String studyID, final String zoomLevel,
+			final Locale locale, final String url) throws RIFServiceException {
+
+		new StudyExtract(user, studyID, zoomLevel, locale, url,
+		                 rifServiceResources).create();
+	}
+
+	/**
+	 * Convenience method to obtain everything that is needed to get
+	 * @param u
+	 * @param geog
+	 * @param numeratorTableName
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
+		final User u,
+		final Geography geog,
+		final String numeratorTableName)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(u);
+		SQLManager sqlConnectionManager =
+						rifServiceResources.getSqlConnectionManager();
+
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+
+		Geography geography = Geography.createCopy(geog);
+		NumeratorDenominatorPair result = NumeratorDenominatorPair.newInstance();
+		Connection connection = null;
+		try {
+
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPairFromNumeratorTable",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPairFromNumeratorTable",
+				"geography",
+				geography);
+
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPairFromNumeratorTable",
+				"numeratorTableName",
+				numeratorTableName);
+
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getNumeratorDenominatorPairFromNumeratorTable",
+				"numeratorTableName",
+				numeratorTableName);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage(
+					"logging.getNumeratorDenominatorPairFromNumeratorTable",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					numeratorTableName);
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			RIFContextManager sqlRIFContextManager
+				= rifServiceResources.getSQLRIFContextManager();
+			result
+				= sqlRIFContextManager.getNDPairFromNumeratorTableName(
+					user,
+					connection,
+					geography,
+					numeratorTableName);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getNumeratorDenominatorPair",
+				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user,
+				connection);
+		}
+
+		return result;
+
+	}
+
+	public List<AgeGroup> getAgeGroups(
+		final User _user,
+		final Geography _geography,
+		final NumeratorDenominatorPair _ndPair,
+		final AgeGroupSortingOption sortingOrder)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		NumeratorDenominatorPair ndPair
+			= NumeratorDenominatorPair.createCopy(_ndPair);
+		//no need to defensively copy sortingOrder because
+		//it is an enumerated type
+
+		List<AgeGroup> results = new ArrayList<>();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAgeGroups",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAgeGroups",
+				"geography",
+				geography);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAgeGroups",
+				"numeratorDenominatorPair",
+				ndPair);
+
+			//sortingOrder can be null, it just means that the
+			//order will be ascending lower limit
+
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			ndPair.checkSecurityViolations();
+
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getAgeGroups",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					ndPair.getDisplayName(),
+					sortingOrder.name());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			AgeGenderYearManager sqlAgeGenderYearManager
+				= rifServiceResources.getSqlAgeGenderYearManager();
+			results = sqlAgeGenderYearManager.getAgeGroups(user, connection, geography, ndPair,
+			                                               sortingOrder);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getAgeGroups",
+				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user,
+				connection);
+		}
+
+		return results;
+
+	}
+
+	public List<CalculationMethod> getAvailableCalculationMethods(
+		final User _user)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+
+		ArrayList<CalculationMethod> results
+			= new ArrayList<CalculationMethod>();
+		try {
+
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAvailableCalculationMethods",
+				"user",
+				user);
+
+			//Check for security violations
+			validateUser(user);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getAvailableCalculationMethods",
+					user.getUserID(),
+					user.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Delegate operation to a specialised manager class
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
+			results = generator.getSampleCalculationMethods();
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getAvailableCalculationMethods",
+				rifServiceException);
+		}
+
+		return results;
+	}
+
+	public String submitStudy(final User _user, final RIFStudySubmission rifStudySubmission,
+			final File _outputFile, final String url) throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+
+		String result = null;
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+		// RIFStudySubmission rifStudySubmission
+		// 	= RIFStudySubmission.createCopy(_rifStudySubmission);
+
+		File outputFile = null;
+		if (_outputFile != null) {
+			outputFile = new File(_outputFile.getAbsolutePath());
+		}
+
+		Connection connection = null;
+		ExecutorService exec = Executors.newSingleThreadExecutor();
+		try {
+
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"submitStudy",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"submitStudy",
+				"rifStudySubmission",
+				rifStudySubmission);
+
+			//Check for security violations
+			validateUser(user);
+			rifStudySubmission.checkSecurityViolations();
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String outputFileName = "";
+			if (outputFile != null) {
+				outputFileName = outputFile.getAbsolutePath();
+			}
+
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.submittingStudy",
+					user.getUserID(),
+					user.getIPAddress(),
+					rifStudySubmission.getDisplayName(),
+					outputFileName);
+			rifLogger.info(getClass(), auditTrailMessage);
+
+			//Assign pooled connection
+			connection = sqlConnectionManager.assignPooledWriteConnection(user);
+			String password=sqlConnectionManager.getUserPassword(user);
+
+			//Delegate operation to a specialised manager class
+			RIFServiceStartupOptions rifServiceStartupOptions = getRIFServiceStartupOptions();
+			RunStudyThread runStudyThread = new RunStudyThread();
+			runStudyThread.initialise(
+				connection,
+				user,
+				password,
+				rifStudySubmission,
+				rifServiceStartupOptions,
+				rifServiceResources,
+				url);
+
+			exec.execute(runStudyThread);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"submitStudy",
+				rifServiceException);
+		}
+		finally {
+
+			exec.shutdown();
+
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				user,
+				connection);
+		}
+
+		return result;
+	}
+
+	public List<Sex> getSexes(
+		final User _user)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+
+		ArrayList<Sex> results = new ArrayList<Sex>();
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSexes",
+				"user",
+				user);
+
+			//Check for security violations
+			validateUser(user);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getSexes",
+					user.getUserID(),
+					user.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+
+			//Delegate operation to a specialised manager class
+			AgeGenderYearManager sqlAgeGenderYearManager
+				= rifServiceResources.getSqlAgeGenderYearManager();
+			results
+				= sqlAgeGenderYearManager.getGenders();
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getSexes",
+				rifServiceException);
+		}
+
+		return results;
+	}
+
+	public void test(final User user, String url)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+
+		Connection connection = null;
+		ExecutorService exec = Executors.newSingleThreadExecutor();
+		try {
+
+			//Assign pooled connection
+			connection = sqlConnectionManager.assignPooledWriteConnection(user);
+			String password=sqlConnectionManager.getUserPassword(user);
+
+			SampleTestObjectGenerator testDataGenerator = new SampleTestObjectGenerator();
+			RIFStudySubmission studySubmission = testDataGenerator.createSampleRIFJobSubmission();
+
+			//Delegate operation to a specialised manager class
+			RIFServiceStartupOptions rifServiceStartupOptions = getRIFServiceStartupOptions();
+			RunStudyThread runStudyThread = new RunStudyThread();
+			runStudyThread.initialise(
+				connection,
+				user,
+				password,
+				studySubmission,
+				rifServiceStartupOptions,
+				rifServiceResources,
+				url);
+
+			exec.execute(runStudyThread);
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+			//Audit failure of operation
+			logException(
+				user,
+				"test",
+				rifServiceException);
+		}
+		finally {
+
+			exec.shutdown();
+
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user,
+				connection);
+		}
+
+	}
+
+	//Features for RIF Context
+	public List<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
+		final User _user,
+		final Geography _geography,
+		final HealthTheme _healthTheme)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+		Geography geography = Geography.createCopy(_geography);
+		HealthTheme healthTheme = HealthTheme.createCopy(_healthTheme);
+
+		ArrayList<NumeratorDenominatorPair> results =
+			new ArrayList<NumeratorDenominatorPair>();
+		Connection connection = null;
+		try {
+
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPair",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPair",
+				"healthTheme",
+				healthTheme);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getNumeratorDenominatorPair",
+				"geography",
+				geography);
+
+			//Check for security violations
+			validateUser(user);
+			geography.checkSecurityViolations();
+			healthTheme.checkSecurityViolations();
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getNumeratorDenominatorPairs",
+					user.getUserID(),
+					user.getIPAddress(),
+					geography.getDisplayName(),
+					healthTheme.getDisplayName());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			RIFContextManager sqlRIFContextManager
+				= rifServiceResources.getSQLRIFContextManager();
+			results
+				= sqlRIFContextManager.getNumeratorDenominatorPairs(
+					connection,
+					geography,
+					healthTheme,
+					user);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getNumeratorDenominatorPair",
+				rifServiceException);
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user,
+				connection);
+		}
+
+		return results;
+	} 
 
 	/**
 	 * Get the JSON setup file for a run study.
@@ -1088,24 +1304,6 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		return result;
 	}
 
-	public void createStudyExtract(final User user, final String studyID, final String zoomLevel,
-			final Locale locale, final String url) throws RIFServiceException {
-
-		new StudyExtract(user, studyID, zoomLevel, locale, url,
-		                 rifServiceResources).create();
-	}
-
-	public String getStudyExtractFIleName(
-			final User user,
-			final String studyID) {
-
-			StudyExtractManager studyExtractManager
-			= rifServiceResources.getSQLStudyExtractManager();
-			return studyExtractManager.getStudyExtractFIleName(
-					user,
-					studyID);
-		}
-
 	public FileInputStream getStudyExtract(
 			final User _user,
 			final String studyID,
@@ -1119,7 +1317,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 

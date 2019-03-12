@@ -210,7 +210,6 @@ GO
 	BEGIN
 		IF @c7_rec_covariate_table_name IS NULL BEGIN
 			CLOSE c7insext;
-			DEALLOCATE c7insext;
 			SET @err_msg = formatmessage(56006, @study_id); 	-- Study ID %i NULL covariate table
 			THROW 56006, @err_msg, 1;
 			END;
@@ -218,7 +217,6 @@ GO
 			/* Only one covariate table is supported */ 
 		ELSE IF @covariate_table_name != @c7_rec_covariate_table_name BEGIN 
 			CLOSE c7insext;
-			DEALLOCATE c7insext;
 			SET @err_msg = formatmessage(56007, @study_id, @covariate_table_name, @c7_rec_covariate_table_name); 
 				-- Study ID %i multiple covariate tables: %s, %s
 			THROW 56007, @err_msg, 1;	
@@ -300,7 +298,6 @@ GO
 			FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
 		END; /* Loop k: c7insext */
 		CLOSE c7insext;
-		DEALLOCATE c7insext;
 	
 		SET @sql_stmt=@sql_stmt + @tab + 'SELECT s.area_id' + @tab + @tab + '/* Study or comparision resolution */,' + @crlf;
 		IF @covariate_list IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + '       ' + @covariate_list;
@@ -719,9 +716,19 @@ GO
 --		IF study_or_comparison = 'C' THEN
 --			sql_stmt:=sql_stmt||'       NULL::INTEGER AS '||LOWER(c7_rec.covariate_name)||','||E'\n';
 --		ELSE
-	IF @c7_rec_covariate_name IS NOT NULL SET @sql_stmt=@sql_stmt + 
-		'       d.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
-					/* Multiple covariate support will be needed here */
+
+-- Multiple covariate support 
+    OPEN c7insext;
+    FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @sql_stmt=@sql_stmt + '       d.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
+--
+        FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
+    END; /* Loop k: c7insext */
+    CLOSE c7insext;
+    DEALLOCATE c7insext;
+        
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: G';
 --
 -- Add investigations 

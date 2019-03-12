@@ -131,22 +131,19 @@ public final class ExposureCovariate
 	 * @param name the name
 	 * @param minimumValue the minimum value
 	 * @param maximumValue the maximum value
-	 * @param covariateType the covariate type
 	 * @return the exposure covariate
 	 */
 	static public ExposureCovariate newInstance(
-		final String name,
-		final String minimumValue,
-		final String maximumValue,
-		final CovariateType covariateType) {
+			final String name,
+			final String minimumValue,
+			final String maximumValue) {
 
 		ExposureCovariate exposureCovariate
 			= new ExposureCovariate(
 				name,
 				minimumValue,
 				maximumValue);
-		exposureCovariate.setCovariateType(covariateType);
-		
+
 		return exposureCovariate;
 	}
 	
@@ -166,8 +163,7 @@ public final class ExposureCovariate
 		ExposureCovariate cloneExposureCovariate
             = new ExposureCovariate();
         cloneExposureCovariate.setName(originalExposureCovariate.getName());
-        cloneExposureCovariate.setCovariateType(originalExposureCovariate.getCovariateType());
-		return cloneExposureCovariate;			
+		return cloneExposureCovariate;
 	}	
 	
 // ==========================================
@@ -207,19 +203,7 @@ public final class ExposureCovariate
 		super.checkErrors(
 			validationPolicy, 
 			errorMessages);
-      
-        CovariateType covariateType = getCovariateType();
-        if (covariateType == null) {
-	        String covariateTypeLabel
-		        = RIFServiceMessages.getMessage("covariate.covariateType.label");
-            String errorMessage 
-                = GENERIC_MESSAGES.getMessage(
-                	"general.validation.emptyRequiredRecordField",
-                	recordType,
-                    covariateTypeLabel);
-            errorMessages.add(errorMessage);
-        }
-        
+
         countErrors(RIFServiceError.INVALID_EXPOSURE_COVARIATE, errorMessages);
     		
 	}

@@ -1,6 +1,6 @@
 package org.sahsu.rif.services.test.services.pg;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -111,7 +111,7 @@ public final class GetSexes extends CommonRIFServiceTestCase {
 	public void getSexes_COMMON1() throws RIFServiceException {
 
 		User validUser = cloneValidUser();
-		ArrayList<Sex> sexs
+		List<Sex> sexs
 			= rifStudySubmissionService.getSexes(validUser);
 		assertEquals(3, sexs.size());
 	}

@@ -1,6 +1,7 @@
 package org.sahsu.rif.services.concepts;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.sahsu.rif.generic.datastorage.DisplayableItemSorter;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
@@ -98,8 +99,8 @@ public class CovariateUtility {
 	 * @param originalCovariates the original covariates
 	 * @return the array list
 	 */
-	public static ArrayList<AbstractCovariate> copyCovariates(
-		final ArrayList<AbstractCovariate> originalCovariates) {
+	static ArrayList<AbstractCovariate> copyCovariates(
+			final List<AbstractCovariate> originalCovariates) {
 
 		ArrayList<AbstractCovariate> cloneCovariates 
 			= new ArrayList<AbstractCovariate>();
@@ -132,8 +133,8 @@ public class CovariateUtility {
 	 * @return true, if successful
 	 */
 	public static boolean hasIdenticalContents(
-		final ArrayList<AbstractCovariate> covariateListA,
-		final ArrayList<AbstractCovariate> covariateListB) {
+		final List<AbstractCovariate> covariateListA,
+		final List<AbstractCovariate> covariateListB) {
 	
 		if (FieldValidationUtility.hasDifferentNullity(
 			covariateListA, 
@@ -185,7 +186,7 @@ public class CovariateUtility {
 	 * @return the array list
 	 */
 	private static ArrayList<AbstractCovariate> sortCovariates(
-		final ArrayList<AbstractCovariate> covariates) {
+		final List<AbstractCovariate> covariates) {
 		DisplayableItemSorter sorter = new DisplayableItemSorter();
 			
 		for (AbstractCovariate covariate : covariates) {
