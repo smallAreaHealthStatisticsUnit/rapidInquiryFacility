@@ -259,6 +259,8 @@ SELECT geography, covariate_name, covariate_type, COUNT(*) AS total
 \dS+ rif40.rif40_inv_covariates
 \dS+ rif40.t_rif40_inv_covariates
 
+\i ../PLpgsql/rif40_sm_pkg/rif40_verify_state_change.sql
+
 /*
 --
 -- Testing stop

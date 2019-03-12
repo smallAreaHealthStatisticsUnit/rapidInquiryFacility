@@ -193,6 +193,7 @@ SELECT geography, covariate_name, covariate_type, COUNT(*) AS total
  GROUP BY geography, covariate_name, covariate_type; 
 GO
 
+:r ..\sahsuland_dev\rif40\functions\rif40_create_insert_statement.sql
 --
 -- Testing stop
 --
