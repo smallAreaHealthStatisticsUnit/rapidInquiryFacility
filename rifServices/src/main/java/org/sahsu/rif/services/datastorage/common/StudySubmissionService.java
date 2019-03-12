@@ -582,6 +582,9 @@ public class StudySubmissionService extends StudyService implements RIFStudySubm
 		final Geography _geography,
 		final HealthTheme _healthTheme)
 		throws RIFServiceException {
+     */
+  public ArrayList<Project> getProjects(
+		final User _user) throws RIFServiceException {   
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
@@ -647,7 +650,7 @@ public class StudySubmissionService extends StudyService implements RIFStudySubm
 
 		return results;
 	}
-*/
+
 	public String getStudyExtractFIleName(
 			final User user,
 			final String studyID) {
