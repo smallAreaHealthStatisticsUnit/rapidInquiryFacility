@@ -549,8 +549,7 @@ public class StudySubmissionService extends StudyService implements RIFStudySubm
 
 			//Assign pooled connection
 			connection
-				= sqlConnectionManager.assignPooledReadConnection(user);
-
+				= sqlConnectionManager.assignPooledWriteConnection(user); // Can re-created RIF40_NUM_DENOM
 			//Delegate operation to a specialised manager class
 			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
@@ -567,7 +566,7 @@ public class StudySubmissionService extends StudyService implements RIFStudySubm
 		}
 		finally {
 			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
+			sqlConnectionManager.reclaimPooledWriteConnection(
 				user,
 				connection);
 		}

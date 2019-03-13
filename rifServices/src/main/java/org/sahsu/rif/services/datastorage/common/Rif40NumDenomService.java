@@ -5,6 +5,7 @@ import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
+import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
@@ -35,6 +36,11 @@ import org.json.JSONObject;
  */
 public class Rif40NumDenomService extends BaseSQLManager {
 
+	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
+
+	private static DatabaseType databaseType;
+	
 	/**
 	 * Constructor
 	 *
@@ -45,6 +51,9 @@ public class Rif40NumDenomService extends BaseSQLManager {
 		super(options);
 		if (rifDatabaseProperties == null) {
 			rifDatabaseProperties = options.getRIFDatabaseProperties();
+		}
+		if (rifDatabaseProperties != null) {
+			databaseType = rifDatabaseProperties.getDatabaseType();
 		}
 	}    
     
@@ -264,7 +273,20 @@ geographies: {
         
  		try {
             SQLGeneralQueryFormatter queryFormatter = formatRif40NumDenomQuery(connection, user);
- 
+			String databaseViewDefinition = getViewDefinition(connection, user.getUserID(), "rif40_num_denom");
+			String localViewDefinition = queryFormatter.generateQuery();
+			if (localViewDefinition != null && databaseViewDefinition != null &&
+				localViewDefinition.equals(databaseViewDefinition)) {
+				rifLogger.info(this.getClass(), user.getUserID() + 
+					".rif40_num_denom is the same as the database");
+			}
+			else {	
+				rifLogger.info(this.getClass(), user.getUserID() + 
+					".rif40_num_denom needs updating;" + lineSeparator + "Database >>>" + lineSeparator +
+					databaseViewDefinition + lineSeparator + "New >>>" + lineSeparator +
+					localViewDefinition);
+				createRifNumDenomView(connection, user.getUserID().toLowerCase(), localViewDefinition);	
+			}
             sqlQueryText = logSQLQuery(
 					"getNumeratorDenominatorPairs",
 					queryFormatter);
@@ -317,7 +339,111 @@ geographies: {
        
         return result;        
     }
-    
+ 
+   /**
+	 *
+	 * @param connection the connection
+	 * @param schemaName
+	 * @param newViewDefinition
+	 * @throws RIFServiceException the RIF service exception
+	 */  
+	private void createRifNumDenomView(
+			final Connection connection,
+			final String schemaName,
+			final String newViewDefinition)
+			throws RIFServiceException {
+        JSONArray result=new JSONArray();
+		PreparedStatement statement = null;
+		String sqlQueryText = null;  
+        
+ 		try {
+            SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+            SQLGeneralQueryFormatter queryFormatter2 = new SQLGeneralQueryFormatter();
+			if (databaseType == DatabaseType.POSTGRESQL) {
+				queryFormatter.addQueryLine(0, "DROP VIEW IF EXISTS " + 
+					schemaName + ".rif40_num_denom ");
+				queryFormatter2.addQueryLine(0, "CREATE VIEW " + 
+					schemaName + ".rif40_num_denom AS ");
+			}
+			else if (databaseType == DatabaseType.SQL_SERVER) {
+				queryFormatter.addQueryLine(0, "IF EXISTS (SELECT * FROM sys.objects");
+				queryFormatter.addQueryLine(0, "           WHERE object_id = OBJECT_ID(N'[" + 
+					schemaName + "].[rif40_num_denom]') AND type in (N'V'))");
+				queryFormatter.addQueryLine(0, "BEGIN");
+				queryFormatter.addQueryLine(0, "	DROP VIEW [" + schemaName + "].[rif40_num_denom]");
+				queryFormatter.addQueryLine(0, "END;");
+				queryFormatter2.addQueryLine(0, "CREATE VIEW [" + 
+					schemaName + "].[rif40_num_denom] AS ");
+			}
+			else {
+				throw new SQLException("createRifNumDenomView(): invalid databaseType: " +
+					databaseType);
+			}
+			queryFormatter2.addQueryLine(0, newViewDefinition);
+					
+            sqlQueryText = logSQLQuery(
+					"dropView",
+					queryFormatter);
+			statement = createPreparedStatement(
+					connection,
+					queryFormatter);
+			statement.execute();
+
+			SQLQueryUtility.close(statement);
+			
+            sqlQueryText = logSQLQuery(
+					"createView",
+					queryFormatter2);
+			statement = createPreparedStatement(
+					connection,
+					queryFormatter2);
+
+			statement.execute();
+			
+			commentObject(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.");
+				
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"geography_name", "Geography");
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"geography_description", "Geography description");
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"numerator_table_name", "Numerator table");
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"numerator_table_description", "Numerator table description");
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"denominator_table_name", "Denominator table");
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"denominator_table_description", "Denominator table description");
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"theme_name", "Numerator table health study theme name");
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"theme_description", "Numerator table health study theme description");
+			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
+				"automatic", "Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.");
+
+			connection.commit();
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
+
+			throw new RIFServiceException(
+					RIFServiceError.GET_NUMERATOR_DENOMINATOR_PAIR,
+					errorMessage,
+                    rifSQLException);
+		}
+		finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement);
+		}
+	}
+	
 	/**
 	 * Format SQL query (replacement for rif40_num_denom)
      *
@@ -382,8 +508,8 @@ geographies: {
 	 *        0 AS automatic
 	 *   FROM ( SELECT nd.geography,
 	 *                 g.description AS geography_description,
-	 *                 nd.numerator_table,
-	 *                 nd.denominator_table,
+	 *                 nd.numerator_table AS numerator_table_name,
+	 *                 nd.denominator_table AS denominator_table_name,
 	 *                 n.description AS numerator_description,
 	 *                 n.theme
 	 *            FROM peter.t_rif40_num_denom nd
@@ -438,8 +564,8 @@ geographies: {
             queryFormatter.addQueryLine(0, "                    n.theme       = t.theme AND");
             
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
-                queryFormatter.addQueryLine(0, "                    rif40.rif40_is_object_resolvable(n.table_name) = 1) n1");            queryFormatter.addQueryLine(0, "     WHERE rif40_num_denom_validate(n1.geography, n1.numerator_table) = 1");
-                queryFormatter.addQueryLine(0, "     WHERE rif40.rif40_num_denom_validate(n1.geography, n1.numerator_table) = 1");
+                queryFormatter.addQueryLine(0, "                    [rif40].[rif40_is_object_resolvable](n.table_name) = 1) n1");            
+                queryFormatter.addQueryLine(0, "     WHERE [rif40].[rif40_num_denom_validate](n1.geography, n1.numerator_table) = 1");
             }
             else {
                 queryFormatter.addQueryLine(0, "                    rif40_is_object_resolvable(n.table_name) = 1) n1");
@@ -464,9 +590,9 @@ geographies: {
             queryFormatter.addQueryLine(0, "              WHERE d.isindirectdenominator = 1 AND");
             queryFormatter.addQueryLine(0, "                    d.automatic             = 1 AND");
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
-                queryFormatter.addQueryLine(0, "                    rif40.rif40_is_object_resolvable(d.table_name) = 1) d1");
-                queryFormatter.addQueryLine(0, "     WHERE rif40.rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1 AND");
-                queryFormatter.addQueryLine(0, "           rif40.rif40_auto_indirect_checks(d1.denominator_table) IS NULL");
+                queryFormatter.addQueryLine(0, "                    [rif40].[rif40_is_object_resolvable](d.table_name) = 1) d1");
+                queryFormatter.addQueryLine(0, "     WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1 AND");
+                queryFormatter.addQueryLine(0, "           [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL");
             }
             else {
                 queryFormatter.addQueryLine(0, "                    rif40_is_object_resolvable(d.table_name) = 1) d1");
@@ -488,8 +614,10 @@ geographies: {
             
             addTRif40NumDenom(queryFormatter, connection, user.getUserID());
             addTRif40NumDenom(queryFormatter, connection, "rif40");
-            
-            queryFormatter.addQueryLine(0, " ORDER BY 1, 2, 4;");
+    
+            if (rifDatabaseProperties.getDatabaseType() == DatabaseType.POSTGRESQL) {        
+				queryFormatter.addQueryLine(0, " ORDER BY 1, 2, 4;");
+			}
         }
 		catch(Exception exception) {
 			//Record original exception, throw sanitised, human-readable version

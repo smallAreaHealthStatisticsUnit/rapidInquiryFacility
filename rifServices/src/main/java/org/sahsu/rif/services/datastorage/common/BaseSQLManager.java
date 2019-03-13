@@ -22,6 +22,7 @@ import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -59,10 +60,10 @@ public class BaseSQLManager implements SQLManager {
 	private final String databaseURL;
 	private static HashMap<String, String> passwordHashList = null;
 
-	protected RIFDatabaseProperties rifDatabaseProperties;
-
 	private static Properties prop = null;
 	private static String lineSeparator = System.getProperty("line.separator");
+
+	protected RIFDatabaseProperties rifDatabaseProperties;
 	private static DatabaseType databaseType;
 
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
@@ -431,7 +432,7 @@ public class BaseSQLManager implements SQLManager {
 	
 	/**
 	 * Get column comment from data dictionary
-	 *  @param connection,
+	 * @param connection,
 	 * @param schemaName,
 	 * @param tableName,
 	 * @param columnName
@@ -512,7 +513,186 @@ public class BaseSQLManager implements SQLManager {
 		
 		return columnComment;
 	}
-	
+
+	/**
+	 * Get view defintion SQL from data dictionary
+	 * @param connection,
+	 * @param schemaName,
+	 * @param tableName
+	 */
+	@Override	
+	public String getViewDefinition(Connection connection,
+			String schemaName, String viewName)
+			throws RIFSQLException {
+				
+		SQLGeneralQueryFormatter viewDefinitionQueryFormatter = new SQLGeneralQueryFormatter();
+		ResultSet resultSet;
+		String viewDefinition = null;
+		String sqlQueryText = null;
+		PreparedStatement statement = null;
+		
+		try {
+			if (databaseType == DatabaseType.POSTGRESQL) {
+				viewDefinitionQueryFormatter.addQueryLine(0, "SELECT STRING_AGG(definition, '\\n') AS definition");
+				viewDefinitionQueryFormatter.addQueryLine(0, "  FROM pg_views");
+				viewDefinitionQueryFormatter.addQueryLine(0, " WHERE schemaname = '" + 
+					schemaName.toLowerCase() + "'");
+				viewDefinitionQueryFormatter.addQueryLine(0, "   AND viewname   = '" + 
+					viewName.toLowerCase() + "'");
+			}
+			else if (databaseType == DatabaseType.SQL_SERVER) {
+				viewDefinitionQueryFormatter.addQueryLine(0, "SELECT OBJECT_DEFINITION(OBJECT_ID('" + 
+					schemaName.toLowerCase() + "." + 
+					viewName.toLowerCase() + "')) AS definition");
+			}
+			else {
+				throw new SQLException("getColumnComment(): invalid databaseType: " +
+					databaseType);
+			}
+			
+			sqlQueryText = logSQLQuery(
+						"getViewDefinition",
+						viewDefinitionQueryFormatter,
+						schemaName,
+						viewName);
+			statement = createPreparedStatement(connection, viewDefinitionQueryFormatter);
+			
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				viewDefinition=resultSet.getString(1);
+				if (resultSet.next()) {
+					throw new SQLException("getColumnComment() database: " + databaseType +
+						"; expected 1 row, got >1");
+				}
+				viewDefinition=viewDefinition.replaceAll("\\r\\n|\\r", "\n"); // Convert line endings to OS of J2EE container
+				viewDefinition=viewDefinition.replaceAll("\\n", lineSeparator);
+				if (databaseType == DatabaseType.SQL_SERVER) { // Remove CREATE VIEW line
+					viewDefinition=viewDefinition.replace(
+						"CREATE VIEW [" + schemaName.toLowerCase() + "].[" + viewName.toLowerCase() + 
+							"] AS (" + lineSeparator, "");
+				}		
+				else if (databaseType == DatabaseType.POSTGRESQL) {
+					viewDefinition=viewDefinition.substring(1); // Remove first charscter
+				}					
+			}
+			else {
+				rifLogger.debug(this.getClass(), "getColumnComment() database: " + databaseType +
+					"; expected 1 row, got none");
+			}
+		}
+		catch (SQLException sqlException) {	
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
+			throw rifSQLException;
+		}
+		finally {
+			closeStatement(statement);
+		}
+		
+		return viewDefinition;
+	}
+		
+   /**
+	 * Comment object
+	 * @param connection,
+	 * @param objectType,
+	 * @param schemaName,
+	 * @param objectName,
+	 * @param commentText
+	 */
+	@Override	
+	public void commentObject(Connection connection,
+			String objectType, String schemaName, String objectName, String commentText)
+			throws RIFSQLException {
+				
+		SQLGeneralQueryFormatter commentObjectFormatter = new SQLGeneralQueryFormatter();
+		String sqlQueryText = null;
+		PreparedStatement statement = null;
+		
+		try {
+			if (databaseType == DatabaseType.POSTGRESQL) {	
+				commentObjectFormatter.addQueryLine(0, "COMMENT ON " + objectType + " " + 
+					schemaName + "." + objectName + " IS ");
+				commentObjectFormatter.addQueryLine(0, "'" + commentText + "'");
+			}			
+			else if (databaseType == DatabaseType.SQL_SERVER) {
+				commentObjectFormatter.addQueryLine(0, "EXECUTE sp_addextendedproperty");
+				commentObjectFormatter.addQueryLine(0, "@name = N'MS_Description',");
+				commentObjectFormatter.addQueryLine(0, "@value = N'"+ commentText + "',");
+				commentObjectFormatter.addQueryLine(0, "@level0type = N'Schema', @level0name = '" + schemaName + "',  ");
+				commentObjectFormatter.addQueryLine(0, "@level1type = N'" + objectType + "', @level1name  = '" + objectName + "';");
+			}
+			else {
+				throw new SQLException("commentObject(): invalid databaseType: " +
+					databaseType);
+			}
+			sqlQueryText = logSQLQuery(
+						"commentObject",
+						commentObjectFormatter);
+			statement = createPreparedStatement(connection, commentObjectFormatter);
+			statement.execute();
+		}
+		catch (SQLException sqlException) {	
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
+			throw rifSQLException;
+		}
+		finally {
+			closeStatement(statement);
+		}
+	}
+			
+   /**
+	 * Comment column
+	 * @param connection,
+	 * @param objectType,
+	 * @param schemaName,
+	 * @param objectName,
+	 * @param columnName,
+	 * @param commentText
+	 */
+	@Override	
+	public void commentColumn(Connection connection,
+			String objectType, String schemaName, String objectName, String columnName, String commentText)
+			throws RIFSQLException {
+		SQLGeneralQueryFormatter commentObjectFormatter = new SQLGeneralQueryFormatter();
+		String sqlQueryText = null;
+		PreparedStatement statement = null;
+		
+		try {
+			if (databaseType == DatabaseType.POSTGRESQL) {	
+				commentObjectFormatter.addQueryLine(0, "COMMENT ON COLUMN " + 
+					schemaName + "." + objectName + "." + columnName + " IS ");
+				commentObjectFormatter.addQueryLine(0, "'" + commentText + "'");
+			}			
+			else if (databaseType == DatabaseType.SQL_SERVER) {
+				commentObjectFormatter.addQueryLine(0, "EXECUTE sp_addextendedproperty");
+				commentObjectFormatter.addQueryLine(0, "@name = N'MS_Description',");
+				commentObjectFormatter.addQueryLine(0, "@value = N'"+ commentText + "',");
+				commentObjectFormatter.addQueryLine(0, "@level0type = N'Schema', @level0name = '" + schemaName + "',  ");
+				commentObjectFormatter.addQueryLine(0, "@level1type = N'" + objectType + "', @level1name  = '" + objectName + "',");
+				commentObjectFormatter.addQueryLine(0, "@level2type = N'Column', @level2name = '" + columnName + "';");
+			}
+			else {
+				throw new SQLException("commentColumn(): invalid databaseType: " +
+					databaseType);
+			}
+			sqlQueryText = logSQLQuery(
+						"commentColumn",
+						commentObjectFormatter);
+			statement = createPreparedStatement(connection, commentObjectFormatter);
+			statement.execute();
+		}
+		catch (SQLException sqlException) {	
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
+			throw rifSQLException;
+		}
+		finally {
+			closeStatement(statement);
+		}
+	}
+			
 	/** 
 	 * Convert database style names to JSON style, e.g. study_or_comparison becomes studyOrComparison
      *

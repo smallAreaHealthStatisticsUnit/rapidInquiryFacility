@@ -196,6 +196,8 @@ angular.module("RIF")
                                 $scope.showError('Could not initialise the RIF numerator/denominator service');
                                 $scope.consoleError(e);
                                 $scope.showSpinner = false;
+								user.logout($scope.username).then(function() {
+								}	, handleServerError);
                             });
                             
                             //initialise the taxonomy service
