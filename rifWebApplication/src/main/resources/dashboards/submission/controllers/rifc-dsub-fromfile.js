@@ -37,10 +37,10 @@
 angular.module("RIF")
         .controller('ModalRunFileCtrl', ['$q', 'user', '$scope', '$uibModal',
             'StudyAreaStateService', 'CompAreaStateService', 'SubmissionStateService', 'StatsStateService', 
-			'ParameterStateService', 'SelectStateService', 'AlertService', 
+			'ParameterStateService', 'SelectStateService', 'AlertService', 'Rif40NumDenomService',
             function ($q, user, $scope, $uibModal,
                     StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, 
-					ParameterStateService, SelectStateService, AlertService) {
+					ParameterStateService, SelectStateService, AlertService, Rif40NumDenomService) {
 
                 // Magic number for the always-included first method (see rifp-dsub-stats.html).
                 const FIXED_NO_SMOOTHING_METHOD_POSITION  = -1;
@@ -67,6 +67,8 @@ angular.module("RIF")
                 var tmpCovariates;
                 var tmpAdditionals;
 				var fromFileErrorCount=0;
+				
+				var rif40NumDenom=Rif40NumDenomService.getRif40NumDenom();
 
                 /*
                  * THE FUNCIONS FOR CHECKING RIFJOB JSON
@@ -212,7 +214,34 @@ angular.module("RIF")
 						
 						$scope.consoleDebug("[rifc-dsub-fromfile.js] Check health theme: " + tmpHealthThemeName + " (" + 
 							tmpHealthThemeDescription + ") using geography: " + rifJob[studyType].geography.name);
-						var themeErr = user.getHealthThemes(user.currentUser, rifJob[studyType].geography.name).then(uploadHandleHealthThemes, fromFileError);
+						
+                        var theme = $scope.rif40NumDenom.geographies[tmpHealthThemeDescription];        
+						var geographies=undefined;
+						if (theme) {
+							geographies = theme.geographyList; 
+						}
+                        var bFound=false;
+						if (geographies) {
+							for (var i=0; i<geographies.length; i++) {
+								if (geographies[i] == rifJob[studyType].geography.name) {
+									bFound=true;
+									break;
+								}
+							}
+						}
+
+						if (!bFound) {
+							return "Health Theme '" + tmpHealthThemeName + "' not found in database";
+						} else {
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] health theme OK: " + 
+								tmpHealthThemeName);
+							return true;
+						}
+							
+							/*
+						var themeErr = user.getHealthThemes(
+							user.currentUser, rifJob[studyType].geography.name).then(
+								uploadHandleHealthThemes, fromFileError);
 
 						function uploadHandleHealthThemes(res) {
 							var bFound = false;
@@ -230,7 +259,8 @@ angular.module("RIF")
 								return true;
 							}
 						}
-						return themeErr;
+						return themeErr; */
+						
                     } catch (e) {
                         return "Could not upload health themes: " + (e.message||"(no message)");
                     }
@@ -294,7 +324,41 @@ angular.module("RIF")
 						}
 						tmpNumeratorName = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.numerator_table_name;
 						tmpDenominatorName = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
-						var fractionErr = user.getNumerator(user.currentUser, tmpGeography, tmpHealthThemeDescription).then(uploadHandleFractions, fromFileError);
+
+						var tmpHealthThemeDescription = rifJob[studyType].investigations.investigation[0].health_theme.description;
+                        var theme=undefined;; 
+						if (tmpHealthThemeDescription) {
+							theme = $scope.rif40NumDenom.geographies[tmpHealthThemeDescription];  
+						}
+						var fractions=undefined;;
+						if (theme && theme[rifJob[studyType].geography.name]) {
+							fractions = theme[rifJob[studyType].geography.name];	
+						}						
+                        var bFound=false;
+						if (fractions && fractions.length > 0) {
+							for (var i=0; i<fractions.length; i++) {
+								if (fractions[i].numeratorTableName == tmpNumeratorName &&
+									fractions[i].denominatorTableName == tmpDenominatorName) {
+									bFound=true;
+									break;
+								}
+							}
+						}
+
+						if (!bFound) {								
+							return "Numerator-Denominator Pair '" + tmpNumeratorName + " - " + 
+								tmpDenominatorName + "' not found in database";
+
+						} else {
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] Numerator-Denominator Pair '" + tmpNumeratorName + " - " + 
+								tmpDenominatorName + "' OK");
+							return true;
+						}
+		
+						/*
+						var fractionErr = user.getNumerator(
+							user.currentUser, tmpGeography, tmpHealthThemeDescription).then(
+								uploadHandleFractions, fromFileError);
 
 						function uploadHandleFractions(res) {
 							var bFound = false;
@@ -311,6 +375,7 @@ angular.module("RIF")
 							}
 						}
 						return fractionErr;		
+						*/
                     } catch (e) {
                         return "Could not upload and check numerator denominator pair: " + (e.message||"(no message)");
                     }

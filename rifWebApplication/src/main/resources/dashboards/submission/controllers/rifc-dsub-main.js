@@ -150,6 +150,8 @@ angular.module("RIF")
                                  
                         $scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
                     }
+					$scope.geography=nGeography;
+					setupNumerator($scope.geography);
 //                    SubmissionStateService.getState().numerator = "";
 //                    SubmissionStateService.getState().denominator = "";
 //                    $scope.resetState();      
@@ -172,6 +174,7 @@ angular.module("RIF")
                                 if ($scope.geographies[i] == SubmissionStateService.getState().geography) {
                                     $scope.geography = $scope.geographies[i];
                                     found=true;
+									break;
                                 }
                             }
                         }
@@ -180,25 +183,6 @@ angular.module("RIF")
                             SubmissionStateService.getState().geography = $scope.geography;
                         }                    
                         $scope.geographyDescription = theme.geographyDescriptions[$scope.geography];
-                        $scope.fractions = theme[$scope.geography]
-
-                        found=false;
-                        if (SubmissionStateService.getState().numerator == undefined || 
-                            SubmissionStateService.getState().numerator != "") {
-                            for (var i=0; i<$scope.fractions.length; i++) {
-                                if (angular.equals($scope.fractions[i], SubmissionStateService.getState().numerator)) {
-                                    $scope.numerator = $scope.fractions[i];
-                                    $scope.denominator = $scope.fractions[i].denominatorTableName;
-                                    found=true;
-                                }
-                            }
-                        }
-                        if (!found) {
-                            $scope.numerator = $scope.fractions[0];
-                            $scope.denominator = $scope.fractions[0].denominatorTableName;
-                            SubmissionStateService.getState().numerator = $scope.numerator.numeratorTableName;
-                        }                        
-						SubmissionStateService.getState().denominator = $scope.numerator;
                         
                         geographyChange($scope.geography);
                     }
@@ -207,6 +191,30 @@ angular.module("RIF")
                     }
                 }
                 
+                function setupNumerator(nGeography) {
+                    var theme = $scope.rif40NumDenom.geographies[$scope.healthTheme.description]; 
+					$scope.fractions = theme[nGeography];
+
+					var found=false;
+					if (SubmissionStateService.getState().numerator == undefined || 
+						SubmissionStateService.getState().numerator != "") {
+						for (var i=0; i<$scope.fractions.length; i++) {
+							if (angular.equals($scope.fractions[i], SubmissionStateService.getState().numerator)) {
+								$scope.numerator = $scope.fractions[i];
+								$scope.denominator = $scope.fractions[i].denominatorTableName;
+								found=true;
+								break;
+							}
+						}
+					}
+					if (!found) {
+						$scope.numerator = $scope.fractions[0];
+						$scope.denominator = $scope.fractions[0].denominatorTableName;
+						SubmissionStateService.getState().numerator = $scope.numerator.numeratorTableName;
+					}                        
+					SubmissionStateService.getState().denominator = $scope.numerator;			
+				}
+				
 				function compareFractions(fraction1, fraction2) {	
 					if (fraction1 && fraction2 &&
 						fraction1.numeratorTableName && 
@@ -358,9 +366,9 @@ angular.module("RIF")
                 } */
 
                 /*
-                 * RESET
+                 * RESET: called from rifc-dsub-fromfile.js
                  */
-/*                $scope.resetState = function () {
+                $scope.resetState = function () {
                     $state.go('state1').then(function () {
                         $state.reload();
                     });
@@ -368,5 +376,5 @@ angular.module("RIF")
 						$scope.studyName = SubmissionStateService.getState().studyName;
 					}
 					$scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
-                }; */
+                }; 
             }]);
