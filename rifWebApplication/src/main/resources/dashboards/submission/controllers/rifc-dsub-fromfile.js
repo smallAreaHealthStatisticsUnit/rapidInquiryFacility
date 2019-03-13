@@ -833,126 +833,173 @@ angular.module("RIF")
 						ParameterStateService.resetState();
 						SelectStateService.resetState();
                         $scope.consoleDebug("[rifc-dsub-fromfile.js] Starting upload...");
-
+				
+						function promisesHandler(result) {
+							var errorCount=0;
+							for (var i = 0; i < result.length; i++) {
+								if (result[i] !== true) {
+									if (result[i]) {
+										$scope.showWarningNoHide(result[i]);
+									}
+									errorCount++;
+								}
+							}
+							checkError(errorCount);
+						}				
+						function promisesHandler2(result) {
+							var errorCount=0;
+							for (var i = 0; i < result.length; i++) {
+								if (result[i] !== true) {
+									if (result[i]) {
+										$scope.showWarningNoHide(result[i]);
+									}
+									errorCount++;
+								}
+							}
+							if (errorCount > 0) {
+								fromFileError();
+							}
+						}				
+						
+						function checkError(errorCount) {
+							if (errorCount == 0) {
+								//All tests passed
+								if (confirmStateChanges()) {
+									$scope.showSuccess('RIF ' + StudyAreaStateService.getState().type + ' study ' +
+									(rifJob[studyType].name ? 
+										('"' + rifJob[studyType].name + '" '): "") +
+									'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A'));
+									$scope.$parent.studyName = rifJob[studyType].name;
+									$scope.$parent.resetState();
+								}
+								else {
+									$scope.showError("RIF study opened from file: "  +
+									(rifJob[studyType].name ? 
+										('"' + rifJob[studyType].name + '" '): "") +
+									'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A') + 
+									" failed in state change setup");
+								}
+							}
+							else {
+								$scope.showError("RIF study opened from file: "  +
+									(rifJob[studyType].name ? 
+										('"' + rifJob[studyType].name + '" '): "") +
+									'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A') + 
+									" failed with " +
+									errorCount + " error(s)");
+							}
+						}
+								
 						// Create promises
                         var d1 = $q.defer();
                         var p1 = d1.promise;
-                        var d2 = $q.defer();
-                        var p2 = d2.promise;
-                        var d3 = $q.defer();
-                        var p3 = d3.promise;
-                        var d4 = $q.defer();
-                        var p4 = d4.promise;
-                        var d5 = $q.defer();
-                        var p5 = d5.promise;
-                        var d6 = $q.defer();
-                        var p6 = d6.promise;
-                        var d7 = $q.defer();
-                        var p7 = d7.promise;
-                        var d8 = $q.defer();
-                        var p8 = d8.promise;
-                        var d9 = $q.defer();
-                        var p9 = d9.promise;
-                        var d10 = $q.defer();
-                        var p10 = d10.promise;
-						
+							
                         //check initial file structure
                         d1.resolve(uploadCheckStructure());
                         p1.then(function (value) {
 							
 							if (value === true) {
+								var d2 = $q.defer();
+								var p2 = d2.promise;
+								
 								//check geography exists
 								d2.resolve(uploadCheckGeography());
 								p2.then(function (value) {
-									return value;
-								}, fromFileError);
-								
-								//check health theme
-								d3.resolve(uploadHealthThemes());
-								p3.then(function (value) {
-									return value;
-								}, fromFileError);
+									if (value === true) {
+										//check health theme
+										var d3 = $q.defer();
+										var p3 = d3.promise;
+						
+										d3.resolve(uploadHealthThemes());
+										p3.then(function (value) {
+											if (value === true) {
+												//check numerator-denominator match
+												var d4 = $q.defer();
+												var p4 = d4.promise;
+												
+												d4.resolve(uploadFractions());
+												p4.then(function (value) {
+													if (value === true) {
+																	
+														var d5 = $q.defer();
+														var p5 = d5.promise;
+														var d6 = $q.defer();
+														var p6 = d6.promise;
+														var d7 = $q.defer();
+														var p7 = d7.promise;
+														var d8 = $q.defer();
+														var p8 = d8.promise;
+														var d9 = $q.defer();
+														var p9 = d9.promise;
+														var d10 = $q.defer();
+														var p10 = d10.promise;
+						
+														//check stats and parameter match
+														d5.resolve(uploadStats());
+														p5.then(function (value) {
+															return value;
+														}, fromFileError);
 
-								//check numerator-denominator match
-								d4.resolve(uploadFractions());
-								p4.then(function (value) {
-									return value;
-								}, fromFileError);
+														//check project matches
+														d6.resolve(uploadProjects());
+														p6.then(function (value) {
+															return value;
+														}, fromFileError);
 
-								//check stats and parameter match
-								d5.resolve(uploadStats());
-								p5.then(function (value) {
-									return value;
-								}, fromFileError);
+														//check possible ages filled
+														d7.resolve(uploadPossibleAges());
+														p7.then(function (value) {
+															return value;
+														}, fromFileError);
 
-								//check project matches
-								d6.resolve(uploadProjects());
-								p6.then(function (value) {
-									return value;
-								}, fromFileError);
+														//check possible covariates filled
+														d8.resolve(uploadPossibleCovariates());
+														p8.then(function (value) {
+															return value;
+														}, fromFileError);
 
-								//check possible ages filled
-								d7.resolve(uploadPossibleAges());
-								p7.then(function (value) {
-									return value;
-								}, fromFileError);
-
-								//check possible covariates filled
-								d8.resolve(uploadPossibleCovariates());
-								p8.then(function (value) {
-									return value;
-								}, fromFileError);
-
-								//check investigations
-								d9.resolve(uploadInvestigations());
-								p9.then(function (value) {
-									return value;
-								}, fromFileError);
-								
-								//check studySelection
-								d10.resolve(uploadStudySelection());
-								p10.then(function (value) {
-									return value;
-								}, fromFileError);
-								
-								//resolve all the promises
-								$q.all([p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function (result) {
-									var bPass = true;
-									var errorCount=0;
-									for (var i = 0; i < result.length; i++) {
-										if (result[i] !== true) {
-											bPass = false;
-											$scope.showWarningNoHide(result[i]);
-											errorCount++;
-										}
-									}
-									if (bPass) {
-										//All tests passed
-										if (confirmStateChanges()) {
-											$scope.showSuccess('RIF ' + StudyAreaStateService.getState().type + ' study ' +
-											(rifJob[studyType].name ? 
-												('"' + rifJob[studyType].name + '" '): "") +
-											'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A'));
-											$scope.$parent.studyName = rifJob[studyType].name;
-											$scope.$parent.resetState();
-										}
-										else {
-											$scope.showError("RIF study opened from file: "  +
-											(rifJob[studyType].name ? 
-												('"' + rifJob[studyType].name + '" '): "") +
-											'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A') + 
-											" failed in state change setup");
-										}
+														//check investigations
+														d9.resolve(uploadInvestigations());
+														p9.then(function (value) {
+															return value;
+														}, fromFileError);
+														
+														//check studySelection
+														d10.resolve(uploadStudySelection());
+														p10.then(function (value) {
+															return value;
+														}, fromFileError);
+														
+														//resolve all the promises
+														$q.all([p5, p6, p7, p8, p9, p10]).then(function (result) {
+															promisesHandler(result)});
+													}
+													else {
+														errorCount++;
+														return value;
+													}
+												}, fromFileError);
+												
+												$q.all([p4]).then(function (result) {
+													promisesHandler2(result)});
+											}
+											else {
+												errorCount++;
+												return value;
+											}
+										}, fromFileError);
+												
+										$q.all([p3]).then(function (result) {
+											promisesHandler2(result)});
 									}
 									else {
-										$scope.showError("RIF study opened from file: "  +
-											(rifJob[studyType].name ? 
-												('"' + rifJob[studyType].name + '" '): "") +
-											'opened from file: ' + ($scope.fileName ? ('"' + $scope.fileName + '"'): 'N/A') + 
-											" failed with " +
-											errorCount + " error(s)");
+										errorCount++;
+										return value;
 									}
-								});
+								}, fromFileError);
+									
+								$q.all([p2]).then(function (result) { promisesHandler2(result)});
+				
 							} // uploadCheckStructure() OK
 							else {
 								$scope.consoleDebug("[rifc-dsub-fromfile.js] uploadCheckStructure() failed");
@@ -961,24 +1008,7 @@ angular.module("RIF")
                             return value;
                         }, fromFileError);
 						
-						$q.all([p1]).then(function (result) {
-							var bPass = true;
-							for (var i = 0; i < result.length; i++) {
-								if (result[i] !== true) {
-									bPass = false;
-									$scope.showWarningNoHide(result[i]);
-									break;
-								}
-							}
-							if (bPass) {
-								//All tests passed
-								$scope.consoleDebug("[rifc-dsub-fromfile.js] RIF study parsed from file: " + $scope.fileName);
-								$scope.$parent.resetState();
-							}
-							else {
-								fromFileError();
-							}
-						});
+						$q.all([p1]).then(function (result) { promisesHandler2(result)});
                     };
 
                     var modalInstance = $uibModal.open({
