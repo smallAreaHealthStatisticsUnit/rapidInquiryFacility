@@ -23,11 +23,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Creates Rif40NumDenomService object JSON used by rifc-dsub-main.js
+ * Creates Rif40NumDenomService object JSON used by rifc-dsub-main.js;
  *
- * Todo (issue #???):
+ * - CREATE/re CREATEs the users rif40_num_denom VIEW; preferably by diffing the VIEW text
  *
- * - Needs to be extended to CREATE/re CREATE the users rif40_num_denom VIEW; preferably by diffing the VIEW text
+ * Todo:
+ *
  * - The performance of the rif40_num_denom query needs improving
  *
  * @author		Peter Hambly

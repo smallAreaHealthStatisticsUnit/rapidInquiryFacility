@@ -686,7 +686,7 @@ angular.module("RIF")
                         //ParameterStateService.getState().terms
                          //if ($scope.thisICDselection.length !== 0 & 
                         
-                        if ( /* ParameterStateService.getState().terms.length !== 0 & */ // Allow no terms
+                        if (    ParameterStateService.getState().terms.length !== 0 &  // Allow no terms
                                 ParameterStateService.getState().title !== "" &
                                 ParameterStateService.getState().start !== "" & 
                                 ParameterStateService.getState().end !== "" & 

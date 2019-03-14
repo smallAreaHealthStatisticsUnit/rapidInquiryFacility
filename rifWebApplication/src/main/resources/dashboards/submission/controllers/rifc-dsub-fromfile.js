@@ -237,29 +237,6 @@ angular.module("RIF")
 								tmpHealthThemeName);
 							return true;
 						}
-							
-							/*
-						var themeErr = user.getHealthThemes(
-							user.currentUser, rifJob[studyType].geography.name).then(
-								uploadHandleHealthThemes, fromFileError);
-
-						function uploadHandleHealthThemes(res) {
-							var bFound = false;
-							for (var i = 0; i < res.data.length; i++) {
-								if (res.data[i].name === tmpHealthThemeName & res.data[i].description === tmpHealthThemeDescription) {
-									bFound = true;
-									break;
-								}
-							}
-							if (!bFound) {
-								return "Health Theme '" + tmpHealthThemeName + "' not found in database";
-							} else {
-								$scope.consoleDebug("[rifc-dsub-fromfile.js] health theme OK: " + 
-									tmpHealthThemeName);
-								return true;
-							}
-						}
-						return themeErr; */
 						
                     } catch (e) {
                         return "Could not upload health themes: " + (e.message||"(no message)");
@@ -355,27 +332,6 @@ angular.module("RIF")
 							return true;
 						}
 		
-						/*
-						var fractionErr = user.getNumerator(
-							user.currentUser, tmpGeography, tmpHealthThemeDescription).then(
-								uploadHandleFractions, fromFileError);
-
-						function uploadHandleFractions(res) {
-							var bFound = false;
-							for (var i = 0; i < res.data.length; i++) {
-								if (res.data[i].numeratorTableName === tmpNumeratorName & res.data[i].denominatorTableName === tmpDenominatorName) {
-									bFound = true;
-									break;
-								}
-							}
-							if (!bFound) {
-								return "Numerator-Denominator Pair '" + tmpNumeratorName + " - " + tmpDenominatorName + "' not found in database";
-							} else {
-								return true;
-							}
-						}
-						return fractionErr;		
-						*/
                     } catch (e) {
                         return "Could not upload and check numerator denominator pair: " + (e.message||"(no message)");
                     }
