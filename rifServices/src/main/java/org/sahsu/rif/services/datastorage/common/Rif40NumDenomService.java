@@ -333,7 +333,8 @@ geographies: {
         return result;        
     }
 
-   /** Check if views are different
+   /** Check if views are different. This will not work for Postgres as the original VIEW text is NOT stored 
+     * and it will always be re-created
 	 *
      * @param user User
 	 * @param localViewDefinition
@@ -345,7 +346,12 @@ geographies: {
         final String localViewDefinition,
         final String databaseViewDefinition) {
         int diffCount=0;
-        if (localViewDefinition != null && databaseViewDefinition != null &&
+        if (databaseViewDefinition == null) { // Does NOT exist!
+            rifLogger.info(this.getClass(), user.getUserID() + 
+                ".rif40_num_denom needs to be created in the database");
+            return true;
+        }
+        else if (localViewDefinition != null && databaseViewDefinition != null &&
             localViewDefinition.equals(databaseViewDefinition)) {
             rifLogger.info(this.getClass(), user.getUserID() + 
                 ".rif40_num_denom is the same as the database");
@@ -374,6 +380,7 @@ geographies: {
                             diffReport.append("[" + (i+1) + "] diff" + lineSeparator +
                                 "old >>>" + databaseViewDefinitionLines[i].trim() + "<<<" + lineSeparator +
                                 "new <<<" + localViewDefinitionLines[i].trim() + ">>>" + lineSeparator);
+                            diffCount++;
                         }
                     }
                     else {
@@ -422,7 +429,7 @@ geographies: {
 				queryFormatter.addQueryLine(0, "DROP VIEW IF EXISTS " + 
 					schemaName + ".rif40_num_denom;");
 				queryFormatter2.addQueryLine(0, "CREATE VIEW " + 
-					schemaName + ".rif40_num_denom (");
+					schemaName + ".rif40_num_denom AS ");
 			}
 			else if (databaseType == DatabaseType.SQL_SERVER) {
 				queryFormatter.addQueryLine(0, "IF EXISTS (SELECT * FROM sys.objects");
@@ -432,16 +439,12 @@ geographies: {
 				queryFormatter.addQueryLine(0, "	DROP VIEW [" + schemaName + "].[rif40_num_denom]");
 				queryFormatter.addQueryLine(0, "END;");
 				queryFormatter2.addQueryLine(0, "CREATE VIEW [" + 
-					schemaName + "].[rif40_num_denom] (");
+					schemaName + "].[rif40_num_denom] AS ");
 			}
 			else {
 				throw new SQLException("createRifNumDenomView(): invalid databaseType: " +
 					databaseType);
 			}
-            queryFormatter2.addQueryLine(0, 
-                "   geography_name, geography_description, numerator_table_name, numerator_table_description,");
-            queryFormatter2.addQueryLine(0, 
-                "   theme_name, theme_description, denominator_table_name, denominator_table_description, automatic) AS ");
 			queryFormatter2.addQueryLine(0, newViewDefinition);
             
             sqlQueryText = logSQLQuery(
@@ -457,7 +460,6 @@ geographies: {
 
             statement = connection.createStatement();
 			statement.execute(queryFormatter2.generateQuery());
-			statement.close();
 			
 			commentObject(connection, "VIEW", schemaName, "rif40_num_denom", 
 				"Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.");
@@ -618,18 +620,17 @@ geographies: {
                 queryFormatter.addQueryLine(0, "                    rif40_tables n,");
                 queryFormatter.addQueryLine(0, "                    rif40_health_study_themes t");
             }
-            queryFormatter.addQueryLine(0, "              WHERE n.isnumerator = 1 AND");
-            queryFormatter.addQueryLine(0, "                    n.automatic   = 1 AND");
-            queryFormatter.addQueryLine(0, "                    n.theme       = t.theme AND");
             
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
-                queryFormatter.addQueryLine(0, "                    [rif40].[rif40_is_object_resolvable](n.table_name) = 1) n1");            
+                queryFormatter.addQueryLine(0, "              WHERE n.isnumerator = 1 ");
+                queryFormatter.addQueryLine(0, "                AND n.automatic   = 1 ");
+                queryFormatter.addQueryLine(0, "                AND n.theme       = t.theme");
+                queryFormatter.addQueryLine(0, "                AND [rif40].[rif40_is_object_resolvable](n.table_name) = 1) n1");            
                 queryFormatter.addQueryLine(0, "     WHERE [rif40].[rif40_num_denom_validate](n1.geography, n1.numerator_table) = 1");
             }
             else {
-                queryFormatter.addQueryLine(0, "                    rif40_is_object_resolvable(n.table_name) = 1) n1");
-                queryFormatter.addQueryLine(0, "     WHERE rif40_num_denom_validate(n1.geography, n1.numerator_table) = 1");
-
+                queryFormatter.addQueryLine(0, "              WHERE ((n.isnumerator = 1) AND (n.automatic = 1) AND ((n.theme)::text = (t.theme)::text) AND (rif40_is_object_resolvable(n.table_name) = 1))) n1");
+                queryFormatter.addQueryLine(0, "     WHERE (rif40_num_denom_validate(n1.geography, n1.numerator_table) = 1)");
             }
             queryFormatter.addQueryLine(0, "), d AS (");
             queryFormatter.addQueryLine(0, "    SELECT d1.geography,");
@@ -646,17 +647,16 @@ geographies: {
                 queryFormatter.addQueryLine(0, "               FROM rif40_geographies g,");
                 queryFormatter.addQueryLine(0, "                    rif40_tables d");
             }
-            queryFormatter.addQueryLine(0, "              WHERE d.isindirectdenominator = 1");
-            queryFormatter.addQueryLine(0, "                AND d.automatic             = 1");
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
+                queryFormatter.addQueryLine(0, "              WHERE d.isindirectdenominator = 1");
+                queryFormatter.addQueryLine(0, "                AND d.automatic             = 1");
                 queryFormatter.addQueryLine(0, "                AND [rif40].[rif40_is_object_resolvable](d.table_name) = 1) d1");
                 queryFormatter.addQueryLine(0, "     WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1");
                 queryFormatter.addQueryLine(0, "       AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL");
             }
             else {
-                queryFormatter.addQueryLine(0, "                AND rif40_is_object_resolvable(d.table_name) = 1) d1");
-                queryFormatter.addQueryLine(0, "     WHERE rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1");
-                queryFormatter.addQueryLine(0, "       AND rif40_auto_indirect_checks(d1.denominator_table) IS NULL");
+                queryFormatter.addQueryLine(0, "                  WHERE ((d.isindirectdenominator = 1) AND (d.automatic = 1) AND (rif40_is_object_resolvable(d.table_name) = 1))) d1");
+                queryFormatter.addQueryLine(0, "     WHERE ((rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1) AND (rif40_auto_indirect_checks(d1.denominator_table) IS NULL))");
             }
             queryFormatter.addQueryLine(0, ")");
             queryFormatter.addQueryLine(0, "SELECT n.geography AS geography_name,");
@@ -668,8 +668,9 @@ geographies: {
             queryFormatter.addQueryLine(0, "       d.denominator_table AS denominator_table_name,");
             queryFormatter.addQueryLine(0, "       d.denominator_description AS denominator_table_description,");
             queryFormatter.addQueryLine(0, "       n.automatic");
-            queryFormatter.addQueryLine(0, "  FROM n, d");
-            queryFormatter.addQueryLine(0, " WHERE n.geography = d.geography");
+            queryFormatter.addQueryLine(0, "  FROM n,");
+            queryFormatter.addQueryLine(0, "       d");
+            queryFormatter.addQueryLine(0, " WHERE ((n.geography)::text = (d.geography)::text)");
             
             addTRif40NumDenom(queryFormatter, connection, user.getUserID());
             addTRif40NumDenom(queryFormatter, connection, "rif40");
@@ -726,24 +727,24 @@ geographies: {
             queryFormatter.addQueryLine(0, "                n.theme");
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
                 queryFormatter.addQueryLine(0, "           FROM " + schemaName + ".t_rif40_num_denom nd");
-                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40.rif40_geographies g ON (g.geography  = nd.geography)");
-                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40.rif40_tables n ON      (n.table_name = nd.numerator_table)");
-                queryFormatter.addQueryLine(0, "          WHERE rrif40.if40_is_object_resolvable(nd.numerator_table)   = 1 AND");
-                queryFormatter.addQueryLine(0, "                rif40.rif40_is_object_resolvable(nd.denominator_table) = 1");
+                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_geographies g ON (g.geography = nd.geography)");
+                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_tables n ON (n.table_name = nd.numerator_table)");
+                queryFormatter.addQueryLine(0, "          WHERE [rif40].[rif40_is_object_resolvable](nd.numerator_table)    = 1");
+                queryFormatter.addQueryLine(0, "            AND [rif40].[rif40_is_object_resolvable](nd.denominator_table) = 1");
                 queryFormatter.addQueryLine(0, "       ) ta");
-                queryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40.rif40_tables d              ON d.table_name = ta.denominator_table");
-                queryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40.rif40_health_study_themes h ON h.theme      = ta.theme");
+                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_tables d ON (d.table_name = ta.denominator_table)");
+                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_health_study_themes h ON (h.theme = ta.theme)");
             }
             else {
+
                 queryFormatter.addQueryLine(0, "           FROM " + schemaName + ".t_rif40_num_denom nd");
-                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40_geographies g ON (((g.geography)::text  = (nd.geography)::text))");
-                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40_tables n ON      (((n.table_name)::text = (nd.numerator_table)::text))");
-                queryFormatter.addQueryLine(0, "          WHERE rif40_is_object_resolvable(nd.numerator_table)   = 1 AND");
-                queryFormatter.addQueryLine(0, "                rif40_is_object_resolvable(nd.denominator_table) = 1");
+                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_geographies g ON (g.geography = nd.geography)");
+                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_tables n ON (n.table_name = nd.numerator_table)");
+                queryFormatter.addQueryLine(0, "          WHERE rif40_is_object_resolvable(nd.numerator_table)    = 1");
+                queryFormatter.addQueryLine(0, "            AND rif40_is_object_resolvable(nd.denominator_table) = 1");
                 queryFormatter.addQueryLine(0, "       ) ta");
-                queryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40_tables d              ON (((d.table_name)::text = (ta.denominator_table)::text))");
-                queryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40_health_study_themes h ON (((h.theme)::text      = (ta.theme)::text))");
-            }
+                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_tables d ON (d.table_name = ta.denominator_table)");
+                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_health_study_themes h ON (h.theme = ta.theme)");            }
         }            
     }
 }
