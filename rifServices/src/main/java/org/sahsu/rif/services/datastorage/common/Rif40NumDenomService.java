@@ -719,7 +719,12 @@ geographies: {
             queryFormatter.addQueryLine(0, "       ta.denominator_table AS denominator_table_name,");
             queryFormatter.addQueryLine(0, "       d.description AS denominator_table_description,");
             queryFormatter.addQueryLine(0, "       0 AS automatic");
-            queryFormatter.addQueryLine(0, "  FROM ( SELECT nd.geography,");
+            if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
+                queryFormatter.addQueryLine(0, "  FROM ( SELECT nd.geography,");
+            }
+            else {
+                queryFormatter.addQueryLine(0, "  FROM ((( SELECT nd.geography,");
+            }
             queryFormatter.addQueryLine(0, "                g.description AS geography_description,");
             queryFormatter.addQueryLine(0, "                nd.numerator_table,");
             queryFormatter.addQueryLine(0, "                nd.denominator_table,");
@@ -737,14 +742,13 @@ geographies: {
             }
             else {
 
-                queryFormatter.addQueryLine(0, "           FROM " + schemaName + ".t_rif40_num_denom nd");
-                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_geographies g ON (g.geography = nd.geography)");
-                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_tables n ON (n.table_name = nd.numerator_table)");
-                queryFormatter.addQueryLine(0, "          WHERE rif40_is_object_resolvable(nd.numerator_table)    = 1");
-                queryFormatter.addQueryLine(0, "            AND rif40_is_object_resolvable(nd.denominator_table) = 1");
-                queryFormatter.addQueryLine(0, "       ) ta");
-                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_tables d ON (d.table_name = ta.denominator_table)");
-                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_health_study_themes h ON (h.theme = ta.theme)");            }
+                queryFormatter.addQueryLine(0, "           FROM ((t_rif40_num_denom nd");
+                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_geographies g ON (((g.geography)::text = (nd.geography)::text)))");
+                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_tables n ON (((n.table_name)::text = (nd.numerator_table)::text)))");
+                queryFormatter.addQueryLine(0, "          WHERE ((rif40_is_object_resolvable(nd.numerator_table) = 1) AND (rif40_is_object_resolvable(nd.denominator_table) = 1))) ta");
+                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_tables d ON (((d.table_name)::text = (ta.denominator_table)::text)))");
+                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_health_study_themes h ON (((h.theme)::text = (ta.theme)::text)))"); 
+            }
         }            
     }
 }
