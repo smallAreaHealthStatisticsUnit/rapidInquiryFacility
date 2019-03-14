@@ -13,6 +13,7 @@ import org.sahsu.rif.services.system.RIFServiceMessages;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.ResultSetMetaData;
@@ -276,18 +277,9 @@ geographies: {
             SQLGeneralQueryFormatter queryFormatter = formatRif40NumDenomQuery(connection, user);
 			String databaseViewDefinition = getViewDefinition(connection, user.getUserID(), "rif40_num_denom");
 			String localViewDefinition = queryFormatter.generateQuery();
-			if (localViewDefinition != null && databaseViewDefinition != null &&
-				localViewDefinition.equals(databaseViewDefinition)) {
-				rifLogger.info(this.getClass(), user.getUserID() + 
-					".rif40_num_denom is the same as the database");
-			}
-			else {	
-				rifLogger.info(this.getClass(), user.getUserID() + 
-					".rif40_num_denom needs updating;" + lineSeparator + "Database >>>" + lineSeparator +
-					databaseViewDefinition + lineSeparator + "New >>>" + lineSeparator +
-					localViewDefinition);
-				createRifNumDenomView(connection, user.getUserID().toLowerCase(), localViewDefinition);	
-			}
+            if (viewsAreDifferent(user, localViewDefinition, databaseViewDefinition)) {
+				createRifNumDenomView(connection, user.getUserID().toLowerCase(), localViewDefinition);
+            }
             sqlQueryText = logSQLQuery(
 					"getNumeratorDenominatorPairs",
 					queryFormatter);
@@ -340,8 +332,74 @@ geographies: {
        
         return result;        
     }
- 
-   /**
+
+   /** Check if views are different
+	 *
+     * @param user User
+	 * @param localViewDefinition
+	 * @param databaseViewDefinition
+     * @return boolean true if views are different 
+	 */     
+    private boolean viewsAreDifferent(
+        final User user,
+        final String localViewDefinition,
+        final String databaseViewDefinition) {
+        int diffCount=0;
+        if (localViewDefinition != null && databaseViewDefinition != null &&
+            localViewDefinition.equals(databaseViewDefinition)) {
+            rifLogger.info(this.getClass(), user.getUserID() + 
+                ".rif40_num_denom is the same as the database");
+            return false;
+        }
+        else {	
+            String localViewDefinitionLines[] = localViewDefinition.split(lineSeparator);
+            String databaseViewDefinitionLines[] = databaseViewDefinition.split(lineSeparator);
+            StringBuilder diffReport = new StringBuilder();
+            diffReport.append("View difference report" + lineSeparator);
+            if (databaseViewDefinitionLines.length > localViewDefinitionLines.length) {
+                diffReport.append("* Database view is longer by " +
+                    (databaseViewDefinitionLines.length - localViewDefinitionLines.length) + " lines" + lineSeparator);
+                diffCount+=(databaseViewDefinitionLines.length - localViewDefinitionLines.length);
+            }
+            else if (databaseViewDefinitionLines.length < localViewDefinitionLines.length) {
+                diffReport.append("* New view is longer by " +
+                    (localViewDefinitionLines.length - databaseViewDefinitionLines.length) + " lines" + lineSeparator);
+                diffCount+=(localViewDefinitionLines.length - databaseViewDefinitionLines.length);
+            }
+            for (int i=0; i<localViewDefinitionLines.length; i++) {
+                if (localViewDefinitionLines[i] != null) {
+                    if (databaseViewDefinitionLines.length > i &&
+                        databaseViewDefinitionLines[i] != null) {
+                        if (!localViewDefinitionLines[i].trim().equals(databaseViewDefinitionLines[i].trim())) {
+                            diffReport.append("[" + (i+1) + "] diff" + lineSeparator +
+                                "old >>>" + databaseViewDefinitionLines[i].trim() + "<<<" + lineSeparator +
+                                "new <<<" + localViewDefinitionLines[i].trim() + ">>>" + lineSeparator);
+                        }
+                    }
+                    else {
+                        diffReport.append("[" + (i+1) + "] no database line >>> " + 
+                            localViewDefinitionLines[i] + lineSeparator);
+                        diffCount++;
+                    }
+                }
+            }
+            if (diffCount > 0) {
+                rifLogger.info(this.getClass(), user.getUserID() + 
+                    ".rif40_num_denom needs updating; " + diffCount + " differences " + lineSeparator + "Database >>>" + lineSeparator +
+                    databaseViewDefinition + "<<<" + lineSeparator + "New >>>" + lineSeparator +
+                    localViewDefinition + "<<<" + lineSeparator +
+                    diffReport.toString());	
+                return true;
+            }
+            else {      
+                rifLogger.info(this.getClass(), user.getUserID() + 
+                    ".rif40_num_denom is the same as the database");
+                return false;
+            }
+        }
+    }
+    
+   /** create RIF40_NUM_DENOM View
 	 *
 	 * @param connection the connection
 	 * @param schemaName
@@ -354,7 +412,7 @@ geographies: {
 			final String newViewDefinition)
 			throws RIFServiceException {
         JSONArray result=new JSONArray();
-		PreparedStatement statement = null;
+		Statement statement = null;
 		String sqlQueryText = null;  
         
  		try {
@@ -362,9 +420,9 @@ geographies: {
             SQLGeneralQueryFormatter queryFormatter2 = new SQLGeneralQueryFormatter();
 			if (databaseType == DatabaseType.POSTGRESQL) {
 				queryFormatter.addQueryLine(0, "DROP VIEW IF EXISTS " + 
-					schemaName + ".rif40_num_denom ");
+					schemaName + ".rif40_num_denom;");
 				queryFormatter2.addQueryLine(0, "CREATE VIEW " + 
-					schemaName + ".rif40_num_denom AS ");
+					schemaName + ".rif40_num_denom (");
 			}
 			else if (databaseType == DatabaseType.SQL_SERVER) {
 				queryFormatter.addQueryLine(0, "IF EXISTS (SELECT * FROM sys.objects");
@@ -374,32 +432,32 @@ geographies: {
 				queryFormatter.addQueryLine(0, "	DROP VIEW [" + schemaName + "].[rif40_num_denom]");
 				queryFormatter.addQueryLine(0, "END;");
 				queryFormatter2.addQueryLine(0, "CREATE VIEW [" + 
-					schemaName + "].[rif40_num_denom] AS ");
+					schemaName + "].[rif40_num_denom] (");
 			}
 			else {
 				throw new SQLException("createRifNumDenomView(): invalid databaseType: " +
 					databaseType);
 			}
+            queryFormatter2.addQueryLine(0, 
+                "   geography_name, geography_description, numerator_table_name, numerator_table_description,");
+            queryFormatter2.addQueryLine(0, 
+                "   theme_name, theme_description, denominator_table_name, denominator_table_description, automatic) AS ");
 			queryFormatter2.addQueryLine(0, newViewDefinition);
-					
+            
             sqlQueryText = logSQLQuery(
 					"dropView",
 					queryFormatter);
-			statement = createPreparedStatement(
-					connection,
-					queryFormatter);
-			statement.execute();
-
-			SQLQueryUtility.close(statement);
+            statement = connection.createStatement();
+			statement.execute(queryFormatter.generateQuery());
+			statement.close();
 			
             sqlQueryText = logSQLQuery(
 					"createView",
 					queryFormatter2);
-			statement = createPreparedStatement(
-					connection,
-					queryFormatter2);
 
-			statement.execute();
+            statement = connection.createStatement();
+			statement.execute(queryFormatter2.generateQuery());
+			statement.close();
 			
 			commentObject(connection, "VIEW", schemaName, "rif40_num_denom", 
 				"Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.");
@@ -422,8 +480,8 @@ geographies: {
 				"theme_description", "Numerator table health study theme description");
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
 				"automatic", "Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.");
-
-			connection.commit();
+ 
+			SQLQueryUtility.commit(connection);
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
@@ -441,7 +499,7 @@ geographies: {
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(statement);
+            SQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -588,17 +646,17 @@ geographies: {
                 queryFormatter.addQueryLine(0, "               FROM rif40_geographies g,");
                 queryFormatter.addQueryLine(0, "                    rif40_tables d");
             }
-            queryFormatter.addQueryLine(0, "              WHERE d.isindirectdenominator = 1 AND");
-            queryFormatter.addQueryLine(0, "                    d.automatic             = 1 AND");
+            queryFormatter.addQueryLine(0, "              WHERE d.isindirectdenominator = 1");
+            queryFormatter.addQueryLine(0, "                AND d.automatic             = 1");
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
-                queryFormatter.addQueryLine(0, "                    [rif40].[rif40_is_object_resolvable](d.table_name) = 1) d1");
-                queryFormatter.addQueryLine(0, "     WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1 AND");
-                queryFormatter.addQueryLine(0, "           [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL");
+                queryFormatter.addQueryLine(0, "                AND [rif40].[rif40_is_object_resolvable](d.table_name) = 1) d1");
+                queryFormatter.addQueryLine(0, "     WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1");
+                queryFormatter.addQueryLine(0, "       AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL");
             }
             else {
-                queryFormatter.addQueryLine(0, "                    rif40_is_object_resolvable(d.table_name) = 1) d1");
-                queryFormatter.addQueryLine(0, "     WHERE rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1 AND");
-                queryFormatter.addQueryLine(0, "           rif40_auto_indirect_checks(d1.denominator_table) IS NULL");
+                queryFormatter.addQueryLine(0, "                AND rif40_is_object_resolvable(d.table_name) = 1) d1");
+                queryFormatter.addQueryLine(0, "     WHERE rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1");
+                queryFormatter.addQueryLine(0, "       AND rif40_auto_indirect_checks(d1.denominator_table) IS NULL");
             }
             queryFormatter.addQueryLine(0, ")");
             queryFormatter.addQueryLine(0, "SELECT n.geography AS geography_name,");
@@ -666,25 +724,27 @@ geographies: {
             queryFormatter.addQueryLine(0, "                nd.denominator_table,");
             queryFormatter.addQueryLine(0, "                n.description AS numerator_description,");
             queryFormatter.addQueryLine(0, "                n.theme");
-            queryFormatter.addQueryLine(0, "           FROM " + schemaName + ".t_rif40_num_denom nd");
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
-                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40.rif40_geographies g ON (g.geography = nd.geography)");
-                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40.rif40_tables n ON (n.table_name = nd.numerator_table)");
-                queryFormatter.addQueryLine(0, "          WHERE rrif40.if40_is_object_resolvable(nd.numerator_table) = 1 AND");
+                queryFormatter.addQueryLine(0, "           FROM " + schemaName + ".t_rif40_num_denom nd");
+                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40.rif40_geographies g ON (g.geography  = nd.geography)");
+                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40.rif40_tables n ON      (n.table_name = nd.numerator_table)");
+                queryFormatter.addQueryLine(0, "          WHERE rrif40.if40_is_object_resolvable(nd.numerator_table)   = 1 AND");
                 queryFormatter.addQueryLine(0, "                rif40.rif40_is_object_resolvable(nd.denominator_table) = 1");
                 queryFormatter.addQueryLine(0, "       ) ta");
-                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40.rif40_tables d              ON d.table_name = ta.denominator_table");
-                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40.rif40_health_study_themes h ON h.theme      = ta.theme");
+                queryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40.rif40_tables d              ON d.table_name = ta.denominator_table");
+                queryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40.rif40_health_study_themes h ON h.theme      = ta.theme");
             }
             else {
-                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40_geographies g ON (g.geography = nd.geography)");
-                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40_tables n ON (n.table_name = nd.numerator_table)");
-                queryFormatter.addQueryLine(0, "          WHERE rif40_is_object_resolvable(nd.numerator_table) = 1 AND");
+                queryFormatter.addQueryLine(0, "           FROM " + schemaName + ".t_rif40_num_denom nd");
+                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40_geographies g ON (((g.geography)::text  = (nd.geography)::text))");
+                queryFormatter.addQueryLine(0, "                LEFT OUTER JOIN rif40_tables n ON      (((n.table_name)::text = (nd.numerator_table)::text))");
+                queryFormatter.addQueryLine(0, "          WHERE rif40_is_object_resolvable(nd.numerator_table)   = 1 AND");
                 queryFormatter.addQueryLine(0, "                rif40_is_object_resolvable(nd.denominator_table) = 1");
                 queryFormatter.addQueryLine(0, "       ) ta");
-                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_tables d              ON d.table_name = ta.denominator_table");
-                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_health_study_themes h ON h.theme      = ta.theme");
+                queryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40_tables d              ON (((d.table_name)::text = (ta.denominator_table)::text))");
+                queryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40_health_study_themes h ON (((h.theme)::text      = (ta.theme)::text))");
             }
         }            
     }
 }
+            

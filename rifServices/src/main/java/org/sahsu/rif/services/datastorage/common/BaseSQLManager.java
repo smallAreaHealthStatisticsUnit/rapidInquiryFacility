@@ -5,6 +5,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -122,7 +123,7 @@ public class BaseSQLManager implements SQLManager {
 			rifDatabaseProperties.isCaseSensitive());
 		
 	}
-	
+    
 	@Override
 	public PreparedStatement createPreparedStatement(final Connection connection, final QueryFormatter queryFormatter)
 			throws SQLException {
@@ -436,6 +437,8 @@ public class BaseSQLManager implements SQLManager {
 	 * @param schemaName,
 	 * @param tableName,
 	 * @param columnName
+     *
+     * @returns column comment from data dictionary
 	 */
 	@Override
 	public String getColumnComment(Connection connection, String schemaName, String tableName,
@@ -516,9 +519,12 @@ public class BaseSQLManager implements SQLManager {
 
 	/**
 	 * Get view defintion SQL from data dictionary
+     *
 	 * @param connection,
 	 * @param schemaName,
 	 * @param tableName
+     *
+     * @returns view defintion SQL from data dictionary
 	 */
 	@Override	
 	public String getViewDefinition(Connection connection,
@@ -564,16 +570,18 @@ public class BaseSQLManager implements SQLManager {
 					throw new SQLException("getColumnComment() database: " + databaseType +
 						"; expected 1 row, got >1");
 				}
-				viewDefinition=viewDefinition.replaceAll("\\r\\n|\\r", "\n"); // Convert line endings to OS of J2EE container
-				viewDefinition=viewDefinition.replaceAll("\\n", lineSeparator);
-				if (databaseType == DatabaseType.SQL_SERVER) { // Remove CREATE VIEW line
-					viewDefinition=viewDefinition.replace(
-						"CREATE VIEW [" + schemaName.toLowerCase() + "].[" + viewName.toLowerCase() + 
-							"] AS (" + lineSeparator, "");
-				}		
-				else if (databaseType == DatabaseType.POSTGRESQL) {
-					viewDefinition=viewDefinition.substring(1); // Remove first charscter
-				}					
+                if (viewDefinition != null) {
+                    viewDefinition=viewDefinition.replaceAll("\\r\\n|\\r", "\n"); // Convert line endings to OS of J2EE container
+                    viewDefinition=viewDefinition.replaceAll("\\n", lineSeparator);
+                    if (databaseType == DatabaseType.SQL_SERVER) { // Remove CREATE VIEW line
+                        viewDefinition=viewDefinition.replace(
+                            "CREATE VIEW [" + schemaName.toLowerCase() + "].[" + viewName.toLowerCase() + 
+                                "] AS (" + lineSeparator, "");
+                    }		
+                    else if (databaseType == DatabaseType.POSTGRESQL) {
+                        viewDefinition=viewDefinition.substring(1); // Remove first charscter
+                    }	
+                }                    
 			}
 			else {
 				rifLogger.debug(this.getClass(), "getColumnComment() database: " + databaseType +
@@ -594,6 +602,7 @@ public class BaseSQLManager implements SQLManager {
 		
    /**
 	 * Comment object
+     *
 	 * @param connection,
 	 * @param objectType,
 	 * @param schemaName,
@@ -607,7 +616,7 @@ public class BaseSQLManager implements SQLManager {
 				
 		SQLGeneralQueryFormatter commentObjectFormatter = new SQLGeneralQueryFormatter();
 		String sqlQueryText = null;
-		PreparedStatement statement = null;
+		Statement statement = null;
 		
 		try {
 			if (databaseType == DatabaseType.POSTGRESQL) {	
@@ -629,8 +638,6 @@ public class BaseSQLManager implements SQLManager {
 			sqlQueryText = logSQLQuery(
 						"commentObject",
 						commentObjectFormatter);
-			statement = createPreparedStatement(connection, commentObjectFormatter);
-			statement.execute();
 		}
 		catch (SQLException sqlException) {	
 			RIFSQLException rifSQLException = new RIFSQLException(
@@ -638,7 +645,7 @@ public class BaseSQLManager implements SQLManager {
 			throw rifSQLException;
 		}
 		finally {
-			closeStatement(statement);
+			closeStatement(statement);           
 		}
 	}
 			
@@ -657,7 +664,7 @@ public class BaseSQLManager implements SQLManager {
 			throws RIFSQLException {
 		SQLGeneralQueryFormatter commentObjectFormatter = new SQLGeneralQueryFormatter();
 		String sqlQueryText = null;
-		PreparedStatement statement = null;
+		Statement statement = null;
 		
 		try {
 			if (databaseType == DatabaseType.POSTGRESQL) {	
@@ -680,8 +687,9 @@ public class BaseSQLManager implements SQLManager {
 			sqlQueryText = logSQLQuery(
 						"commentColumn",
 						commentObjectFormatter);
-			statement = createPreparedStatement(connection, commentObjectFormatter);
-			statement.execute();
+
+            statement = connection.createStatement();
+			statement.execute(commentObjectFormatter.generateQuery());
 		}
 		catch (SQLException sqlException) {	
 			RIFSQLException rifSQLException = new RIFSQLException(
@@ -689,7 +697,7 @@ public class BaseSQLManager implements SQLManager {
 			throw rifSQLException;
 		}
 		finally {
-			closeStatement(statement);
+			closeStatement(statement);        
 		}
 	}
 			
@@ -1222,6 +1230,18 @@ public class BaseSQLManager implements SQLManager {
 	}
 
 	private void closeStatement(PreparedStatement statement) {
+
+		if (statement == null) {
+			return;
+		}
+
+		try {
+			statement.close();
+		}
+		catch(SQLException ignore) {}
+	}
+    
+	private void closeStatement(Statement statement) {
 
 		if (statement == null) {
 			return;
