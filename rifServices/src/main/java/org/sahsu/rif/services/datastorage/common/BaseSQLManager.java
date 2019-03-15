@@ -576,7 +576,8 @@ public class BaseSQLManager implements SQLManager {
                     if (databaseType == DatabaseType.SQL_SERVER) { // Remove CREATE VIEW line
                         viewDefinition=viewDefinition.replace(
                             "CREATE VIEW [" + schemaName.toLowerCase() + "].[" + viewName.toLowerCase() + 
-                                "] AS (" + lineSeparator, "");
+                                "] AS", "");
+						viewDefinition=viewDefinition.trim();
                     }		
                     else if (databaseType == DatabaseType.POSTGRESQL) {
                         viewDefinition=viewDefinition.substring(1); // Remove first charscter

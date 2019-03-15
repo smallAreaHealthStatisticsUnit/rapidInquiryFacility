@@ -38,15 +38,15 @@ import org.json.JSONObject;
  */
 public class Rif40NumDenomService extends BaseSQLManager {
 
-	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static final String lineSeparator = System.getProperty("line.separator");
 
 	private static DatabaseType databaseType;
 	
 	/**
 	 * Constructor
 	 *
-	 * @param RIFServiceStartupOptions for the extract directory
+	 * @param options RIFServiceStartupOptions for the extract directory
 	 */
 	public Rif40NumDenomService(final RIFServiceStartupOptions options) {
 
@@ -81,7 +81,6 @@ public class Rif40NumDenomService extends BaseSQLManager {
 	 *
 	 * @param rif40NumDenomPairs JSONArray from RIF40_NUM_DENOM query
 	 * @return Rif40NumDenomService JSONObject
-	 * @throws RIFServiceException the RIF service exception
 	 */
     private JSONObject createRif40NumDenomServiceJson(final JSONArray rif40NumDenomPairs) {
         
@@ -193,11 +192,11 @@ geographies: {
         
         // Foreach theme description build a list of RIF40_NUM_DENOM pairs by geography
         for (HashMap.Entry<String, String> entry : themeList.entrySet()) {
-            String themeName=entry.getValue();
+//            String themeName=entry.getValue();
             String themeDescription=entry.getKey();
             JSONArray geographyListJson=new JSONArray();
             JSONObject geographyDescriptionsJson=new JSONObject();
-            JSONArray themeGeographyArray=null;
+            JSONArray themeGeographyArray;
             JSONObject themeDescriptionJson=new JSONObject();
             for (int i=0; i<rif40NumDenomPairs.length(); i++) {
                 row=rif40NumDenomPairs.getJSONObject(i);
@@ -263,8 +262,8 @@ geographies: {
 	 * @param user the user
 	 * @return RIF40_NUM_DENOM as a JSONArray
 	 * @throws RIFServiceException the RIF service exception
-	 */    
-    public JSONArray getRif40NumDenomData(
+	 */
+	private JSONArray getRif40NumDenomData(
 			final Connection connection,
 			final User user) 
 			throws RIFServiceException {             
@@ -337,8 +336,8 @@ geographies: {
      * and it will always be re-created
 	 *
      * @param user User
-	 * @param localViewDefinition
-	 * @param databaseViewDefinition
+	 * @param localViewDefinition local view definition
+	 * @param databaseViewDefinition database view definition
      * @return boolean true if views are different 
 	 */     
     private boolean viewsAreDifferent(
@@ -351,15 +350,14 @@ geographies: {
                 ".rif40_num_denom needs to be created in the database");
             return true;
         }
-        else if (localViewDefinition != null && databaseViewDefinition != null &&
-            localViewDefinition.equals(databaseViewDefinition)) {
+        else if (localViewDefinition != null && localViewDefinition.equals(databaseViewDefinition)) {
             rifLogger.info(this.getClass(), user.getUserID() + 
                 ".rif40_num_denom is the same as the database");
             return false;
         }
-        else {	
-            String localViewDefinitionLines[] = localViewDefinition.split(lineSeparator);
-            String databaseViewDefinitionLines[] = databaseViewDefinition.split(lineSeparator);
+		else if (localViewDefinition != null) {
+			String[] localViewDefinitionLines = localViewDefinition.split(lineSeparator);
+			String[] databaseViewDefinitionLines = databaseViewDefinition.split(lineSeparator);
             StringBuilder diffReport = new StringBuilder();
             diffReport.append("View difference report" + lineSeparator);
             if (databaseViewDefinitionLines.length > localViewDefinitionLines.length) {
@@ -390,6 +388,7 @@ geographies: {
                     }
                 }
             }
+			
             if (diffCount > 0) {
                 rifLogger.info(this.getClass(), user.getUserID() + 
                     ".rif40_num_denom needs updating; " + diffCount + " differences " + lineSeparator + "Database >>>" + lineSeparator +
@@ -404,13 +403,16 @@ geographies: {
                 return false;
             }
         }
+		else {
+			return false;
+		}
     }
     
    /** create RIF40_NUM_DENOM View
 	 *
 	 * @param connection the connection
-	 * @param schemaName
-	 * @param newViewDefinition
+	 * @param schemaName schema name
+	 * @param newViewDefinition new view definition SQL
 	 * @throws RIFServiceException the RIF service exception
 	 */  
 	private void createRifNumDenomView(
@@ -418,7 +420,7 @@ geographies: {
 			final String schemaName,
 			final String newViewDefinition)
 			throws RIFServiceException {
-        JSONArray result=new JSONArray();
+//        JSONArray result=new JSONArray();
 		Statement statement = null;
 		String sqlQueryText = null;  
         
@@ -670,8 +672,12 @@ geographies: {
             queryFormatter.addQueryLine(0, "       n.automatic");
             queryFormatter.addQueryLine(0, "  FROM n,");
             queryFormatter.addQueryLine(0, "       d");
-            queryFormatter.addQueryLine(0, " WHERE ((n.geography)::text = (d.geography)::text)");
-            
+            if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
+				queryFormatter.addQueryLine(0, " WHERE n.geography = d.geography");
+			}
+			else {
+				queryFormatter.addQueryLine(0, " WHERE ((n.geography)::text = (d.geography)::text)");
+            }
             addTRif40NumDenom(queryFormatter, connection, user.getUserID());
             addTRif40NumDenom(queryFormatter, connection, "rif40");
     
@@ -699,8 +705,6 @@ geographies: {
      *
 	 * @param queryFormatter SQLGeneralQueryFormatter
 	 * @param connection the connection
-	 * @param user the user
-	 * @return SQLGeneralQueryFormatter object
 	 * @throws RIFServiceException the RIF service exception
 	 */ 
     private void addTRif40NumDenom(
@@ -732,16 +736,15 @@ geographies: {
             queryFormatter.addQueryLine(0, "                n.theme");
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
                 queryFormatter.addQueryLine(0, "           FROM " + schemaName + ".t_rif40_num_denom nd");
-                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_geographies g ON (g.geography = nd.geography)");
-                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_tables n ON (n.table_name = nd.numerator_table)");
+                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40.rif40_geographies g ON (g.geography = nd.geography)");
+                queryFormatter.addQueryLine(0, "                LEFT JOIN rif40.rif40_tables n ON (n.table_name = nd.numerator_table)");
                 queryFormatter.addQueryLine(0, "          WHERE [rif40].[rif40_is_object_resolvable](nd.numerator_table)    = 1");
                 queryFormatter.addQueryLine(0, "            AND [rif40].[rif40_is_object_resolvable](nd.denominator_table) = 1");
                 queryFormatter.addQueryLine(0, "       ) ta");
-                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_tables d ON (d.table_name = ta.denominator_table)");
-                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40_health_study_themes h ON (h.theme = ta.theme)");
+                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40.rif40_tables d ON (d.table_name = ta.denominator_table)");
+                queryFormatter.addQueryLine(0, "       LEFT JOIN rif40.rif40_health_study_themes h ON (h.theme = ta.theme)");
             }
             else {
-
                 queryFormatter.addQueryLine(0, "           FROM ((t_rif40_num_denom nd");
                 queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_geographies g ON (((g.geography)::text = (nd.geography)::text)))");
                 queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_tables n ON (((n.table_name)::text = (nd.numerator_table)::text)))");
