@@ -464,6 +464,8 @@ public class BaseSQLManager implements SQLManager {
 			columnCommentQueryFormatter.addQueryLine(
 					0, "   AND UPPER(cols.table_name)    = UPPER(c.relname)");
 			columnCommentQueryFormatter.addQueryLine(
+					0, "   AND c.oid = (SELECT ('\"' || cols.table_name || '\"')::regclass::oid)");
+			columnCommentQueryFormatter.addQueryLine(
 					0, "   AND UPPER(cols.column_name)   = UPPER(?)");
 		}
 		else if (databaseType == DatabaseType.SQL_SERVER) {
@@ -506,7 +508,10 @@ public class BaseSQLManager implements SQLManager {
 		}
 		catch (SQLException exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
-				lineSeparator + columnCommentQueryFormatter.generateQuery(),
+				lineSeparator + columnCommentQueryFormatter.generateQuery() +
+                "; schema: " + schemaName +
+                "; table: " + tableName + 
+                "; column: " + columnName,
 				exception);
 			throw exception;
 		}
