@@ -68,7 +68,7 @@ public class RIFSQLException extends RIFServiceException {
 		rifLogger.error(className, "RIFSQLException: " + 
 			((statement != null) ? 
 				"Warnings/Messages >>>" + lineSeparator + SQLQueryUtility.printWarnings(statement) + lineSeparator + "<<<" + lineSeparator :
-                "No Statement") +	
+                "No Statement" + lineSeparator) +	
 			 sqlQueryText + lineSeparator +
 			"exception: " + exception.getMessage(), exception);
 	}
@@ -86,7 +86,7 @@ public class RIFSQLException extends RIFServiceException {
 		rifLogger.error(className, "RIFSQLException: " + 
 			((statement != null) ? 
 				"Warnings/Messages >>>" + lineSeparator + SQLQueryUtility.printWarnings(statement) + lineSeparator + "<<<" + lineSeparator :
-                "No PreparedStatement") +	
+                "No PreparedStatement" + lineSeparator) +	
 			 sqlQueryText + lineSeparator +
 			"exception: " + exception.getMessage(), exception);
 	}

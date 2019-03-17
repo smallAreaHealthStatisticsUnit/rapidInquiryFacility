@@ -301,6 +301,21 @@ geographies: {
                 // The column count starts from 1
                 for (int i = 1; i <= columnCount; i++ ) {
                     String name = rsmd.getColumnName(i);
+                    if (name.equals("numerator_table")) {
+                        name = "numerator_table_name";
+                    }
+                    else if (name.equals("denominator_table")) {
+                        name = "denominator_table_name";
+                    }
+                    else if (name.equals("numerator_description")) {
+                        name = "denominator_table_description";
+                    }
+                    else if (name.equals("denominator_description")) {
+                        name = "denominator_table_description";
+                    }
+                    else if (name.equals("geography")) {
+                        name = "geography_name";
+                    }
                     String value = dbResultSet.getString(i);
                     row.put(jsonCapitalise(name), value);
                 }
@@ -467,17 +482,17 @@ geographies: {
 				"Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.");
 				
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"geography_name", "Geography");
+				"geography", "Geography");
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
 				"geography_description", "Geography description");
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"numerator_table_name", "Numerator table");
+				"numerator_table", "Numerator table");
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"numerator_table_description", "Numerator table description");
+				"numerator_description", "Numerator table description");
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"denominator_table_name", "Denominator table");
+				"denominator_table", "Denominator table");
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"denominator_table_description", "Denominator table description");
+				"denominator_description", "Denominator table description");
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
 				"theme_name", "Numerator table health study theme name");
 			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
@@ -548,31 +563,31 @@ geographies: {
 	 *      WHERE rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1 AND
 	 *            rif40_auto_indirect_checks(d1.denominator_table) IS NULL
 	 * )
-	 * SELECT n.geography AS geography_name,
+	 * SELECT n.geography AS geography,
 	 *        n.geography_description,
-	 *        n.numerator_table AS numerator_table_name,
-	 *        n.numerator_description AS numerator_table_description,
+	 *        n.numerator_table AS numerator_table,
+	 *        n.numerator_description AS numerator_description,
 	 *        n.theme_name,
 	 *        n.theme_description,
-	 *        d.denominator_table AS denominator_table_name,
- 	 *        d.denominator_description AS denominator_table_description,
+	 *        d.denominator_table AS denominator_table,
+ 	 *        d.denominator_description AS denominator_description,
  	 *        n.automatic
 	 *   FROM n, d
 	 *  WHERE n.geography = d.geography
 	 * UNION
-	 * SELECT ta.geography AS geography_name,
+	 * SELECT ta.geography AS geography,
 	 *        ta.geography_description,
-	 *        ta.numerator_table AS numerator_table_name,
-	 *        ta.numerator_description AS numerator_table_description,
+	 *        ta.numerator_table AS numerator_table,
+	 *        ta.numerator_description AS numerator_description,
 	 *        h.theme AS theme_name,
 	 *        h.description AS theme_description,
-	 *        ta.denominator_table AS denominator_table_name,
-	 *        d.description AS denominator_table_description,
+	 *        ta.denominator_table AS denominator_table,
+	 *        d.description AS denominator_description,
 	 *        0 AS automatic
 	 *   FROM ( SELECT nd.geography,
 	 *                 g.description AS geography_description,
-	 *                 nd.numerator_table AS numerator_table_name,
-	 *                 nd.denominator_table AS denominator_table_name,
+	 *                 nd.numerator_table AS numerator_table,
+	 *                 nd.denominator_table AS denominator_table,
 	 *                 n.description AS numerator_description,
 	 *                 n.theme
 	 *            FROM peter.t_rif40_num_denom nd
@@ -661,14 +676,14 @@ geographies: {
                 queryFormatter.addQueryLine(0, "     WHERE ((rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1) AND (rif40_auto_indirect_checks(d1.denominator_table) IS NULL))");
             }
             queryFormatter.addQueryLine(0, ")");
-            queryFormatter.addQueryLine(0, "SELECT n.geography AS geography_name,");
+            queryFormatter.addQueryLine(0, "SELECT n.geography AS geography,");
             queryFormatter.addQueryLine(0, "       n.geography_description,");
-            queryFormatter.addQueryLine(0, "       n.numerator_table AS numerator_table_name,");
-            queryFormatter.addQueryLine(0, "       n.numerator_description AS numerator_table_description,");
+            queryFormatter.addQueryLine(0, "       n.numerator_table AS numerator_table,");
+            queryFormatter.addQueryLine(0, "       n.numerator_description AS numerator_description,");
             queryFormatter.addQueryLine(0, "       n.theme_name,");
             queryFormatter.addQueryLine(0, "       n.theme_description,");
-            queryFormatter.addQueryLine(0, "       d.denominator_table AS denominator_table_name,");
-            queryFormatter.addQueryLine(0, "       d.denominator_description AS denominator_table_description,");
+            queryFormatter.addQueryLine(0, "       d.denominator_table AS denominator_table,");
+            queryFormatter.addQueryLine(0, "       d.denominator_description AS denominator_description,");
             queryFormatter.addQueryLine(0, "       n.automatic");
             queryFormatter.addQueryLine(0, "  FROM n,");
             queryFormatter.addQueryLine(0, "       d");
@@ -714,14 +729,14 @@ geographies: {
         
         if (doesTableExist(connection, schemaName, "t_rif40_num_denom")) { 
             queryFormatter.addQueryLine(0, "UNION");
-            queryFormatter.addQueryLine(0, "SELECT ta.geography AS geography_name,");
+            queryFormatter.addQueryLine(0, "SELECT ta.geography AS geography,");
             queryFormatter.addQueryLine(0, "       ta.geography_description,");
-            queryFormatter.addQueryLine(0, "       ta.numerator_table AS numerator_table_name,");
-            queryFormatter.addQueryLine(0, "       ta.numerator_description AS numerator_table_description,");
+            queryFormatter.addQueryLine(0, "       ta.numerator_table AS numerator_table,");
+            queryFormatter.addQueryLine(0, "       ta.numerator_description AS numerator_description,");
             queryFormatter.addQueryLine(0, "       h.theme AS theme_name,");
             queryFormatter.addQueryLine(0, "       h.description AS theme_description,");
-            queryFormatter.addQueryLine(0, "       ta.denominator_table AS denominator_table_name,");
-            queryFormatter.addQueryLine(0, "       d.description AS denominator_table_description,");
+            queryFormatter.addQueryLine(0, "       ta.denominator_table AS denominator_table,");
+            queryFormatter.addQueryLine(0, "       d.description AS denominator_description,");
             queryFormatter.addQueryLine(0, "       0 AS automatic");
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
                 queryFormatter.addQueryLine(0, "  FROM ( SELECT nd.geography,");
@@ -745,7 +760,12 @@ geographies: {
                 queryFormatter.addQueryLine(0, "       LEFT JOIN rif40.rif40_health_study_themes h ON (h.theme = ta.theme)");
             }
             else {
-                queryFormatter.addQueryLine(0, "           FROM ((t_rif40_num_denom nd");
+                if (schemaName.equals("rif40")) {
+                    queryFormatter.addQueryLine(0, "           FROM " + schemaName + ".t_rif40_num_denom nd");
+                }
+                else {
+                    queryFormatter.addQueryLine(0, "           FROM ((t_rif40_num_denom nd");                  
+                }
                 queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_geographies g ON (((g.geography)::text = (nd.geography)::text)))");
                 queryFormatter.addQueryLine(0, "                LEFT JOIN rif40_tables n ON (((n.table_name)::text = (nd.numerator_table)::text)))");
                 queryFormatter.addQueryLine(0, "          WHERE ((rif40_is_object_resolvable(nd.numerator_table) = 1) AND (rif40_is_object_resolvable(nd.denominator_table) = 1))) ta");
