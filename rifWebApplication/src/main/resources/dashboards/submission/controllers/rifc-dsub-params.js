@@ -460,6 +460,11 @@ angular.module("RIF")
                 };
                 function handleTextSearch(res) {
                     var myICD = [];
+                    myICD.push({
+                            term_name: "ALL",
+                            identifier: "%",
+                            term_description: "All records in health dataset",
+                            selected: 0});
 					var taxTerms;
 					if (res && res.data && res.data.terms && res.data.terms.healthCode) {
 						taxTerms = res.data.terms.healthCode;
