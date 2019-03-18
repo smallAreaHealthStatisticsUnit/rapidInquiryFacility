@@ -89,6 +89,8 @@ GO
 :r ..\sahsuland_dev\rif40\functions\recreate_all_functions.sql
 :r ..\sahsuland_dev\rif40\views\recreate_all_views.sql
 :r ..\sahsuland_dev\error_handling\recreate_error_handling_sahsuland_dev.sql
+:r ..\sahsuland_dev\rif40\table_triggers\recreate_table_triggers.sql
+:r ..\sahsuland_dev\rif40\view_triggers\recreate_view_triggers.sql
 :r rif40_import_sahsuland.sql
 
 PRINT 'All done: RIF40 create sahsuland_dev database objects and install data.';
