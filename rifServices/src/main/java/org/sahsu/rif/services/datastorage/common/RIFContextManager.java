@@ -253,11 +253,11 @@ public class RIFContextManager extends BaseSQLManager {
 					rifDatabaseProperties.getDatabaseType());
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
-			queryFormatter.addSelectField("numerator_table_description");
-			queryFormatter.addSelectField("denominator_table_name");
-			queryFormatter.addSelectField("denominator_table_description");
+			queryFormatter.addSelectField("numerator_description");
+			queryFormatter.addSelectField("denominator_table");
+			queryFormatter.addSelectField("denominator_description");
 			queryFormatter.addFromTable(numeratorDenominatorTableName(user));
-			queryFormatter.addWhereParameter("numerator_table_name");
+			queryFormatter.addWhereParameter("numerator_table");
 
 			sqlQueryText = logSQLQuery(
 					"getNDPairFromNumeratorTableName",
@@ -1721,9 +1721,9 @@ public class RIFContextManager extends BaseSQLManager {
 					RecordExistsQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 			configureQueryFormatterForDB(ndPairExistsQueryFormatter);
 			ndPairExistsQueryFormatter.setFromTable(numeratorDenominatorTableName(user));
-			ndPairExistsQueryFormatter.addWhereParameter("geography_name");
-			ndPairExistsQueryFormatter.addWhereParameter("numerator_table_name");
-			ndPairExistsQueryFormatter.addWhereParameter("denominator_table_name");
+			ndPairExistsQueryFormatter.addWhereParameter("geography");
+			ndPairExistsQueryFormatter.addWhereParameter("numerator_table");
+			ndPairExistsQueryFormatter.addWhereParameter("denominator_table");
 
 			sqlQueryText = logSQLQuery(
 					"ndPairExistsQuery",
@@ -1818,8 +1818,8 @@ public class RIFContextManager extends BaseSQLManager {
 					rifDatabaseProperties.getDatabaseType());
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable(numeratorDenominatorTableName(user));
-			queryFormatter.addWhereParameter("geography_name");
-			queryFormatter.addWhereParameter("numerator_table_name");
+			queryFormatter.addWhereParameter("geography");
+			queryFormatter.addWhereParameter("numerator_table");
 
 			sqlQueryText = logSQLQuery(
 					"checkNumeratorTableExists",
