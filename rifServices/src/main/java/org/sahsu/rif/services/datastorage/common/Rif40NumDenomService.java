@@ -325,7 +325,7 @@ geographies: {
                         name = "denominator_table_name";
                     }
                     else if (name.equals("numerator_description")) {
-                        name = "denominator_table_description";
+                        name = "numerator_table_description";
                     }
                     else if (name.equals("denominator_description")) {
                         name = "denominator_table_description";
