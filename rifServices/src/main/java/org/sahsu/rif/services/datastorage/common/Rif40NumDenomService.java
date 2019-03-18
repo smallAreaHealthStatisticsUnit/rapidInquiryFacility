@@ -72,7 +72,8 @@ public class Rif40NumDenomService extends BaseSQLManager {
 			final User user) 
 			throws RIFServiceException { 
         JSONArray rif40NumDenomPairs=getRif40NumDenomData(connection, user);
-        
+        createRif40numeratorOutcomeColumns(connection, user);
+		
         return createRif40NumDenomServiceJson(rif40NumDenomPairs);
     }
     
@@ -276,9 +277,25 @@ geographies: {
             SQLGeneralQueryFormatter queryFormatter = formatRif40NumDenomQuery(connection, user);
 			String databaseViewDefinition = getViewDefinition(connection, user.getUserID(), "rif40_num_denom");
 			String localViewDefinition = queryFormatter.generateQuery();
-            if (viewsAreDifferent(user, localViewDefinition, databaseViewDefinition)) {
-				createRifNumDenomView(connection, user.getUserID().toLowerCase(), localViewDefinition);
-            }
+			
+			HashMap<String, String> columnCommentHash = new HashMap<>();	
+
+			columnCommentHash.put("geography", "Geography");
+			columnCommentHash.put("geography_description", "Geography description");
+			columnCommentHash.put("numerator_table", "Numerator table");
+			columnCommentHash.put("numerator_description", "Numerator table description");
+			columnCommentHash.put("denominator_table", "Denominator table");
+			columnCommentHash.put("denominator_description", "Denominator table description");
+			columnCommentHash.put("theme_name", "Numerator table health study theme name");
+			columnCommentHash.put("theme_description", "Numerator table health study theme description");
+			columnCommentHash.put("automatic", "Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.");
+ 
+            if (viewsAreDifferent(user, localViewDefinition, databaseViewDefinition, "rif40_num_denom")) {
+				createRifView(connection, user.getUserID().toLowerCase(), localViewDefinition,
+					"rif40_num_denom", columnCommentHash);
+				commentObject(connection, "VIEW", user.getUserID().toLowerCase(), "rif40_num_denom", 
+					"Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.");	
+            }	
             sqlQueryText = logSQLQuery(
 					"getNumeratorDenominatorPairs",
 					queryFormatter);
@@ -347,27 +364,61 @@ geographies: {
         return result;        
     }
 
+	private void createRif40numeratorOutcomeColumns(
+			final Connection connection,
+			final User user) 
+			throws RIFServiceException {     
+
+		SQLGeneralQueryFormatter queryFormatter = formatRif40numeratorOutcomeColumnsQuery(connection, user);
+		String databaseViewDefinition = getViewDefinition(connection, user.getUserID(), 
+			"rif40_numerator_outcome_columns");
+		String localViewDefinition = queryFormatter.generateQuery();
+		
+		HashMap<String, String> columnCommentHash = new HashMap<>();	
+
+		columnCommentHash.put("geography", "Geography");
+		columnCommentHash.put("table_name", "Numerator table");
+		columnCommentHash.put("table_description", "Numerator table description");
+		columnCommentHash.put("outcome_group_name", "Outcome Group Name. E.g SINGLE_VARIABLE_ICD");
+		columnCommentHash.put("outcome_type", "Outcome type: ICD, ICD-0 or OPCS");
+		columnCommentHash.put("outcome_group_description", "Outcome Group Description. E.g. Single variable ICD");
+		columnCommentHash.put("field_name", "Numerator field name (will only the actual field name if the multiple field count is zero.");
+		columnCommentHash.put("multiple_field_count", "Outcome Group multiple field count (0-99). E.g if NULL then field is ICD_SAHSU_01; if 20 then fields are ICD_SAHSU_01 to ICD_SAHSU_20. Field numbers are assumed to be left padded to 2 characters with \"0\" and preceded by an underscore");
+		columnCommentHash.put("columnn_exists", "Does the column exist true/false");
+		columnCommentHash.put("column_comment", "Numerator field comment");
+
+		if (viewsAreDifferent(user, localViewDefinition, databaseViewDefinition,
+			"rif40_numerator_outcome_columns")) {
+			createRifView(connection, user.getUserID().toLowerCase(), localViewDefinition,
+				"rif40_numerator_outcome_columns", columnCommentHash);
+			commentObject(connection, "VIEW", user.getUserID().toLowerCase(), "rif40_numerator_outcome_columns", 
+				"All numerator outcome fields (columns)");
+		}
+	}
+			
    /** Check if views are different. This will not work for Postgres as the original VIEW text is NOT stored 
      * and it will always be re-created
 	 *
      * @param user User
 	 * @param localViewDefinition local view definition
 	 * @param databaseViewDefinition database view definition
+	 * @param ViewName View name
      * @return boolean true if views are different 
 	 */     
     private boolean viewsAreDifferent(
         final User user,
         final String localViewDefinition,
-        final String databaseViewDefinition) {
+        final String databaseViewDefinition,
+		final String viewName) {
         int diffCount=0;
         if (databaseViewDefinition == null) { // Does NOT exist!
             rifLogger.info(this.getClass(), user.getUserID() + 
-                ".rif40_num_denom needs to be created in the database");
+                "." + viewName + " needs to be created in the database");
             return true;
         }
         else if (localViewDefinition != null && localViewDefinition.equals(databaseViewDefinition)) {
             rifLogger.info(this.getClass(), user.getUserID() + 
-                ".rif40_num_denom is the same as the database");
+                "." + viewName + " is the same as the database");
             return false;
         }
 		else if (localViewDefinition != null) {
@@ -391,8 +442,8 @@ geographies: {
                         databaseViewDefinitionLines[i] != null) {
                         if (!localViewDefinitionLines[i].trim().equals(databaseViewDefinitionLines[i].trim())) {
                             diffReport.append("[" + (i+1) + "] diff" + lineSeparator +
-                                "old >>>" + databaseViewDefinitionLines[i].trim() + "<<<" + lineSeparator +
-                                "new <<<" + localViewDefinitionLines[i].trim() + ">>>" + lineSeparator);
+                                "db  >>>" + databaseViewDefinitionLines[i].trim() + "<<<" + lineSeparator +
+                                "gen <<<" + localViewDefinitionLines[i].trim() + ">>>" + lineSeparator);
                             diffCount++;
                         }
                     }
@@ -406,7 +457,7 @@ geographies: {
 			
             if (diffCount > 0) {
                 rifLogger.info(this.getClass(), user.getUserID() + 
-                    ".rif40_num_denom needs updating; " + diffCount + " differences " + lineSeparator + "Database >>>" + lineSeparator +
+                    "." + viewName + " needs updating; " + diffCount + " differences " + lineSeparator + "Database >>>" + lineSeparator +
                     databaseViewDefinition + "<<<" + lineSeparator + "New >>>" + lineSeparator +
                     localViewDefinition + "<<<" + lineSeparator +
                     diffReport.toString());	
@@ -414,7 +465,7 @@ geographies: {
             }
             else {      
                 rifLogger.info(this.getClass(), user.getUserID() + 
-                    ".rif40_num_denom is the same as the database");
+                    "." + viewName + " is the same as the database");
                 return false;
             }
         }
@@ -423,19 +474,22 @@ geographies: {
 		}
     }
     
-   /** create RIF40_NUM_DENOM View
+   /** create RIF40_NUM_DENOM/RIF40_NUMERATOR_OUTCOME_COLUMNS View
 	 *
 	 * @param connection the connection
 	 * @param schemaName schema name
 	 * @param newViewDefinition new view definition SQL
+	 * @param viewName view name
+	 * @param columnCommentHash column comments hash
 	 * @throws RIFServiceException the RIF service exception
 	 */  
-	private void createRifNumDenomView(
+	private void createRifView(
 			final Connection connection,
 			final String schemaName,
-			final String newViewDefinition)
+			final String newViewDefinition,
+			final String viewName,
+			final HashMap<String, String> columnCommentHash)
 			throws RIFServiceException {
-//        JSONArray result=new JSONArray();
 		Statement statement = null;
 		String sqlQueryText = null;  
         
@@ -444,22 +498,22 @@ geographies: {
             SQLGeneralQueryFormatter queryFormatter2 = new SQLGeneralQueryFormatter();
 			if (databaseType == DatabaseType.POSTGRESQL) {
 				queryFormatter.addQueryLine(0, "DROP VIEW IF EXISTS " + 
-					schemaName + ".rif40_num_denom;");
+					schemaName + "." + viewName + " CASCADE;");
 				queryFormatter2.addQueryLine(0, "CREATE VIEW " + 
-					schemaName + ".rif40_num_denom AS ");
+					schemaName + "." + viewName + " AS ");
 			}
 			else if (databaseType == DatabaseType.SQL_SERVER) {
 				queryFormatter.addQueryLine(0, "IF EXISTS (SELECT * FROM sys.objects");
 				queryFormatter.addQueryLine(0, "           WHERE object_id = OBJECT_ID(N'[" + 
-					schemaName + "].[rif40_num_denom]') AND type in (N'V'))");
+					schemaName + "].[" + viewName + "]') AND type in (N'V'))");
 				queryFormatter.addQueryLine(0, "BEGIN");
-				queryFormatter.addQueryLine(0, "	DROP VIEW [" + schemaName + "].[rif40_num_denom]");
+				queryFormatter.addQueryLine(0, "	DROP VIEW [" + schemaName + "].[" + viewName + "];");
 				queryFormatter.addQueryLine(0, "END;");
 				queryFormatter2.addQueryLine(0, "CREATE VIEW [" + 
-					schemaName + "].[rif40_num_denom] AS ");
+					schemaName + "].[" + viewName + "] AS ");
 			}
 			else {
-				throw new SQLException("createRifNumDenomView(): invalid databaseType: " +
+				throw new SQLException("createRifView(): invalid databaseType: " +
 					databaseType);
 			}
 			queryFormatter2.addQueryLine(0, newViewDefinition);
@@ -478,28 +532,12 @@ geographies: {
             statement = connection.createStatement();
 			statement.execute(queryFormatter2.generateQuery());
 			
-			commentObject(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.");
-				
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"geography", "Geography");
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"geography_description", "Geography description");
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"numerator_table", "Numerator table");
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"numerator_description", "Numerator table description");
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"denominator_table", "Denominator table");
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"denominator_description", "Denominator table description");
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"theme_name", "Numerator table health study theme name");
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"theme_description", "Numerator table health study theme description");
-			commentColumn(connection, "VIEW", schemaName, "rif40_num_denom", 
-				"automatic", "Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.");
- 
+			for (String columnName : columnCommentHash.keySet()) {
+				String comment = columnCommentHash.get(columnName);
+				commentColumn(connection, "VIEW", schemaName, viewName, 
+					columnName, comment);
+			}		
+
 			SQLQueryUtility.commit(connection);
 		}
 		catch(SQLException sqlException) {
@@ -522,6 +560,145 @@ geographies: {
 		}
 	}
 	
+	/**
+	 * Format SQL query (replacement for rif40_numerator_outcome_columns)
+     *
+ 	 * WITH a AS (
+ 	 * 	SELECT z.geography,
+ 	 * 	  	   a_1.table_name,
+ 	 * 		   z.numerator_description AS table_description,
+ 	 * 		   c.outcome_group_name,
+ 	 * 		   c.outcome_type,
+ 	 * 		   c.outcome_group_description,
+ 	 * 		   c.field_name,
+ 	 * 		   c.multiple_field_count
+ 	 * 	  FROM rif40_num_denom z, -* RIF40's version of the code *-
+ 	 * 		   rif40_tables a_1,
+ 	 * 		   rif40_table_outcomes b,
+ 	 * 		   rif40_outcome_groups c
+ 	 * 	 WHERE a_1.table_name       = z.numerator_table
+ 	 * 	   AND a_1.table_name       = b.numer_tab
+ 	 * 	   AND c.outcome_group_name = b.outcome_group_name
+ 	 * )
+ 	 * SELECT a.geography,
+ 	 *        a.table_name,
+ 	 *        a.table_description,
+ 	 *        a.outcome_group_name,
+ 	 *        a.outcome_type,
+ 	 *        a.outcome_group_description,
+ 	 *        a.field_name,
+ 	 *        a.multiple_field_count,
+ 	 *        CASE
+ 	 *             WHEN d.attrelid IS NOT NULL THEN true
+ 	 *             ELSE false
+  	 *       END AS columnn_exists,
+ 	 *        CASE
+ 	 *             WHEN d.attrelid IS NOT NULL THEN col_description(LOWER(a.table_name)::regclass::oid, d.attnum::integer)
+ 	 *             ELSE NULL::text
+ 	 *        END AS column_comment
+ 	 *   FROM a
+ 	 *        LEFT JOIN pg_attribute d ON (LOWER(a.table_name)::regclass::oid = d.attrelid AND d.attname = lower(a.field_name));
+	 *
+	 * @param connection the connection
+	 * @param user the user
+	 * @return SQLGeneralQueryFormatter object
+	 * @throws RIFServiceException the RIF service exception
+	 */  
+    private SQLGeneralQueryFormatter formatRif40numeratorOutcomeColumnsQuery(
+			final Connection connection,
+			final User user)
+			throws RIFServiceException {
+        SQLGeneralQueryFormatter queryFormatter =  new SQLGeneralQueryFormatter();
+        
+        try {
+            queryFormatter.addQueryLine(0, "WITH a AS (");
+            queryFormatter.addQueryLine(0, "     SELECT z.geography,");
+            queryFormatter.addQueryLine(0, "		a_1.table_name,");
+            queryFormatter.addQueryLine(0, "		z.numerator_description AS table_description,");
+            queryFormatter.addQueryLine(0, "		c.outcome_group_name,");
+            queryFormatter.addQueryLine(0, "		c.outcome_type,");
+            queryFormatter.addQueryLine(0, "		c.outcome_group_description,");
+            queryFormatter.addQueryLine(0, "		c.field_name,");
+            queryFormatter.addQueryLine(0, "		c.multiple_field_count");
+            if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
+				queryFormatter.addQueryLine(0, "	   FROM rif40_num_denom z,"); /* User's version of the code */
+				queryFormatter.addQueryLine(0, "		[rif40].[rif40_tables] a_1,");
+				queryFormatter.addQueryLine(0, "		[rif40].[rif40_table_outcomes] b,");
+				queryFormatter.addQueryLine(0, "		[rif40].[rif40_outcome_groups] c");
+			}
+			else {
+				queryFormatter.addQueryLine(0, "	   FROM rif40_num_denom z,"); /* User's version of the code */
+				queryFormatter.addQueryLine(0, "		rif40_tables a_1,");
+				queryFormatter.addQueryLine(0, "		rif40_table_outcomes b,");
+				queryFormatter.addQueryLine(0, "		rif40_outcome_groups c");
+			}				
+            if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
+				queryFormatter.addQueryLine(0, "	  WHERE a_1.table_name       = z.numerator_table");
+				queryFormatter.addQueryLine(0, "		AND a_1.table_name       = b.numer_tab");
+				queryFormatter.addQueryLine(0, "		AND c.outcome_group_name = b.outcome_group_name");
+			}
+			else {
+			    queryFormatter.addQueryLine(0, "	  WHERE (((a_1.table_name)::text = (z.numerator_table)::text) AND ((a_1.table_name)::text = (b.numer_tab)::text) AND ((c.outcome_group_name)::text = (b.outcome_group_name)::text))");
+			}
+            queryFormatter.addQueryLine(0, ")");
+            queryFormatter.addQueryLine(0, "SELECT a.geography,");
+            queryFormatter.addQueryLine(0, "       a.table_name,");
+            queryFormatter.addQueryLine(0, "       a.table_description,");
+            queryFormatter.addQueryLine(0, "       a.outcome_group_name,");
+            queryFormatter.addQueryLine(0, "       a.outcome_type,");
+            queryFormatter.addQueryLine(0, "       a.outcome_group_description,");
+            queryFormatter.addQueryLine(0, "       a.field_name,");
+            queryFormatter.addQueryLine(0, "       a.multiple_field_count,");
+            queryFormatter.addQueryLine(0, "       CASE");
+			
+            if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {	
+				queryFormatter.addQueryLine(0, "           WHEN d.name IS NOT NULL THEN 'true'");
+				queryFormatter.addQueryLine(0, "           ELSE 'false'");
+			}
+			else {
+				queryFormatter.addQueryLine(0, "           WHEN (d.attrelid IS NOT NULL) THEN true");
+				queryFormatter.addQueryLine(0, "           ELSE false");
+			}
+            queryFormatter.addQueryLine(0, "       END AS columnn_exists,");
+            if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {	
+				queryFormatter.addQueryLine(0, "       e.value AS column_comment");
+			}
+			else {
+				queryFormatter.addQueryLine(0, "       CASE");
+				queryFormatter.addQueryLine(0, "            WHEN (d.attrelid IS NOT NULL) THEN col_description(((lower((a.table_name)::text))::regclass)::oid, (d.attnum)::integer)");
+				queryFormatter.addQueryLine(0, "            ELSE NULL::text");
+				queryFormatter.addQueryLine(0, "       END AS column_comment");
+			}
+	
+            if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {		
+				queryFormatter.addQueryLine(0, "  FROM a");
+				queryFormatter.addQueryLine(0, "       LEFT JOIN sys.columns d");
+				queryFormatter.addQueryLine(0, "       ON lower(d.name) collate database_default = lower(a.field_name) collate database_default and Object_ID = object_id(a.table_name)");
+				queryFormatter.addQueryLine(0, "       LEFT JOIN  sys.extended_properties e");
+				queryFormatter.addQueryLine(0, "       ON e.name='MS_Description' and major_id=object_id(a.table_name)");
+				queryFormatter.addQueryLine(0, "       and e.minor_id=0");
+			}
+			else {
+				queryFormatter.addQueryLine(0, "  FROM (a");
+				queryFormatter.addQueryLine(0, "       LEFT JOIN pg_attribute d ON (((((lower((a.table_name)::text))::regclass)::oid = d.attrelid) AND ((d.attname)::text = lower((a.field_name)::text)))));");
+			}
+		}
+		catch(Exception exception) {
+			//Record original exception, throw sanitised, human-readable version
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
+
+			throw new RIFServiceException(
+					RIFServiceError.GET_NUMERATOR_DENOMINATOR_PAIR,
+					errorMessage,
+                    exception);
+		}
+        
+        return queryFormatter;
+    }
+			
 	/**
 	 * Format SQL query (replacement for rif40_num_denom)
      *
@@ -563,31 +740,31 @@ geographies: {
 	 *      WHERE rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1 AND
 	 *            rif40_auto_indirect_checks(d1.denominator_table) IS NULL
 	 * )
-	 * SELECT n.geography AS geography,
+	 * SELECT n.geography,
 	 *        n.geography_description,
-	 *        n.numerator_table AS numerator_table,
-	 *        n.numerator_description AS numerator_description,
+	 *        n.numerator_table,
+	 *        n.numerator_description,
 	 *        n.theme_name,
 	 *        n.theme_description,
-	 *        d.denominator_table AS denominator_table,
- 	 *        d.denominator_description AS denominator_description,
+	 *        d.denominator_table,
+ 	 *        d.denominator_description,
  	 *        n.automatic
 	 *   FROM n, d
 	 *  WHERE n.geography = d.geography
 	 * UNION
 	 * SELECT ta.geography AS geography,
 	 *        ta.geography_description,
-	 *        ta.numerator_table AS numerator_table,
-	 *        ta.numerator_description AS numerator_description,
+	 *        ta.numerator_table,
+	 *        ta.numerator_description,
 	 *        h.theme AS theme_name,
 	 *        h.description AS theme_description,
-	 *        ta.denominator_table AS denominator_table,
+	 *        ta.denominator_table,
 	 *        d.description AS denominator_description,
 	 *        0 AS automatic
 	 *   FROM ( SELECT nd.geography,
 	 *                 g.description AS geography_description,
-	 *                 nd.numerator_table AS numerator_table,
-	 *                 nd.denominator_table AS denominator_table,
+	 *                 nd.numerator_table,
+	 *                 nd.denominator_table,
 	 *                 n.description AS numerator_description,
 	 *                 n.theme
 	 *            FROM peter.t_rif40_num_denom nd
@@ -676,14 +853,14 @@ geographies: {
                 queryFormatter.addQueryLine(0, "     WHERE ((rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1) AND (rif40_auto_indirect_checks(d1.denominator_table) IS NULL))");
             }
             queryFormatter.addQueryLine(0, ")");
-            queryFormatter.addQueryLine(0, "SELECT n.geography AS geography,");
+            queryFormatter.addQueryLine(0, "SELECT n.geography,");
             queryFormatter.addQueryLine(0, "       n.geography_description,");
-            queryFormatter.addQueryLine(0, "       n.numerator_table AS numerator_table,");
-            queryFormatter.addQueryLine(0, "       n.numerator_description AS numerator_description,");
+            queryFormatter.addQueryLine(0, "       n.numerator_table,");
+            queryFormatter.addQueryLine(0, "       n.numerator_description,");
             queryFormatter.addQueryLine(0, "       n.theme_name,");
             queryFormatter.addQueryLine(0, "       n.theme_description,");
-            queryFormatter.addQueryLine(0, "       d.denominator_table AS denominator_table,");
-            queryFormatter.addQueryLine(0, "       d.denominator_description AS denominator_description,");
+            queryFormatter.addQueryLine(0, "       d.denominator_table,");
+            queryFormatter.addQueryLine(0, "       d.denominator_description,");
             queryFormatter.addQueryLine(0, "       n.automatic");
             queryFormatter.addQueryLine(0, "  FROM n,");
             queryFormatter.addQueryLine(0, "       d");
@@ -729,13 +906,13 @@ geographies: {
         
         if (doesTableExist(connection, schemaName, "t_rif40_num_denom")) { 
             queryFormatter.addQueryLine(0, "UNION");
-            queryFormatter.addQueryLine(0, "SELECT ta.geography AS geography,");
+            queryFormatter.addQueryLine(0, "SELECT ta.geography,");
             queryFormatter.addQueryLine(0, "       ta.geography_description,");
-            queryFormatter.addQueryLine(0, "       ta.numerator_table AS numerator_table,");
-            queryFormatter.addQueryLine(0, "       ta.numerator_description AS numerator_description,");
+            queryFormatter.addQueryLine(0, "       ta.numerator_table,");
+            queryFormatter.addQueryLine(0, "       ta.numerator_description,");
             queryFormatter.addQueryLine(0, "       h.theme AS theme_name,");
             queryFormatter.addQueryLine(0, "       h.description AS theme_description,");
-            queryFormatter.addQueryLine(0, "       ta.denominator_table AS denominator_table,");
+            queryFormatter.addQueryLine(0, "       ta.denominator_table,");
             queryFormatter.addQueryLine(0, "       d.description AS denominator_description,");
             queryFormatter.addQueryLine(0, "       0 AS automatic");
             if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
