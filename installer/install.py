@@ -251,10 +251,10 @@ def get_settings():
     # Database name is hardcoded for now.
     # settings.db_name = get_value_from_user(DATABASE_NAME).strip()
     settings.db_name = "sahsuland"
-    settings.db_user = get_value_from_user(DATABASE_USER,
-                                           extra=settings.db_name).strip()
+    settings.db_user = get_value_from_user(
+        DATABASE_USER, extra=settings.db_name).strip().lower()
     settings.db_pass = get_password_from_user(
-        DATABASE_PASSWORD, extra=settings.db_user).strip()
+        DATABASE_PASSWORD, extra=settings.db_user)
 
     # For now the next few are only for Postgres
     if settings.db_type == "pg":
