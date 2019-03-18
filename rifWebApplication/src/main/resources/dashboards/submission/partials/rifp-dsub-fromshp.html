@@ -77,7 +77,7 @@ Disease submission modal to open shapefile AOI
 					  <label for="byAttribute">By exposure attribute</label><br>
 					</div>
 				</div>
-
+				
 				<div ng-show="isPoint">
 					<h3>Circular buffer around points (metres)</h3><br>
 				</div>
@@ -93,6 +93,11 @@ Disease submission modal to open shapefile AOI
 						<td><input class="break" ng-model="bandAttr[$index]"> Radius for band {{possibleBands[i - 1]}}</td> 
 					</tr>
 				</table>
+
+				<div ng-show="isRiskAnalysis && hasExposureAttributes && isTable && isPolygon">
+					<br><h3>Stratification Field (optional)</h3><br>
+					<select id="stratificationField" ng-model="stratificationField" ng-change="stratificationFieldChange(stratificationField)" ng-options="s for s in stratificationFieldAttrs" ng-init="stratificationField"></select>
+				</div>
 			</div>
 		</div>
 

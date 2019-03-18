@@ -1573,13 +1573,7 @@ angular.module("RIF")
 												resolve("added " + selectedShapes.length + " selected shapes; total time: " + elapsed + " S");
 											}
 										}); // End of async.eachOfSeries()	
-                                    $scope.stratificationList=["NONE", "MULTIPOLYGON"];
-                                    for (var i=1; i<$scope.geoLevels.length; i++) {
-                                        if ($scope.input.studyResolution == $scope.geoLevels[i]) {
-                                            break; // Stop before resolution geolevel
-                                        }
-                                        $scope.stratificationList.push($scope.geoLevels[i]);
-                                    }			
+                                    $scope.stratificationList=setupStratificationList();
 								}
 								else {
                                     $scope.stratificationList=["NONE"];
@@ -1589,6 +1583,23 @@ angular.module("RIF")
 							});
 						} // End of addSelectedShapes()
 
+						function setupStratificationList() {
+							var stratificationList=["NONE", "MULTIPOLYGON"];
+							if ($scope.stratificationField && $scope.stratificationField != "NONE") {
+								stratificationList.push($scope.stratificationField);
+							}
+							for (var i=1; i<$scope.geoLevels.length; i++) {
+								if (i>3) {
+									break;
+								}
+								if ($scope.input.studyResolution == $scope.geoLevels[i]) {
+									break; // Stop before resolution geolevel
+								}
+								stratificationList.push($scope.geoLevels[i]);
+							}
+							return stratificationList;										
+						}									
+						
 						function addCentroidsToMap() {
 
 							return $q(function(resolve, reject) {					
@@ -2118,13 +2129,7 @@ angular.module("RIF")
 								} // End of for shapes loop
                                 
 								if (savedShapes.length > 0) {
-                                     $scope.stratificationList=["NONE", "MULTIPOLYGON"];
-                                     for (var i=1; i<$scope.geoLevels.length; i++) {
-                                        if ($scope.input.studyResolution == $scope.geoLevels[i]) {
-                                            break; // Stop before resolution geolevel
-                                        }
-                                        $scope.stratificationList.push($scope.geoLevels[i]);
-                                     }
+                                    $scope.stratificationList=setupStratificationList();
                                 }
                                 else {
                                     $scope.stratificationList=["NONE"];

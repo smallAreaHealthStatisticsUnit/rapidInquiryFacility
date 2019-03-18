@@ -84,7 +84,7 @@ angular.module("RIF")
 							enableVerticalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
 							selectionRowHeaderWidth: 35,
 							multiSelect: true,			
-							minRowsToShow: 5,
+							minRowsToShow: 7,
 							maxVisibleColumnCount: 8,
 							rowHeight: 20,
 							columnDefs: [],
@@ -130,6 +130,12 @@ angular.module("RIF")
 							scope.hasGrid = false;
 							scope.shapefileGridOptions = {};
 							scope.disableSubmit=false;
+							if (scope.$parent.stratificationField) {
+								scope.stratificationField = scope.$parent.stratificationField;
+							}
+							if (scope.stratificationField == undefined) {
+								scope.stratificationField = "NONE";
+							}
 							scope.possibleBands = CommonMappingStateService.getState('areamap').possibleBands;
 							
                             //remove any existing AOI layer
@@ -151,6 +157,19 @@ angular.module("RIF")
 						
 						scope.changedValue = function(attr) {
 							scope.selectedAttr=attr;
+							
+                            scope.stratificationFieldAttrs = ['NONE'];
+                            for (var i=0; i<scope.attrs.length; i++) {
+								if (scope.attrs[i] && scope.attrs[i] != "" &&
+								    scope.attrs[i] != scope.selectedAttr) {
+									scope.stratificationFieldAttrs.push(scope.attrs[i]);
+								}
+							}
+						}
+						
+						scope.stratificationFieldChange = function(attr) {
+							scope.stratificationField = attr;
+							scope.$parent.stratificationField = scope.stratificationField;
 						}
 						
 						function getSelectionMethodAsString(attributeName) {
@@ -202,6 +221,7 @@ angular.module("RIF")
                                     reader.onload = function () {
                                         var bAttr = false;
                                         scope.attrs = [];
+                                        scope.stratificationFieldAttrs = ['NONE'];
                                         poly = new L.Shapefile(this.result, {
                                             style: function (feature) {
 												
@@ -222,6 +242,7 @@ angular.module("RIF")
 														var exposureAttributesCount = 0;
                                                         for (var property in feature.properties) {
                                                             scope.attrs.push(property);
+                                                            scope.stratificationFieldAttrs.push(property);
 															if (property == "band") {
 																scope.hasBandAttribute = true;
 																scope.shapeFile.hasBandAttribute = true;
@@ -570,6 +591,7 @@ angular.module("RIF")
 								else if (scope.selectionMethod === 3) {
                                     //check the attribute is numeric etc
 									scope.shapeFile.selectedAttr = scope.selectedAttr;
+									scope.shapeFile.stratificationField = scope.stratificationField;
                                     for (var i in poly._layers) {
                                         //check these are valid exposure values
                                         if (!angular.isNumber(poly._layers[i].feature.properties[scope.selectedAttr])) {

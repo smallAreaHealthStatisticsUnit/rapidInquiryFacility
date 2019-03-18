@@ -50,17 +50,17 @@
 .grid-shapefile { 
     position: relative;
     float: right;
-    width: 45%;
-    height: -moz-calc(100% - 150px);
+    width: 58%;
+    height: -moz-calc(100% - 100px); /* Need to set number of rows instead! */
     /* WebKit */
 
-    height: -webkit-calc(100% - 150px);
+    height: -webkit-calc(100% - 100px);
     /* Opera */
 
-    height: -o-calc(100% - 150px);
+    height: -o-calc(100% - 100px);
     /* Standard */
 
-    height: calc(100% - 150px);
+    height: calc(100% - 100px);
 }
 
 .grid-postalcode { 
