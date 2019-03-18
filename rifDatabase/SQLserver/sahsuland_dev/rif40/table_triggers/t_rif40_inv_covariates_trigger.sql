@@ -17,9 +17,6 @@ names of geolevels
 */
 
 
-USE [sahsuland]
-GO
-
 /****** Object:  Trigger [tr_inv_covariate]    Script Date: 13/02/2019 11:47:17 ******/
 DROP TRIGGER [rif40].[tr_inv_covariate]
 GO
