@@ -679,6 +679,14 @@ def set_windows_permissions(file_name):
     # complain.
     import ntsecuritycon
     import win32security
+    from win32com.shell import shell
+
+    # Have to run as an administrator for this bit.
+    if not shell.IsUserAnAdmin():
+        banner("This function requires elevated privileges. Please run again "
+               "from a command prompt started using the 'Run as "
+               "administrator' feature", 100)
+        sys.exit(-1)
 
     entries = [{'AccessMode': win32security.GRANT_ACCESS,
                 'AccessPermissions': 0,
