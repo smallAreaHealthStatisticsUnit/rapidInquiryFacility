@@ -52,7 +52,7 @@ angular.module("RIF")
                 }
                 else {
                     $scope.rif40NumDenom=Rif40NumDenomService.getRif40NumDenom();
-                    $scope.numerator = {};
+                    $scope.fraction = {};
                     $scope.denominator = "";
                     $scope.geographies = [];
                     $scope.fractions = [];	
@@ -76,14 +76,14 @@ angular.module("RIF")
                             }
                         }
                         if (!found) {
-                            $scope.consoleDebug("[rifc-dsub-main.js] Load default $scope.numerator, $scope.fractions etc; SubmissionStateService: " +
+                            $scope.consoleDebug("[rifc-dsub-main.js] Load default $scope.fraction, $scope.fractions etc; SubmissionStateService: " +
                                 JSON.stringify(SubmissionStateService.getState(), null, 1) +
                                 "; $scope.healthThemes: " + JSON.stringify($scope.healthThemes, null, 1));
                             $scope.healthTheme = $scope.healthThemes[0];
                             SubmissionStateService.getState().healthTheme = $scope.healthTheme;
                         }
                         else {          
-                           $scope.consoleDebug("[rifc-dsub-main.js] Load $scope.numerator, $scope.fractions etc from SubmissionStateService: " +
+                           $scope.consoleDebug("[rifc-dsub-main.js] Load $scope.fraction, $scope.fractions etc from SubmissionStateService: " +
                                 JSON.stringify(SubmissionStateService.getState(), null, 1));
                         }
                         setupTheme($scope.healthTheme.description);
@@ -123,27 +123,25 @@ angular.module("RIF")
                 };
                 
                 //sync the denominator
-                $scope.numeratorChange = function () {
-                    if ($scope.numerator) {
-                        $scope.denominator = $scope.numerator.denominatorTableName;
+                $scope.fractionChange = function () {
+                    if ($scope.fraction) {
+                        $scope.denominator = $scope.fraction.denominatorTableName;
                     } else {
                         $scope.denominator = "";
                     }
 					
-					if (!compareFractions(SubmissionStateService.getState().numerator, $scope.numerator) &&
-					    !compareFractions(SubmissionStateService.getState().denominator, $scope.numerator)) {
+					if (!compareFractions(SubmissionStateService.getState().fraction, $scope.fraction)) {
 					
-						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), reset investigation parameters, $scope.numerator: " + 
-							JSON.stringify($scope.numerator, null, 1) +
-							"; SubmissionStateService.getState().numerator: " + JSON.stringify(SubmissionStateService.getState().numerator, null, 1) +
-							"; SubmissionStateService.getState().denominator: " + JSON.stringify(SubmissionStateService.getState().denominator, null, 1));
-						SubmissionStateService.getState().numerator = $scope.numerator.numeratorTableName;
-						SubmissionStateService.getState().denominator = $scope.numerator;
+						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), reset investigation parameters, $scope.fraction: " + 
+							JSON.stringify($scope.fraction, null, 1) +
+							"; old SubmissionStateService.getState().fraction: " + 
+                            JSON.stringify(SubmissionStateService.getState().fraction, null, 1));
+						SubmissionStateService.getState().fraction = $scope.fraction;
 						//This will have an impact on investigations year range, so reset investigation parameters
 						ParameterStateService.resetState();
 					}
 					else {		
-						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), no change: " + JSON.stringify($scope.numerator, null, 2));
+						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), no change: " + JSON.stringify($scope.fraction, null, 2));
 					}	
                 };
 				
@@ -165,10 +163,7 @@ angular.module("RIF")
                         $scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
                     }
 					$scope.geography=nGeography;
-					setupNumerator($scope.geography);
-//                    SubmissionStateService.getState().numerator = "";
-//                    SubmissionStateService.getState().denominator = "";
-//                    $scope.resetState();      
+					setupNumerator($scope.geography);   
 
 					if ($scope.studyName == "" && SubmissionStateService.getState().studyName) {
 						$scope.studyName = SubmissionStateService.getState().studyName;
@@ -211,11 +206,10 @@ angular.module("RIF")
 					$scope.fractions = theme[nGeography];
 
 					var found=false;
-					if (SubmissionStateService.getState().numerator == undefined || 
-						SubmissionStateService.getState().numerator != "") {
+					if (SubmissionStateService.getState().fraction) {
 						for (var i=0; i<$scope.fractions.length; i++) {
-							if (compareFractions($scope.fractions[i], SubmissionStateService.getState().numerator)) {
-								$scope.numerator = $scope.fractions[i];
+							if (compareFractions($scope.fractions[i], SubmissionStateService.getState().fraction)) {
+								$scope.fraction = $scope.fractions[i];
 								$scope.denominator = $scope.fractions[i].denominatorTableName;
 								found=true;
 								break;
@@ -224,16 +218,15 @@ angular.module("RIF")
 					}
 					if (!found) {
                         $scope.consoleDebug("[rifc-dsub-main.js] using default numerator/denominator: " + 
-                            JSON.stringify($scope.numerator, null, 1) + 
+                            JSON.stringify($scope.fraction, null, 1) + 
                             "; for geography: " + nGeography +
                             "; fractions: " + JSON.stringify($scope.fractions, null, 1) +
-                            "; SubmissionStateService.getState().numerator: " + 
-                            JSON.stringify(SubmissionStateService.getState().numerator, null, 1));
-						$scope.numerator = $scope.fractions[0];
+                            "; SubmissionStateService.getState().fraction: " + 
+                            JSON.stringify(SubmissionStateService.getState().fraction, null, 1));
+						$scope.fraction = $scope.fractions[0];
 						$scope.denominator = $scope.fractions[0].denominatorTableName;
-						SubmissionStateService.getState().numerator = $scope.numerator.numeratorTableName;
-					}                        
-					SubmissionStateService.getState().denominator = $scope.numerator;			
+						SubmissionStateService.getState().fraction = $scope.fraction[0];
+					}                        		
 				}
 				
 				function compareFractions(fraction1, fraction2) {	

@@ -644,15 +644,14 @@ angular.module("RIF")
 						//general
 						SubmissionStateService.getState().studyName = rifJob[studyType].name;
 						SubmissionStateService.getState().geography = rifJob[studyType].geography.name;
-						SubmissionStateService.getState().numerator = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.numerator_table_name;
 
                         if (validatedFraction) {
-                            SubmissionStateService.getState().denominator = validatedFraction;
+                            SubmissionStateService.getState().fraction = validatedFraction;
                         }
                         else {
 							throw new Error("No validated fraction");
 						}
-                        rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
+//                        rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
 						SubmissionStateService.getState().studyDescription = rifJob[studyType].description;
 						SubmissionStateService.getState().healthTheme = rifJob[studyType].investigations.investigation[0].health_theme.name;
 

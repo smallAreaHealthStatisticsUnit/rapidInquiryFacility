@@ -85,10 +85,10 @@ angular.module("RIF")
                                     "description": SubmissionStateService.getState().healthTheme.description
                                 };
                                 thisInv.numerator_denominator_pair = {
-                                    "numerator_table_name": SubmissionStateService.getState().denominator.numeratorTableName,
-                                    "numerator_table_description": SubmissionStateService.getState().denominator.numeratorTableDescription,
-                                    "denominator_table_name": SubmissionStateService.getState().denominator.denominatorTableName,
-                                    "denominator_table_description": SubmissionStateService.getState().denominator.denominatorTableDescription
+                                    "numerator_table_name": SubmissionStateService.getState().fraction.numeratorTableName,
+                                    "numerator_table_description": SubmissionStateService.getState().fraction.numeratorTableDescription,
+                                    "denominator_table_name": SubmissionStateService.getState().fraction.denominatorTableName,
+                                    "denominator_table_description": SubmissionStateService.getState().fraction.denominatorTableDescription
                                 };
                                 var uprGroup;
                                 var lwrGroup;

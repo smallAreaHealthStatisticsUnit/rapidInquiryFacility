@@ -127,11 +127,17 @@ angular.module("RIF")
 
                 $scope.fillContents = function () {
                     thisGeography = SubmissionStateService.getState().geography;
-					if (SubmissionStateService.getState().numerator) {
-						thisNumerator = SubmissionStateService.getState().numerator;
+					if (SubmissionStateService.getState().fraction) {
+						thisNumerator = SubmissionStateService.getState().fraction.numeratorTableName;
 					}
+                    if (thisNumerator == undefined)  {
+                        AlertService.showError("[rifc-dsub-params.js] no numerator defined");
+                    }
                     thisGeoLevel = StudyAreaStateService.getState().studyResolution;
-
+                    if (thisGeoLevel == undefined)  {
+                        AlertService.showError("[rifc-dsub-params.js] no study resolution defined");
+                    }
+                    
                     //taxonomy services
                     user.getTaxonomyServiceProviders().then(handleTaxonomyServiceProviders, handleParameterError);
 
