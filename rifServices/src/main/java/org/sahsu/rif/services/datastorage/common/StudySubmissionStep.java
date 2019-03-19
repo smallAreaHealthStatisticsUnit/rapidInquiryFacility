@@ -1082,8 +1082,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
 			getOutcomeGroupNameQueryFormatter.addSelectField("field_name");
-			getOutcomeGroupNameQueryFormatter.addFromTable
-					                                  ("rif40.rif40_numerator_outcome_columns");
+			getOutcomeGroupNameQueryFormatter.addFromTable("rif40_numerator_outcome_columns");
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("geography");
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("table_name");
 
