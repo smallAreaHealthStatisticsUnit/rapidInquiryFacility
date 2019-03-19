@@ -336,7 +336,7 @@ angular.module("RIF")
 
 						} else {
 							$scope.consoleDebug("[rifc-dsub-fromfile.js] Numerator-Denominator Pair '" + tmpNumeratorName + " - " + 
-								tmpDenominatorName + "' OK");
+								tmpDenominatorName + "' OK; validatedFraction: " + JSON.stringify(validatedFraction));
 							return true;
 						}
 		
@@ -645,16 +645,24 @@ angular.module("RIF")
 						SubmissionStateService.getState().studyName = rifJob[studyType].name;
 						SubmissionStateService.getState().geography = rifJob[studyType].geography.name;
 
-                        if (validatedFraction) {
-                            SubmissionStateService.getState().fraction = validatedFraction;
+                        if (validatedFraction && 
+                            validatedFraction.numeratorTableName && 
+                            validatedFraction.denominatorTableName) {
+                            SubmissionStateService.getState().fraction = angular.copy(validatedFraction);
                         }
                         else {
 							throw new Error("No validated fraction");
 						}
-//                        rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
-						SubmissionStateService.getState().studyDescription = rifJob[studyType].description;
-						SubmissionStateService.getState().healthTheme = rifJob[studyType].investigations.investigation[0].health_theme.name;
 
+						SubmissionStateService.getState().studyDescription = rifJob[studyType].description;
+                        if (rifJob[studyType].investigations.investigation[0].health_theme &&
+                            rifJob[studyType].investigations.investigation[0].health_theme.name) {
+                            SubmissionStateService.getState().healthTheme = rifJob[studyType].investigations.investigation[0].health_theme;
+                        }
+                        else {
+							throw new Error("No validated health theme name");
+						}
+                        
 						//Study area
 						StudyAreaStateService.getState().selectAt = rifJob[studyType][studyAreaType].geo_levels.geolevel_select.name;
 						StudyAreaStateService.getState().studyResolution = rifJob[studyType][studyAreaType].geo_levels.geolevel_to_map.name;
@@ -678,8 +686,10 @@ angular.module("RIF")
 							SubmissionStateService.getState().riskAnalysisExposureField	= riskAnalysisExposureField;			
 							$scope.consoleDebug("[rifc-dsub-fromfile.js] SubmissionStateService.getState().riskAnalysisExposureField: " + 
 								SubmissionStateService.getState().riskAnalysisExposureField);
-						} 
-						
+						} 	
+                        $scope.consoleDebug("[rifc-dsub-fromfile.js] SubmissionStateService: " +
+                            JSON.stringify(SubmissionStateService.getState(), null, 1));
+                                
 						//Comparison area
 						CompAreaStateService.getState().selectAt = rifJob[studyType].comparison_area.geo_levels.geolevel_select.name;
 						CompAreaStateService.getState().studyResolution = rifJob[studyType].comparison_area.geo_levels.geolevel_to_map.name;

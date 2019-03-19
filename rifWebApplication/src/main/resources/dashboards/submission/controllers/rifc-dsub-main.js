@@ -65,11 +65,11 @@ angular.module("RIF")
                     if ($scope.rif40NumDenom.themes && $scope.rif40NumDenom.geographies) {
                         $scope.healthThemes = $scope.rif40NumDenom.themes; // Keys name, description
                         var found=false;
-                        if (SubmissionStateService.getState().healthTheme == undefined || 
-                            SubmissionStateService.getState().healthTheme != "") {
+                        if (SubmissionStateService.getState().healthTheme &&
+                            SubmissionStateService.getState().healthTheme.name) {
 
                             for (var i=0; i<$scope.healthThemes.length; i++) {
-                                if ($scope.healthThemes[i].name == SubmissionStateService.getState().healthTheme) {
+                                if ($scope.healthThemes[i].name == SubmissionStateService.getState().healthTheme.name) {
                                     $scope.healthTheme = $scope.healthThemes[i];
                                     found=true;
                                 }
@@ -84,7 +84,8 @@ angular.module("RIF")
                         }
                         else {          
                            $scope.consoleDebug("[rifc-dsub-main.js] Load $scope.fraction, $scope.fractions etc from SubmissionStateService: " +
-                                JSON.stringify(SubmissionStateService.getState(), null, 1));
+                                JSON.stringify(SubmissionStateService.getState(), null, 1) +
+                                "; $scope.healthThemes: " + JSON.stringify($scope.healthThemes, null, 1));
                         }
                         setupTheme($scope.healthTheme.description);
                     }
@@ -172,13 +173,14 @@ angular.module("RIF")
                 
                 function setupTheme(themeDescription) {
                     if ($scope.rif40NumDenom && $scope.rif40NumDenom.geographies && 
-                        $scope.rif40NumDenom.geographies[themeDescription]) {
+                        $scope.rif40NumDenom.geographies[themeDescription] && 
+                        $scope.rif40NumDenom.geographies[themeDescription].geographyList && 
+                        $scope.rif40NumDenom.geographies[themeDescription].geographyList.length > 0) {
                         var theme = $scope.rif40NumDenom.geographies[themeDescription];        
                         $scope.geographies = theme.geographyList;      
                         
                         var found=false;
-                        if (SubmissionStateService.getState().geography == undefined || 
-                            SubmissionStateService.getState().geography != "") {
+                        if (SubmissionStateService.getState().geography) {
                             for (var i=0; i<$scope.geographies.length; i++) {
                                 if ($scope.geographies[i] == SubmissionStateService.getState().geography) {
                                     $scope.geography = $scope.geographies[i];
@@ -188,7 +190,9 @@ angular.module("RIF")
                             }
                         }
                         if (!found) {
-                            $scope.consoleDebug("[rifc-dsub-main.js] using default geography: " + $scope.geography);
+                            $scope.consoleDebug("[rifc-dsub-main.js] using default geography: " + $scope.geography +
+                                "; $scope.geographies: " + JSON.stringify($scope.geographies) +
+                                "; themeDescription: " + themeDescription);
                             $scope.geography = $scope.geographies[0];
                             SubmissionStateService.getState().geography = $scope.geography;
                         }                    
@@ -217,16 +221,25 @@ angular.module("RIF")
 						}
 					}
 					if (!found) {
+						$scope.fraction = $scope.fractions[0];
+						$scope.denominator = $scope.fractions[0].denominatorTableName;
+						SubmissionStateService.getState().fraction = $scope.fractions[0];
+                        
                         $scope.consoleDebug("[rifc-dsub-main.js] using default numerator/denominator: " + 
                             JSON.stringify($scope.fraction, null, 1) + 
                             "; for geography: " + nGeography +
                             "; fractions: " + JSON.stringify($scope.fractions, null, 1) +
                             "; SubmissionStateService.getState().fraction: " + 
                             JSON.stringify(SubmissionStateService.getState().fraction, null, 1));
-						$scope.fraction = $scope.fractions[0];
-						$scope.denominator = $scope.fractions[0].denominatorTableName;
-						SubmissionStateService.getState().fraction = $scope.fraction[0];
-					}                        		
+					}    
+                    else {
+                        $scope.consoleDebug("[rifc-dsub-main.js] using SubmissionStateService numerator/denominator: " + 
+                            JSON.stringify($scope.fraction, null, 1) + 
+                            "; for geography: " + nGeography +
+                            "; fractions: " + JSON.stringify($scope.fractions, null, 1) +
+                            "; SubmissionStateService.getState().fraction: " + 
+                            JSON.stringify(SubmissionStateService.getState().fraction, null, 1));
+                    }    
 				}
 				
 				function compareFractions(fraction1, fraction2) {	

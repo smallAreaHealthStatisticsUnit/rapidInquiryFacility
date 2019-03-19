@@ -122,8 +122,10 @@ angular.module("RIF")
 							}
 						}
                         
-						s.numerator=s.fraction.numeratorTableName;
-						s.denominator=s.fraction.denominatorTableName;
+                        if (s.fraction) {
+                            s.numerator=s.fraction.numeratorTableName;
+                            s.denominator=s.fraction.denominatorTableName;
+                        }
 						var stringKeyList;
 						if (strict) { // Strict: study name has to exist
 							stringKeyList = ['studyName', 'geography', 'numerator', 'denominator', 'studyType'];
