@@ -460,9 +460,19 @@ angular.module("RIF")
                 };
                 function handleTextSearch(res) {
                     var myICD = [];
-                    myICD.push({
+                    /*
+                    
+									term_name: taxTerms[i].label,
+									identifier: taxTerms[i].identifier,
+									term_description: taxTerms[i].description,
+                                    
+ "description": "\n\t\t\tMalignant neoplasm of bronchus and lung\n\t\t",
+ "identifier": "C34-icd10",
+ "label": "C34",
+ "nameSpace": "icd10",*/
+                    myICD.push({ // Add wildcard ALL
                             term_name: "ALL",
-                            identifier: "%",
+                            identifier: "%-" + $scope.taxonomyScheme.toLowerCase(),
                             term_description: "All records in health dataset",
                             selected: 0});
 					var taxTerms;

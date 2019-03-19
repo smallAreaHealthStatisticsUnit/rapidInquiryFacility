@@ -45,7 +45,7 @@ angular.module("RIF")
                                 function(res) {
                                     AlertService.consoleDebug("[rifs-util-rif40-num-denom.js] getRif40NumDenom: " +
                                         JSON.stringify(res.data, 0, 1));
-                                    rif40NumDenom=res.data;
+                                    rif40NumDenom=angular.copy(res.data);
                                     
                                     resolve(res.data);
                                 },
@@ -58,6 +58,14 @@ angular.module("RIF")
                     return {
                         initialise: function () {
                             return initialiseRif40NumDenomService(); // A promise!
+                        },
+                        checkInitialised() {
+                            if (rif40NumDenom == undefined) {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
                         },
                         getRif40NumDenom: function() {
                             if (rif40NumDenom == undefined) {

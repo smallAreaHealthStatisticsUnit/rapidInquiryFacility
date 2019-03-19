@@ -67,6 +67,7 @@ angular.module("RIF")
                 var tmpCovariates;
                 var tmpAdditionals;
 				var fromFileErrorCount=0;
+                var validatedFraction = [];
 				
 				var rif40NumDenom=Rif40NumDenomService.getRif40NumDenom();
 
@@ -108,7 +109,7 @@ angular.module("RIF")
 					};
 					expectedHeaders[studyType]=true;
 					
-					if (rifJob[studyType].riskAnalysisExposureField) {	
+					if (rifJob[studyType] && rifJob[studyType].riskAnalysisExposureField) {	
 						riskAnalysisExposureField = rifJob[studyType].riskAnalysisExposureField;
 						$scope.consoleDebug("[rifc-dsub-fromfile.js] riskAnalysisExposureField: " + 
 							riskAnalysisExposureField);
@@ -264,8 +265,14 @@ angular.module("RIF")
 						tmpGeography = rifJob[studyType].geography.name;
 						tmpGeoLevel = rifJob[studyType][studyAreaType].geo_levels.geolevel_select.name;
 						var bFound = false;
-						for (var i = 0; i < $scope.$parent.geographies.length; i++) {
-							if ($scope.$parent.geographies[i] === tmpGeography) {
+						var tmpHealthThemeDesc = rifJob[studyType].investigations.investigation[0].health_theme.description
+                        var theme = $scope.rif40NumDenom.geographies[tmpHealthThemeDesc];        
+						var geographies=undefined;
+						if (theme) {
+							geographies = theme.geographyList; 
+						}
+						for (var i = 0; i < geographies.length; i++) {
+							if (geographies[i] === tmpGeography) {
 								bFound = true;
 								break;
 							}
@@ -316,6 +323,7 @@ angular.module("RIF")
 							for (var i=0; i<fractions.length; i++) {
 								if (fractions[i].numeratorTableName == tmpNumeratorName &&
 									fractions[i].denominatorTableName == tmpDenominatorName) {
+                                    validatedFraction=fractions[i];
 									bFound=true;
 									break;
 								}
@@ -637,7 +645,14 @@ angular.module("RIF")
 						SubmissionStateService.getState().studyName = rifJob[studyType].name;
 						SubmissionStateService.getState().geography = rifJob[studyType].geography.name;
 						SubmissionStateService.getState().numerator = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.numerator_table_name;
-						SubmissionStateService.getState().denominator = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
+
+                        if (validatedFraction) {
+                            SubmissionStateService.getState().denominator = validatedFraction;
+                        }
+                        else {
+							throw new Error("No validated fraction");
+						}
+                        rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
 						SubmissionStateService.getState().studyDescription = rifJob[studyType].description;
 						SubmissionStateService.getState().healthTheme = rifJob[studyType].investigations.investigation[0].health_theme.name;
 
@@ -791,7 +806,6 @@ angular.module("RIF")
                         $scope.consoleDebug("[rifc-dsub-fromfile.js] Starting upload...");
 				
 						function promisesHandler(result) {
-							var errorCount=0;
 							for (var i = 0; i < result.length; i++) {
 								if (result[i] !== true) {
 									if (result[i]) {
@@ -803,7 +817,6 @@ angular.module("RIF")
 							checkError(errorCount);
 						}				
 						function promisesHandler2(result) {
-							var errorCount=0;
 							for (var i = 0; i < result.length; i++) {
 								if (result[i] !== true) {
 									if (result[i]) {
@@ -849,6 +862,7 @@ angular.module("RIF")
 						// Create promises
                         var d1 = $q.defer();
                         var p1 = d1.promise;
+                        var errorCount=0;
 							
                         //check initial file structure
                         d1.resolve(uploadCheckStructure());
