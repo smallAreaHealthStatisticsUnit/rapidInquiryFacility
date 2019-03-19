@@ -830,9 +830,14 @@ angular.module("RIF")
 
 				// Area name list by band
 				function createAreaNameList(mapID) { // Not from latlngList - not in scope when restored
-					var studySelectedAreas=SelectStateService.getState().studySelection.studySelectedAreas;
+					var studySelectedAreas=undefined;
+                    if (SelectStateService.getState().studySelection &&
+                        SelectStateService.getState().studySelection.studySelectedAreas) {
+                        studySelectedAreas=SelectStateService.getState().studySelection.studySelectedAreas;
+                    }
+					newAreaNameList = {};
+                    
 					if (studySelectedAreas) {
-						newAreaNameList = {};
 						
 						for (var i = 0; i < studySelectedAreas.length; i++) {              									
 							// Update areaNameList for debug
