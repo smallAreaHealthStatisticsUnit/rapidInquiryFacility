@@ -194,7 +194,7 @@ SELECT geography, covariate_name, covariate_type, COUNT(*) AS total
 GO
 
 :r ..\sahsuland_dev\rif40\functions\rif40_create_insert_statement.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_study_areas_trigger.sql
+:r rif40_study_areas_trigger.sql
 --
 -- Testing stop
 --
