@@ -15,6 +15,34 @@ Before installing the RIF you must have the following installed:
 
 You must also have administrative rights on the machine on which you are installing.
 
+## Setting the Path
+
+The installation process creates the database schemas used by the RIF, by running a series of SQL scripts. To do so it needs to be able to find the appropriate commands: `psql` for PostgreSQL, and `SQLCMD.EXE` for SQL Server.
+
+To that end you must add the folder containing the appropriate one of those commands to the `PATH` environment variable. If you are unfamiliar with setting environment variables, [you can find instructions here](https://www.computerhope.com/issues/ch000549.htm) for how to do it in various versions of Windows.
+
+The relevant value to add to the path will be something like:
+
+```
+C:\Program Files\Microsoft SQL Server\140\Tools\Binn
+```
+
+for SQL Server on Windows, or:
+
+```
+C:\Program Files\PostgreSQL\9.5\bin
+```
+
+for Postgres on Windows, or:
+
+```
+/usr/local/bin
+```
+
+(which example will almost certainly be on your `PATH` already) for Postgres on other platforms. Exact values will depend on the version of the database system and the specific details of your system.
+
+On Unix-based systems, including Mac and Linux, you can set it in the user's `.profile` or `.bashrc` file, or similar.
+
 ## Getting the Installer
 
 Download a RIF installer from the [GitHub site](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility). We recommend always getting the latest version available from the [Releases tab](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/releases).
@@ -29,7 +57,9 @@ For Windows, save `rifInstaller.exe` to the machine you are installing on. For M
 
 Run the installer from the command line. We don't recommend running it by double-clicking the icon in Windows Explorer or the Finder. It will run, but when it finishes you won't see the output to know whether it was successful.
 
-On Windows, open  the Start Menu. Right-click on  _Command Prompt_ and choose "Run as administrator". Answer "Yes" to the confirmation dialog.
+**Note: On Windows, elevated privileges are needed.**
+
+On Windows, open  the Start Menu. Right-click on  _Command Prompt_ and choose **"Run as administrator"**. Answer "Yes" to the confirmation dialog.
 
 On Mac, open the _Terminal_ app. On Linux open a terminal.
 
