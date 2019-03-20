@@ -147,7 +147,9 @@ angular.module("RIF")
                 };
 				
                 function geographyChange(nGeography) {
-                    if (nGeography && $scope.geography && $scope.geography != nGeography) {
+                    if (nGeography && $scope.geography && 
+                        ($scope.geography != nGeography ||
+                         SubmissionStateService.getState().geography != nGeography)) {
                         SubmissionStateService.getState().geography = nGeography;
                         $scope.geographyDescription = 
                             $scope.rif40NumDenom.geographies[$scope.healthTheme.description].geographyDescriptions[$scope.geography];
@@ -163,7 +165,34 @@ angular.module("RIF")
                                  
                         $scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
                     }
-					$scope.geography=nGeography;
+                    else if (nGeography && $scope.geography && $scope.geography == nGeography) {
+                        $scope.consoleDebug("[rifc-dsub-main.js] no change in geography: " + 
+                            "; $scope.geography: " + $scope.geography +
+                            "; SubmissionStateService.getState().geography: " + 
+                            SubmissionStateService.getState().geography);
+                    }
+                    else {           
+                        if (nGeography) {
+                            $scope.geography=nGeography; 
+                            $scope.geographyDescription = 
+                                $scope.rif40NumDenom.geographies[$scope.healthTheme.description].geographyDescriptions[$scope.geography];
+
+                            //reset states using geography
+                            StudyAreaStateService.resetState();
+                            CompAreaStateService.resetState();
+                            SelectStateService.resetState();
+                            ParameterStateService.resetState();
+                            SubmissionStateService.getState().comparisonTree = false;
+                            SubmissionStateService.getState().studyTree = false;
+                            SubmissionStateService.getState().investigationTree = false;
+                                     
+                            $scope.consoleDebug("[rifc-dsub-main.js] DEFAULT resetState() $scope.studyName: " + $scope.studyName);
+                        }
+                    }
+                    
+                    StudyAreaStateService.getState().geography = $scope.geography;
+                    SubmissionStateService.getState().geography = $scope.geography;
+                    $scope.consoleDebug("[rifc-dsub-main.js] geography: " + $scope.geography);
 					setupNumerator($scope.geography);   
 
 					if ($scope.studyName == "" && SubmissionStateService.getState().studyName) {
@@ -209,6 +238,8 @@ angular.module("RIF")
                     var theme = $scope.rif40NumDenom.geographies[$scope.healthTheme.description]; 
 					$scope.fractions = theme[nGeography];
 
+                    $scope.consoleDebug("[rifc-dsub-main.js] setupNumerator(" + nGeography + ")" +
+                        "; $scope.fractions: " + JSON.stringify($scope.fractions, null, 1));
 					var found=false;
 					if (SubmissionStateService.getState().fraction) {
 						for (var i=0; i<$scope.fractions.length; i++) {
