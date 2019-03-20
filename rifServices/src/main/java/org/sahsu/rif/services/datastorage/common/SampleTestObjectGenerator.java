@@ -12,7 +12,6 @@ import org.sahsu.rif.services.concepts.AgeGroup;
 import org.sahsu.rif.services.concepts.CalculationMethod;
 import org.sahsu.rif.services.concepts.CalculationMethodPrior;
 import org.sahsu.rif.services.concepts.ComparisonArea;
-import org.sahsu.rif.services.concepts.CovariateType;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
@@ -449,8 +448,8 @@ public final class SampleTestObjectGenerator {
 			= AdjustableCovariate.newInstance(
 				"SES",
 				"1",
-				"5",
-				CovariateType.NTILE_INTEGER_SCORE);
+				"5"
+			                                 );
 		adjustableCovariate1.setNewRecord(false);
 
 		investigation.addCovariate(adjustableCovariate1);
@@ -534,8 +533,8 @@ public final class SampleTestObjectGenerator {
 			= AdjustableCovariate.newInstance(
 				"SES", 
 				"1", 
-				"5",
-				CovariateType.NTILE_INTEGER_SCORE);
+				"5"
+			                                 );
 		adjustableCovariate1.setNewRecord(false);
 
 		investigation.addCovariate(adjustableCovariate1);
@@ -760,8 +759,8 @@ public final class SampleTestObjectGenerator {
 			= AdjustableCovariate.newInstance(
 				"SES", 
 				"1", 
-				"5",
-				CovariateType.NTILE_INTEGER_SCORE);
+				"5"
+			                                 );
 		adjustableCovariate1.setNewRecord(false);
 		investigation.addCovariate(adjustableCovariate1);
 		diseaseMappingStudy.addInvestigation(investigation);		

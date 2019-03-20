@@ -8,7 +8,6 @@ import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
 import org.sahsu.rif.services.concepts.AgeBand;
 import org.sahsu.rif.services.concepts.AgeGroup;
-import org.sahsu.rif.services.concepts.CovariateType;
 import org.sahsu.rif.services.concepts.HealthCode;
 import org.sahsu.rif.services.concepts.HealthTheme;
 import org.sahsu.rif.services.concepts.Investigation;
@@ -177,15 +176,15 @@ public final class TestInvestigation
 			= AdjustableCovariate.newInstance(
 				"SES",
 				"1",
-				"5",
-				CovariateType.NTILE_INTEGER_SCORE);
+				"5"
+			                                 );
 		masterInvestigation.addCovariate(adjustableCovariate1);
 		AdjustableCovariate adjustableCovariate2
 			= AdjustableCovariate.newInstance(
 				"ETHNICITY", 
 				"1", 
-				"3",
-				CovariateType.NTILE_INTEGER_SCORE);
+				"3"
+			                                 );
 		
 		masterInvestigation.addCovariate(adjustableCovariate2);
 
@@ -969,7 +968,7 @@ public final class TestInvestigation
 		maliciousInvestigation
 			= Investigation.createCopy(masterInvestigation);
 		AdjustableCovariate maliciousCovariate
-			= AdjustableCovariate.newInstance("SES", "1", getTestMaliciousValue(), CovariateType.NTILE_INTEGER_SCORE);		
+			= AdjustableCovariate.newInstance("SES", "1", getTestMaliciousValue());
 		maliciousInvestigation.addCovariate(maliciousCovariate);
 		try {
 			maliciousInvestigation.checkSecurityViolations();

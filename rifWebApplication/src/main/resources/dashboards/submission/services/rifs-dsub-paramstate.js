@@ -35,8 +35,8 @@
  * SERVICE to store investigation parameter state
  */
 angular.module("RIF")
-        .factory('ParameterStateService',
-                function (SubmissionStateService) {
+        .factory('ParameterStateService', ["SubmissionStateService", "AlertService",
+                function (SubmissionStateService, AlertService) {
                     var s = {
                         activeHealthTheme: "",
                         title: "My_New_Investigation",
@@ -44,12 +44,14 @@ angular.module("RIF")
                         end: 1,
                         interval: 1,
                         sex: "",
-                        covariate: "NONE",
+                        covariates: [],
+                        additionals: [],
                         terms: [],
                         lowerAge: "",
                         upperAge: "",
                         possibleCovariates: [],
-                        possibleAges: []
+                        possibleAges: [],
+                        errors: 0
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
@@ -74,6 +76,7 @@ angular.module("RIF")
                                     this.years_per_interval = "";
                                     this.sex = "";
                                     this.covariates = [];
+                                    this.additionals = [];
                                 }
                                 var thisInv = new inv();
                                 thisInv.title = s.title;
@@ -127,18 +130,62 @@ angular.module("RIF")
                                 }
                                 thisInv.sex = s.sex;
                                 for (var i = 0; i < s.possibleCovariates.length; i++) {
-                                    if (s.possibleCovariates[i].name === s.covariate) {
-                                        thisInv.covariates.push(
-                                                {
-                                                    "adjustable_covariate": {
-                                                        "name": s.possibleCovariates[i].name,
-                                                        "minimum_value": s.possibleCovariates[i].minimum_value,
-                                                        "maximum_value": s.possibleCovariates[i].maximum_value,
-                                                        "covariate_type": s.possibleCovariates[i].covariate_type
-                                                    }
-                                                }
-                                        );
+
+                                    for (var j = 0; j < s.covariates.length; j++) {
+                                        if (s.possibleCovariates[i].name === s.covariates[j] &&
+                                            s.possibleCovariates[i].name != "NONE") {
+                                            
+                                            if (s.possibleCovariates[i].covariate_type == "INTEGER_SCORE") {
+                                                thisInv.covariates.push(
+                                                        {
+                                                            "adjustable_covariate": {
+                                                                "name": s.possibleCovariates[i].name,
+                                                                "minimum_value": s.possibleCovariates[i].minimum_value,
+                                                                "maximum_value": s.possibleCovariates[i].maximum_value,
+                                                                "covariate_type": s.possibleCovariates[i].covariate_type,
+                                                                "description": s.possibleCovariates[i].description
+                                                            }
+                                                        }
+                                                );
+                                            }
+                                            else {
+                                                AlertService.showError(
+                                                    "[rifs-dsub-paramstate.js] Invalid adjustable covariate: " + 
+                                                    s.possibleCovariates[i].name +
+                                                    "; covariate type of: " + s.possibleCovariates[i].covariate_type);
+                                                s.errors++;
+                                            }
+                                        }
+                                    }                                    
+                                    for (var k = 0; k < s.additionals.length; k++) {
+                                        if (s.possibleCovariates[i].name === s.additionals[k] &&
+                                            s.possibleCovariates[i].name != "NONE") {
+                                            
+                                            if (s.possibleCovariates[i].covariate_type == "CONTINUOUS_VARIABLE") {
+                                                thisInv.additionals.push(
+                                                    {
+                                                        "additional_covariate": {
+                                                            "name": s.possibleCovariates[i].name,
+                                                            "minimum_value": s.possibleCovariates[i].minimum_value,
+                                                            "maximum_value": s.possibleCovariates[i].maximum_value,
+                                                            "covariate_type": s.possibleCovariates[i].covariate_type,
+                                                            "description": s.possibleCovariates[i].description
+                                                        }
+                                                    });
+                                            }
+                                            else {
+                                                AlertService.showError(
+                                                    "[rifs-dsub-paramstate.js] Invalid additional covariate: " + 
+                                                    s.possibleCovariates[i].name +
+                                                    "; covariate type of: " + s.possibleCovariates[i].covariate_type);
+                                                s.errors++;
+                                            }
+                                        }
                                     }
+                                    
+                                    // Sort alphabetically
+                                    thisInv.covariates.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
+                                    thisInv.additionals.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
                                 }
                                 for (var k = 0; k < s.terms.length; k++) {
                                     var thisID = s.terms[k][0].split('-');
@@ -161,4 +208,4 @@ angular.module("RIF")
                             }
                         }
                     };
-                });
+                }]);

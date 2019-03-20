@@ -1,6 +1,6 @@
 package org.sahsu.rif.services.test.services.ms;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -119,7 +119,7 @@ public final class GetCovariates
 			Geography validGeography = cloneValidGeography();
 			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 
-			ArrayList<AbstractCovariate> results
+			List<AbstractCovariate> results
 				= rifStudySubmissionService.getCovariates(
 					validUser, 
 					validGeography,
