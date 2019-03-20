@@ -374,6 +374,7 @@ DECLARE
 	rif40_run_study BOOLEAN:=FALSE;	
 	rif40_num_denom_errors BOOLEAN:=FALSE;	
 	t_rif40_num_denom BOOLEAN:=FALSE;	
+    t_rif40_num_denom_old BOOLEAN:=FALSE;	
 	recover_t_rif40_num_denom BOOLEAN:=FALSE;
 	g_rif40_study_areas BOOLEAN:=FALSE;	
 	g_rif40_comparison_areas BOOLEAN:=FALSE;	
@@ -646,6 +647,12 @@ BEGIN
 		t_rif40_num_denom:=TRUE;
 	END IF;
 	CLOSE c2;
+	OPEN c2('t_rif40_num_denom_old');
+	FETCH c2 INTO c2_rec;
+	IF c2_rec.table_or_view = 't_rif40_num_denom_old' THEN
+		t_rif40_num_denom_old:=TRUE;
+	END IF;
+	CLOSE c2;
     
 	OPEN c2('rif40_user_version');
 	FETCH c2 INTO c2_rec;
@@ -722,8 +729,10 @@ BEGIN
 			j:=j+1;
 		END IF;
 		IF t_rif40_num_denom THEN
-			sql_stmt:='DROP TABLE IF EXISTS '||USER||'.t_rif40_num_denom_old';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+            IF t_rif40_num_denom_old THEN
+                sql_stmt:='DROP TABLE '||USER||'.t_rif40_num_denom_old CASCADE';
+                PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+            END IF;
             sql_stmt:='DROP INDEX rif40_num_denom_pk';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			sql_stmt:='ALTER TABLE '||USER||'.t_rif40_num_denom RENAME TO t_rif40_num_denom_old';
