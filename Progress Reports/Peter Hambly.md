@@ -3481,3 +3481,16 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 * Document info button and risk graphs;
 * Create issue #137: RIF WAR updates not applied because your browser cache needs to be emptied;
 * Update plans for issue #129: Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes);
+
+### 11th to 14th March
+
+* Issue #138: State 1: study setup modal errors;
+* Add support for multiple covariates #124;
+* Issue #129: Pooled or individual analysis for multiple risk analysis points/shapes: initial design;
+
+### 18th to 21st March
+
+* Issue #129: Pooled or individual analysis for multiple risk analysis points/shapes: add stratification 
+  from shapefile;
+* Rebuild SWedish data with correct age groups for denominator;
+* Install and Patch Swedish test laptop;
