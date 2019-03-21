@@ -190,7 +190,7 @@ angular.module("RIF")
 								CompAreaStateService.getState().type = $scope.input.type;		
 								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(RA): " + 
 									SubmissionStateService.getState().studyType);	
-
+        
 							}
 							else if ($scope.input.type === "Disease Mapping" && 
 							    SelectStateService.getState().studyType != "Disease Mapping") {			
@@ -230,7 +230,12 @@ angular.module("RIF")
 							else {
 								throw new Error("setStudyType: invalid $scope.input.type: " + $scope.input.type);
 							}
-										
+									
+							$timeout(function() {
+								$scope.gridOptions.columnDefs = 
+									ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis);
+								$scope.gridApi.core.refresh();	
+							}, 1000);
 						}
 							
                         //Clear all selection from map and table
@@ -812,7 +817,8 @@ angular.module("RIF")
 											$timeout(function() {	
 
 												CommonMappingStateService.getState("areamap").map.spin(false);  	// off	
-												enableMapSpinners();			// Turn on zoom/pan spinners									
+												enableMapSpinners();			// Turn on zoom/pan spinners
+												$scope.gridApi.core.refresh();													
 												$scope.redrawMap();				// Force redraw
 											}, 100);
 										}, function(err) { // Error case
@@ -1223,7 +1229,8 @@ angular.module("RIF")
 																id: thisPolyID, 
 																gid: e.target.feature.properties.gid, label: 
 																e.target.feature.properties.name, 
-																band: CommonMappingStateService.getState("areamap").currentBand};
+																band: CommonMappingStateService.getState("areamap").currentBand,
+																stratification: ($scope.input.stratifyTo.name || "ERROR")};
 															$scope.selectedPolygon = 
 																CommonMappingStateService.getState("areamap").addToSelectedPolygon($scope.input.name,
 																	newSelectedPolygon);
@@ -1585,7 +1592,8 @@ angular.module("RIF")
                                     $scope.stratificationList=setupStratificationList();
 								}
 								else {
-                                    $scope.stratificationList=["NONE"];
+									stratificationList.length = 0;
+                                    $scope.stratificationList.push(stratificationNone);
 									resolve("map has no selected shapes");
 								}
                                 
@@ -1787,7 +1795,7 @@ angular.module("RIF")
                             "; minRowsToShow: " + minRowsToShow +
                             "; headerRowHeight: " + headerRowHeight +
 							"; $scope.gridOptions.minRowsToShow: " + $scope.gridOptions.minRowsToShow);
-                        $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs();
+                        $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis);
                         //Enable row selections
                         $scope.gridOptions.onRegisterApi = function (gridApi) {
                             $scope.gridApi = gridApi;
@@ -1934,12 +1942,14 @@ angular.module("RIF")
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
                                 $scope.gridOptions.data[i].band = 0;
 								
-								if (CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name, 
-									$scope.gridOptions.data[i].area_id)) {
+								var selectedPolygon=CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name,
+									$scope.gridOptions.data[i].area_id);
+								if (selectedPolygon) {
 									foundCount++;
-                                    $scope.gridOptions.data[i].band = 
-										CommonMappingStateService.getState("areamap").getSelectedPolygonObj($scope.input.name,
-											$scope.gridOptions.data[i].area_id).band;
+                                    $scope.gridOptions.data[i].band = selectedPolygon.band;					
+                                    $scope.gridOptions.data[i].stratification = (
+											selectedPolygon.stratification ||
+											"UNKNOWN");
 //									if (foundCount < 5) {
 //										alertScope.consoleLog("[rifd-dsub-maptable.js] found: " + foundCount + "; area_id: " + 
 //											$scope.gridOptions.data[i].area_id + "; data[" + i + "]: " + 
@@ -2150,6 +2160,8 @@ angular.module("RIF")
 										"; rifShapePolyId: " + savedShapes[i].rifShapePolyId +
 										"; rifShapeId: " + savedShapes[i].rifShapeId +
 										"; exposureValue: " + savedShapes[i].exposureValue +
+										"; stratificationValue: " + savedShapes[i].stratificationValue +
+										"; stratificationField: " + $scope.stratificationField +
 										"; riskAnalysisExposureField: " + savedShapes[i].riskAnalysisExposureField +
 										"; shapeFile: " + (savedShapes[i].fileName ? savedShapes[i].fileName : "N/A"));
 									if (savedShapes[i].riskAnalysisExposureField) {

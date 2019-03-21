@@ -54,6 +54,12 @@ angular.module("RIF")
                         multiSelect: true,
                         rowTemplate: rowTemplate()
                     };
+					var riskAnalysisAreaTableColumnDefs = [
+                        {field: 'area_id', enableHiding: false, width: "*"},
+                        {field: 'label', sort: { direction: 'asc', priority: 0 }, enableHiding: false, width: "*"},
+                        {field: 'band', enableHiding: false, width: "*"},
+                        {field: 'stratification', enableHiding: false, width: "*"}
+                    ];
                     var areaTableColumnDefs = [
                         {field: 'area_id', enableHiding: false, width: "*"},
                         {field: 'label', sort: { direction: 'asc', priority: 0 }, enableHiding: false, width: "*"},
@@ -84,7 +90,8 @@ angular.module("RIF")
                                 var obj = {
                                     area_id: data.attributes[i].area_id,
                                     label: data.attributes[i].name,
-                                    band: undefined
+                                    band: undefined,
+                                    stratification: "NONE"
                                 };
                                 rowCollection.push(obj);
                             }
@@ -100,8 +107,13 @@ angular.module("RIF")
                             }
                             return areaTableOptions;
                         },
-                        getAreaTableColumnDefs: function () {
-                            return areaTableColumnDefs;
+                        getAreaTableColumnDefs: function (isRiskAnalysis) {
+							if (isRiskAnalysis) {
+								return riskAnalysisAreaTableColumnDefs;
+							}
+							else {
+								return areaTableColumnDefs;
+							}
                         },
 						getDefaultMinRowsToShow: function () {
 							return defaultMinRowsToShow;
