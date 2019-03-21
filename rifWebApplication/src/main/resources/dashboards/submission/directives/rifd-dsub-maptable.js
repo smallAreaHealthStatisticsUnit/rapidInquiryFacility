@@ -1587,6 +1587,7 @@ angular.module("RIF")
 							var stratificationList=["NONE", "MULTIPOLYGON"];
 							if ($scope.stratificationField && $scope.stratificationField != "NONE") {
 								stratificationList.push($scope.stratificationField);
+								$scope.input.stratifyTo = $scope.stratificationField;
 							}
 							for (var i=1; i<$scope.geoLevels.length; i++) {
 								if (i>3) {
@@ -1742,17 +1743,18 @@ angular.module("RIF")
                         CommonMappingStateService.getState("areamap").map.addLayer(CommonMappingStateService.getState("areamap").shapes);
 
                         //Set up table (UI-grid)
-                        var minRowsToShow=20;
+                        var minRowsToShow=ModalAreaService.getDefaultMinRowsToShow();
                         var headerRowHeight=60;
                         var height=d3.select("#areaSelectionMap").node().getBoundingClientRect().height;
                         if (height) {
                             minRowsToShow=Math.round((height-(2*headerRowHeight) /* Header */)/25 /* Row height */);
                             headerRowHeight=Math.round((height-(25*minRowsToShow))/2);
                         }
+                        $scope.gridOptions = ModalAreaService.getAreaTableOptions(minRowsToShow, headerRowHeight);
                         alertScope.consoleLog("[rifd-dsub-maptable.js] areaSelectionMap height: " + height +
                             "; minRowsToShow: " + minRowsToShow +
-                            "; headerRowHeight: " + headerRowHeight);
-                        $scope.gridOptions = ModalAreaService.getAreaTableOptions(minRowsToShow, headerRowHeight);
+                            "; headerRowHeight: " + headerRowHeight +
+							"; $scope.gridOptions.minRowsToShow: " + $scope.gridOptions.minRowsToShow);
                         $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs();
                         //Enable row selections
                         $scope.gridOptions.onRegisterApi = function (gridApi) {
@@ -1762,7 +1764,10 @@ angular.module("RIF")
                         function setMinRowsToShow(){
                             //if data length is smaller, we shrink. otherwise we can do pagination.
                             $scope.gridOptions.minRowsToShow = Math.min($scope.gridOptions.data.length, $scope.maxRowToShow);
-                            $scope.gridOptions.virtualizationThreshold = $scope.gridOptions.minRowsToShow ;
+                            $scope.gridOptions.virtualizationThreshold = $scope.gridOptions.minRowsToShow;
+							alertScope.consoleLog("[rifd-dsub-maptable.js]setMinRowsToShow()" +
+								"; $scope.gridOptions.minRowsToShow: " + $scope.gridOptions.minRowsToShow +
+								"; $scope.gridOptions.virtualizationThreshold: " + $scope.gridOptions.virtualizationThreshold);
                         }
                         
                         //Set the user defined basemap
