@@ -74,10 +74,12 @@ angular.module("RIF")
 //						$scope.geoJSONLayers = [];
 						$scope.selectionData = [];
                         $scope.stratificationList=["NONE"];
-                        $scope.isRiskAnalysis=false;                               
+                        $scope.isRiskAnalysis=false;                
+						var stratificationNone={ 
+							name: "NONE", stratificationType: "NONE", description: "No stratification"};               
 						if ($scope.input.type == "Risk Analysis") {
                             $scope.isRiskAnalysis=true;   
-                            $scope.input.stratifyTo = "NONE";
+                            $scope.input.stratifyTo = stratificationNone;
                         }
 						CommonMappingStateService.getState("areamap").map = // Initialise if required
 							L.map("areamap", {condensedAttributionControl: false}).setView([0, 0], 1);	
@@ -115,7 +117,7 @@ angular.module("RIF")
                             $scope.input.selectAt = "";
                             $scope.input.studyResolution = "";
                             $scope.input.geography = thisGeography;
-                            $scope.input.stratifyTo = "NONE";
+                            $scope.input.stratifyTo = stratificationNone;
                         }
 						
 						// Also defined in rifs-util-leafletdraw.js
@@ -159,6 +161,12 @@ angular.module("RIF")
 
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
+						
+						$scope.stratificationChange = function(nStratification) {
+							alertScope.consoleDebug("[rifd-dsub-maptable.js] stratificationChange: " + 
+								JSON.stringify(nStratification, null, 1));
+							$scope.input.stratifyTo = nStratification;
+						}
 						
 						/* Function: 	setStudyType()
 						 * Description: Reset study state to $scope.input.type
@@ -834,6 +842,7 @@ angular.module("RIF")
                          * GET THE SELECT AND VIEW RESOLUTIONS
                          */
                         $scope.geoLevels = [];
+						$scope.geoLevelDescriptions = [];
                         $scope.geoLevelsViews = [];
 						
 						// Initialise basemap, controls etc
@@ -1584,10 +1593,22 @@ angular.module("RIF")
 						} // End of addSelectedShapes()
 
 						function setupStratificationList() {
-							var stratificationList=["NONE", "MULTIPOLYGON"];
+							var stratificationList=[];
+							stratificationList.push(stratificationNone);
+							stratificationList.push({ 
+								name: "MULTIPOLYGON", 
+								stratificationType: "MULTIPOLYGON",
+								description: "Stratification by multiple polygons"});
 							if ($scope.stratificationField && $scope.stratificationField != "NONE") {
-								stratificationList.push($scope.stratificationField);
-								$scope.input.stratifyTo = $scope.stratificationField;
+								var stratificationItem={
+									name: $scope.stratificationField,
+									stratificationType: "SHAPEFILE_FIELD", 
+									description: "Stratification by shapefile field: " + $scope.stratificationField
+								};
+								stratificationList.push(stratificationItem);
+							}
+							else {
+								$scope.stratificationChange(stratificationNone);
 							}
 							for (var i=1; i<$scope.geoLevels.length; i++) {
 								if (i>3) {
@@ -1596,7 +1617,12 @@ angular.module("RIF")
 								if ($scope.input.studyResolution == $scope.geoLevels[i]) {
 									break; // Stop before resolution geolevel
 								}
-								stratificationList.push($scope.geoLevels[i]);
+								stratificationList.push({
+									name: $scope.geoLevels[i],
+									stratificationType: "GEOLEVEL",
+									description: "Stratification by geolevel: " + 
+										($scope.geoLevelDescriptions[i] ? $scope.geoLevelDescriptions[i] : $scope.geoLevels[i])
+								});
 							}
 							return stratificationList;										
 						}									
@@ -1694,6 +1720,12 @@ angular.module("RIF")
                             for (var i = 0; i < res.data[0].names.length; i++) {
                                 $scope.geoLevels.push(res.data[0].names[i]);
                             }
+                            $scope.geoLevelDescriptions.length = 0;
+							if (res.data[0].geoLevelDescriptions) {
+								for (var i = 0; i < res.data[0].geoLevelDescriptions.length; i++) {
+									$scope.geoLevelDescriptions.push(res.data[0].geoLevelDescriptions[i]);
+								}
+							}
                             //To check that comparison study area not greater than study area
                             //Assumes that geoLevels is ordered array
                             $scope.input.geoLevels = $scope.geoLevels;
