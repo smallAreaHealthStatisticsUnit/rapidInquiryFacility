@@ -82,7 +82,14 @@ GRANT SELECT ON rif40_homogeneity TO rif_user, rif_manager;
 --
 -- Table: rif40.t_rif40_inv_covariates: add covariate_type flag
 --
-ALTER TABLE rif40.t_rif40_inv_covariates ADD COLUMN IF NOT EXISTS covariate_type character varying(1) NULL;
+DO LANGUAGE plpgsql $$
+BEGIN
+ALTER TABLE rif40.t_rif40_inv_covariates ADD COLUMN covariate_type character varying(1) NULL;
+EXCEPTION
+	WHEN duplicate_column THEN
+		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
+END;
+$$;
 
 DROP TRIGGER t_rif40_inv_covariates_checks ON rif40.t_rif40_inv_covariates;
 UPDATE rif40.t_rif40_inv_covariates
