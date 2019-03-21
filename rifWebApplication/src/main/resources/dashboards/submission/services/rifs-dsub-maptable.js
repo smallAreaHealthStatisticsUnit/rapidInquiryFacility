@@ -40,6 +40,7 @@ angular.module("RIF")
         .factory('ModalAreaService',
                 function () {
                     //UI-Grid setup options
+					var defaultMinRowsToShow=12;
                     var areaTableOptions = {
                         enableFiltering: true,
                         enableRowSelection: true,
@@ -49,7 +50,7 @@ angular.module("RIF")
                         selectionRowHeaderWidth: 35,
 //                        headerRowHeight: 60,
                         rowHeight: 25,
-                        minRowsToShow: 20,
+                        minRowsToShow: defaultMinRowsToShow,
                         multiSelect: true,
                         rowTemplate: rowTemplate()
                     };
@@ -101,6 +102,9 @@ angular.module("RIF")
                         },
                         getAreaTableColumnDefs: function () {
                             return areaTableColumnDefs;
-                        }
+                        },
+						getDefaultMinRowsToShow: function () {
+							return defaultMinRowsToShow;
+						}
                     };
                 });
