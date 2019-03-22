@@ -103,7 +103,7 @@ def main():
         # This sends output to the specified file as well as stdout.
         outfile = Tee("install.log")
         sys.stdout = outfile
-        # sys.stderr = outfile
+        sys.stderr = outfile
 
         # Run SQL scripts
         if settings.db_type == "pg":
@@ -251,10 +251,10 @@ def get_settings():
     # Database name is hardcoded for now.
     # settings.db_name = get_value_from_user(DATABASE_NAME).strip()
     settings.db_name = "sahsuland"
-    settings.db_user = get_value_from_user(DATABASE_USER,
-                                           extra=settings.db_name).strip()
+    settings.db_user = get_value_from_user(
+        DATABASE_USER, extra=settings.db_name).strip().lower()
     settings.db_pass = get_password_from_user(
-        DATABASE_PASSWORD, extra=settings.db_user).strip()
+        DATABASE_PASSWORD, extra=settings.db_user)
 
     # For now the next few are only for Postgres
     if settings.db_type == "pg":
@@ -679,6 +679,14 @@ def set_windows_permissions(file_name):
     # complain.
     import ntsecuritycon
     import win32security
+    from win32com.shell import shell
+
+    # Have to run as an administrator for this bit.
+    if not shell.IsUserAnAdmin():
+        banner("This function requires elevated privileges. Please run again "
+               "from a command prompt started using the 'Run as "
+               "administrator' feature", 100)
+        sys.exit(-1)
 
     entries = [{'AccessMode': win32security.GRANT_ACCESS,
                 'AccessPermissions': 0,

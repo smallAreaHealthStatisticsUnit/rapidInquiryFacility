@@ -1,6 +1,6 @@
 -- ************************************************************************
 -- *
--- * THIS IS A SCHEMA ALTER SCRIPT - IT CAN BE RE-RUN BUT THEY MUST BE RUN 
+-- * THIS IS A SCHEMA ALTER SCRIPT - IT CAN BE RE-RUN BUT THEY MUST BE RUN
 -- * IN NUMERIC ORDER
 -- *
 -- ************************************************************************
@@ -19,17 +19,17 @@
 --
 -- Copyright:
 --
--- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
--- that rapidly addresses epidemiological and public health questions using 
--- routinely collected health and population data and generates standardised 
--- rates and relative risks for any given health outcome, for specified age 
+-- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU
+-- that rapidly addresses epidemiological and public health questions using
+-- routinely collected health and population data and generates standardised
+-- rates and relative risks for any given health outcome, for specified age
 -- and year ranges, for any given geographical area.
 --
 -- Copyright 2014 Imperial College London, developed by the Small Area
--- Health Statistics Unit. The work of the Small Area Health Statistics Unit 
--- is funded by the Public Health England as part of the MRC-PHE Centre for 
--- Environment and Health. Funding for this project has also been received 
--- from the Centers for Disease Control and Prevention.  
+-- Health Statistics Unit. The work of the Small Area Health Statistics Unit
+-- is funded by the Public Health England as part of the MRC-PHE Centre for
+-- Environment and Health. Funding for this project has also been received
+-- from the Centers for Disease Control and Prevention.
 --
 -- This file is part of the Rapid Inquiry Facility (RIF) project.
 -- RIF is free software: you can redistribute it and/or modify
@@ -43,8 +43,8 @@
 -- GNU Lesser General Public License for more details.
 --
 -- You should have received a copy of the GNU Lesser General Public License
--- along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
--- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+-- along with RIF. If not, see <http://www.gnu.org/licenses/>; or write
+-- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 -- Boston, MA 02110-1301 USA
 --
 -- Author:
@@ -64,7 +64,7 @@
 
 /*
 
-* Alter 12: More risk Analysis Enhancements, additional covariate support; 
+* Alter 12: More risk Analysis Enhancements, additional covariate support;
 
  1. rif40_homogeneity view grants
  2. Additional covariate support
@@ -83,17 +83,17 @@ GRANT SELECT ON rif40_homogeneity TO rif_user, rif_manager;
 -- Table: rif40.t_rif40_inv_covariates: add covariate_type flag
 --
 DO LANGUAGE plpgsql $$
-BEGIN
-ALTER TABLE rif40.t_rif40_inv_covariates ADD COLUMN covariate_type character varying(1) NULL;
-EXCEPTION
-	WHEN duplicate_column THEN
-		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
-END;
+    BEGIN
+        ALTER TABLE rif40.t_rif40_inv_covariates ADD COLUMN covariate_type character varying(1) NULL;
+    EXCEPTION
+    WHEN duplicate_column THEN
+        RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;
+    END;
 $$;
 
 DROP TRIGGER t_rif40_inv_covariates_checks ON rif40.t_rif40_inv_covariates;
 UPDATE rif40.t_rif40_inv_covariates
-   SET covariate_type = 'N' 
+   SET covariate_type = 'N'
  WHERE covariate_type IS NULL;
 ALTER TABLE rif40.t_rif40_inv_covariates DROP CONSTRAINT IF EXISTS rif40_covariates_type_ck;
 ALTER TABLE rif40.t_rif40_inv_covariates ADD CONSTRAINT rif40_covariates_type_ck CHECK (covariate_type = ANY (ARRAY['N', 'A']));
@@ -105,11 +105,11 @@ COMMENT ON COLUMN rif40.t_rif40_inv_covariates.covariate_type
 
 -- Trigger: t_rif40_inv_covariates_checks: NO CHANGES
 CREATE TRIGGER t_rif40_inv_covariates_checks
-    BEFORE INSERT OR DELETE OR UPDATE 
+    BEFORE INSERT OR DELETE OR UPDATE
     ON rif40.t_rif40_inv_covariates
     FOR EACH ROW
     EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_t_rif40_inv_covariates_checks();
-    
+
 -- View: rif40.rif40_inv_covariates (usually auto-generated)
 DROP VIEW rif40.rif40_inv_covariates;
 CREATE VIEW rif40.rif40_inv_covariates AS
@@ -148,10 +148,10 @@ COMMENT ON COLUMN rif40.rif40_inv_covariates.study_geolevel_name
 COMMENT ON COLUMN rif40.rif40_inv_covariates.min
     IS 'Minimum value for a covariate';
 COMMENT ON COLUMN rif40.rif40_inv_covariates.max
-    IS 'Maximum value for a covariate';    
+    IS 'Maximum value for a covariate';
 COMMENT ON COLUMN rif40.rif40_inv_covariates.covariate_type
     IS 'Covariate type: N normal; A: additional (not used in the calculations)';
-    
+
 GRANT ALL ON TABLE rif40.rif40_inv_covariates TO rif40;
 GRANT DELETE, UPDATE, SELECT, INSERT ON TABLE rif40.rif40_inv_covariates TO rif_user;
 GRANT DELETE, UPDATE, SELECT, INSERT ON TABLE rif40.rif40_inv_covariates TO rif_manager;
@@ -162,7 +162,7 @@ CREATE OR REPLACE FUNCTION rif40_trg_pkg.trgf_rif40_inv_covariates()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     COST 100
-    VOLATILE NOT LEAKPROOF 
+    VOLATILE NOT LEAKPROOF
 AS $BODY$
 
 BEGIN
@@ -243,25 +243,25 @@ ALTER FUNCTION rif40_trg_pkg.trgf_rif40_inv_covariates()
     OWNER TO rif40;
 
 COMMENT ON FUNCTION rif40_trg_pkg.trgf_rif40_inv_covariates()
-    IS 'INSTEAD OF trigger for table T_RIF40_INV_COVARIATES to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
+    IS 'INSTEAD OF trigger for table T_RIF40_INV_COVARIATES to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted.
  [NO TABLE/VIEW comments available]';
- 
+
 CREATE TRIGGER trg_rif40_inv_covariates
-    INSTEAD OF INSERT OR DELETE OR UPDATE 
+    INSTEAD OF INSERT OR DELETE OR UPDATE
     ON rif40.rif40_inv_covariates
     FOR EACH ROW
     EXECUTE PROCEDURE rif40_trg_pkg.trgf_rif40_inv_covariates();
 
 COMMENT ON TRIGGER trg_rif40_inv_covariates ON rif40.rif40_inv_covariates
-    IS 'INSTEAD OF trigger for view T_RIF40_INV_COVARIATES to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted. 
+    IS 'INSTEAD OF trigger for view T_RIF40_INV_COVARIATES to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted.
  [NO TABLE/VIEW comments available]';
- 
+
 SELECT geography, covariate_name, covariate_type, COUNT(*) AS total
   FROM rif40.t_rif40_inv_covariates
- GROUP BY geography, covariate_name, covariate_type; 
+ GROUP BY geography, covariate_name, covariate_type;
 SELECT geography, covariate_name, covariate_type, COUNT(*) AS total
   FROM rif40.rif40_inv_covariates
- GROUP BY geography, covariate_name, covariate_type; 
+ GROUP BY geography, covariate_name, covariate_type;
 
 \dS+ rif40.rif40_inv_covariates
 \dS+ rif40.t_rif40_inv_covariates
@@ -279,7 +279,7 @@ BEGIN
 END;
 $$;
  */
- 
+
 END;
 --
---  Eof 
+--  Eof
