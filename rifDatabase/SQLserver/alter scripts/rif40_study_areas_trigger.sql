@@ -61,12 +61,20 @@ BEGIN
 				username,
 				study_id,
 				area_id,
-				band_id)
+				band_id, 
+                intersect_count, 
+                distance_from_nearest_source, 
+                nearest_rifshapepolyid, 
+                exposure_value)
 	SELECT
 				isnull(username,SUSER_SNAME()),
 				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq')),
 				area_id /* no default value */,
-				band_id /* no default value */
+				band_id /* no default value */, 
+                intersect_count, 
+                distance_from_nearest_source, 
+                nearest_rifshapepolyid, 
+                exposure_value
 	FROM inserted;
 
 END;
@@ -107,12 +115,20 @@ BEGIN
 				username,
 				study_id,
 				area_id,
-				band_id)
+				band_id, 
+                intersect_count, 
+                distance_from_nearest_source, 
+                nearest_rifshapepolyid, 
+                exposure_value)
 	SELECT
 				username,
 				study_id,
 				area_id,
-				band_id
+				band_id, 
+                intersect_count, 
+                distance_from_nearest_source, 
+                nearest_rifshapepolyid, 
+                exposure_value
 	FROM inserted;
 END;
 
