@@ -235,8 +235,15 @@ angular.module("RIF")
                                                     scope.isPolygon = false;
                                                     scope.isPoint = true;
                                                     scope.isTable = true;
+                                                    if (!bAttr) {
+														for (var property in feature.properties) {
+															scope.stratificationFieldAttrs.push(property);
+														}
+                                                        bAttr = true;
+													}
                                                 } else if (feature.geometry.type === "Polygon") {
 													scope.shapeFile.polygons++;
+														
                                                     if (!bAttr) {
 
 														var exposureAttributesCount = 0;

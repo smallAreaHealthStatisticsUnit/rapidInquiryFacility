@@ -46,11 +46,11 @@ angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
 			'SelectStateService', 'ParametersService', 'StudyAreaStateService', 'CompAreaStateService', 'CommonMappingStateService', 
-			'DrawSelectionService', '$q', '$timeout',
+			'DrawSelectionService', '$q', '$timeout', 'uiGridConstants',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     LeafletBaseMapService, $timeout, user, SubmissionStateService,
 					SelectStateService, ParametersService, StudyAreaStateService, CompAreaStateService, CommonMappingStateService,
-					DrawSelectionService, $q, $timeout) {
+					DrawSelectionService, $q, $timeout, uiGridConstants) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -179,6 +179,7 @@ angular.module("RIF")
 							
 							if ($scope.input.type === "Risk Analysis" && 
 							    SelectStateService.getState().studyType != "Risk Analysis") {
+								refreshModalTable();
 								SelectStateService.initialiseRiskAnalysis();
 								SelectStateService.getState().studyType="risk_analysis_study";
 								
@@ -193,7 +194,8 @@ angular.module("RIF")
         
 							}
 							else if ($scope.input.type === "Disease Mapping" && 
-							    SelectStateService.getState().studyType != "Disease Mapping") {			
+							    SelectStateService.getState().studyType != "Disease Mapping") {		
+								refreshModalTable();	
 								SelectStateService.resetState();
 								SelectStateService.getState().studyType="disease_mapping_study";
 								
@@ -230,14 +232,35 @@ angular.module("RIF")
 							else {
 								throw new Error("setStudyType: invalid $scope.input.type: " + $scope.input.type);
 							}
-									
-							$timeout(function() {
+						}
+						
+						var refreshModalTableCount=0;
+						var oldColumnDefsLength=0;
+						var refreshModalTable = function () {
+							if ($scope.gridOptions.data && $scope.gridOptions.data.length > 0) {
 								$scope.gridOptions.columnDefs = 
 									ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis);
-								$scope.gridApi.core.refresh();	
-							}, 1000);
+								var dataColumns=Object.keys($scope.gridOptions.data[0]).length;
+								var dataRows=$scope.gridOptions.data.length;
+								if (oldColumnDefsLength != $scope.gridOptions.columnDefs.length) {
+									refreshModalTableCount++;
+									alertScope.consoleLog("[rifd-dsub-maptable.js] refreshModalTable: " +
+										refreshModalTableCount +
+										"; data columns: " + dataColumns +
+										"; data rows: " + dataRows +
+										"; old columns: " + oldColumnDefsLength +
+										"; columns: " + $scope.gridOptions.columnDefs.length);
+									oldColumnDefsLength = $scope.gridOptions.columnDefs.length;
+									$scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);	
+									$scope.gridApi.core.queueGridRefresh();
+								} 
+								
+							}
+							else {
+								alertScope.consoleLog("[rifd-dsub-maptable.js] Unable to refreshModalTable: no data");
+							}							
 						}
-							
+					
                         //Clear all selection from map and table
                         $scope.clear = function () {
 							alertScope.consoleLog("[rifd-dsub-maptable.js] $scope.clear() $scope.input.selectedPolygon");
@@ -781,6 +804,8 @@ angular.module("RIF")
 											
 												// Populate the grid table
 												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);		
+												refreshModalTable();
+												
 												alertScope.consoleDebug("[rifd-dsub-maptable.js] ModalAreaService.fillTable: " + 
 													$scope.totalPolygonCount + " rows");
 												/* Check selected polygon list matches:
@@ -817,8 +842,7 @@ angular.module("RIF")
 											$timeout(function() {	
 
 												CommonMappingStateService.getState("areamap").map.spin(false);  	// off	
-												enableMapSpinners();			// Turn on zoom/pan spinners
-												$scope.gridApi.core.refresh();													
+												enableMapSpinners();			// Turn on zoom/pan spinners				
 												$scope.redrawMap();				// Force redraw
 											}, 100);
 										}, function(err) { // Error case
@@ -1799,6 +1823,11 @@ angular.module("RIF")
                         //Enable row selections
                         $scope.gridOptions.onRegisterApi = function (gridApi) {
                             $scope.gridApi = gridApi;
+							
+							$scope.gridApi.grid.registerDataChangeCallback(function() {
+							alertScope.consoleLog("[rifd-dsub-maptable.js] modalTable COLUMN change" +
+								"; columns: " + $scope.gridOptions.columnDefs.length);
+								}, [uiGridConstants.dataChange.COLUMN]);
                         };
 						                    
                         function setMinRowsToShow(){

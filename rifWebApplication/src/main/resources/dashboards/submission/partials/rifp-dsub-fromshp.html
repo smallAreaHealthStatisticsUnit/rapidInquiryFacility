@@ -94,7 +94,7 @@ Disease submission modal to open shapefile AOI
 					</tr>
 				</table>
 
-				<div ng-show="isRiskAnalysis && hasExposureAttributes && isTable && isPolygon">
+				<div ng-show="isRiskAnalysis && isTable">
 					<br><h3>Stratification Field (optional)</h3><br>
 					<select id="stratificationField" ng-model="stratificationField" ng-change="stratificationFieldChange(stratificationField)" ng-options="s for s in stratificationFieldAttrs" ng-init="stratificationField"></select>
 				</div>

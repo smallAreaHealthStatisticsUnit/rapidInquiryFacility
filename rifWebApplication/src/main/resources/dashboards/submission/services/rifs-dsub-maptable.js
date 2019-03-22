@@ -57,8 +57,8 @@ angular.module("RIF")
 					var riskAnalysisAreaTableColumnDefs = [
                         {field: 'area_id', enableHiding: false, width: "*"},
                         {field: 'label', sort: { direction: 'asc', priority: 0 }, enableHiding: false, width: "*"},
-                        {field: 'band', enableHiding: false, width: "*"},
-                        {field: 'stratification', enableHiding: false, width: "*"}
+                        {field: 'stratification', enableHiding: false, width: "*"},
+                        {field: 'band', enableHiding: false, width: "*"}
                     ];
                     var areaTableColumnDefs = [
                         {field: 'area_id', enableHiding: false, width: "*"},
