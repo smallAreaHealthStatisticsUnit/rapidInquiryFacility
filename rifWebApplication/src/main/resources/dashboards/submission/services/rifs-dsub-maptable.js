@@ -37,10 +37,11 @@
 /* global d3 */
 
 angular.module("RIF")
-        .factory('ModalAreaService',
-                function () {
+        .factory('ModalAreaService', ['AlertService',
+                function (AlertService) {
                     //UI-Grid setup options
 					var defaultMinRowsToShow=12;
+					var rowCollection = [];
                     var areaTableOptions = {
                         enableFiltering: true,
                         enableRowSelection: true,
@@ -85,7 +86,7 @@ angular.module("RIF")
                     return {
                         //Populate the polygon attribute table
                         fillTable: function (data) {
-                            var rowCollection = [];
+                            rowCollection.length=0;
 							var keyList=undefined;
 							if (data.attributes[0]) {
 								keyList=Object.keys(data.attributes[0]);
@@ -124,6 +125,49 @@ angular.module("RIF")
                         },
 						getDefaultMinRowsToShow: function () {
 							return defaultMinRowsToShow;
+						},
+						setAllStratification: function(nStratification) {
+							/* nStratification is an object, e.g:
+							 *
+							 * "name": "SAHSU_GRD_LEVEL3",
+							 * "stratificationType": "GEOLEVEL",
+							 * "description": "Stratification by geolevel: SAHSU_GRD_LEVEL3"
+							 */
+							var count=0;
+							if (nStratification && rowCollection && rowCollection.length > 0) {
+								for (var i = 0; i < rowCollection.length; i++) {
+									if (nStratification.stratificationType == "GEOLEVEL" && 
+										rowCollection[i][nStratification.name.toLowerCase()]) {
+										rowCollection[i].stratification=
+											rowCollection[i][nStratification.name.toLowerCase()];
+										count++;
+									}
+								}
+								AlertService.consoleDebug("[rifs-dsub-maptable.js] setAllStratification() " + 
+									count + "/" + rowCollection.length);
+							}
+							return rowCollection;
+						},
+						setStratification: function(nStratification, areaID) {
+							/* nStratification is an object, e.g:
+							 *
+							 * "name": "SAHSU_GRD_LEVEL3",
+							 * "stratificationType": "GEOLEVEL",
+							 * "description": "Stratification by geolevel: SAHSU_GRD_LEVEL3"
+							 */
+							var count=0;
+							for (var i = 0; i < rowCollection.length; i++) {
+								if (nStratification.stratificationType == "GEOLEVEL" && 
+								    rowCollection[i][nStratification.name.toLowerCase()] &&
+									rowCollection[i].area_id == areaID) {
+									rowCollection[i].stratification=
+										rowCollection[i][nStratification.name.toLowerCase()];
+									count++;
+								}
+							}
+							AlertService.consoleDebug("[rifs-dsub-maptable.js] setStratification(" + 
+								areaID + ") " + count + "/" + rowCollection.length);
+							return rowCollection;
 						}
                     };
-                });
+                }]);

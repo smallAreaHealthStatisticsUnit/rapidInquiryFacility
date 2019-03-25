@@ -313,7 +313,7 @@ angular.module("RIF")
 				};
 						
 				/* 
-				 * Add selection shapee (usually risk analysis)
+				 * Add selection shapes (usually risk analysis)
 				 */
 				function addSelectedShapes(mapID, addSelectedShapesCallback) {		
 				
