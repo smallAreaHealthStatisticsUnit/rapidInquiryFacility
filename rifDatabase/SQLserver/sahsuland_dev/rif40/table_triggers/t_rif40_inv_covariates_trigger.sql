@@ -17,11 +17,14 @@ names of geolevels
 */
 
 
-USE [sahsuland]
-GO
-
 /****** Object:  Trigger [tr_inv_covariate]    Script Date: 13/02/2019 11:47:17 ******/
-DROP TRIGGER [rif40].[tr_inv_covariate]
+IF EXISTS (SELECT *  FROM sys.triggers tr
+    INNER JOIN sys.tables t ON tr.parent_id = t.object_id
+    WHERE t.schema_id = SCHEMA_ID(N'rif40')
+    and tr.name=N'tr_inv_covariate')
+BEGIN
+    DROP TRIGGER [rif40].[tr_inv_covariate]
+END
 GO
 
 /****** Object:  Trigger [rif40].[tr_inv_covariate]    Script Date: 13/02/2019 11:47:17 ******/
