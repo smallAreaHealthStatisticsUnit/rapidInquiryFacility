@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.collections.IteratorUtils;
 
@@ -1727,13 +1729,18 @@ public class ResultsQueryManager extends BaseSQLManager {
 		getLookupTableQueryFormatter.setDatabaseSchemaName(SCHEMA_NAME);
 		getLookupTableQueryFormatter.addSelectField("a", "lookup_table");
 		getLookupTableQueryFormatter.addSelectField("a", "lookup_desc_column");
+		getLookupTableQueryFormatter.addSelectField("a", "geolevel_id");
+		getLookupTableQueryFormatter.addSelectField("b", "hierarchytable");
 		getLookupTableQueryFormatter.addFromTable("rif40_geolevels a");
-		getLookupTableQueryFormatter.addWhereParameter("geography");
-		getLookupTableQueryFormatter.addWhereParameter("geolevel_name");
-
-		logSQLQuery(
+		getLookupTableQueryFormatter.addFromTable("rif40_geographies b");
+		getLookupTableQueryFormatter.addWhereParameter("b.geography");
+		getLookupTableQueryFormatter.addWhereParameter("a.geography");
+		getLookupTableQueryFormatter.addWhereParameter("a.geolevel_name");
+				
+		String sqlQueryText=logSQLQuery(
 				"getTileMakerAttributes",
 				getLookupTableQueryFormatter,
+				geography.getName().toUpperCase(),
 				geography.getName().toUpperCase(),
 				geoLevelSelect.getName().toUpperCase());
 
@@ -1744,19 +1751,104 @@ public class ResultsQueryManager extends BaseSQLManager {
 		//For map tiles
 		PreparedStatement statement2 = null;
 		ResultSet resultSet2 = null;
+	
+		//For goelevel names of lower resolution than current select geolevel
+		PreparedStatement statement3 = null;
+		ResultSet resultSet3 = null;
+		
+		String myLookupTable;
+		String myLookupDescName;
+		String myGeolevelId;
+		String myHierarchyTable;
+		List<String> myGeolevelList = new ArrayList<>();
 
 		try {
 
 			statement = connection.prepareStatement(getLookupTableQueryFormatter.generateQuery());
 			statement.setString(1, geography.getName().toUpperCase());
-			statement.setString(2, geoLevelSelect.getName().toUpperCase());
+			statement.setString(2, geography.getName().toUpperCase());
+			statement.setString(3, geoLevelSelect.getName().toUpperCase());
 
 			resultSet = statement.executeQuery();
 			resultSet.next();
 
 			//This is the tile table name for this geography
-			String myLookupTable = "rif_data." + resultSet.getString(1);
-			String myLookupDescName = resultSet.getString(2);
+			myLookupTable = "rif_data." + resultSet.getString(1);
+			myLookupDescName = resultSet.getString(2);
+			myGeolevelId = resultSet.getString(3);
+			myHierarchyTable = "rif_data." + resultSet.getString(4);
+
+		}
+		catch(SQLException sqlException) {
+				//Record original exception, throw sanitised, human-readable version
+			RIFSQLException rifSQLException = new RIFSQLException(
+				this.getClass(), sqlException, statement, sqlQueryText);
+			//Record original exception, throw sanitised, human-readable version
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetTileAttributes",
+					geoLevelSelect.getDisplayName(),
+					geography.getDisplayName());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage,
+					rifSQLException);	
+		}
+
+		try {
+
+			if (!myGeolevelId.equals("1")) {
+				SelectQueryFormatter getGeolevelNamesQueryFormatter =
+						SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+				getGeolevelNamesQueryFormatter.addSelectField("a", "geolevel_name");
+				getGeolevelNamesQueryFormatter.addFromTable("rif40_geolevels a");
+				getGeolevelNamesQueryFormatter.addWhereParameterWithOperator("a.geolevel_id", "<");
+				getGeolevelNamesQueryFormatter.addWhereParameter("a.geography");
+				getGeolevelNamesQueryFormatter.addOrderByCondition("a.geolevel_id", 
+					SelectQueryFormatter.SortOrder.DESCENDING);
+			
+				if (Integer.parseInt(myGeolevelId) > 3) {
+					myGeolevelId="3";
+				}
+				sqlQueryText=logSQLQuery(
+						"getTileMakerAttributes",
+						getGeolevelNamesQueryFormatter,
+						myGeolevelId,
+						geography.getName().toUpperCase());
+						
+				statement3 = connection.prepareStatement(getGeolevelNamesQueryFormatter.generateQuery());
+				statement3.setInt(1, Integer.parseInt(myGeolevelId));
+				statement3.setString(2, geography.getName().toUpperCase());
+
+				resultSet3 = statement3.executeQuery();
+
+				if (resultSet3.next()) {
+					do {	
+						myGeolevelList.add(resultSet3.getString(1));
+						rifLogger.info(getClass(), "myGeolevelList: " + resultSet3.getString(1));
+						 
+					} while (resultSet3.next());
+				}
+			}
+
+		}
+		catch(SQLException sqlException) {
+				//Record original exception, throw sanitised, human-readable version
+			RIFSQLException rifSQLException = new RIFSQLException(
+				this.getClass(), sqlException, statement3, sqlQueryText);
+			//Record original exception, throw sanitised, human-readable version
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetTileAttributes",
+					geoLevelSelect.getDisplayName(),
+					geography.getDisplayName());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage,
+					rifSQLException);	
+		}
+		
+		try {
 
 			SelectQueryFormatter getTileMakerAttributesQueryFormatter
 					= new MSSQLSelectQueryFormatter();
@@ -1770,13 +1862,23 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 			getTileMakerAttributesQueryFormatter.addSelectField("a", geoLevelSelect.getName().toLowerCase());
 			getTileMakerAttributesQueryFormatter.addSelectField("a", myLookupDescName.toLowerCase());
-			getTileMakerAttributesQueryFormatter.addFromTable(myLookupTable + " a");
-			getTileMakerAttributesQueryFormatter.addQueryLine(0, "   ORDER BY 1");
+			for (int j=0; j<myGeolevelList.size(); j++) {
+				getTileMakerAttributesQueryFormatter.addSelectField("b", 
+					myGeolevelList.get(j).toLowerCase() + "/* " + j + "/" + myGeolevelList.size() + "*/");
+			}
+			getTileMakerAttributesQueryFormatter.addFromTable(myLookupTable.toLowerCase() + " a");
+			if (myGeolevelList.size() > 0) {
+				getTileMakerAttributesQueryFormatter.addFromTable(myHierarchyTable.toLowerCase() + " b");
+				getTileMakerAttributesQueryFormatter.addWhereJoinCondition(
+					"a." + geoLevelSelect.getName().toLowerCase(),
+					"b." + geoLevelSelect.getName().toLowerCase());
+			}
+			getTileMakerAttributesQueryFormatter.addOrderByCondition("1");
 
-			logSQLQuery(
+			sqlQueryText=logSQLQuery(
 					"getTileMakerAttributes",
 					getTileMakerAttributesQueryFormatter);
-
+					
 			statement2 = connection.prepareStatement(getTileMakerAttributesQueryFormatter.generateQuery());
 
 			resultSet2 = statement2.executeQuery();
@@ -1787,14 +1889,25 @@ public class ResultsQueryManager extends BaseSQLManager {
 			String result="";
 			if (resultSet2.next()) {
 
+					ResultSetMetaData rsmd = resultSet2.getMetaData();
+					int columnCount = rsmd.getColumnCount();
+						
 				do {	
 					JSONObject attributesData = new JSONObject();
 					rowCount++;				
 					String areaId = resultSet2.getString(1);
 					String areaName = resultSet2.getString(2);
-					
 					attributesData.put("area_id", areaId);
 					attributesData.put("name", areaName);
+					
+					// The column count starts from 3
+					String studyOrComparison = null;
+					for (int i = 3; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i); 
+						String value = resultSet2.getString(i);
+						
+						attributesData.put(name, value);				
+					}
 					attributesArray.put(attributesData);
 				} while (resultSet2.next());
 				
@@ -1814,8 +1927,10 @@ public class ResultsQueryManager extends BaseSQLManager {
 			connection.commit();
 			return result;
 		} catch(SQLException sqlException) {
+				//Record original exception, throw sanitised, human-readable version
+			RIFSQLException rifSQLException = new RIFSQLException(
+				this.getClass(), sqlException, statement2, sqlQueryText);
 			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
 			String errorMessage
 					= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.unableToGetTileAttributes",
@@ -1823,7 +1938,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 					geography.getDisplayName());
 			throw new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);	
+					errorMessage,
+					rifSQLException);	
 		} catch(Exception exception) {
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
@@ -1842,6 +1958,9 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 			SQLQueryUtility.close(statement2);
 			SQLQueryUtility.close(resultSet2);
+			
+			SQLQueryUtility.close(statement3);
+			SQLQueryUtility.close(resultSet3);
 		}
 	}	
 }

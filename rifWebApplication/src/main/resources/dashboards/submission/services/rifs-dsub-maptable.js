@@ -86,15 +86,22 @@ angular.module("RIF")
                         //Populate the polygon attribute table
                         fillTable: function (data) {
                             var rowCollection = [];
-                            for (var i = 0; i < data.attributes.length; i++) {
-                                var obj = {
-                                    area_id: data.attributes[i].area_id,
-                                    label: data.attributes[i].name,
-                                    band: undefined,
-                                    stratification: "NONE"
-                                };
-                                rowCollection.push(obj);
-                            }
+							var keyList=undefined;
+							if (data.attributes[0]) {
+								keyList=Object.keys(data.attributes[0]);
+								for (var i = 0; i < data.attributes.length; i++) {
+									var obj = {
+	//                                    area_id: data.attributes[i].area_id,
+										label: data.attributes[i].name,
+										band: undefined,
+										stratification: "NONE"
+									};
+									for (var j = 0; j < keyList.length; j++) {
+										obj[keyList[j]] = data.attributes[i][keyList[j]];
+									}
+									rowCollection.push(obj);
+								}
+							}
                             return rowCollection;
                         },
                         //set up table
