@@ -1824,9 +1824,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 				if (resultSet3.next()) {
 					do {	
-						myGeolevelList.add(resultSet3.getString(1));
-						rifLogger.info(getClass(), "myGeolevelList: " + resultSet3.getString(1));
-						 
+						myGeolevelList.add(resultSet3.getString(1));			 
 					} while (resultSet3.next());
 				}
 			}
