@@ -22,6 +22,7 @@ from configparser import ConfigParser, ExtendedInterpolation
 from dataclasses import dataclass
 from distutils.util import strtobool
 from getpass import getpass
+from inspect import currentframe, getframeinfo
 from pathlib import Path
 
 WAR_FILES_LOCATION = "war_files_location"
@@ -134,22 +135,25 @@ def main():
 
             if process.returncode is not None and process.returncode != 0:
                 db_created = False
-                msg = """Something went wrong when running the script {} 
-                      
+                msg = """Something went wrong when running the script {}
+
                       Output from script: {}
-                      
-                      Errors from script: {} 
-                      
-                      
+
+                      {}
+
+
                       Database creation failed"""
-                banner(msg.format(script, process.stdout, process.stderr),
+                banner(msg.format(
+                        script, process.stdout,
+                        ("Errors from script: "
+                         + process.stderr) if process.stderr else ""),
                        120)
                 break
             db_created = True
 
         if db_created:
             ensure_tomcat_directories_exist(settings)
-            
+
             # Deploy WAR files
             for f in get_war_files(settings):
                 shutil.copy(f, settings.cat_home / "webapps")
@@ -242,9 +246,9 @@ def get_settings():
     # under the project root. The root directory is thus one level up.
     if settings.dev_mode:
 
-        # TODO: this should actually use the parent of the directory of the
-        #  current script, not of the current working directory.
-        settings.war_dir = Path.cwd().resolve().parent
+        # We want the parent of the directory containing the current script
+        this_script_name = getframeinfo(currentframe()).filename
+        settings.war_dir = Path(this_script_name).resolve().parent.parent
     else:
         settings.war_dir = base_path / "warfiles"
 
