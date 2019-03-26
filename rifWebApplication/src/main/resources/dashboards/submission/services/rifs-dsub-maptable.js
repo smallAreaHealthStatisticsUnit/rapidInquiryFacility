@@ -120,6 +120,8 @@ angular.module("RIF")
 									nRowCollection.push(obj);
 								}
 							}
+							AlertService.consoleDebug("[rifs-dsub-maptable.js] refillTable()" + 
+								nRowCollection.length);
                             return nRowCollection;
 						},
                         //set up table

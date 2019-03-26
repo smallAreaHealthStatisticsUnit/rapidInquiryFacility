@@ -165,18 +165,43 @@ angular.module("RIF")
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
 						
+						function stratifyToCopy(nStratifyTo) { 
+							// Strip off $$hashKey so Angular thinks it is new data
+							var obj={};
+							if (nStratifyTo) {
+								keyList=Object.keys(nStratifyTo);
+								for (var j = 0; j < keyList.length; j++) {
+									if (keyList[j] != "$$hashKey") {
+										obj[keyList[j]] = nStratifyTo[keyList[j]];
+									}
+								}
+							}
+							return obj;
+						}
+						
+						function getStratificationListItem(nStratifyTo) {
+							var obj={};
+							if ($scope.stratificationList) {
+								for (var i=0; i<$scope.stratificationList.length; i++) {
+									if ($scope.stratificationList[i].name = nStratifyTo.name) {
+										obj=$scope.stratificationList[i];
+									}
+								}
+							}
+							return obj;
+						}
+						
 						$scope.stratificationChange = function(nStratification) {
 							if (nStratification == undefined) { 
 								// $scope.input.stratification is being reset by redraw map?
-								if ($scope.input.stratifyTo == undefined) {
-									$timeout(function() {
-										$scope.input.stratifyTo = angular.copy($scope.stratifyTo || stratificationNone);
-										$scope.stratifyTo = angular.copy($scope.input.stratifyTo);
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] DEFAULT stratificationChange: " + 
-											JSON.stringify($scope.input.stratifyTo, null, 1) +
-											"; $scope.stratificationList: " + 
-											JSON.stringify($scope.stratificationList, null, 1));
-									}, 500);
+								if ($scope.input.stratifyTo == undefined && $scope.stratifyTo) {
+									$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] DEFAULT stratificationChange: " + 
+										JSON.stringify($scope.input.stratifyTo, null, 1) +
+										"; $scope.stratifyTo: " + 
+										JSON.stringify($scope.stratifyTo, null, 1) +
+										"; $scope.stratificationList: " + 
+										JSON.stringify($scope.stratificationList, null, 1));
 								}
 								else {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] NULL stratificationChange: " + 
@@ -192,7 +217,7 @@ angular.module("RIF")
 									JSON.stringify($scope.input.stratifyTo, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
-								$scope.stratifyTo = angular.copy(nStratification);
+								$scope.stratifyTo = stratifyToCopy(nStratification);
 							}
 							else if ($scope.input.stratifyTo && $scope.input.stratifyTo.name &&
 							    nStratification && nStratification.name &&
@@ -202,8 +227,8 @@ angular.module("RIF")
 									" to: " + JSON.stringify(nStratification, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
-								$scope.input.stratifyTo = angular.copy(nStratification);
-								$scope.stratifyTo = angular.copy(nStratification);
+								$scope.input.stratifyTo = stratifyToCopy(nStratification);
+								$scope.stratifyTo = stratifyToCopy(nStratification);
 								ModalAreaService.setAllStratification($scope.input.stratifyTo);
 							}
 						}
@@ -281,15 +306,15 @@ angular.module("RIF")
 								$scope.gridOptions.columnDefs = 
 									ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis);
 								var dataColumns=Object.keys($scope.gridOptions.data[0]).length;
-								var data=ModalAreaService.refillTable(); // Force UI-grid watchers
+								$scope.gridOptions.data=ModalAreaService.refillTable(); // Force UI-grid watchers
 								if (oldColumnDefsLength != $scope.gridOptions.columnDefs.length) {
 									refreshModalTableCount++;
 									alertScope.consoleLog("[rifd-dsub-maptable.js] refreshModalTable: " +
 										refreshModalTableCount +
 										"; data columns: " + dataColumns +
-										"; data rows: " + data.length +
+										"; data rows: " + $scope.gridOptions.data.length +
 										"; old columns: " + oldColumnDefsLength +
-										"; columns: " + $scope.gridOptions.columnDefs.length);
+										"; new columns: " + $scope.gridOptions.columnDefs.length);
 									oldColumnDefsLength = $scope.gridOptions.columnDefs.length;
 									$scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);	
 									$scope.gridApi.core.queueGridRefresh();
@@ -1683,12 +1708,14 @@ angular.module("RIF")
 							else if (stratifyTo) {
 								$scope.stratificationChange(stratifyTo);
 							}
-							for (var i=1; i<$scope.geoLevels.length; i++) {
-								if (i>2) {
-									break;
-								}
-								else if ($scope.input.studyResolution == $scope.geoLevels[i]) {
+							for (var i=0; i<$scope.geoLevels.length; i++) {
+								if ($scope.input.studyResolution == $scope.geoLevels[i]) {
 									break; // Stop before resolution geolevel
+								}
+								else if (i == 0) { // Do nothing
+								}
+								else if (i > 2) { // Limit to 2 geolevels
+									break;
 								}
 								else {
 									stratificationList.push({
