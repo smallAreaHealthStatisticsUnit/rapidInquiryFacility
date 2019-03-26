@@ -148,6 +148,8 @@ def main():
             db_created = True
 
         if db_created:
+            ensure_tomcat_directories_exist(settings)
+            
             # Deploy WAR files
             for f in get_war_files(settings):
                 shutil.copy(f, settings.cat_home / "webapps")
@@ -403,11 +405,24 @@ def get_war_files(settings):
     return war_files
 
 
+def ensure_tomcat_directories_exist(settings):
+    """
+    We create the Tomcat subdirectories if they're not there. This shouldn't
+    normally happen, but if the user has specified a directory that isn't
+    actually Tomcat's home, and it or its subdirectories don't exist, then it's
+    better to just create what they've asked for than to fail with a "File
+    not found" error.
+    """
+    props_dir = Path(settings.cat_home / "conf")
+    props_dir.mkdir(parents=True, exist_ok=True)
+    webapps_dir = settings.cat_home / "webapps"
+    webapps_dir.mkdir(parents=True, exist_ok=True)
+
+
 def create_properties_file(settings):
     """Create the RIF startup properties file."""
 
-    props_file = Path(settings.cat_home / "conf" /
-                      "RIFServiceStartupProperties.properties")
+    props_file = settings.cat_home / "conf" / "RIFServiceStartupProperties.properties"
 
     # Get the settings from the appropriate sections of the ini file.
     short_db = short_db_name(settings.db_type)
