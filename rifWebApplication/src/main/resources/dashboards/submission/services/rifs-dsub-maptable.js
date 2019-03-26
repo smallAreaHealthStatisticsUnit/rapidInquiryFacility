@@ -105,6 +105,23 @@ angular.module("RIF")
 							}
                             return rowCollection;
                         },
+                        refillTable: function () { // Force UI-grid watchers
+                            var nRowCollection=[];
+							var keyList=undefined;
+							if (rowCollection[0]) {
+								keyList=Object.keys(rowCollection[0]);
+								for (var i = 0; i < rowCollection.length; i++) {
+									var obj = {
+										label: rowCollection[i].name
+									};
+									for (var j = 0; j < keyList.length; j++) {
+										obj[keyList[j]] = rowCollection[i][keyList[j]];
+									}
+									nRowCollection.push(obj);
+								}
+							}
+                            return nRowCollection;
+						},
                         //set up table
                         getAreaTableOptions: function (minRowsToShow, headerRowHeight) {
                             if (minRowsToShow > 5) {
