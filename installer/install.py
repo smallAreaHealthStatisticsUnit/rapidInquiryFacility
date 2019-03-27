@@ -42,7 +42,8 @@ prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
                   DB_TYPE: "Database type (pg or ms for PostgreSQL or MS "
                            "SQL Server)",
                   SCRIPT_HOME: "Directory for SQL scripts",
-                  TOMCAT_HOME: "Home directory for Tomcat",
+                  TOMCAT_HOME: "Tomcat's home directory (leave blank to "
+                               "use CATALINA_HOME)",
                   WAR_FILES_LOCATION: "Directory containing the WAR files",
                   EXTRACT_DIRECTORY: "Please specify a directory where files "
                                      "extracted by studies should be created",
@@ -126,7 +127,6 @@ def main():
                                                             parent))
 
             process = subprocess.run(script.split(), cwd=parent,
-                                     # capture_output=True,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT,
                                      text=True)
@@ -410,12 +410,11 @@ def get_war_files(settings):
 
 
 def ensure_tomcat_directories_exist(settings):
-    """
-    We create the Tomcat subdirectories if they're not there. This shouldn't
-    normally happen, but if the user has specified a directory that isn't
-    actually Tomcat's home, and it or its subdirectories don't exist, then it's
-    better to just create what they've asked for than to fail with a "File
-    not found" error.
+    """We create the Tomcat subdirectories if they're not there. This shouldn't
+       normally happen, but if the user has specified a directory that isn't
+       actually Tomcat's home, and it or its subdirectories don't exist,
+       then it's better to just create what they've asked for than to fail
+       with a "File not found" error.
     """
     props_dir = Path(settings.cat_home / "conf")
     props_dir.mkdir(parents=True, exist_ok=True)
@@ -426,7 +425,8 @@ def ensure_tomcat_directories_exist(settings):
 def create_properties_file(settings):
     """Create the RIF startup properties file."""
 
-    props_file = settings.cat_home / "conf" / "RIFServiceStartupProperties.properties"
+    props_file = (settings.cat_home / "conf" /
+                  "RIFServiceStartupProperties.properties")
 
     # Get the settings from the appropriate sections of the ini file.
     short_db = short_db_name(settings.db_type)
