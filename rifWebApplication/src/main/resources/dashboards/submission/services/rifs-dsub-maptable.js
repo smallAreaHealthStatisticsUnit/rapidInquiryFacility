@@ -163,7 +163,8 @@ angular.module("RIF")
 									}
 								}
 								AlertService.consoleDebug("[rifs-dsub-maptable.js] setAllStratification() " + 
-									count + "/" + rowCollection.length);
+									count + "/" + rowCollection.length + 
+									"; nStratification: " + JSON.stringify(nStratification, null, 1));
 							}
 							return rowCollection;
 						},
@@ -175,17 +176,20 @@ angular.module("RIF")
 							 * "description": "Stratification by geolevel: SAHSU_GRD_LEVEL3"
 							 */
 							var count=0;
-							for (var i = 0; i < rowCollection.length; i++) {
-								if (nStratification.stratificationType == "GEOLEVEL" && 
-								    rowCollection[i][nStratification.name.toLowerCase()] &&
-									rowCollection[i].area_id == areaID) {
-									rowCollection[i].stratification=
-										rowCollection[i][nStratification.name.toLowerCase()];
-									count++;
+							if (nStratification && areaID && rowCollection && rowCollection.length > 0) {
+								for (var i = 0; i < rowCollection.length; i++) {
+									if (nStratification.stratificationType == "GEOLEVEL" && 
+										rowCollection[i][nStratification.name.toLowerCase()] &&
+										rowCollection[i].area_id == areaID) {
+										rowCollection[i].stratification=
+											rowCollection[i][nStratification.name.toLowerCase()];
+										count++;
+									}
 								}
+								AlertService.consoleDebug("[rifs-dsub-maptable.js] setStratification(" + 
+									areaID + ") " + count + "/" + rowCollection.length + 
+									"; nStratification: " + JSON.stringify(nStratification, null, 1));
 							}
-							AlertService.consoleDebug("[rifs-dsub-maptable.js] setStratification(" + 
-								areaID + ") " + count + "/" + rowCollection.length);
 							return rowCollection;
 						}
                     };

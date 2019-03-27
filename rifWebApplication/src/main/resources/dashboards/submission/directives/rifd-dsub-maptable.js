@@ -80,6 +80,7 @@ angular.module("RIF")
 							$scope.stratificationList || [stratificationNone]);            
 						if ($scope.input.type == "Risk Analysis") {
                             $scope.isRiskAnalysis=true;   
+							$scope.input.stratifyTo=SubmissionStateService.getState().stratifyTo;
                             $scope.input.stratifyTo = angular.copy($scope.input.stratifyTo || stratificationNone);
                         }
                         $scope.stratifyTo =  angular.copy($scope.stratifyTo || $scope.input.stratifyTo || stratificationNone);
@@ -165,10 +166,16 @@ angular.module("RIF")
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
 						
+						/* 
+						 * Function: 	stratifyToCopy()
+						 * Parameter: 	New $scope.input.stratifyTo
+						 * Description: Copy object by values, removing $$hashKey so that Angular watchers 
+						 *  			think it is new data
+						 */
 						function stratifyToCopy(nStratifyTo) { 
 							// Strip off $$hashKey so Angular thinks it is new data
 							var obj={};
-							if (nStratifyTo) {
+							if (nStratifyTo && typeof nStratifyTo == "object") {
 								keyList=Object.keys(nStratifyTo);
 								for (var j = 0; j < keyList.length; j++) {
 									if (keyList[j] != "$$hashKey") {
@@ -179,22 +186,35 @@ angular.module("RIF")
 							return obj;
 						}
 						
+						/* 
+						 * Function: 	getStratificationListItem()
+						 * Parameter: 	New $scope.input.stratifyTo
+						 * Description: Get item from list item pertaining to nStratifyTo for stratification 
+						 *				change function. 
+						 */
 						function getStratificationListItem(nStratifyTo) {
 							var obj={};
 							if ($scope.stratificationList) {
 								for (var i=0; i<$scope.stratificationList.length; i++) {
-									if ($scope.stratificationList[i].name = nStratifyTo.name) {
+									if ($scope.stratificationList[i].name == nStratifyTo.name) {
 										obj=$scope.stratificationList[i];
 									}
 								}
 							}
-							return obj;
+							return (obj || stratificationNone);
 						}
 						
+						/* 
+						 * Function: 	stratificationChange()
+						 * Parameter: 	$scope.input.stratifyTo
+						 * Description: Stratification change function. Handles map redraw funnies 
+						 *				($scope.input.stratifyTo being set to undefined) by saving value
+						 */
 						$scope.stratificationChange = function(nStratification) {
 							if (nStratification == undefined) { 
-								// $scope.input.stratification is being reset by redraw map?
+								// $scope.input.stratification is being reset by redraw map
 								if ($scope.input.stratifyTo == undefined && $scope.stratifyTo) {
+									// Used saved
 									$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] DEFAULT stratificationChange: " + 
 										JSON.stringify($scope.input.stratifyTo, null, 1) +
@@ -203,35 +223,121 @@ angular.module("RIF")
 										"; $scope.stratificationList: " + 
 										JSON.stringify($scope.stratificationList, null, 1));
 								}
-								else {
+								else { // Set to none
+									$scope.input.stratifyTo = stratificationNone;
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] NULL stratificationChange: " + 
 										JSON.stringify($scope.input.stratifyTo, null, 1) +
 										"; $scope.stratificationList: " + 
-										JSON.stringify($scope.stratificationList, null, 1));		
+										JSON.stringify($scope.stratificationList, null, 1));
+									ModalAreaService.setAllStratification($scope.input.stratifyTo);		
 								}									
 							}
 							else if ($scope.input.stratifyTo && $scope.input.stratifyTo.name &&
 							    nStratification && nStratification.name &&
-								$scope.input.stratifyTo.name == nStratification.name) {
+								$scope.input.stratifyTo.name == nStratification.name) { // No change
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] No stratificationChange: " + 
 									JSON.stringify($scope.input.stratifyTo, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
-								$scope.stratifyTo = stratifyToCopy(nStratification);
 							}
 							else if ($scope.input.stratifyTo && $scope.input.stratifyTo.name &&
 							    nStratification && nStratification.name &&
-								$scope.input.stratifyTo.name != nStratification.name) {
+								$scope.input.stratifyTo.name != nStratification.name) { // Change
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] stratificationChange from: " + 
 									JSON.stringify($scope.input.stratifyTo, null, 1) + 
 									" to: " + JSON.stringify(nStratification, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
 								$scope.input.stratifyTo = stratifyToCopy(nStratification);
-								$scope.stratifyTo = stratifyToCopy(nStratification);
 								ModalAreaService.setAllStratification($scope.input.stratifyTo);
 							}
+							else { // No longer valid
+								$scope.input.stratifyTo = stratificationNone;
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] no longer valid stratificationChange from: " + 
+									JSON.stringify($scope.input.stratifyTo, null, 1) + 
+									" to: " + JSON.stringify(nStratification, null, 1) +
+									"; $scope.stratificationList: " + 
+									JSON.stringify($scope.stratificationList, null, 1));
+								ModalAreaService.setAllStratification($scope.input.stratifyTo);
+							}
+							$scope.stratifyTo = stratifyToCopy($scope.input.stratifyTo); // Save
 						}
+						
+						/* 
+						 * Function: 	getStratificationListItembyName()
+						 * Parameter: 	stratification field (from shapefile)
+						 * Description: Get item from list item pertaining to stratificationField for stratification 
+						 *				change function. 
+						 */
+						function getStratificationListItembyName(stratificationField) {
+							var obj={};
+							if ($scope.stratificationList && stratificationField) {
+								for (var i=0; i<$scope.stratificationList.length; i++) {
+									if ($scope.stratificationList[i].name == stratificationField) {
+										obj=$scope.stratificationList[i];
+									}
+								}
+							}
+							return (obj);
+						}
+						
+						/* 
+						 * Function: 	setupStratificationList()
+						 * Parameter: 	$scope.input.stratifyTo
+						 * Description: Setup stratification list. Change to nStratifyTo if set
+						 */
+						function setupStratificationList(nStratifyTo) {
+							var stratificationList=[];
+							var shapefileStratificationItem={
+								name: $scope.stratificationField,
+								stratificationType: "SHAPEFILE_FIELD", 
+								description: "Stratification by shapefile field: " + $scope.stratificationField
+							};
+								
+							stratificationList.push(stratificationNone);
+							stratificationList.push({ 
+								name: "MULTIPOLYGON", 
+								stratificationType: "MULTIPOLYGON",
+								description: "Stratification by multiple polygons"});
+							if ($scope.stratificationField && 
+							    $scope.stratificationField != "NONE") { // Set by shapefile load
+								stratificationList.push(shapefileStratificationItem);
+							}
+							for (var i=0; i<$scope.geoLevels.length; i++) {
+								if ($scope.input.studyResolution == $scope.geoLevels[i] ||
+								    $scope.input.selectAt == $scope.geoLevels[i]) {
+									break; // Stop before resolution geolevel
+								}
+								else if (i == 0) { // Do nothing
+								}
+								else if (i > 2) { // Limit to 2 geolevels
+									break;
+								}
+								else {
+									stratificationList.push({
+										name: $scope.geoLevels[i],
+										stratificationType: "GEOLEVEL",
+										description: "Stratification by geolevel(" + i + "): " + 
+											($scope.geoLevelDescriptions[i] ? $scope.geoLevelDescriptions[i] : $scope.geoLevels[i])
+									});
+								}
+							}
+							alertScope.consoleDebug("[rifd-dsub-maptable.js] rebuild stratificationList: " +
+								JSON.stringify(stratificationList, null, 1));
+								
+/*							if ($scope.stratificationField && 
+								$scope.stratificationField != "NONE" &&
+								(nStratifyTo == undefined || nStratifyTo.name == "NONE")) {
+								$scope.input.stratifyTo=getStratificationListItem(shapefileStratificationItem);
+//								$timeout(function() {
+									$scope.stratificationChange($scope.input.stratifyTo);
+//								}, 200);
+							}
+							else */ if (nStratifyTo) {
+								$scope.stratificationChange(nStratifyTo);
+							}
+							return stratificationList;										
+						}	
 						
 						/* Function: 	setStudyType()
 						 * Description: Reset study state to $scope.input.type
@@ -253,7 +359,8 @@ angular.module("RIF")
 															
 								SubmissionStateService.getState().studyType = $scope.input.type;
 								StudyAreaStateService.getState().setType($scope.input.type);		
-								CompAreaStateService.getState().type = $scope.input.type;		
+								CompAreaStateService.getState().type = $scope.input.type;			
+								SubmissionStateService.getState().stratifyTo = $scope.input.stratifyTo;		
 								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(RA): " + 
 									SubmissionStateService.getState().studyType);	
         
@@ -1688,48 +1795,7 @@ angular.module("RIF")
 								}
                                 
 							});
-						} // End of addSelectedShapes()
-
-						function setupStratificationList(stratifyTo) {
-							var stratificationList=[];
-							stratificationList.push(stratificationNone);
-							stratificationList.push({ 
-								name: "MULTIPOLYGON", 
-								stratificationType: "MULTIPOLYGON",
-								description: "Stratification by multiple polygons"});
-							if ($scope.stratificationField && $scope.stratificationField != "NONE") {
-								var stratificationItem={
-									name: $scope.stratificationField,
-									stratificationType: "SHAPEFILE_FIELD", 
-									description: "Stratification by shapefile field: " + $scope.stratificationField
-								};
-								stratificationList.push(stratificationItem);
-							}
-							else if (stratifyTo) {
-								$scope.stratificationChange(stratifyTo);
-							}
-							for (var i=0; i<$scope.geoLevels.length; i++) {
-								if ($scope.input.studyResolution == $scope.geoLevels[i]) {
-									break; // Stop before resolution geolevel
-								}
-								else if (i == 0) { // Do nothing
-								}
-								else if (i > 2) { // Limit to 2 geolevels
-									break;
-								}
-								else {
-									stratificationList.push({
-										name: $scope.geoLevels[i],
-										stratificationType: "GEOLEVEL",
-										description: "Stratification by geolevel(" + i + "): " + 
-											($scope.geoLevelDescriptions[i] ? $scope.geoLevelDescriptions[i] : $scope.geoLevels[i])
-									});
-								}
-							}
-							alertScope.consoleDebug("[rifd-dsub-maptable.js] stratificationList: " +
-								JSON.stringify(stratificationList, null, 1));
-							return stratificationList;										
-						}									
+						} // End of addSelectedShapes()								
 						
 						function addCentroidsToMap() {
 
@@ -1850,9 +1916,13 @@ angular.module("RIF")
                             for (var i = 0; i < res.data[0].names.length; i++) {
                                 $scope.geoLevelsViews.push(res.data[0].names[i]);
                             }
+							$scope.stratificationList=setupStratificationList($scope.input.stratifyTo);
+							$scope.stratificationChange($scope.input.stratifyTo);
+							
                             //if not in list then match (because result res cannot be lower than select res)
                             if ($scope.geoLevelsViews.indexOf($scope.input.studyResolution) === -1) {
-                                $scope.input.studyResolution = $scope.input.selectAt;
+								$scope.input.studyResolution = $scope.input.selectAt;
+								
                             }
                             // Setup map content and tables
 							try {
@@ -2280,6 +2350,17 @@ angular.module("RIF")
                                 
 								if (savedShapes.length > 0) {
                                     $scope.stratificationList=setupStratificationList($scope.input.stratifyTo);
+									if ($scope.stratificationField && 
+										$scope.stratificationField != "NONE" &&
+										$scope.input.stratifyTo &&
+										$scope.input.stratifyTo.name == "NONE") {
+										nStratifyTo=getStratificationListItembyName($scope.stratificationField);
+										if (nStratifyTo) {
+											$scope.input.stratifyTo=nStratifyTo;
+											$scope.digest();
+											$scope.stratificationChange(nStratifyTo);
+										}
+									}
                                 }
                                 else {
                                     $scope.stratificationList=["NONE"];
