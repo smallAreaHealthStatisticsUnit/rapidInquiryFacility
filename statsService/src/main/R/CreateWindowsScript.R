@@ -27,7 +27,7 @@ createWindowsScript <- function(script_name) {
 			paste0("SET STUDYNAME=", studyName),
 			paste0("SET INVESTIGATIONID=", investigationId),
 			paste0("SET MODEL=", model),
-			paste0("SET COVARIATENAME=", paste0(names.adj)),
+			paste0("SET COVARIATENAME=", paste0(names.adj.1)),
 			paste0("SET SCRIPT_NAME=", paste0(script_name)),
 			paste0("SET RISKANAL=", paste0(riskAnal)),
 			sep="\n");
