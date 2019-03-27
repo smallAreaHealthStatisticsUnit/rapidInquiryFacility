@@ -240,6 +240,8 @@ angular.module("RIF")
 						}
 						
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload health themes: " + 
+                            (e.stack||"(no stack)"));
                         return "Could not upload health themes: " + (e.message||"(no message)");
                     }
                 }
@@ -285,6 +287,8 @@ angular.module("RIF")
 							return true;
 						}
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload and check geography: " + 
+                            (e.stack||"(no stack)"));
                         return "Could not upload and check geography: " + (e.message||"(no message)");
                     }
                 }
@@ -341,6 +345,8 @@ angular.module("RIF")
 						}
 		
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload and check numerator denominator pair: " + 
+                            (e.stack||"(no stack)"));
                         return "Could not upload and check numerator denominator pair: " + (e.message||"(no message)");
                     }
                 }
@@ -399,6 +405,8 @@ angular.module("RIF")
 						}
 						return statErr;	
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload and check statistical methods: " + 
+                            (e.stack||"(no stack)"));
                         return "Could not upload and check statistical methods: " + (e.message||"(no message)");
                     }
                 }
@@ -427,6 +435,8 @@ angular.module("RIF")
 						}
 						return projectErr;	
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload and check projects: " + 
+                            (e.stack||"(no stack)"));
                         return "Could not upload and check projects: " + (e.message||"(no message)");
                     }
                 }
@@ -461,19 +471,25 @@ angular.module("RIF")
 						tmpSex = inv[0].sex;
 						var cv = [];
 						var ad = [];
+                        var covariateErrorCount=0;
+                        var totalCovariates=0;
+                        
 						if (!angular.isUndefined(inv[0].covariates)) {
-                            var covariateErrorCount=0;
+                            totalCovariates+=inv[0].covariates.length;
                             for (var i=0; i<inv[0].covariates.length; i++) {
-                                if (inv[0].covariates[i].adjustable_covariate) {
-                                    if (inv[0].covariates[i].adjustable_covariate.covariate_type == "INTEGER_SCORE") {
+                                if (inv[0].covariates[i].adjustable_covariate || inv[0].covariates[i].additional_covariate) {
+                                    if (inv[0].covariates[i].adjustable_covariate && 
+                                        inv[0].covariates[i].adjustable_covariate.covariate_type == "INTEGER_SCORE") {
                                         cv.push(inv[0].covariates[i].adjustable_covariate.name);
                                     }
-                                    else if (inv[0].covariates[i].adjustable_covariate.covariate_type == "adjustable") {
-                                        inv[0].covariates[i].adjustable_covariate.covariate_type = "INTEGER_SCORE"; // Fix
+                                    else if (inv[0].covariates[i].adjustable_covariate && 
+                                             inv[0].covariates[i].adjustable_covariate.covariate_type == "adjustable") {
+                                             inv[0].covariates[i].adjustable_covariate.covariate_type = "INTEGER_SCORE"; // Fix
                                         cv.push(inv[0].covariates[i].adjustable_covariate.name);
                                     }
-                                    else if (inv[0].covariates[i].adjustable_covariate.covariate_type == "additional" ||
-                                             inv[0].covariates[i].adjustable_covariate.covariate_type == "CONTINUOUS_VARIABLE") {
+                                    else if (inv[0].covariates[i].adjustable_covariate && 
+                                             (inv[0].covariates[i].adjustable_covariate.covariate_type == "additional" ||
+                                              inv[0].covariates[i].adjustable_covariate.covariate_type == "CONTINUOUS_VARIABLE")) {
                                         AlertService.consoleError(
                                             "[rifc-dsub-fromfile.js] " + 
                                             inv[0].covariates[i].adjustable_covariate.covariate_type + 
@@ -481,65 +497,117 @@ angular.module("RIF")
                                             i + "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
                                         covariateErrorCount++;
                                     }
-                                    else {
-                                        AlertService.consoleError(
-                                            "[rifc-dsub-fromfile.js] unknown covariate type: " + 
-                                            inv[0].covariates[i].adjustable_covariate.covariate_type + 
-                                            " found where adjustable expected for record: " +
-                                            i + "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
-                                        covariateErrorCount++;
-                                    }
-                                }
-                                else if (inv[0].covariates[i].additional_covariate) {
-                                    if (inv[0].covariates[i].additional_covariate.covariate_type == "INTEGER_SCORE") {
-                                        cv.push(inv[0].covariates[i].additional_covariate.name);
-                                    }
-                                    else if (inv[0].covariates[i].additional_covariate.covariate_type == "adjustable") {
-                                        inv[0].covariates[i].additional_covariate.covariate_type = "INTEGER_SCORE"; // Fix
-                                        cv.push(inv[0].covariates[i].additional_covariate.name);
-                                    }
-                                    else if (inv[0].covariates[i].additional_covariate.covariate_type == "CONTINUOUS_VARIABLE") {
+                                    // Be flexible - yes I know this is wrong!
+                                    else if (inv[0].covariates[i].additional_covariate && 
+                                             inv[0].covariates[i].additional_covariate.covariate_type == "INTEGER_SCORE") {
                                         ad.push(inv[0].covariates[i].additional_covariate.name);
                                     }
-                                    else if (inv[0].covariates[i].additional_covariate.covariate_type == "additional") {
+                                    else if (inv[0].covariates[i].additional_covariate && 
+                                             inv[0].covariates[i].additional_covariate.covariate_type == "adjustable") {
+                                        inv[0].covariates[i].additional_covariate.covariate_type = "INTEGER_SCORE"; // Fix
+                                        ad.push(inv[0].covariates[i].additional_covariate.name);
+                                    }
+                                    else if (inv[0].covariates[i].additional_covariate && 
+                                             inv[0].covariates[i].additional_covariate.covariate_type == "CONTINUOUS_VARIABLE") {
+                                        ad.push(inv[0].covariates[i].additional_covariate.name);
+                                    }
+                                    else if (inv[0].covariates[i].additional_covariate && 
+                                             inv[0].covariates[i].additional_covariate.covariate_type == "additional") {
                                         inv[0].covariates[i].additional_covariate.covariate_type = "CONTINUOUS_VARIABLE"; // Fix
                                         ad.push(inv[0].covariates[i].additional_covariate.name);
                                     }
                                     else {
+                                        AlertService.showError("Unknown covariate type: " + 
+                                            ((inv[0].covariates[i].adjustable_covariate && 
+                                              inv[0].covariates[i].adjustable_covariate.covariate_type) ||
+                                             (inv[0].covariates[i].additional_covariate &&
+                                              inv[0].covariates[i].additional_covariate.covariate_type)));
                                         AlertService.consoleError(
                                             "[rifc-dsub-fromfile.js] unknown covariate type: " + 
-                                            inv[0].covariates[i].additional_covariate.covariate_type + 
-                                            " found for record: " +
-                                            i + "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
+                                            ((inv[0].covariates[i].adjustable_covariate && 
+                                              inv[0].covariates[i].adjustable_covariate.covariate_type) ||
+                                             (inv[0].covariates[i].additional_covariate &&
+                                              inv[0].covariates[i].additional_covariate.covariate_type)) + 
+                                            " found where adjustable expected for record: " + i + 
+                                            "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
                                         covariateErrorCount++;
                                     }
                                 }
-                                else {
-                                    AlertService.consoleError("[rifc-dsub-fromfile.js] adjustable_covariate/additional_covariate not found for record: " +
-                                        i + "; inv[0].covariates[i]: " + JSON.stringify(inv[0].covariates[i], 0, 1));
+                            }
+                        }
+						if (!angular.isUndefined(inv[0].additionals)) {
+                            totalCovariates+=inv[0].additionals.length;
+                            for (var i=0; i<inv[0].additionals.length; i++) {
+                                if (inv[0].additionals[i].additional_covariate) {
+                                    if (inv[0].additionals[i].additional_covariate.covariate_type == "INTEGER_SCORE") {
+                                        ad.push(inv[0].additionals[i].additional_covariate.name);
+                                    }
+                                    else if (inv[0].additionals[i].additional_covariate.covariate_type == "adjustable") {
+                                        inv[0].additionals[i].additional_covariate.covariate_type = "INTEGER_SCORE"; // Fix
+                                        ad.push(inv[0].additionals[i].additional_covariate.name);
+                                    }
+                                    else if (inv[0].additionals[i].additional_covariate.covariate_type == "CONTINUOUS_VARIABLE") {
+                                        ad.push(inv[0].additionals[i].additional_covariate.name);
+                                    }
+                                    else if (inv[0].additionals[i].additional_covariate.covariate_type == "additional") {
+                                        inv[0].additionals[i].additional_covariate.covariate_type = "CONTINUOUS_VARIABLE"; // Fix
+                                        ad.push(inv[0].additionals[i].additional_covariate.name);
+                                    }
+                                    else {
+                                        AlertService.showError("Unknown covariate type: " + 
+                                            inv[0].additionals[i].additional_covariate.covariate_type);
+                                        AlertService.consoleError(
+                                            "[rifc-dsub-fromfile.js] unknown covariate type: " + 
+                                            inv[0].additionals[i].additional_covariate.covariate_type + 
+                                            " found for record: " +
+                                            i + "; inv[0].additionals[i]: " + JSON.stringify(inv[0].additionals[i], 0, 1));
+                                        covariateErrorCount++;
+                                    }
+                                } 
+                            } // End of for loop
+                        }
+                        
+                        // Checks
+                        if (totalCovariates != (cv.length + ad.length)) {
+                            AlertService.showError("Not all covariates found: " +
+                                totalCovariates + " != " + (cv.length + ad.length));
+                            AlertService.consoleError("[rifc-dsub-fromfile.js] not all covariates found: " +
+                                totalCovariates + " != " + (cv.length + ad.length) +
+                                "; cv: " + 
+                                JSON.stringify(cv, 0, 1) + 
+                                "; ad: " + 
+                                JSON.stringify(ad, 0, 1) + 
+                                "; covariates: " + 
+                                JSON.stringify(inv[0].covariates, 0, 1) + 
+                                "; additional covariates lists: " + 
+                                JSON.stringify(inv[0].additionals, 0, 1));
+                            covariateErrorCount++;
+                        }
+                        for (var i=0; i<cv.length; i++) {
+                            for (var j=0; j<ad.length; j++) {
+                                if (cv[i] == ad[j]) {
+                                    AlertService.showError("Covariate: " +
+                                        cv[i] + " appears in both covariates and additional covariates lists");
+                                    AlertService.consoleError("[rifc-dsub-fromfile.js] covariate: " +
+                                        cv[i] + " appears in both covariates: " + 
+                                        JSON.stringify(inv[0].covariates, 0, 1)+ 
+                                        " and additional covariates lists: " + 
+                                        JSON.stringify(inv[0].additionals, 0, 1));
                                     covariateErrorCount++;
                                 }
-                            } // End of for loop
-                            
-                            for (var i=0; i<cv.length; i++) {
-                                for (var j=0; j<ad.length; j++) {
-                                    if (cv[i] == ad[j]) {
-                                        AlertService.consoleError("[rifc-dsub-fromfile.js] covariate: " +
-                                            cv[i] + " appears in both covariates and additionals lists " + 
-                                            JSON.stringify(inv[0].covariates, 0, 1));
-                                        covariateErrorCount++;
-                                    }
-                                }
                             }
-                            if (covariateErrorCount > 0) {
-                                throw new Error(covariateErrorCount + " error(s) occurred processing " + 
-                                    inv[0].covariates.length + " covariates");
-                            }
-						}
+                        }
+                        
+                        if (covariateErrorCount > 0) { // Error trap
+                            throw new Error(covariateErrorCount + " error(s) occurred processing " + 
+                                totalCovariates + " covariates");
+                        }
 						tmpCovariates = cv;
 						tmpAdditionals = ad;
 						return true;	
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload and check investigations: " + 
+                            (e.stack||"(no stack)"));
                         return "Could not upload and check investigations: " + (e.message||"(no message)");
                     }
                 }
@@ -569,6 +637,8 @@ angular.module("RIF")
 							return true;
 						}	
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload and check ages: " + 
+                            (e.stack||"(no stack)"));
                         return "Could not upload and check ages: " + (e.message||"(no message)");
                     }
                 }
@@ -603,6 +673,8 @@ angular.module("RIF")
 							return true;
 						}	
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload and check covariates: " + 
+                            (e.stack||"(no stack)"));
                         return "Could not upload and check covariates: " + (e.message||"(no message)");
                     }
                 }
@@ -630,7 +702,9 @@ angular.module("RIF")
 							return true; // Optional for backward compatibility
 						}				
                     } catch (e) {
-						$scope.consoleDebug("[rifc-dsub-fromfile.js] SelectStateService.getState(): " + 
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not upload health themes: " + 
+                            (e.stack||"(no stack)"));
+						AlertService.consoleDebug("[rifc-dsub-fromfile.js] SelectStateService.getState(): " + 
 							JSON.stringify(SelectStateService.getState(), null, 1));
                         return "Could not upload and check study selection: " + (e.message||"(no message)");
                     }
@@ -776,6 +850,8 @@ angular.module("RIF")
 						}							
 
                     } catch (e) {
+                        AlertService.consoleError("[rifc-dsub-fromfile.js] Could not set study state: " + 
+                            (e.stack||"(no stack)"));
                         $scope.showError("Could not set study state: " + (e.message||"(no message)"));
 						return false;
                     }

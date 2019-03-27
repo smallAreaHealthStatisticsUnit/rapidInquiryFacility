@@ -161,25 +161,16 @@ angular.module("RIF")
                                         if (s.possibleCovariates[i].name === s.additionals[k] &&
                                             s.possibleCovariates[i].name != "NONE") {
 
-                                            if (s.possibleCovariates[i].covariate_type == "CONTINUOUS_VARIABLE") {
-                                                thisInv.additionals.push(
-                                                    {
-                                                        "additional_covariate": {
-                                                            "name": s.possibleCovariates[i].name,
-                                                            "minimum_value": s.possibleCovariates[i].minimum_value,
-                                                            "maximum_value": s.possibleCovariates[i].maximum_value,
-                                                            "covariate_type": s.possibleCovariates[i].covariate_type,
-                                                            "description": s.possibleCovariates[i].description
-                                                        }
-                                                    });
-                                            }
-                                            else {
-                                                AlertService.showError(
-                                                    "[rifs-dsub-paramstate.js] Invalid additional covariate: " +
-                                                    s.possibleCovariates[i].name +
-                                                    "; covariate type of: " + s.possibleCovariates[i].covariate_type);
-                                                s.errors++;
-                                            }
+                                            thisInv.additionals.push(
+                                                {
+                                                    "additional_covariate": {
+                                                        "name": s.possibleCovariates[i].name,
+                                                        "minimum_value": s.possibleCovariates[i].minimum_value,
+                                                        "maximum_value": s.possibleCovariates[i].maximum_value,
+                                                        "covariate_type": s.possibleCovariates[i].covariate_type,
+                                                        "description": s.possibleCovariates[i].description
+                                                    }
+                                                });
                                         }
                                     }
 

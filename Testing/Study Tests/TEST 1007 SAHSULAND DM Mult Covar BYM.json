@@ -1,0 +1,306 @@
+{
+  "rif_job_submission": {
+    "submitted_by": "peter",
+    "job_submission_date": "3/25/2019 8:04:09 AM",
+    "project": {
+      "name": "",
+      "description": ""
+    },
+    "calculation_methods": {
+      "calculation_method": {
+        "name": "bym_r_procedure",
+        "code_routine_name": "bym_r_procedure",
+        "description": "Besag, York and Mollie (BYM) model type",
+        "parameters": {
+          "parameter": []
+        }
+      }
+    },
+    "rif_output_options": {
+      "rif_output_option": [
+        "Data",
+        "Maps",
+        "Ratios and Rates"
+      ]
+    },
+    "study_selection": {
+      "studySelectedAreas": [
+        {
+          "id": "01",
+          "gid": 1,
+          "label": "01",
+          "band": 1
+        }
+      ],
+      "studyShapes": [],
+      "comparisonSelectedAreas": [
+        {
+          "id": "01",
+          "gid": 1,
+          "label": "01",
+          "band": 1
+        }
+      ],
+      "fileList": [],
+      "bandAttr": [],
+      "studySelectAt": "SAHSU_GRD_LEVEL1",
+      "comparisonSelectAt": "SAHSU_GRD_LEVEL1",
+      "comparisonShapes": [],
+      "studyType": "disease_mapping_study"
+    },
+    "disease_mapping_study": {
+      "name": "TEST 1007",
+      "description": "",
+      "geography": {
+        "name": "SAHSULAND",
+        "description": "SAHSULAND"
+      },
+      "investigations": {
+        "investigation": [
+          {
+            "title": "My_New_Investigation",
+            "health_theme": {
+              "name": "cancers",
+              "description": "covering various types of cancers"
+            },
+            "numerator_denominator_pair": {
+              "numerator_table_name": "NUM_SAHSULAND_CANCER",
+              "numerator_table_description": "cancer numerator",
+              "denominator_table_name": "POP_SAHSULAND_POP",
+              "denominator_table_description": "population health file"
+            },
+            "age_band": {
+              "lower_age_group": {
+                "id": 0,
+                "name": "0",
+                "lower_limit": "0",
+                "upper_limit": "0"
+              },
+              "upper_age_group": {
+                "id": 0,
+                "name": "85PLUS",
+                "lower_limit": "85",
+                "upper_limit": "255"
+              }
+            },
+            "health_codes": {
+              "health_code": [
+                {
+                  "code": "%",
+                  "name_space": "icd10",
+                  "description": "All records in health dataset",
+                  "is_top_level_term": "no"
+                }
+              ]
+            },
+            "year_range": {
+              "lower_bound": 1989,
+              "upper_bound": 2016
+            },
+            "year_intervals": {
+              "year_interval": [
+                {
+                  "start_year": "1989",
+                  "end_year": "1989"
+                },
+                {
+                  "start_year": "1990",
+                  "end_year": "1990"
+                },
+                {
+                  "start_year": "1991",
+                  "end_year": "1991"
+                },
+                {
+                  "start_year": "1992",
+                  "end_year": "1992"
+                },
+                {
+                  "start_year": "1993",
+                  "end_year": "1993"
+                },
+                {
+                  "start_year": "1994",
+                  "end_year": "1994"
+                },
+                {
+                  "start_year": "1995",
+                  "end_year": "1995"
+                },
+                {
+                  "start_year": "1996",
+                  "end_year": "1996"
+                },
+                {
+                  "start_year": "1997",
+                  "end_year": "1997"
+                },
+                {
+                  "start_year": "1998",
+                  "end_year": "1998"
+                },
+                {
+                  "start_year": "1999",
+                  "end_year": "1999"
+                },
+                {
+                  "start_year": "2000",
+                  "end_year": "2000"
+                },
+                {
+                  "start_year": "2001",
+                  "end_year": "2001"
+                },
+                {
+                  "start_year": "2002",
+                  "end_year": "2002"
+                },
+                {
+                  "start_year": "2003",
+                  "end_year": "2003"
+                },
+                {
+                  "start_year": "2004",
+                  "end_year": "2004"
+                },
+                {
+                  "start_year": "2005",
+                  "end_year": "2005"
+                },
+                {
+                  "start_year": "2006",
+                  "end_year": "2006"
+                },
+                {
+                  "start_year": "2007",
+                  "end_year": "2007"
+                },
+                {
+                  "start_year": "2008",
+                  "end_year": "2008"
+                },
+                {
+                  "start_year": "2009",
+                  "end_year": "2009"
+                },
+                {
+                  "start_year": "2010",
+                  "end_year": "2010"
+                },
+                {
+                  "start_year": "2011",
+                  "end_year": "2011"
+                },
+                {
+                  "start_year": "2012",
+                  "end_year": "2012"
+                },
+                {
+                  "start_year": "2013",
+                  "end_year": "2013"
+                },
+                {
+                  "start_year": "2014",
+                  "end_year": "2014"
+                },
+                {
+                  "start_year": "2015",
+                  "end_year": "2015"
+                },
+                {
+                  "start_year": "2016",
+                  "end_year": "2016"
+                }
+              ]
+            },
+            "years_per_interval": 1,
+            "sex": "Both",
+            "covariates": [
+              {
+                "adjustable_covariate": {
+                  "name": "SES",
+                  "minimum_value": "1.0",
+                  "maximum_value": "5.0",
+                  "covariate_type": "INTEGER_SCORE",
+                  "description": "SES (socio-economic status)"
+                }
+              }
+            ],
+            "additionals": [
+              {
+                "additional_covariate": {
+                  "name": "AREATRI1KM",
+                  "minimum_value": "0.0",
+                  "maximum_value": "1.0",
+                  "covariate_type": "INTEGER_SCORE",
+                  "description": "AREATRI1KM (area tri 1 km covariate)"
+                }
+              },
+              {
+                "additional_covariate": {
+                  "name": "NEAR_DIST",
+                  "minimum_value": "358.0",
+                  "maximum_value": "78787.0",
+                  "covariate_type": "CONTINUOUS_VARIABLE",
+                  "description": "NEAR_DIST (near distance covariate)"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "disease_mapping_study_area": {
+        "geo_levels": {
+          "geolevel_select": {
+            "name": "SAHSU_GRD_LEVEL1"
+          },
+          "geolevel_area": {
+            "name": ""
+          },
+          "geolevel_view": {
+            "name": "SAHSU_GRD_LEVEL4"
+          },
+          "geolevel_to_map": {
+            "name": "SAHSU_GRD_LEVEL4"
+          }
+        },
+        "map_areas": {
+          "map_area": [
+            {
+              "id": "01",
+              "gid": 1,
+              "label": "01",
+              "band": 1
+            }
+          ]
+        }
+      },
+      "comparison_area": {
+        "geo_levels": {
+          "geolevel_select": {
+            "name": "SAHSU_GRD_LEVEL1"
+          },
+          "geolevel_area": {
+            "name": ""
+          },
+          "geolevel_view": {
+            "name": "SAHSU_GRD_LEVEL1"
+          },
+          "geolevel_to_map": {
+            "name": "SAHSU_GRD_LEVEL1"
+          }
+        },
+        "map_areas": {
+          "map_area": [
+            {
+              "id": "01",
+              "gid": 1,
+              "label": "01",
+              "band": 1
+            }
+          ]
+        }
+      }
+    }
+  }
+}
