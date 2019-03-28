@@ -36,12 +36,19 @@
  */
 angular.module("RIF")
         .controller('ModalParametersCtrl', 
-			['$timeout', '$q', '$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user', 'StudyAreaStateService', 'AlertService',
-            function ($timeout, $q, $scope, $uibModal, SubmissionStateService, ParameterStateService, user, StudyAreaStateService, AlertService) {
+			['$timeout', '$q', '$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user', 
+                'StudyAreaStateService', 'AlertService', 'ParametersService',
+            function ($timeout, $q, $scope, $uibModal, SubmissionStateService, ParameterStateService, user, 
+                StudyAreaStateService, AlertService, ParametersService) {
 
                 $scope.tree = SubmissionStateService.getState().investigationTree;
                 $scope.animationsEnabled = true;
-
+                
+                $scope.multipleCovariatesEnabled=false;
+                if (ParametersService.isModuleEnabled('multipleCovariates')) {
+                    $scope.multipleCovariatesEnabled=true;
+                }
+                
                 /*
                  * TABLE SET UP (1)
                  * ICD code list
@@ -127,11 +134,17 @@ angular.module("RIF")
 
                 $scope.fillContents = function () {
                     thisGeography = SubmissionStateService.getState().geography;
-					if (SubmissionStateService.getState().numerator) {
-						thisNumerator = SubmissionStateService.getState().numerator;
+					if (SubmissionStateService.getState().fraction) {
+						thisNumerator = SubmissionStateService.getState().fraction.numeratorTableName;
 					}
+                    if (thisNumerator == undefined)  {
+                        AlertService.showError("[rifc-dsub-params.js] no numerator defined");
+                    }
                     thisGeoLevel = StudyAreaStateService.getState().studyResolution;
-
+                    if (thisGeoLevel == undefined)  {
+                        AlertService.showError("[rifc-dsub-params.js] no study resolution defined");
+                    }
+                    
                     //taxonomy services
                     user.getTaxonomyServiceProviders().then(handleTaxonomyServiceProviders, handleParameterError);
 
@@ -401,7 +414,21 @@ angular.module("RIF")
                 }
                 
                 function multipleCovariateChange(covariatesOrAdditionals, myTag, otherTag) {
-
+                    
+                    if (covariatesOrAdditionals.length > 1 && ParametersService.isModuleEnabled('multipleCovariates')) { 
+                        if (ParametersService.getModuleStatus('multipleCovariates') != "production") {
+                            AlertService.showWarning(ParametersService.getModuleDescription('multipleCovariates') +
+                                " support is still in " + 
+                                ParametersService.getModuleStatus('multipleCovariates'));
+                        }
+                    }
+                    else if (covariatesOrAdditionals.length > 1 && !ParametersService.isModuleEnabled('multipleCovariates')) { 
+                        AlertService.showError(ParametersService.getModuleDescription('multipleCovariates') +
+                            " support is not available");
+                        $scope[myTag].length=0;
+                        $scope.covariate[myTag].length=0;
+                    }
+                    
                     // None means NONE
                     for (var i=0; i<covariatesOrAdditionals.length; i++) {
                         if (covariatesOrAdditionals[i] == "NONE") {
@@ -460,6 +487,21 @@ angular.module("RIF")
                 };
                 function handleTextSearch(res) {
                     var myICD = [];
+                    /*
+                    
+									term_name: taxTerms[i].label,
+									identifier: taxTerms[i].identifier,
+									term_description: taxTerms[i].description,
+                                    
+ "description": "\n\t\t\tMalignant neoplasm of bronchus and lung\n\t\t",
+ "identifier": "C34-icd10",
+ "label": "C34",
+ "nameSpace": "icd10",*/
+                    myICD.push({ // Add wildcard ALL
+                            term_name: "ALL",
+                            identifier: "%-" + $scope.taxonomyScheme.toLowerCase(),
+                            term_description: "All records in health dataset",
+                            selected: 0});
 					var taxTerms;
 					if (res && res.data && res.data.terms && res.data.terms.healthCode) {
 						taxTerms = res.data.terms.healthCode;
@@ -686,7 +728,7 @@ angular.module("RIF")
                         //ParameterStateService.getState().terms
                          //if ($scope.thisICDselection.length !== 0 & 
                         
-                        if (ParameterStateService.getState().terms.length !== 0 & 
+                        if (    ParameterStateService.getState().terms.length !== 0 &  // Allow no terms
                                 ParameterStateService.getState().title !== "" &
                                 ParameterStateService.getState().start !== "" & 
                                 ParameterStateService.getState().end !== "" & 

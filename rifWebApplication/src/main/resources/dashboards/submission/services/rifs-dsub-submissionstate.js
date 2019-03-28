@@ -47,6 +47,7 @@ angular.module("RIF")
                         studyName: "", //1 input
                         healthTheme: "", //2 drop-down
                         geography: "SAHSU", //3 drop-down
+                        fraction: {},
                         numerator: "", //4 drop-down
                         denominator: "", //5 non-editable input
                         //these are in the run-study modal
@@ -93,23 +94,7 @@ angular.module("RIF")
 					 */
 					verifySubmissionState2 = function(strict) {
 						var errors=0;
-						var stringKeyList;
-						if (strict) { // Strict: study name has to exist
-							stringKeyList = ['studyName', 'geography', 'numerator', 'studyType'];
-						}
-						else {
-							stringKeyList = ['geography', 'numerator', 'studyType'];
-						}
-						var objectKeyList = ['healthTheme', 'denominator'];
-						for (var i=0; i<stringKeyList.length; i++) {
-							if (s[stringKeyList[i]] && s[stringKeyList[i]].length > 0) { // OK
-							}
-							else {
-								AlertService.rifMessage('warning', 'Submission state verification: no string key: ' + 
-									stringKeyList[i]);
-								errors++;
-							}
-						}
+						var objectKeyList = ['healthTheme', 'fraction'];
 						for (var i=0; i<objectKeyList.length; i++) {
 							if (s[objectKeyList[i]] && typeof(s[objectKeyList[i]]) == "object") { // OK
 								var stringKeyList2;
@@ -136,7 +121,28 @@ angular.module("RIF")
 								errors++;
 							}
 						}
-						
+                        
+                        if (s.fraction) {
+                            s.numerator=s.fraction.numeratorTableName;
+                            s.denominator=s.fraction.denominatorTableName;
+                        }
+						var stringKeyList;
+						if (strict) { // Strict: study name has to exist
+							stringKeyList = ['studyName', 'geography', 'numerator', 'denominator', 'studyType'];
+						}
+						else {
+							stringKeyList = ['geography', 'numerator', 'denominator', 'studyType'];
+						}
+						for (var i=0; i<stringKeyList.length; i++) {
+							if (s[stringKeyList[i]] && s[stringKeyList[i]].length > 0) { // OK
+							}
+							else {
+								AlertService.rifMessage('warning', 'Submission state verification: no string key: ' + 
+									stringKeyList[i]);
+								errors++;
+							}
+						}
+                        
 						if (s.studyTree && s.comparisonTree && s.investigationTree && s.statsTree) { // OK
 						}
 						else {

@@ -517,7 +517,7 @@ def get_pg_scripts(settings):
                           "v4_0_alter_5.sql", "v4_0_alter_7.sql",
                           "v4_0_alter_8.sql", "v4_0_alter_9.sql",
                           "v4_0_alter_10.sql", "v4_0_alter_11.sql",
-                          "v4_0_alter_12.sql"]
+                          "v4_0_alter_12.sql", "v4_0_alter_13.sql"]
 
     alter_scripts = [format_postgres_script(settings, script_template,
                                             script_root / "alter_scripts",

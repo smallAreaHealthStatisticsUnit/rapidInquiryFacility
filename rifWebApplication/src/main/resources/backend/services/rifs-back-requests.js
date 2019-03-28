@@ -128,10 +128,9 @@ angular.module("RIF")
                     //[{"name":"SAHSULAND","description":"SAHSU land cancer incidence example data"}]
                     return $http.get(servicesConfig.studySubmissionURL + 'getHealthThemes?userID=' + username + '&geographyName=' + geography, config);
                 };
-                self.getNumerator = function (username, geography, healthThemeDescription) {
-                    //http://localhost:8080/rifServices/studySubmission/getNumerator?userID=kgarwood&geographyName=SAHSU&healthThemeDescription=SAHSU%20land%20cancer%20incidence%20example%20data
-                    //[{"numeratorTableName":"SAHSULAND_CANCER","numeratorTableDescription":"Cancer cases in SAHSU land","denominatorTableName":"SAHSULAND_POP","denominatorTableDescription":"SAHSU land population"}]
-                    return $http.get(servicesConfig.studySubmissionURL + 'getNumerator?userID=' + username + '&geographyName=' + geography + "&healthThemeDescription=" + healthThemeDescription, config);
+                self.getRif40NumDenom = function (username) {
+                    //http://localhost:8080/rifServices/studySubmission/getRif40NumDenom?userID=kgarwood
+                    return $http.get(servicesConfig.studySubmissionURL + 'getRif40NumDenom?userID=' + username, config);
                 };
                 //Investigation parameters
                 self.getYearRange = function (username, geography, numeratorTableName) {

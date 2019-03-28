@@ -37,180 +37,240 @@
 angular.module("RIF")
         .controller('SumbmissionCtrl', ['$scope', 'user', '$state', 'SubmissionStateService', 
 			'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 'SelectStateService', 
+            'Rif40NumDenomService',
             function ($scope, user, $state, SubmissionStateService, 
-				StudyAreaStateService, CompAreaStateService, ParameterStateService, SelectStateService) {
+				StudyAreaStateService, CompAreaStateService, ParameterStateService, SelectStateService,
+                Rif40NumDenomService) {
                 /*
                  * STUDY, GEOGRAPHY AND FRACTION DROP-DOWNS
                  * Calls to API returns a chain of promises
                  */
-				$scope.numerator = {};
-				$scope.denominator = "";
-                $scope.geographies = [];
-				$scope.fractions = [];	
-				$scope.fraction = "";	
-				$scope.studyName = "";	
-				$scope.geography = "";		
-				$scope.healthThemes = [];
-				$scope.healthTheme = "";
+                if (!Rif40NumDenomService.checkInitialised) {
+                    $state.go('state0').then(function () {
+                        $scope.showError("Rif40NumDenomService is not initialised");
+                    });
+                }
+                else {
+                    $scope.rif40NumDenom=Rif40NumDenomService.getRif40NumDenom();
+                    $scope.fraction = {};
+                    $scope.denominator = "";
+                    $scope.geographies = [];
+                    $scope.fractions = [];	
+                    $scope.fraction = "";	
+                    $scope.studyName = "";	
+                    $scope.geography = "";		
+                    $scope.geographyDescription = "";
+                    $scope.healthThemes = [];
+                    $scope.healthTheme = ""
+                    if ($scope.rif40NumDenom && $scope.rif40NumDenom.themes && $scope.rif40NumDenom.geographies) {
+                        $scope.healthThemes = $scope.rif40NumDenom.themes; // Keys name, description
+                        var found=false;
+                        if (SubmissionStateService.getState().healthTheme &&
+                            SubmissionStateService.getState().healthTheme.name) {
 
-				//Get geographies
-				$scope.consoleDebug("[rifc-dsub-main.js] Load $scope.numerator, $scope.fractions etc from DB");
-				user.getGeographies(user.currentUser).then(
-					function (res) { handleGeographies(res); }, 
-					function (err) { handleError(err, "unable to get geographies"); }); //1ST PROMISE
-				
+                            for (var i=0; i<$scope.healthThemes.length; i++) {
+                                if ($scope.healthThemes[i].name == SubmissionStateService.getState().healthTheme.name) {
+                                    $scope.healthTheme = $scope.healthThemes[i];
+                                    found=true;
+                                }
+                            }
+                        }
+                        if (!found) {
+                            $scope.consoleDebug("[rifc-dsub-main.js] Load default $scope.fraction, $scope.fractions etc; SubmissionStateService: " +
+                                JSON.stringify(SubmissionStateService.getState(), null, 1) +
+                                "; $scope.healthThemes: " + JSON.stringify($scope.healthThemes, null, 1));
+                            $scope.healthTheme = $scope.healthThemes[0];
+                            SubmissionStateService.getState().healthTheme = $scope.healthTheme;
+                        }
+                        else {          
+                           $scope.consoleDebug("[rifc-dsub-main.js] Load $scope.fraction, $scope.fractions etc from SubmissionStateService: " +
+                                JSON.stringify(SubmissionStateService.getState(), null, 1) +
+                                "; $scope.healthThemes: " + JSON.stringify($scope.healthThemes, null, 1));
+                        }
+                        setupTheme($scope.healthTheme.description);
+                    }
+                    else {
+                        $state.go('state0').then(function () {
+                            $scope.showError("Rif40NumDenomService has no themes or geographies");
+                        });
+                    }
+                }
+            				
                 /*
                  * STUDY NAME
                  */
                 $scope.studyNameChanged = function () {
                     SubmissionStateService.getState().studyName = $scope.studyName;
                 };
-				
-                function handleGeographies(res) {
-                    $scope.geographies.length = 0;
-//					$scope.geographyDescriptions = {}; // Need to add description to array
-//					$scope.consoleDebug("[rifc-dsub-main.js] res.data[0]: " + JSON.stringify(res.data[0], null, 1));
-					
-                    for (var i = 0; i < res.data[0].names.length; i++) {
-                        $scope.geographies.push(res.data[0].names[i]);
-                    }
-                    var thisGeography = SubmissionStateService.getState().geography;
-                    if ($scope.geographies.indexOf(thisGeography) !== -1) {
-                        $scope.geography = thisGeography;
-                    } else {
-                        $scope.geography = $scope.geographies[0];
-                    }
-                    SubmissionStateService.getState().geography = $scope.geography;
-                    //Fill health themes drop-down
-                    $scope.healthThemes = [];
-                    user.getHealthThemes(user.currentUser, $scope.geography).then(
-						function (res) { handleHealthThemes(res); }, 
-						function (err) { handleError(err, "unable to get health themes"); }); //2ND PROMISE
-                }
-                $scope.geographyChange = function () {
-                    SubmissionStateService.getState().geography = $scope.geography;
-                    //reset states using geography
-                    StudyAreaStateService.resetState();
-                    CompAreaStateService.resetState();
-                    SelectStateService.resetState();
-                    ParameterStateService.resetState();
-                    SubmissionStateService.getState().comparisonTree = false;
-                    SubmissionStateService.getState().studyTree = false;
-                    SubmissionStateService.getState().investigationTree = false;
-                    SubmissionStateService.getState().numerator = "";
-                    SubmissionStateService.getState().denominator = "";
-                    $scope.resetState();
+
+                $scope.geographyChange = function (nGeography) {
+                    geographyChange(nGeography);
                 };
-
-                //Get health themes
-                function handleHealthThemes(res) {
-                    $scope.healthThemes.length = 0;
-                    for (var i = 0; i < res.data.length; i++) {
-                        $scope.healthThemes.push({name: res.data[i].name, description: res.data[i].description});
-                    }
-                    $scope.healthTheme = $scope.healthThemes[0];
-                    SubmissionStateService.getState().healthTheme = $scope.healthTheme;
-                    $scope.healthThemeChange();
-                }
-
+                
                 //Get relevant numerators and associated denominators
                 $scope.healthThemeChange = function () {
-                    if ($scope.healthTheme) {
+                    if ($scope.healthTheme && $scope.healthTheme.description) {
+                        setupTheme($scope.healthTheme.description);
                         SubmissionStateService.getState().healthTheme = $scope.healthTheme;
-                        user.getNumerator(user.currentUser, $scope.geography, $scope.healthTheme.description).then(
+/*                        user.getNumerator(user.currentUser, $scope.geography, $scope.healthTheme.description).then(
 							function (res) { handleFractions(res); }, 
 							function (err) { handleError(err, "unable to get numerator/denominator pair"); }); //3RD PROMISE
                     } else {
-                        $scope.fractions.length = 0;
+                        $scope.fractions.length = 0; */
+                    } 
+                    else {
+                        $scope.showError("Cannot get geography and numerator data for theme: " + themeDescription);
                     }
                 };
-				
-                function handleFractions(res) {
-                    $scope.fractions = []; // Zero array
-                    for (var i = 0; i < res.data.length; i++) {
-                        $scope.fractions.push(res.data[i]);
-                    }
-					
-                    if (SubmissionStateService.getState().numerator && 
-					    typeof(SubmissionStateService.getState().numerator) == "string" &&
-						SubmissionStateService.getState().numerator.length > 0) {
-                        var thisNum = SubmissionStateService.getState().numerator;
-                        for (var i = 0; i < $scope.fractions.length; i++) {
-                            if ($scope.fractions[i].numeratorTableName == thisNum) {
-								$scope.consoleDebug("[rifc-dsub-main.js] Set $scope.numerator, $scope.fractions etc from DB/SubmissionStateService: " + 
-									$scope.fractions[i].numeratorTableName);
-                                $scope.numerator = $scope.fractions[i];
-                                $scope.denominator = $scope.fractions[i].denominatorTableName;
-                            }
-                        }
+                
+                //sync the denominator
+                $scope.fractionChange = function () {
+                    if ($scope.fraction) {
+                        $scope.denominator = $scope.fraction.denominatorTableName;
                     } else {
-						$scope.consoleDebug("[rifc-dsub-main.js] Set default $scope.numerator, $scope.fractions etc from DB: " + 
-							$scope.fractions[0].numeratorTableName);
-                        $scope.numerator = $scope.fractions[0];
-                        $scope.denominator = $scope.fractions[0].denominatorTableName;
+                        $scope.denominator = "";
                     }
 					
-					// Default $scope.denominator and $scope.numerator is set in SubmissionStateService
-					if (checkNumeratorKeys($scope.numerator)) {
-//						$scope.consoleDebug("[rifc-dsub-main.js] Set SubmissionStateService.getState().numerator: " + 
-//							JSON.stringify($scope.numerator, null, 1));
-//						$scope.numerator = copyFraction($scope.numerator);  // This removes the hashkey and causes the {{numerator.numeratorTableName}}
-																			// tooltip to "disappear"
-						SubmissionStateService.getState().numerator = $scope.numerator.numeratorTableName;
-						SubmissionStateService.getState().denominator = $scope.numerator;
+					if (!compareFractions(SubmissionStateService.getState().fraction, $scope.fraction)) {
+					
+						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), reset investigation parameters, $scope.fraction: " + 
+							JSON.stringify($scope.fraction, null, 1) +
+							"; old SubmissionStateService.getState().fraction: " + 
+                            JSON.stringify(SubmissionStateService.getState().fraction, null, 1));
+						SubmissionStateService.getState().fraction = $scope.fraction;
+						//This will have an impact on investigations year range, so reset investigation parameters
+						ParameterStateService.resetState();
 					}
-/*					else if (checkNumeratorKeys(SubmissionStateService.getState().numerator)) {
-						$scope.consoleDebug("[rifc-dsub-main.js] Restore $scope.numerator from SubmissionStateService.getState().numerator: " + 
-							JSON.stringify(SubmissionStateService.getState().numerator, null, 1));
-						$scope.numerator = copyFraction(SubmissionStateService.getState().numerator);
-					} */
-					
-					if ($scope.denominator == undefined && SubmissionStateService.getState().numerator) {
-						$scope.denominator = SubmissionStateService.getState().numerator.denominatorTableName;
-					}
-					
-					
+					else {		
+						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), no change: " + JSON.stringify($scope.fraction, null, 2));
+					}	
+                };
+				
+                function geographyChange(nGeography) {
+                    if (nGeography && $scope.geography && 
+                        ($scope.geography != nGeography ||
+                         SubmissionStateService.getState().geography != nGeography)) {
+                        SubmissionStateService.getState().geography = nGeography;
+                        $scope.geographyDescription = 
+                            $scope.rif40NumDenom.geographies[$scope.healthTheme.description].geographyDescriptions[$scope.geography];
+
+                        //reset states using geography
+                        StudyAreaStateService.resetState();
+                        CompAreaStateService.resetState();
+                        SelectStateService.resetState();
+                        ParameterStateService.resetState();
+                        SubmissionStateService.getState().comparisonTree = false;
+                        SubmissionStateService.getState().studyTree = false;
+                        SubmissionStateService.getState().investigationTree = false;
+                                 
+                        $scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
+                    }
+                    else if (nGeography && $scope.geography && $scope.geography == nGeography) {
+                        $scope.consoleDebug("[rifc-dsub-main.js] no change in geography: " + 
+                            "; $scope.geography: " + $scope.geography +
+                            "; SubmissionStateService.getState().geography: " + 
+                            SubmissionStateService.getState().geography);
+                    }
+                    else {           
+                        if (nGeography) {
+                            $scope.geography=nGeography; 
+                            $scope.geographyDescription = 
+                                $scope.rif40NumDenom.geographies[$scope.healthTheme.description].geographyDescriptions[$scope.geography];
+
+                            //reset states using geography
+                            StudyAreaStateService.resetState();
+                            CompAreaStateService.resetState();
+                            SelectStateService.resetState();
+                            ParameterStateService.resetState();
+                            SubmissionStateService.getState().comparisonTree = false;
+                            SubmissionStateService.getState().studyTree = false;
+                            SubmissionStateService.getState().investigationTree = false;
+                                     
+                            $scope.consoleDebug("[rifc-dsub-main.js] DEFAULT resetState() $scope.studyName: " + $scope.studyName);
+                        }
+                    }
+                    
+                    StudyAreaStateService.getState().geography = $scope.geography;
+                    SubmissionStateService.getState().geography = $scope.geography;
+                    $scope.consoleDebug("[rifc-dsub-main.js] geography: " + $scope.geography);
+					setupNumerator($scope.geography);   
+
 					if ($scope.studyName == "" && SubmissionStateService.getState().studyName) {
 						$scope.studyName = SubmissionStateService.getState().studyName;
-					}
-					
-					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 1) +
-						"; SubmissionStateService.getState(): " + JSON.stringify(SubmissionStateService.getState(), null, 1) +
-						"; $scope.numerator: " + JSON.stringify($scope.numerator, null, 1) +
-						"; $scope.denominator: " + $scope.denominator +
-						"; $scope.studyName: " + $scope.studyName);
+					}              
                 }
-				
-				function checkNumeratorKeys(numerator) {
-					if (numerator && 
-						numerator.numeratorTableName && 
-						numerator.denominatorTableName && 
-						numerator.numeratorTableDescription && 
-						numerator.denominatorTableDescription) {
-						return true;
+                
+                function setupTheme(themeDescription) {
+                    if ($scope.rif40NumDenom && $scope.rif40NumDenom.geographies && 
+                        $scope.rif40NumDenom.geographies[themeDescription] && 
+                        $scope.rif40NumDenom.geographies[themeDescription].geographyList && 
+                        $scope.rif40NumDenom.geographies[themeDescription].geographyList.length > 0) {
+                        var theme = $scope.rif40NumDenom.geographies[themeDescription];        
+                        $scope.geographies = theme.geographyList;      
+                        
+                        var found=false;
+                        if (SubmissionStateService.getState().geography) {
+                            for (var i=0; i<$scope.geographies.length; i++) {
+                                if ($scope.geographies[i] == SubmissionStateService.getState().geography) {
+                                    $scope.geography = $scope.geographies[i];
+                                    found=true;
+									break;
+                                }
+                            }
+                        }
+                        if (!found) {
+                            $scope.consoleDebug("[rifc-dsub-main.js] using default geography: " + $scope.geography +
+                                "; $scope.geographies: " + JSON.stringify($scope.geographies) +
+                                "; themeDescription: " + themeDescription);
+                            $scope.geography = $scope.geographies[0];
+                            SubmissionStateService.getState().geography = $scope.geography;
+                        }                    
+                        $scope.geographyDescription = theme.geographyDescriptions[$scope.geography];
+                        
+                        geographyChange($scope.geography);
+                    }
+                    else {
+                        $scope.showError("Cannot get initial geography and numerator data for theme: " + themeDescription);
+                    }
+                }
+                
+                function setupNumerator(nGeography) {
+                    var theme = $scope.rif40NumDenom.geographies[$scope.healthTheme.description]; 
+					$scope.fractions = theme[nGeography];
+
+                    $scope.consoleDebug("[rifc-dsub-main.js] setupNumerator(" + nGeography + ")" +
+                        "; $scope.fractions: " + JSON.stringify($scope.fractions, null, 1));
+					var found=false;
+					if (SubmissionStateService.getState().fraction) {
+						for (var i=0; i<$scope.fractions.length; i++) {
+							if (compareFractions($scope.fractions[i], SubmissionStateService.getState().fraction)) {
+								$scope.fraction = $scope.fractions[i];
+								$scope.denominator = $scope.fractions[i].denominatorTableName;
+								found=true;
+								break;
+							}
+						}
 					}
-					else {
-						return false;
-					}
-				}
-				
-				function copyFraction(fraction) {
-					var rVal=undefined;
-					
-					if (fraction && 
-						fraction.numeratorTableName && 
-						fraction.denominatorTableName && 
-						fraction.numeratorTableDescription && 
-						fraction.denominatorTableDescription) {
-						rVal={
-							numeratorTableName: fraction.numeratorTableName,
-							denominatorTableName: fraction.denominatorTableName,
-							numeratorTableDescription: fraction.numeratorTableDescription,
-							denominatorTableDescription: fraction.denominatorTableDescription
-						};
-					}
-				
-					return rVal;
+					if (!found) {
+						$scope.fraction = $scope.fractions[0];
+						$scope.denominator = $scope.fractions[0].denominatorTableName;
+						SubmissionStateService.getState().fraction = $scope.fractions[0];
+                        
+                        $scope.consoleDebug("[rifc-dsub-main.js] using default numerator/denominator: " + 
+                            JSON.stringify($scope.fraction, null, 1) + 
+                            "; for geography: " + nGeography +
+                            "; fractions: " + JSON.stringify($scope.fractions, null, 1) +
+                            "; SubmissionStateService.getState().fraction: " + 
+                            JSON.stringify(SubmissionStateService.getState().fraction, null, 1));
+					}    
+                    else {
+                        $scope.consoleDebug("[rifc-dsub-main.js] using SubmissionStateService numerator/denominator: " + 
+                            JSON.stringify($scope.fraction, null, 1) + 
+                            "; for geography: " + nGeography +
+                            "; fractions: " + JSON.stringify($scope.fractions, null, 1) +
+                            "; SubmissionStateService.getState().fraction: " + 
+                            JSON.stringify(SubmissionStateService.getState().fraction, null, 1));
+                    }    
 				}
 				
 				function compareFractions(fraction1, fraction2) {	
@@ -234,38 +294,8 @@ angular.module("RIF")
 					}
 				}
 
-                //sync the denominator
-                $scope.numeratorChange = function () {
-                    if ($scope.numerator) {
-                        $scope.denominator = $scope.numerator.denominatorTableName;
-                    } else {
-                        $scope.denominator = "";
-                    }
-					
-					if (!compareFractions(SubmissionStateService.getState().numerator, $scope.numerator) &&
-					    !compareFractions(SubmissionStateService.getState().denominator, $scope.numerator)) {
-					
-						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), reset investigation parameters, $scope.numerator: " + 
-							JSON.stringify($scope.numerator, null, 1) +
-							"; SubmissionStateService.getState().numerator: " + JSON.stringify(SubmissionStateService.getState().numerator, null, 1) +
-							"; SubmissionStateService.getState().denominator: " + JSON.stringify(SubmissionStateService.getState().denominator, null, 1));
-						SubmissionStateService.getState().numerator = $scope.numerator;
-						SubmissionStateService.getState().denominator = $scope.numerator;
-						//This will have an impact on investigations year range, so reset investigation parameters
-						ParameterStateService.resetState();
-					}
-					else {		
-						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), no change: " + JSON.stringify($scope.numerator, null, 2));
-					}	
-                };
-
-                function handleError(e, reason) {
-                    $scope.showError("Could not retrieve your project information from the database: " + reason);
-					$scope.consoleDebug("[rifc-dsub-main.js] handleError: " + (JSON.stringify(e) || "(no error message)"));
-                }
-
                 /*
-                 * RESET
+                 * RESET: called from rifc-dsub-fromfile.js
                  */
                 $scope.resetState = function () {
                     $state.go('state1').then(function () {
@@ -275,5 +305,5 @@ angular.module("RIF")
 						$scope.studyName = SubmissionStateService.getState().studyName;
 					}
 					$scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
-                };
+                }; 
             }]);

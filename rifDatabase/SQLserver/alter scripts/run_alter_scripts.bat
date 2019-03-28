@@ -6,3 +6,4 @@ REM behaving that way.
 sqlcmd -E -d sahsuland -b -m-1 -e -r1 -i v4_0_alter_10.sql -v pwd="%cd%"
 sqlcmd -E -d sahsuland -b -m-1 -e -r1 -i v4_0_alter_11.sql -v pwd="%cd%"
 sqlcmd -E -d sahsuland -b -m-1 -e -r1 -i v4_0_alter_12.sql -v pwd="%cd%"
+sqlcmd -E -d sahsuland -b -m-1 -e -r1 -i v4_0_alter_13.sql -v pwd="%cd%"

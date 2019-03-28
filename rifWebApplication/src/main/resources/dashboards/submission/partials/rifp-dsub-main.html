@@ -61,6 +61,16 @@ Disease submission main 'trees' menu
             </div>
         </div>  
         <div>
+            <div  class='styleUnderline dropdowns availablesWrapper'>
+                <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies" ng-change="geographyChange(geography)">
+                </select>
+                <div id='geographiesAvailables' class='availables'></div>
+                <div class="dropDownLabel">Geography
+                    <md-tooltip md-direction="right" md-delay="1000">{{geographyDescription}}</md-tooltip>
+                </div>
+            </div>
+        </div>
+        <div>
             <div class='styleUnderline dropdowns availablesWrapper'>
                 <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">
                 </select>
@@ -72,21 +82,11 @@ Disease submission main 'trees' menu
         </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
-                <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies" ng-change="geographyChange()">
-                </select>
-                <div id='geographiesAvailables' class='availables'></div>
-                <div class="dropDownLabel">Geography
-                    <md-tooltip md-direction="right" md-delay="1000">{{geography}}</md-tooltip>
-                </div>
-            </div>
-        </div>
-        <div>
-            <div  class='styleUnderline dropdowns availablesWrapper'>
-                <select type="text" ng-model="numerator" id='numerator' class='dropdownSelect' ng-options="s.numeratorTableName for s in fractions" ng-change="numeratorChange()">
+                <select type="text" ng-model="fraction" id='numerator' class='dropdownSelect' ng-options="s.numeratorTableName for s in fractions" ng-change="fractionChange()">
                 </select>
                 <div id='numeratorAvailables' class='availables' ></div>
                 <div class="dropDownLabel">Numerator
-                    <md-tooltip md-direction="right" md-delay="1000">{{numerator.numeratorTableDescription}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{fraction.numeratorTableDescription}}</md-tooltip>
                 </div>
             </div>
         </div>
@@ -95,7 +95,7 @@ Disease submission main 'trees' menu
                 <input type="text" ng-model="denominator" id='denominator' class='dropdownSelectSingle' readonly>
                 <div id='denominatorAvailables' class='availables' > </div>
                 <div class="dropDownLabel">Denominator
-                    <md-tooltip md-direction="right" md-delay="1000">{{numerator.denominatorTableDescription}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{fraction.denominatorTableDescription}}</md-tooltip>
                 </div>
             </div>
         </div>

@@ -37,8 +37,10 @@
 angular.module("RIF")
         .controller('ModalResetCtrl', ['$scope', '$uibModal', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 
 			'ParameterStateService', 'StatsStateService', 'SelectStateService', 'CommonMappingStateService',
+			'Rif40NumDenomService',
             function ($scope, $uibModal, $state, SubmissionStateService, StudyAreaStateService, CompAreaStateService, 
-				ParameterStateService, StatsStateService, SelectStateService, CommonMappingStateService) {
+				ParameterStateService, StatsStateService, SelectStateService, CommonMappingStateService,
+				Rif40NumDenomService) {
                 
                 $scope.resetToDefaults = function () {
                     //reset all submission states to default
@@ -53,11 +55,17 @@ angular.module("RIF")
                 };
 
                 $scope.resetState = function () {
-                    //Reload submission (state1)
-                    //i.e. gray the trees
-                    $state.go('state1').then(function () {
-                        $state.reload();
-                    });
+                    Rif40NumDenomService.initialise().then(function(data) {
+						//Reload submission (state1)
+						//i.e. gray the trees
+						$state.go('state1').then(function () {
+							$state.reload();
+						});
+					}, function(e) {
+						$scope.showError('Could not re-initialise the RIF numerator/denominator service');
+						$scope.consoleError(e);
+						$scope.showSpinner = false;
+					});
                 };
                         
                 $scope.modalHeader = "Reset Study";

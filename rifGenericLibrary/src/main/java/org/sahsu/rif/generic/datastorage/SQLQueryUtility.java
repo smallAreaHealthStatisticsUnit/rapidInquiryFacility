@@ -121,63 +121,86 @@ public class SQLQueryUtility {
 				errorMessage);
 		}		
 	}
+    
+	/**
+	 * printWarnings. Print info and warning messages
+	 *
+	 * @param ddlStatement The {@link PreparedStatement} whose warnings to print
+	 */
+	public static String printWarnings(Statement ddlStatement) {
 
+		try {
+			SQLWarning warnings=ddlStatement.getWarnings();
+            return formatWarnings(warnings);
+        }
+		catch(SQLException sqlException) { // Do nothing - they are warnings!
+			rifLogger.warning(SQLQueryUtility.class, "PGSQLQueryUtility.printWarnings() caught "
+			                                    + "sqlException: " +
+			                                   sqlException.getMessage());
+		}
+		return null;
+	}
+    
 	/**
 	 * printWarnings. Print info and warning messages
 	 *
 	 * @param runStudyStatement The {@link PreparedStatement} whose warnings to print
 	 */
 	public static String printWarnings(PreparedStatement runStudyStatement) {
-		SQLWarning warnings;
-		StringBuilder message;
-		int warningCount=0;
 
 		try {
-			warnings=runStudyStatement.getWarnings();
-			message = new StringBuilder();
-
-			while (warnings != null) {
-				warningCount++;
-				if (warnings.getErrorCode() == 0) {
-					message.append(warnings.getMessage()).append(lineSeparator);
-				}
-				else {
-					message.append("SQL Error/Warning >>>").append(lineSeparator)
-							.append("Message:           ").append(warnings.getMessage())
-							.append(lineSeparator).append("SQLState:          ")
-							.append(warnings.getSQLState()).append(lineSeparator)
-							.append("Vendor error code: ").append(warnings.getErrorCode())
-							.append(lineSeparator);
-
-					rifLogger.warning(SQLQueryUtility.class,
-					                  "SQL Error/Warning >>>" + lineSeparator +
-					                  "Message:           " + warnings.getMessage() + lineSeparator +
-					                  "SQLState:          " + warnings.getSQLState() + lineSeparator +
-					                  "Vendor error code: " +	warnings.getErrorCode() + lineSeparator);
-				}
-				warnings = warnings.getNextWarning();
-			}
-
-			if (message.length() > 0) {
-				rifLogger.info(SQLQueryUtility.class, warningCount + " warnings/messages" +
-				                                 lineSeparator +
-				                                message.toString());
-
-				return warningCount + " warnings/messages" + lineSeparator + message.toString();
-			}
-			else {
-				rifLogger.warning(SQLQueryUtility.class, "No warnings/messages found.");
-				return "No warnings/messages found.";
-			}
-		}
+			SQLWarning warnings=runStudyStatement.getWarnings();
+            return formatWarnings(warnings);
+        }
 		catch(SQLException sqlException) { // Do nothing - they are warnings!
 			rifLogger.warning(SQLQueryUtility.class, "PGSQLQueryUtility.printWarnings() caught "
 			                                    + "sqlException: " +
 			                                   sqlException.getMessage());
 		}
-
 		return null;
 	}
+    
+    private static String formatWarnings(SQLWarning warnings) {
+        
+		StringBuilder message;
+		int warningCount=0;
+    
+        message = new StringBuilder();
+
+        while (warnings != null) {
+            warningCount++;
+            if (warnings.getErrorCode() == 0) {
+                message.append(warnings.getMessage()).append(lineSeparator);
+            }
+            else {
+                message.append("SQL Error/Warning >>>").append(lineSeparator)
+                        .append("Message:           ").append(warnings.getMessage())
+                        .append(lineSeparator).append("SQLState:          ")
+                        .append(warnings.getSQLState()).append(lineSeparator)
+                        .append("Vendor error code: ").append(warnings.getErrorCode())
+                        .append(lineSeparator);
+
+                rifLogger.warning(SQLQueryUtility.class,
+                                  "SQL Error/Warning >>>" + lineSeparator +
+                                  "Message:           " + warnings.getMessage() + lineSeparator +
+                                  "SQLState:          " + warnings.getSQLState() + lineSeparator +
+                                  "Vendor error code: " +	warnings.getErrorCode() + lineSeparator);
+            }
+            warnings = warnings.getNextWarning();
+        }
+
+        if (message.length() > 0) {
+            rifLogger.info(SQLQueryUtility.class, warningCount + " warnings/messages" +
+                                             lineSeparator +
+                                            message.toString());
+
+            return warningCount + " warnings/messages" + lineSeparator + message.toString();
+        }
+        else {
+            rifLogger.warning(SQLQueryUtility.class, "No warnings/messages found.");
+            return "No warnings/messages found.";
+        }
+    }
 	
 	public static void commit(
 		final Connection connection ) 
@@ -221,6 +244,21 @@ public class SQLQueryUtility {
 		}
 	}
 
+	public static PreparedStatement createDDLStatement(
+		final Connection connection,
+		final QueryFormatter queryFormatter)
+		throws SQLException {
+
+		PreparedStatement statement
+				= connection.prepareStatement(
+				queryFormatter.generateQuery());
+		if (connection.getAutoCommit() != false) {
+			connection.setAutoCommit(false);
+		}
+
+		return statement;
+	}
+    
 	public static PreparedStatement createPreparedStatement(
 		final Connection connection,
 		final QueryFormatter queryFormatter)
