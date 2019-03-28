@@ -133,8 +133,8 @@ GRANT SELECT ON TABLE rif40.rif40_numerator_outcome_columns TO rif_manager;
 
 --\dS+ rif40.rif40_numerator_outcome_columns
 
-\i ../../PLpgsql/rif40_sql_pkg/rif40_startup.sql
-\i ../../PLpgsql/rif40_sql_pkg/rif40_auto_indirect_checks.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_startup.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_auto_indirect_checks.sql
 
 /*
 --
