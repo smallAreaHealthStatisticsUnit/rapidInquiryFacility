@@ -285,7 +285,13 @@ generateTableIndexSQLQuery <- function(tableName, columnName) {
 
 convertSqlNansToNulls <- function(col) {
 
-	protectedCol <- paste("CASE WHEN", col, " = 'NAN' THEN NULL ELSE", col, "END")
+# If the tmp table contains NAN/NAs the datatype will be a VARCHAR so it needs to be cast to NUMERIC
+	if (db_driver_prefix == "jdbc:postgresql") {
+        protectedCol <- paste("(CASE WHEN", col,"::Text = 'NA' THEN NULL WHEN", col,"::Text = 'NAN' THEN NULL ELSE", col, "END)::Numeric")
+	}
+	else if (db_driver_prefix == "jdbc:sqlserver") {
+        protectedCol <- paste("CAST(CASE WHEN", col," = 'NA' THEN NULL WHEN", col," = 'NAN' THEN NULL ELSE", col, "END AS NUMERIC)")
+    }
 	return(protectedCol)
 }
 
