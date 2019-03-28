@@ -732,9 +732,9 @@ BEGIN
             IF t_rif40_num_denom_old THEN
                 sql_stmt:='DROP TABLE '||USER||'.t_rif40_num_denom_old CASCADE';
                 PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+                sql_stmt:='DROP INDEX IF EXISTS rif40_num_denom_pk';
+                PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
             END IF;
-            sql_stmt:='DROP INDEX rif40_num_denom_pk';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			sql_stmt:='ALTER TABLE '||USER||'.t_rif40_num_denom RENAME TO t_rif40_num_denom_old';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			t_rif40_num_denom:=FALSE;
