@@ -36,12 +36,19 @@
  */
 angular.module("RIF")
         .controller('ModalParametersCtrl', 
-			['$timeout', '$q', '$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user', 'StudyAreaStateService', 'AlertService',
-            function ($timeout, $q, $scope, $uibModal, SubmissionStateService, ParameterStateService, user, StudyAreaStateService, AlertService) {
+			['$timeout', '$q', '$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user', 
+                'StudyAreaStateService', 'AlertService', 'ParametersService',
+            function ($timeout, $q, $scope, $uibModal, SubmissionStateService, ParameterStateService, user, 
+                StudyAreaStateService, AlertService, ParametersService) {
 
                 $scope.tree = SubmissionStateService.getState().investigationTree;
                 $scope.animationsEnabled = true;
-
+                
+                $scope.multipleCovariatesEnabled=false;
+                if (ParametersService.isModuleEnabled('multipleCovariates')) {
+                    $scope.multipleCovariatesEnabled=true;
+                }
+                
                 /*
                  * TABLE SET UP (1)
                  * ICD code list
@@ -407,7 +414,21 @@ angular.module("RIF")
                 }
                 
                 function multipleCovariateChange(covariatesOrAdditionals, myTag, otherTag) {
-
+                    
+                    if (covariatesOrAdditionals.length > 1 && ParametersService.isModuleEnabled('multipleCovariates')) { 
+                        if (ParametersService.getModuleStatus('multipleCovariates') != "production") {
+                            AlertService.showWarning(ParametersService.getModuleDescription('multipleCovariates') +
+                                " support is still in " + 
+                                ParametersService.getModuleStatus('multipleCovariates'));
+                        }
+                    }
+                    else if (covariatesOrAdditionals.length > 1 && !ParametersService.isModuleEnabled('multipleCovariates')) { 
+                        AlertService.showError(ParametersService.getModuleDescription('multipleCovariates') +
+                            " support is not available");
+                        $scope[myTag].length=0;
+                        $scope.covariate[myTag].length=0;
+                    }
+                    
                     // None means NONE
                     for (var i=0; i<covariatesOrAdditionals.length; i++) {
                         if (covariatesOrAdditionals[i] == "NONE") {

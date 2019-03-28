@@ -35,8 +35,8 @@
  * SERVICE to store investigation parameter state
  */
 angular.module("RIF")
-        .factory('ParameterStateService', ["SubmissionStateService", "AlertService",
-                function (SubmissionStateService, AlertService) {
+        .factory('ParameterStateService', ["SubmissionStateService", "AlertService", "ParametersService",
+                function (SubmissionStateService, AlertService, ParametersService) {
                     var s = {
                         activeHealthTheme: "",
                         title: "My_New_Investigation",
@@ -174,6 +174,20 @@ angular.module("RIF")
                                         }
                                     }
 
+                                    var totalCovariates=thisInv.covariates + thisInv.additionals.length;                         
+                                    if (totalCovariates > 1 && ParametersService.isModuleEnabled('multipleCovariates')) { 
+                                        if (ParametersService.getModuleStatus('multipleCovariates') != "production") {
+                                            AlertService.showWarning(ParametersService.getModuleDescription('multipleCovariates') +
+                                                " support is still in " + 
+                                                ParametersService.getModuleStatus('multipleCovariates'));
+                                        }
+                                    }
+                                    else if (totalCovariates > 1 && !ParametersService.isModuleEnabled('multipleCovariates')) { 
+                                        AlertService.showError(ParametersService.getModuleDescription('multipleCovariates') +
+                                            " support is not available");
+                                        s.errors++;
+                                    }
+                                    
                                     // Sort alphabetically
                                     thisInv.covariates.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});
                                     thisInv.additionals.sort(function(a, b) {return (a.name > b.name) ? 1 : -1});

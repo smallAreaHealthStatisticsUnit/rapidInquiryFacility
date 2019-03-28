@@ -62,7 +62,7 @@ angular.module("RIF")
                     $scope.geographyDescription = "";
                     $scope.healthThemes = [];
                     $scope.healthTheme = ""
-                    if ($scope.rif40NumDenom.themes && $scope.rif40NumDenom.geographies) {
+                    if ($scope.rif40NumDenom && $scope.rif40NumDenom.themes && $scope.rif40NumDenom.geographies) {
                         $scope.healthThemes = $scope.rif40NumDenom.themes; // Keys name, description
                         var found=false;
                         if (SubmissionStateService.getState().healthTheme &&

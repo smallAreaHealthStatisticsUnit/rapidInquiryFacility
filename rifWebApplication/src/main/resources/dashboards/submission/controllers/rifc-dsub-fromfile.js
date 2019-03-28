@@ -37,10 +37,10 @@
 angular.module("RIF")
         .controller('ModalRunFileCtrl', ['$q', 'user', '$scope', '$uibModal',
             'StudyAreaStateService', 'CompAreaStateService', 'SubmissionStateService', 'StatsStateService', 
-			'ParameterStateService', 'SelectStateService', 'AlertService', 'Rif40NumDenomService',
+			'ParameterStateService', 'SelectStateService', 'AlertService', 'Rif40NumDenomService', 'ParametersService',
             function ($q, user, $scope, $uibModal,
                     StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, 
-					ParameterStateService, SelectStateService, AlertService, Rif40NumDenomService) {
+					ParameterStateService, SelectStateService, AlertService, Rif40NumDenomService, ParametersService) {
 
                 // Magic number for the always-included first method (see rifp-dsub-stats.html).
                 const FIXED_NO_SMOOTHING_METHOD_POSITION  = -1;
@@ -70,7 +70,7 @@ angular.module("RIF")
                 var validatedFraction = [];
 				
 				var rif40NumDenom=Rif40NumDenomService.getRif40NumDenom();
-
+                
                 /*
                  * THE FUNCIONS FOR CHECKING RIFJOB JSON
                  * This is done in a chain of promises
@@ -581,6 +581,18 @@ angular.module("RIF")
                                 JSON.stringify(inv[0].covariates, 0, 1) + 
                                 "; additional covariates lists: " + 
                                 JSON.stringify(inv[0].additionals, 0, 1));
+                            covariateErrorCount++;
+                        }
+                        if (totalCovariates > 1 && ParametersService.isModuleEnabled('multipleCovariates')) { 
+                            if (ParametersService.getModuleStatus('multipleCovariates') != "production") {
+                                AlertService.showWarning(ParametersService.getModuleDescription('multipleCovariates') +
+                                    " support is still in " + 
+                                    ParametersService.getModuleStatus('multipleCovariates'));
+                            }
+                        }
+                        else if (totalCovariates > 1 && !ParametersService.isModuleEnabled('multipleCovariates')) { 
+                            AlertService.showError(ParametersService.getModuleDescription('multipleCovariates') +
+                                " support is not available");
                             covariateErrorCount++;
                         }
                         for (var i=0; i<cv.length; i++) {
