@@ -1,15 +1,15 @@
 /**
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU
+ * that rapidly addresses epidemiological and public health questions using
+ * routinely collected health and population data and generates standardised
+ * rates and relative risks for any given health outcome, for specified age
  * and year ranges, for any given geographical area.
  *
  * Copyright 2016 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit
+ * is funded by the Public Health England as part of the MRC-PHE Centre for
+ * Environment and Health. Funding for this project has also been received
+ * from the United States Centers for Disease Control and Prevention.
  *
  * This file is part of the Rapid Inquiry Facility (RIF) project.
  * RIF is free software: you can redistribute it and/or modify
@@ -23,20 +23,20 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA
 
  * David Morley
  * @author dmorley
  */
 
-/* 
+/*
  * SERVICE to store investigation parameter state
  */
 angular.module("RIF")
-        .factory('ParameterStateService', ["SubmissionStateService", "AlertService",
-                function (SubmissionStateService, AlertService) {
+        .factory('ParameterStateService', ["SubmissionStateService", "AlertService", "ParametersService",
+                function (SubmissionStateService, AlertService, ParametersService) {
                     var s = {
                         activeHealthTheme: "",
                         title: "My_New_Investigation",
@@ -85,10 +85,10 @@ angular.module("RIF")
                                     "description": SubmissionStateService.getState().healthTheme.description
                                 };
                                 thisInv.numerator_denominator_pair = {
-                                    "numerator_table_name": SubmissionStateService.getState().denominator.numeratorTableName,
-                                    "numerator_table_description": SubmissionStateService.getState().denominator.numeratorTableDescription,
-                                    "denominator_table_name": SubmissionStateService.getState().denominator.denominatorTableName,
-                                    "denominator_table_description": SubmissionStateService.getState().denominator.denominatorTableDescription
+                                    "numerator_table_name": SubmissionStateService.getState().fraction.numeratorTableName,
+                                    "numerator_table_description": SubmissionStateService.getState().fraction.numeratorTableDescription,
+                                    "denominator_table_name": SubmissionStateService.getState().fraction.denominatorTableName,
+                                    "denominator_table_description": SubmissionStateService.getState().fraction.denominatorTableDescription
                                 };
                                 var uprGroup;
                                 var lwrGroup;
@@ -98,7 +98,7 @@ angular.module("RIF")
                                     }
                                     if (s.possibleAges[i].name === s.lowerAge) {
                                         lwrGroup = s.possibleAges[i];
-                                    }                                    
+                                    }
                                 }
                                 thisInv.age_band = {
                                     "lower_age_group": {
@@ -134,7 +134,7 @@ angular.module("RIF")
                                     for (var j = 0; j < s.covariates.length; j++) {
                                         if (s.possibleCovariates[i].name === s.covariates[j] &&
                                             s.possibleCovariates[i].name != "NONE") {
-                                            
+
                                             if (s.possibleCovariates[i].covariate_type == "INTEGER_SCORE") {
                                                 thisInv.covariates.push(
                                                         {
@@ -150,37 +150,42 @@ angular.module("RIF")
                                             }
                                             else {
                                                 AlertService.showError(
-                                                    "[rifs-dsub-paramstate.js] Invalid adjustable covariate: " + 
+                                                    "[rifs-dsub-paramstate.js] Invalid adjustable covariate: " +
                                                     s.possibleCovariates[i].name +
                                                     "; covariate type of: " + s.possibleCovariates[i].covariate_type);
                                                 s.errors++;
                                             }
                                         }
-                                    }                                    
+                                    }
                                     for (var k = 0; k < s.additionals.length; k++) {
                                         if (s.possibleCovariates[i].name === s.additionals[k] &&
                                             s.possibleCovariates[i].name != "NONE") {
-                                            
-                                            if (s.possibleCovariates[i].covariate_type == "CONTINUOUS_VARIABLE") {
-                                                thisInv.additionals.push(
-                                                    {
-                                                        "additional_covariate": {
-                                                            "name": s.possibleCovariates[i].name,
-                                                            "minimum_value": s.possibleCovariates[i].minimum_value,
-                                                            "maximum_value": s.possibleCovariates[i].maximum_value,
-                                                            "covariate_type": s.possibleCovariates[i].covariate_type,
-                                                            "description": s.possibleCovariates[i].description
-                                                        }
-                                                    });
-                                            }
-                                            else {
-                                                AlertService.showError(
-                                                    "[rifs-dsub-paramstate.js] Invalid additional covariate: " + 
-                                                    s.possibleCovariates[i].name +
-                                                    "; covariate type of: " + s.possibleCovariates[i].covariate_type);
-                                                s.errors++;
-                                            }
+
+                                            thisInv.additionals.push(
+                                                {
+                                                    "additional_covariate": {
+                                                        "name": s.possibleCovariates[i].name,
+                                                        "minimum_value": s.possibleCovariates[i].minimum_value,
+                                                        "maximum_value": s.possibleCovariates[i].maximum_value,
+                                                        "covariate_type": s.possibleCovariates[i].covariate_type,
+                                                        "description": s.possibleCovariates[i].description
+                                                    }
+                                                });
                                         }
+                                    }
+
+                                    var totalCovariates=thisInv.covariates + thisInv.additionals.length;                         
+                                    if (totalCovariates > 1 && ParametersService.isModuleEnabled('multipleCovariates')) { 
+                                        if (ParametersService.getModuleStatus('multipleCovariates') != "production") {
+                                            AlertService.showWarning(ParametersService.getModuleDescription('multipleCovariates') +
+                                                " support is still in " + 
+                                                ParametersService.getModuleStatus('multipleCovariates'));
+                                        }
+                                    }
+                                    else if (totalCovariates > 1 && !ParametersService.isModuleEnabled('multipleCovariates')) { 
+                                        AlertService.showError(ParametersService.getModuleDescription('multipleCovariates') +
+                                            " support is not available");
+                                        s.errors++;
                                     }
                                     
                                     // Sort alphabetically

@@ -135,6 +135,39 @@ Comments:
 			fillOpacity: 0,
 			bandColours: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
 		},
-		disableMouseClicksAt: 5000 // Areas
+		disableMouseClicksAt: 5000, // Areas
+        // Additional modules support. Not enabled by default until in production
+        additionalModules: {
+            multipleCovariates: {
+                enabled: false,
+                description: "Multiple study and additional extract covariates",
+                status: "alpha" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            pooledAnalysis: {
+                enabled: false,
+                description: "Individual site and pooled analysis (1 or more groups of sites). Groups are defined from a categorisation variable in the shapefile or from regional area identifiers",
+                status: "inDevelopment" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            priorSensitivityAnalysis: {
+                enabled: false,
+                description: "Prior sensitivity analysis",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            informationGovernance: {
+                enabled: false,
+                description: "Information governance module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            dataLoading: {
+                enabled: false,
+                description: "Integrated data loading module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            geospatialDataLoading: {
+                enabled: false,
+                description: "Integrated geospatial data loading module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            }
+        }
 	}
 }              

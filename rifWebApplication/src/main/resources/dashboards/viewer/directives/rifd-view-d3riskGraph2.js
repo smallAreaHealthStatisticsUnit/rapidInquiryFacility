@@ -150,8 +150,8 @@ angular.module("RIF")
                                 if (angular.isUndefined(scope.riskGraphData) || 
                                     Object.keys(scope.riskGraphData).length === 0) {
                                     if (svg == undefined || svg.size() == 0) {
-                                        AlertService.consoleDebug("[rifd-view-d3riskGraph2.js] no data found (" + 
-                                            nullCount + ") for: " + scope.name);
+//                                        AlertService.consoleDebug("[rifd-view-d3riskGraph2.js] no data found (" + 
+//                                            nullCount + ") for: " + scope.name);
                                     }
                                     else {
                                         AlertService.showError("[rifd-view-d3riskGraph2.js] no data found (" + 
@@ -177,11 +177,11 @@ angular.module("RIF")
                                 }
                             }, 500);  
                            
-                            if (nullCount > 50) { // c25 secs
-                                AlertService.showError("[rifd-view-d3riskGraph2.js] Still no data found for: " + 
-                                    scope.name);
-                                unregister();
-                            }
+//                            if (nullCount > 50) { // c25 secs
+//                                AlertService.showError("[rifd-view-d3riskGraph2.js] Still no data found for: " + 
+//                                    scope.name);
+//                                unregister();
+//                            }
                         }
                         else {
                             nullCount=0;

@@ -3494,3 +3494,10 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
   from shapefile;
 * Rebuild SWedish data with correct age groups for denominator;
 * Install and Patch Swedish test laptop;
+
+### 25th to 28th March
+
+* Swedish collaborator teoeconference, RIF meeting, State 1: study setup modal errors testing, issue #129 coding
+* Postgres Oracle interconnection
+* State 1: study setup modal errors testing, R update fix, make new functionality modular
+* State 1: study setup modal errors test and merge, make multiple covariates modular. Issue #129: populate stratification geolevels column

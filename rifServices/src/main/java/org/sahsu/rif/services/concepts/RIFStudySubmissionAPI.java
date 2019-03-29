@@ -11,6 +11,8 @@ import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.datastorage.common.ServiceResources;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
+import org.json.JSONObject;
+
 public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 
 	void initialise(ServiceResources startupParameter);
@@ -23,7 +25,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	List<CalculationMethod> getAvailableCalculationMethods(
-		final User user) 
+		final User user)
 		throws RIFServiceException;
 
 	boolean isInformationGovernancePolicyActive(
@@ -65,7 +67,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 			User _user,
 			Geography _geography)
 					throws RIFServiceException;
-	
+
 	/**
 	 * Gets the numerator denominator pairs.
 	 *
@@ -78,16 +80,28 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	List<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
 		final User user,
 		final Geography geography,
-		final HealthTheme healthTheme) 
+		final HealthTheme healthTheme)
 		throws RIFServiceException;
-	
-	
-	NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
+
+
+	/**
+	 * Gets RIF40_NUM_DENOM as a JSONObject
+	 *
+	 * @param connection the connection
+	 * @param user the user
+	 * @return RIF40_NUM_DENOM as a JSONObject
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public JSONObject getRif40NumDenom(
+		final User user)
+		throws RIFServiceException;
+
+	public NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
 		final User user,
 		final Geography geography,
-		final String numeratorTableName) 
+		final String numeratorTableName)
 		throws RIFServiceException;
-	
+
 	//Features for Age, Sex and Study Years
 	/**
 	 * Gets the age groups.
@@ -103,9 +117,9 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final User user,
 		final Geography geography,
 		final NumeratorDenominatorPair ndPair,
-		final AgeGroupSortingOption sortingOrder) 
+		final AgeGroupSortingOption sortingOrder)
 		throws RIFServiceException;
-	
+
 	/**
 	 * Gets the sexes.
 	 *
@@ -116,7 +130,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	List<Sex> getSexes(
 		final User user)
 		throws RIFServiceException;
-		
+
 	/**
 	 * Gets the covariates.
 	 *
@@ -131,7 +145,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final Geography geography,
 		final GeoLevelToMap geoLevelToMap)
 		throws RIFServiceException;
-	
+
 	/**
 	 * Gets the year range.
 	 *
@@ -144,9 +158,9 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	YearRange getYearRange(
 		final User user,
 		final Geography geography,
-		final NumeratorDenominatorPair ndPair) 
+		final NumeratorDenominatorPair ndPair)
 		throws RIFServiceException;
-			
+
 	/**
 	 * Gets the projects.
 	 *
@@ -155,9 +169,9 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	List<Project> getProjects(
-		final User user) 
+		final User user)
 		throws RIFServiceException;
-	
+
 
 	/**
 	 * Submit study.
@@ -171,25 +185,25 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 */
 	String submitStudy(final User user, final RIFStudySubmission rifStudySubmission,
 			final File outputFile, final String url) throws RIFServiceException;
-	
+
 	void createStudyExtract(
 		final User user,
 		final String studyID,
 		final String zoomLevel,
 		final Locale locale,
 		final String url)
-		throws RIFServiceException;	
+		throws RIFServiceException;
 
 	FileInputStream getStudyExtract(
 		final User user,
 		final String studyID,
 		final String zoomLevel)
-		throws RIFServiceException;		
+		throws RIFServiceException;
 
 	String getStudyExtractFIleName(
 		final User user,
 		final String studyID)
-		throws RIFServiceException;	
+		throws RIFServiceException;
 
 	String getExtractStatus(
 		final User user,
@@ -205,7 +219,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 
 	String getFrontEndParameters(
 		final User user);
-	
+
 	void test(final User user, final String url) throws RIFServiceException;
 
 	RIFServiceStartupOptions getRIFServiceStartupOptions();

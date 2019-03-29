@@ -1,16 +1,16 @@
 <!--
 /**
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU
+ * that rapidly addresses epidemiological and public health questions using
+ * routinely collected health and population data and generates standardised
+ * rates and relative risks for any given health outcome, for specified age
  * and year ranges, for any given geographical area.
  *
  * Copyright 2016 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit
+ * is funded by the Public Health England as part of the MRC-PHE Centre for
+ * Environment and Health. Funding for this project has also been received
+ * from the United States Centers for Disease Control and Prevention.
  *
  * This file is part of the Rapid Inquiry Facility (RIF) project.
  * RIF is free software: you can redistribute it and/or modify
@@ -24,8 +24,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA
 
  * David Morley
@@ -33,13 +33,13 @@
  */
 -->
 
-<!-- 
+<!--
 HTML partial for ui-router
 Disease submission main 'trees' menu
 -->
 <div class="topnav" id="myTopnav" ng-controller="TabCtrl">
-    <div class='logOutUsername' ng-controller="TabCtrl" > 
-        <a ng-click="logout()" id="user" tooltip-class="logoutToolTip" tooltip-placement="right" uib-tooltip="Log out {{username}}"></a> 
+    <div class='logOutUsername' ng-controller="TabCtrl" >
+        <a ng-click="logout()" id="user" tooltip-class="logoutToolTip" tooltip-placement="right" uib-tooltip="Log out {{username}}"></a>
     </div>
     <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
     <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer</a>
@@ -50,7 +50,7 @@ Disease submission main 'trees' menu
 
 <!-- 5 Submission drop downs-->
 <div id="buttons" class='positioning'>
-    <div class='geoDrops'>      
+    <div class='geoDrops'>
         <div>
             <div  class='styleUnderline'>
                 <input type="text" ng-model="studyName" placeholder = "my rif study" id='studyName' class='dropdownSelectSingle' ng-pattern-restrict="^[A-Za-z0-9_ ]*$" ng-change="studyNameChanged()">
@@ -59,17 +59,27 @@ Disease submission main 'trees' menu
                     <md-tooltip md-direction="right" md-delay="1000">{{studyDescription}}</md-tooltip>
                 </div>
             </div>
-        </div> 
+        </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
-                <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies" ng-change="geographyChange()">
+                <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies" ng-change="geographyChange(geography)">
                 </select>
                 <div id='geographiesAvailables' class='availables'></div>
                 <div class="dropDownLabel">Geography
-                    <md-tooltip md-direction="right" md-delay="1000">{{geography}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{geographyDescription}}</md-tooltip>
                 </div>
             </div>
-        </div> 
+        </div>
+        <div>
+            <div class='styleUnderline dropdowns availablesWrapper'>
+                <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">
+                </select>
+                <div id='healthThemeAvailables' class='availables'></div>
+                <div class="dropDownLabel">Health Theme
+                    <md-tooltip md-direction="right" md-delay="1000">{{healthTheme.description}}</md-tooltip>
+                </div>
+            </div>
+        </div>
         <div>
             <div class='styleUnderline dropdowns availablesWrapper'>
                 <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">
@@ -82,11 +92,11 @@ Disease submission main 'trees' menu
         </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
-                <select type="text" ng-model="numerator" id='numerator' class='dropdownSelect' ng-options="s.numeratorTableName for s in fractions" ng-change="numeratorChange()">
+                <select type="text" ng-model="fraction" id='numerator' class='dropdownSelect' ng-options="s.numeratorTableName for s in fractions" ng-change="fractionChange()">
                 </select>
                 <div id='numeratorAvailables' class='availables' ></div>
                 <div class="dropDownLabel">Numerator
-                    <md-tooltip md-direction="right" md-delay="1000">{{numerator.numeratorTableDescription}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{fraction.numeratorTableDescription}}</md-tooltip>
                 </div>
             </div>
         </div>
@@ -95,7 +105,7 @@ Disease submission main 'trees' menu
                 <input type="text" ng-model="denominator" id='denominator' class='dropdownSelectSingle' readonly>
                 <div id='denominatorAvailables' class='availables' > </div>
                 <div class="dropDownLabel">Denominator
-                    <md-tooltip md-direction="right" md-delay="1000">{{numerator.denominatorTableDescription}}</md-tooltip>
+                    <md-tooltip md-direction="right" md-delay="1000">{{fraction.denominatorTableDescription}}</md-tooltip>
                 </div>
             </div>
         </div>
@@ -105,50 +115,50 @@ Disease submission main 'trees' menu
 <!-- Four Tree Icons-->
 <div id="content">
     <!-- Study area block -->
-    <div ng-switch on=tree id='studyArea' class='blocks' ng-controller="ModalStudyAreaCtrl">   
+    <div ng-switch on=tree id='studyArea' class='blocks' ng-controller="ModalStudyAreaCtrl">
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
         <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>
         <div class='summary bodyBlock'>
             Study Area
-        </div>    
+        </div>
     </div>
     <!-- Comparison area block -->
-    <div ng-switch on=tree id='comparisonArea' class='blocks' ng-controller="ModalComparisonAreaCtrl">      
+    <div ng-switch on=tree id='comparisonArea' class='blocks' ng-controller="ModalComparisonAreaCtrl">
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
         <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>
         <div class='summary bodyBlock'>
             Comparison Area
-        </div>  
+        </div>
     </div>
     <!-- Investigation parameter block -->
     <div ng-switch on=tree id='invParameters' class='blocks' ng-controller="ModalParametersCtrl">
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
-        <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>        
+        <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>
         <div class='summary bodyBlock'>
             Investigation parameters
-        </div> 
+        </div>
     </div>
     <!-- Statistics block -->
     <div ng-switch on=tree id='statsParameters' class='blocks' ng-controller="ModalStatsCtrl">
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
-        <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>        
+        <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>
         <div class='summary bodyBlock'>
             statistical methods
-        </div> 
-    </div> 
+        </div>
+    </div>
 </div>
 
 <!-- Run and Save buttons-->
-<div class="subButtons">   
-    <div id='saveButton' class='subButtonContainer'> 
+<div class="subButtons">
+    <div id='saveButton' class='subButtonContainer'>
         <div ng-controller="ModalSaveCtrl" id='save' ng-click="getBlobJob()">Save Study</div>
-        <div ng-controller="ModalResetCtrl" id='resetStudy' ng-click="open()">Reset</div>     
-    </div>  
-    <div id='runButton' class='subButtonContainer'> 
+        <div ng-controller="ModalResetCtrl" id='resetStudy' ng-click="open()">Reset</div>
+    </div>
+    <div id='runButton' class='subButtonContainer'>
         <div ng-controller="ModalRunCtrl" id='run' ng-click="open()">Run study</div>
         <div ng-controller="ModalRunFileCtrl" id='fromFile' ng-click="open()">Open from file</div>
-    </div>  
-    <div id='statusButton' class='subButtonContainer'> 
+    </div>
+    <div id='statusButton' class='subButtonContainer'>
         <div ng-controller="ModalStatusCtrl" id='status' ng-click="open()">Status</div>
         <div ng-controller="ModalMessagesCtrl" id='viewMessages' ng-click="open()">Messages</div>
     </div>

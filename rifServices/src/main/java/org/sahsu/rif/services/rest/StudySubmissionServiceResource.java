@@ -261,7 +261,19 @@ private Messages GENERIC_MESSAGES = Messages.genericMessages();
 				geographyName,
 				geoLevelSelectName);
 	}
+   
+	@GET
+	@Produces({"application/json"})
+	@Path("/getRif40NumDenom")
+	public Response getRif40NumDenom(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID) {
 
+		return super.getRif40NumDenom(
+				servletRequest,
+				userID);
+	}
+    
 	@GET
 	@Produces({"application/json"})
 	@Path("/getNumerator")

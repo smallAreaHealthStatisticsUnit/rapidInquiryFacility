@@ -1,16 +1,16 @@
 <!--
 /**
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU
+ * that rapidly addresses epidemiological and public health questions using
+ * routinely collected health and population data and generates standardised
+ * rates and relative risks for any given health outcome, for specified age
  * and year ranges, for any given geographical area.
  *
  * Copyright 2016 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit
+ * is funded by the Public Health England as part of the MRC-PHE Centre for
+ * Environment and Health. Funding for this project has also been received
+ * from the United States Centers for Disease Control and Prevention.
  *
  * This file is part of the Rapid Inquiry Facility (RIF) project.
  * RIF is free software: you can redistribute it and/or modify
@@ -24,8 +24,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301 USA
 
  * David Morley
@@ -45,7 +45,7 @@
 		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Expires" content="0" />
-		
+
         <!-- Angular 1.5.8     -->
         <script src="libs/standalone/angular.min.js"></script>
         <script src="libs/standalone/angular-animate.min.js"></script>
@@ -64,40 +64,40 @@
         <link rel="stylesheet" href="libs/standalone/bootstrap.min.css">
 
         <!-- Leaflet 1.x.x-->
-        <link rel="stylesheet" href="libs/standalone/leaflet.css"> 
-        <script src="libs/standalone/leaflet.js"></script> 
-        <link rel="stylesheet" href="libs/standalone/leaflet.draw.css"> 
-        <script src="libs/standalone/leaflet.draw.js"></script> 
-        <script src="libs/standalone/Leaflet.fullscreen.min.js"></script> 
-        <link rel="stylesheet" href="libs/standalone/leaflet.fullscreen.css">  
-        <script src="libs/standalone/topojson.min.js"></script> 
-        <script src="libs/L.Map.Sync.js"></script> 
-        <script src="libs/moment.min.js"></script> 
-        <script src="libs/leaflet-slider.js"></script> 
-        <link rel="stylesheet" href="libs/leaflet-slider.css"> 
-        <script type="text/javascript" src="libs/leaflet-control-condended-attribution.js"></script> 
-        <script type="text/javascript" src="libs/leaflet.geometryutil.js"></script> 
+        <link rel="stylesheet" href="libs/standalone/leaflet.css">
+        <script src="libs/standalone/leaflet.js"></script>
+        <link rel="stylesheet" href="libs/standalone/leaflet.draw.css">
+        <script src="libs/standalone/leaflet.draw.js"></script>
+        <script src="libs/standalone/Leaflet.fullscreen.min.js"></script>
+        <link rel="stylesheet" href="libs/standalone/leaflet.fullscreen.css">
+        <script src="libs/standalone/topojson.min.js"></script>
+        <script src="libs/L.Map.Sync.js"></script>
+        <script src="libs/moment.min.js"></script>
+        <script src="libs/leaflet-slider.js"></script>
+        <link rel="stylesheet" href="libs/leaflet-slider.css">
+        <script type="text/javascript" src="libs/leaflet-control-condended-attribution.js"></script>
+        <script type="text/javascript" src="libs/leaflet.geometryutil.js"></script>
 
 		<!-- https://caolan.github.io/async/ -->
         <script src="libs/standalone/async.js"></script>
-		
+
 		<!-- Leaflet spin -->
-		<script src="libs/standalone/spin.min.js" charset="utf-8"></script>		
+		<script src="libs/standalone/spin.min.js" charset="utf-8"></script>
         <script src="libs/standalone/spin.js"></script>
-        <link rel="stylesheet" href="libs/standalone/spin.css"> 
+        <link rel="stylesheet" href="libs/standalone/spin.css">
 		<script src="libs/standalone/leaflet.spin.min.js" charset="utf-8"></script>
-		
+
         <!-- D3  v4 and D3 export -->
         <script src="libs/standalone/d3.v4.min.js"></script>
         <script src="libs/standalone/canvas-toBlob.js"></script>
-        <script src="libs/standalone/FileSaver.min.js"></script> 
+        <script src="libs/standalone/FileSaver.min.js"></script>
 
         <!-- UI grid -->
-        <script src="libs/standalone/ui-grid.min.js"></script> 
-        <link rel="stylesheet" href="libs/standalone/ui-grid.min.css">  
-       
+        <script src="libs/standalone/ui-grid.min.js"></script>
+        <link rel="stylesheet" href="libs/standalone/ui-grid.min.css">
+
         <!-- UI layout grid -->
-        <link rel="stylesheet" href="libs/standalone/ui-layout.css">  
+        <link rel="stylesheet" href="libs/standalone/ui-layout.css">
 
         <!-- THESE ONLY EVER AS STANDALONE LIBRARIES -->
         <!-- Angular -->
@@ -107,15 +107,15 @@
         <script src="libs/l.control.geosearch.js"></script>
         <script src="libs/l.geosearch.provider.openstreetmap.js"></script>
         <link rel="stylesheet" href="libs/l.geosearch.css" />
-        <script src="libs/leaflet-image.js"></script>        
-        <script src="libs/turf.min.js"></script>        
+        <script src="libs/leaflet-image.js"></script>
+        <script src="libs/turf.min.js"></script>
         <script src="libs/TopoJSONGridLayer.js"></script>
         <script src="libs/pouchdb.js"></script>
         <script src="libs/topoJSON.js"></script>
 
 		<!-- proj4 (rep-projection) -->
         <script src="libs/proj4.js"></script>
-		
+
         <!-- save html2canvas -->
         <script src="libs/html2canvas.js"></script>
 
@@ -124,11 +124,11 @@
 
         <!-- UI layout grid -->
         <!--This version of ui-layout has patch for sticky mouse issue #181-->
-        <script src="libs/ui-layout.js"></script>   
+        <script src="libs/ui-layout.js"></script>
 
         <!-- notification -->
         <link rel="stylesheet" href="libs/ngNotificationsBar.css">
-        <script src="libs/ngNotificationsBar.min.js"></script>   
+        <script src="libs/ngNotificationsBar.min.js"></script>
 
         <!-- shapefile in leaflet -->
         <script src="libs/leaflet.shpfile.js"></script>
@@ -139,9 +139,9 @@
 
         <!-- JSON5 parser -->
 		<script src="libs/json5.js"></script>
-		
+
         <!-- RIF 4.0 ANGULAR JS-->
-        <script src = "modules/rifm-app.js"></script> 
+        <script src = "modules/rifm-app.js"></script>
         <script src="dashboards/login/controllers/rifc-login-login.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-comparea.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-params.js"></script>
@@ -161,16 +161,16 @@
         <script src="dashboards/submission/controllers/rifc-dsub-shapefileselect.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-studyareastate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-maptable.js"></script>
-        <script src="dashboards/submission/services/rifs-dsub-model.js"></script>       
+        <script src="dashboards/submission/services/rifs-dsub-model.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-compareastate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-paramstate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-statsstate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-submissionstate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-drawSelection.js"></script>
         <script src="dashboards/submission/directives/rifd-dsub-maptable.js"></script>
-        <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>  
-        <script src="dashboards/submission/directives/rifd-dsub-risk.js"></script>  
-		<script src="dashboards/submission/directives/rifd-dsub-postal.js"></script>  
+        <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>
+        <script src="dashboards/submission/directives/rifd-dsub-risk.js"></script>
+		<script src="dashboards/submission/directives/rifd-dsub-postal.js"></script>
         <script src="dashboards/viewer/controllers/rifc-view-viewer.js"></script>
         <script src="dashboards/viewer/services/rifs-view-viewerstate.js"></script>
         <script src="dashboards/viewer/directives/rifd-view-d3distHisto.js"></script>
@@ -208,8 +208,10 @@
         <script src="utils/services/rifs-util-alert.js"></script>
         <script src="utils/services/rifs-util-mapstate.js"></script>
         <script src="utils/services/rifs-util-d3charts.js"></script>
+        <script src="utils/services/rifs-util-rif40-num-denom.js"></script>
+
 		<!-- This causes a circular dependency error in newer firefoxes:
-		
+
         <script src="utils/services/rifs-util-exceptionOverwrite.js"></script>
 		-->
         <script src="utils/services/rifs-util-projection.js"></script>
@@ -219,9 +221,9 @@
         <script src="backend/services/rifs-back-parameters.js"></script>
         <script src="backend/services/rifs-back-urls.js"></script>
 
-        <!-- RIF 4.0 CSS -->   
+        <!-- RIF 4.0 CSS -->
         <link href="css/rifx-css-main.css" rel="stylesheet" media="screen" />
-        <link href="css/rifx-css-uigrids.css" rel="stylesheet" media="screen" /> 
+        <link href="css/rifx-css-uigrids.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-uilayout.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-modals.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-d3.css" rel="stylesheet" media="screen" />

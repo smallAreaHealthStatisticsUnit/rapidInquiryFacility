@@ -47,6 +47,7 @@ CREATE VIEW [rif40].[rif40_numerator_outcome_columns] AS
  WITH a AS (
          SELECT z.geography,
             a_1.table_name,
+		    z.numerator_description AS table_description,
             c.outcome_group_name,
             c.outcome_type,
             c.outcome_group_description,
@@ -62,6 +63,7 @@ CREATE VIEW [rif40].[rif40_numerator_outcome_columns] AS
         )
  SELECT a.geography,
     a.table_name,
+    a.table_description,
     a.outcome_group_name,
     a.outcome_type,
     a.outcome_group_description,
@@ -90,6 +92,8 @@ GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Geography' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_numerator_outcome_columns', @level2type=N'COLUMN',@level2name=N'geography'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Numerator table name' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_numerator_outcome_columns', @level2type=N'COLUMN',@level2name=N'table_name'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Numerator description' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_numerator_outcome_columns', @level2type=N'COLUMN',@level2name=N'table_description'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Outcome Group Name. E.g SINGLE_VARIABLE_ICD' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_numerator_outcome_columns', @level2type=N'COLUMN',@level2name=N'outcome_group_name'
 GO
