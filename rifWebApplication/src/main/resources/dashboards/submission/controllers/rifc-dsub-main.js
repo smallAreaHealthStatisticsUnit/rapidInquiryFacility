@@ -163,11 +163,16 @@ angular.module("RIF")
                         SubmissionStateService.getState().studyTree = false;
                         SubmissionStateService.getState().investigationTree = false;
                                  
-                        $scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + $scope.studyName);
-                    }
-                    else if (nGeography && $scope.geography && $scope.geography == nGeography) {
-                        $scope.consoleDebug("[rifc-dsub-main.js] no change in geography: " + 
+                        $scope.consoleDebug("[rifc-dsub-main.js] resetState() $scope.studyName: " + 
+							$scope.studyName + "; geography: " + nGeography +
                             "; $scope.geography: " + $scope.geography +
+                            "; SubmissionStateService.getState().geography: " + 
+                            SubmissionStateService.getState().geography);
+                    }
+                    else if (nGeography && $scope.geography && $scope.geography && 
+					         $scope.geography == nGeography) {
+                        $scope.consoleDebug("[rifc-dsub-main.js] no change in geography: '" + nGeography +
+                            "'; $scope.geography: " + $scope.geography +
                             "; SubmissionStateService.getState().geography: " + 
                             SubmissionStateService.getState().geography);
                     }
@@ -186,8 +191,16 @@ angular.module("RIF")
                             SubmissionStateService.getState().studyTree = false;
                             SubmissionStateService.getState().investigationTree = false;
                                      
-                            $scope.consoleDebug("[rifc-dsub-main.js] DEFAULT resetState() $scope.studyName: " + $scope.studyName);
+                            $scope.consoleDebug("[rifc-dsub-main.js] DEFAULT resetState() $scope.studyName: " + $scope.studyName + 
+								"; geography: " + nGeography);
                         }
+						else {
+                            $scope.consoleDebug("[rifc-dsub-main.js] NULL resetState() $scope.studyName: " + $scope.studyName + 
+								"; geography: " + nGeography +
+								"; $scope.geography: " + $scope.geography +
+								"; SubmissionStateService.getState().geography: " + 
+								SubmissionStateService.getState().geography);
+						}
                     }
                     
                     StudyAreaStateService.getState().geography = $scope.geography;
@@ -219,11 +232,11 @@ angular.module("RIF")
                             }
                         }
                         if (!found) {
+                            $scope.geography = $scope.geographies[0];
+                            SubmissionStateService.getState().geography = $scope.geography;
                             $scope.consoleDebug("[rifc-dsub-main.js] using default geography: " + $scope.geography +
                                 "; $scope.geographies: " + JSON.stringify($scope.geographies) +
                                 "; themeDescription: " + themeDescription);
-                            $scope.geography = $scope.geographies[0];
-                            SubmissionStateService.getState().geography = $scope.geography;
                         }                    
                         $scope.geographyDescription = theme.geographyDescriptions[$scope.geography];
                         
