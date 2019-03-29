@@ -229,12 +229,12 @@ angular.module("RIF")
 										JSON.stringify($scope.input.stratifyTo, null, 1) +
 										"; $scope.stratificationList: " + 
 										JSON.stringify($scope.stratificationList, null, 1));
-									ModalAreaService.setAllStratification($scope.input.stratifyTo);		
+									$scope.gridOptions.data=ModalAreaService.setAllStratification($scope.input.stratifyTo, $scope.gridOptions.data);		
 								}									
 							}
 							else if ($scope.input.stratifyTo && $scope.input.stratifyTo.name &&
 							    nStratification && nStratification.name &&
-								$scope.input.stratifyTo.name == nStratification.name) { // No change
+								$scope.stratifyTo.name == nStratification.name) { // No change
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] No stratificationChange: " + 
 									JSON.stringify($scope.input.stratifyTo, null, 1) +
 									"; $scope.stratificationList: " + 
@@ -242,14 +242,14 @@ angular.module("RIF")
 							}
 							else if ($scope.input.stratifyTo && $scope.input.stratifyTo.name &&
 							    nStratification && nStratification.name &&
-								$scope.input.stratifyTo.name != nStratification.name) { // Change
+								$scope.stratifyTo.name != nStratification.name) { // Change
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] stratificationChange from: " + 
 									JSON.stringify($scope.input.stratifyTo, null, 1) + 
 									" to: " + JSON.stringify(nStratification, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
-								$scope.input.stratifyTo = stratifyToCopy(nStratification);
-								ModalAreaService.setAllStratification($scope.input.stratifyTo);
+								$scope.input.stratifyTo = nStratification;
+								$scope.gridOptions.data=ModalAreaService.setAllStratification($scope.input.stratifyTo, $scope.gridOptions.data);
 							}
 							else { // No longer valid
 								$scope.input.stratifyTo = stratificationNone;
@@ -258,7 +258,7 @@ angular.module("RIF")
 									" to: " + JSON.stringify(nStratification, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
-								ModalAreaService.setAllStratification($scope.input.stratifyTo);
+								$scope.gridOptions.data=ModalAreaService.setAllStratification($scope.input.stratifyTo, $scope.gridOptions.data);
 							}
 							$scope.stratifyTo = stratifyToCopy($scope.input.stratifyTo); // Save
 						}
@@ -413,7 +413,7 @@ angular.module("RIF")
 								$scope.gridOptions.columnDefs = 
 									ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis);
 								var dataColumns=Object.keys($scope.gridOptions.data[0]).length;
-								$scope.gridOptions.data=ModalAreaService.refillTable(); // Force UI-grid watchers
+								$scope.gridOptions.data=ModalAreaService.refillTable($scope.gridOptions.data); // Force UI-grid watchers
 								if (oldColumnDefsLength != $scope.gridOptions.columnDefs.length) {
 									refreshModalTableCount++;
 									alertScope.consoleLog("[rifd-dsub-maptable.js] refreshModalTable: " +
@@ -1432,7 +1432,7 @@ angular.module("RIF")
 																	newSelectedPolygon);
 														}       
 
-														ModalAreaService.setAllStratification($scope.input.stratifyTo, thisPolyID);
+							//							ModalAreaService.setStratification($scope.input.stratifyTo, thisPolyID);
 														$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name); 														
 														$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 														$scope.$digest(); // Force $watch sync

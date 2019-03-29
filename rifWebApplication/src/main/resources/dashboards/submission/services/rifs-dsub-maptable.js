@@ -41,7 +41,6 @@ angular.module("RIF")
                 function (AlertService) {
                     //UI-Grid setup options
 					var defaultMinRowsToShow=12;
-					var rowCollection = [];
                     var areaTableOptions = {
                         enableFiltering: true,
                         enableRowSelection: true,
@@ -86,7 +85,7 @@ angular.module("RIF")
                     return {
                         //Populate the polygon attribute table
                         fillTable: function (data) {
-                            rowCollection.length=0;
+                            var rowCollection=[];
 							var keyList=undefined;
 							if (data.attributes[0]) {
 								keyList=Object.keys(data.attributes[0]);
@@ -105,7 +104,7 @@ angular.module("RIF")
 							}
                             return rowCollection;
                         },
-                        refillTable: function () { // Force UI-grid watchers
+                        refillTable: function (rowCollection) { // Force UI-grid watchers
                             var nRowCollection=[];
 							var keyList=undefined;
 							if (rowCollection[0]) {
@@ -115,7 +114,9 @@ angular.module("RIF")
 										label: rowCollection[i].name
 									};
 									for (var j = 0; j < keyList.length; j++) {
-										obj[keyList[j]] = rowCollection[i][keyList[j]];
+										if (keyList[j] != '$$hashKey') { // Remove watcher key
+											obj[keyList[j]] = rowCollection[i][keyList[j]];
+										}
 									}
 									nRowCollection.push(obj);
 								}
@@ -145,37 +146,47 @@ angular.module("RIF")
 						getDefaultMinRowsToShow: function () {
 							return defaultMinRowsToShow;
 						},
-						setAllStratification: function(nStratification) {
+						setAllStratification: function(nStratification, rowCollection) {
 							/* nStratification is an object, e.g:
 							 *
 							 * "name": "SAHSU_GRD_LEVEL3",
 							 * "stratificationType": "GEOLEVEL",
 							 * "description": "Stratification by geolevel: SAHSU_GRD_LEVEL3"
 							 */
-							var count=0;
+							var setCount=0;
+							var notSetCount=0;
 							if (nStratification && rowCollection && rowCollection.length > 0) {
 								for (var i = 0; i < rowCollection.length; i++) {
 									if (nStratification.stratificationType == "GEOLEVEL" && 
 										rowCollection[i][nStratification.name.toLowerCase()]) {
 										rowCollection[i].stratification=
 											rowCollection[i][nStratification.name.toLowerCase()];
-										count++;
+										setCount++;
 									}
+									else {
+										rowCollection[i].stratification="NONE";
+										notSetCount++;									
+									}
+									rowCollection[i]['$$hashKey'] = undefined;
 								}
-								AlertService.consoleDebug("[rifs-dsub-maptable.js] setAllStratification() " + 
-									count + "/" + rowCollection.length + 
-									"; nStratification: " + JSON.stringify(nStratification, null, 1));
 							}
+							AlertService.consoleDebug("[rifs-dsub-maptable.js] setAllStratification() " + 
+								setCount + "/" + 
+								(rowCollection ? rowCollection.length : 0) + 
+								"; not set: " + notSetCount + 
+								"; rowCollection[0]: " + 
+									(rowCollection ? JSON.stringify(rowCollection[0], null, 1) : "NONE") + 
+								"; nStratification: " + JSON.stringify(nStratification, null, 1));
 							return rowCollection;
 						},
-						setStratification: function(nStratification, areaID) {
+						setStratification: function(nStratification, areaID, rowCollection) {
 							/* nStratification is an object, e.g:
 							 *
 							 * "name": "SAHSU_GRD_LEVEL3",
 							 * "stratificationType": "GEOLEVEL",
 							 * "description": "Stratification by geolevel: SAHSU_GRD_LEVEL3"
 							 */
-							var count=0;
+							var setCount=0;
 							if (nStratification && areaID && rowCollection && rowCollection.length > 0) {
 								for (var i = 0; i < rowCollection.length; i++) {
 									if (nStratification.stratificationType == "GEOLEVEL" && 
@@ -183,11 +194,12 @@ angular.module("RIF")
 										rowCollection[i].area_id == areaID) {
 										rowCollection[i].stratification=
 											rowCollection[i][nStratification.name.toLowerCase()];
-										count++;
+										rowCollection[i]['$$hashKey'] = undefined;
+										setCount++;									
 									}
 								}
 								AlertService.consoleDebug("[rifs-dsub-maptable.js] setStratification(" + 
-									areaID + ") " + count + "/" + rowCollection.length + 
+									areaID + ") " + setCount + "/" + rowCollection.length + 
 									"; nStratification: " + JSON.stringify(nStratification, null, 1));
 							}
 							return rowCollection;

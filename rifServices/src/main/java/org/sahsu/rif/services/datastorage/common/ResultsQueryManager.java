@@ -1802,13 +1802,17 @@ public class ResultsQueryManager extends BaseSQLManager {
 						SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 				getGeolevelNamesQueryFormatter.addSelectField("a", "geolevel_name");
 				getGeolevelNamesQueryFormatter.addFromTable("rif40_geolevels a");
-				getGeolevelNamesQueryFormatter.addWhereParameterWithOperator("a.geolevel_id", "<");
+				getGeolevelNamesQueryFormatter.addWhereParameterWithOperator("a.geolevel_id", ">");
+				getGeolevelNamesQueryFormatter.addWhereParameterWithOperator("a.geolevel_id", "<=");
 				getGeolevelNamesQueryFormatter.addWhereParameter("a.geography");
 				getGeolevelNamesQueryFormatter.addOrderByCondition("a.geolevel_id", 
 					SelectQueryFormatter.SortOrder.DESCENDING);
 			
 				if (Integer.parseInt(myGeolevelId) > 3) {
 					myGeolevelId="3";
+				}
+				else if (Integer.parseInt(myGeolevelId) == 1) {
+					myGeolevelId="2";
 				}
 				sqlQueryText=logSQLQuery(
 						"getTileMakerAttributes",
@@ -1817,8 +1821,9 @@ public class ResultsQueryManager extends BaseSQLManager {
 						geography.getName().toUpperCase());
 						
 				statement3 = connection.prepareStatement(getGeolevelNamesQueryFormatter.generateQuery());
-				statement3.setInt(1, Integer.parseInt(myGeolevelId));
-				statement3.setString(2, geography.getName().toUpperCase());
+				statement3.setInt(1, 1);
+				statement3.setInt(2, Integer.parseInt(myGeolevelId));
+				statement3.setString(3, geography.getName().toUpperCase());
 
 				resultSet3 = statement3.executeQuery();
 
