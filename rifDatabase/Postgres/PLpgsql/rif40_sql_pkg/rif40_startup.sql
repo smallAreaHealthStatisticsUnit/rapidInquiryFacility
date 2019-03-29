@@ -12,17 +12,17 @@
 --
 -- Copyright:
 --
--- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
--- that rapidly addresses epidemiological and public health questions using 
--- routinely collected health and population data and generates standardised 
--- rates and relative risks for any given health outcome, for specified age 
+-- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU
+-- that rapidly addresses epidemiological and public health questions using
+-- routinely collected health and population data and generates standardised
+-- rates and relative risks for any given health outcome, for specified age
 -- and year ranges, for any given geographical area.
 --
 -- Copyright 2014 Imperial College London, developed by the Small Area
--- Health Statistics Unit. The work of the Small Area Health Statistics Unit 
--- is funded by the Public Health England as part of the MRC-PHE Centre for 
--- Environment and Health. Funding for this project has also been received 
--- from the Centers for Disease Control and Prevention.  
+-- Health Statistics Unit. The work of the Small Area Health Statistics Unit
+-- is funded by the Public Health England as part of the MRC-PHE Centre for
+-- Environment and Health. Funding for this project has also been received
+-- from the Centers for Disease Control and Prevention.
 --
 -- This file is part of the Rapid Inquiry Facility (RIF) project.
 -- RIF is free software: you can redistribute it and/or modify
@@ -36,8 +36,8 @@
 -- GNU Lesser General Public License for more details.
 --
 -- You should have received a copy of the GNU Lesser General Public License
--- along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
--- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+-- along with RIF. If not, see <http://www.gnu.org/licenses/>; or write
+-- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 -- Boston, MA 02110-1301 USA
 --
 -- Author:
@@ -56,9 +56,9 @@
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'User check: %', user;
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;
 	END IF;
 END;
 $$;
@@ -74,20 +74,20 @@ AS $func$
 
 Function: 	rif40_startup()
 Parameters:	No check boolean; default FALSE (do the checks)
-Returns:	1 
+Returns:	1
 Description:	Startup functions - for calling from /usr/local/pgsql/etc/psqlrc
 		Postgres has no ON-LOGON trigger
 		Java users will need to run this first
-		
+
 		Check running non privileged, SET search path, setup logging
 		If no checks flag is set, no further checks or object creation carried out
-		
-		Check if FDW functionality enabled (RIF40_PARAMETER FDWServerName), settings, FOREIGN SERVER setup OK 
+
+		Check if FDW functionality enabled (RIF40_PARAMETER FDWServerName), settings, FOREIGN SERVER setup OK
 		Create if required FDW tables i.e. those numerators in RIF40_NUM_DENOM_ERRORS with no local table of the same name
 
-Create:	 	
+Create:
         TABLE t_rif40_num_denom [if required]
-		VIEWS rif40_user_version, rif40_num_denom, rif40_num_denom_errors [if required]
+		VIEWS rif40_user_version, rif40_num_denom_errors [if required]
 		TEMPORARY TABLE g_rif40_study_areas, g_rif40_comparison_areas
 
 		Only creates objects if rif40_geographies, rif40_tables, rif40_health_study_themes exist
@@ -160,12 +160,12 @@ SELECT g.geography,
        rif40_sql_pkg.rif40_object_resolve(g.numerator_table) AS numerator_owner,
        g.numerator_table,
        rif40_sql_pkg.rif40_is_object_resolvable(g.numerator_table) AS is_numerator_resolvable,
-       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.numerator_table) AS n_num_denom_validated, 
+       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.numerator_table) AS n_num_denom_validated,
        n.description AS numerator_description,
        rif40_sql_pkg.rif40_object_resolve(g.denominator_table) AS denominator_owner,
        g.denominator_table,
        rif40_sql_pkg.rif40_is_object_resolvable(g.denominator_table) AS is_denominator_resolvable,
-       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.denominator_table) AS d_num_denom_validated, 
+       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.denominator_table) AS d_num_denom_validated,
        d.description AS denominator_description,
        0 AS automatic,
        0 AS auto_indirect_error_flag,
@@ -182,9 +182,9 @@ SELECT g.geography,
 
 Query to display RIF40_NUM_DENOM_ERRORS:
 
-SELECT geography AS geog, 
-       numerator_owner AS n_owner, numerator_table, is_numerator_resolvable AS n_resolv, n_num_denom_validated AS n_nd_valid, 
-       denominator_owner AS d_owner, denominator_table, is_denominator_resolvable AS d_resolv, d_num_denom_validated AS d_nd_valid, 
+SELECT geography AS geog,
+       numerator_owner AS n_owner, numerator_table, is_numerator_resolvable AS n_resolv, n_num_denom_validated AS n_nd_valid,
+       denominator_owner AS d_owner, denominator_table, is_denominator_resolvable AS d_resolv, d_num_denom_validated AS d_nd_valid,
        automatic AS auto, n_fdw_date_created,
        CASE WHEN n_num_denom_validated = 1 AND d_num_denom_validated = 1 THEN 1 ELSE 0 END AS ok
  FROM rif40_num_denom_errors
@@ -192,60 +192,9 @@ SELECT geography AS geog,
 
 c) rif40_num_denom VIEW of valid numerator and denominator pairs
 
-CREATE OR REPLACE VIEW peterh.rif40_num_denom
-AS
-WITH n AS (
-        SELECT geography, numerator_table, numerator_description, automatic, theme_description
-          FROM (
-                SELECT g.geography, n.table_name AS numerator_table, n.description AS numerator_description, n.automatic,
-                       t.description AS theme_description
-                  FROM rif40_geographies g, rif40_tables n, rif40_health_study_themes t
-                 WHERE n.isnumerator = 1
-                   AND n.automatic   = 1
-                   AND rif40_sql_pkg.rif40_is_object_resolvable(n.table_name) = 1
-                   AND n.theme       = t.theme) n1
-         WHERE rif40_sql_pkg.rif40_num_denom_validate(n1.geography, n1.numerator_table) = 1
-), d AS (
-        SELECT geography, denominator_table, denominator_description
-          FROM (
-                        SELECT g.geography, d.table_name AS denominator_table, d.description AS denominator_description
-                          FROM rif40_geographies g, rif40_tables d
-                         WHERE d.isindirectdenominator = 1
-                           AND d.automatic             = 1
-                           AND rif40_sql_pkg.rif40_is_object_resolvable(d.table_name) = 1) d1
-        WHERE rif40_sql_pkg.rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1
-          AND rif40_sql_pkg.rif40_auto_indirect_checks(d1.denominator_table) IS NULL
-)
-SELECT n.geography,
-       n.numerator_table,
-       n.numerator_description,
-       n.theme_description,
-       d.denominator_table,
-       d.denominator_description,
-       n.automatic
-  FROM d, n
- WHERE n.geography = d.geography
-UNION
-SELECT ta.geography,
-       ta.numerator_table,
-       ta.numerator_description,
-       COALESCE(h.description, 'Local user theme') AS theme_description,
-       ta.denominator_table,
-       d.description AS denominator_description,
-       0 automatic
-  FROM (SELECT g.geography,
-               g.numerator_table,
-               g.denominator_table,
-               n.description AS numerator_description,
-               n.theme
-          FROM peter.t_rif40_num_denom g
-                LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)
-        ) AS ta  
-        LEFT OUTER JOIN rif40_tables d ON (d.table_name = ta.denominator_table)
-        LEFT OUTER JOIN rif40_health_study_themes h ON (h.theme = ta.theme)
- ORDER BY 1, 2, 4;
+NOW DONE BY MIDDLEWARE
 
-d) Temporary study and comparision area tables.  Used to speed up extracts. On Postgres they are not global and need to be created for each session
+d) Temporary study and comparison area tables.  Used to speed up extracts. On Postgres they are not global and need to be created for each session
 
 CREATE GLOBAL TEMPORARY TABLE g_rif40_study_areas (
         study_id                INTEGER         NOT NULL,
@@ -290,7 +239,7 @@ DECLARE
 		 UNION
 		SELECT a.relname table_or_view 				/* Temporary tables */
  		 FROM pg_roles r, pg_class a
-			LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
+			LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)
 		 WHERE a.relowner       = (SELECT oid FROM pg_roles WHERE rolname = USER)
 		   AND a.relkind        = 'r' 				/* Relational table */
 		   AND a.relpersistence = 't' 				/* Persistence: temporary */
@@ -366,8 +315,8 @@ DECLARE
 			   AND a.relname  = LOWER(t.table_name)
 		), c AS (
 			SELECT b.foreign_table
-			  FROM b 
-			EXCEPT 
+			  FROM b
+			EXCEPT
 			SELECT b1.table_or_view
 			  FROM (
 				SELECT LOWER(a.numerator_table) AS table_or_view
@@ -382,19 +331,19 @@ DECLARE
 		 ORDER BY 1;
 --
 	c9 CURSOR FOR
-		SELECT PostGIS_Version() AS PostGIS_Version /* Expecting "2.0 USE_GEOS=1 USE_PROJ=1 USE_STATS=1" */, 
+		SELECT PostGIS_Version() AS PostGIS_Version /* Expecting "2.0 USE_GEOS=1 USE_PROJ=1 USE_STATS=1" */,
 		       PostGIS_geos_version() AS PostGIS_geos_version,
-		       PostGIS_lib_version() AS PostGIS_lib_version,  
-		       PostGIS_libXML_version() AS PostGIS_libXML_version,  
-		       PostGIS_PROJ_version() AS PostGIS_PROJ_version,  
-		       PostGIS_GDAL_version() AS PostGIS_GDAL_version, 
+		       PostGIS_lib_version() AS PostGIS_lib_version,
+		       PostGIS_libXML_version() AS PostGIS_libXML_version,
+		       PostGIS_PROJ_version() AS PostGIS_PROJ_version,
+		       PostGIS_GDAL_version() AS PostGIS_GDAL_version,
 		       PostGIS_raster_lib_version() AS PostGIS_raster_lib_version,
 		       PostGIS_Full_Version() AS PostGIS_Full_Version;
 	c10 CURSOR(l_extension VARCHAR) FOR
 		SELECT extname, extversion /* Required: postgis plpgsql; optional: adminpack, plperl, oracle_fdw, postgis_topology, dblink */
 		  FROM pg_extension
 		 WHERE extname = l_extension;
-	c11 CURSOR FOR 
+	c11 CURSOR FOR
 		SELECT *
 		  FROM pg_user WHERE usename = CURRENT_USER;
 	c12 CURSOR FOR
@@ -422,16 +371,16 @@ DECLARE
 	c12_rec RECORD;
 	c14_rec RECORD;
 --
-	rif40_run_study BOOLEAN:=FALSE;	
-	rif40_num_denom BOOLEAN:=FALSE;	
-	rif40_num_denom_errors BOOLEAN:=FALSE;	
-	t_rif40_num_denom BOOLEAN:=FALSE;	
+	rif40_run_study BOOLEAN:=FALSE;
+	rif40_num_denom_errors BOOLEAN:=FALSE;
+	t_rif40_num_denom BOOLEAN:=FALSE;
+    t_rif40_num_denom_old BOOLEAN:=FALSE;
 	recover_t_rif40_num_denom BOOLEAN:=FALSE;
-	g_rif40_study_areas BOOLEAN:=FALSE;	
-	g_rif40_comparison_areas BOOLEAN:=FALSE;	
-	rif40_user_version BOOLEAN:=FALSE;	
+	g_rif40_study_areas BOOLEAN:=FALSE;
+	g_rif40_comparison_areas BOOLEAN:=FALSE;
+	rif40_user_version BOOLEAN:=FALSE;
 --
-	fdw_enabled BOOLEAN:=FALSE;	
+	fdw_enabled BOOLEAN:=FALSE;
 --
 	drop_objects BOOLEAN:=FALSE; 			/* To force a rebuild */
 --
@@ -459,24 +408,24 @@ BEGIN
 	IF c11_rec.usesuper IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'Cannot detect if user is superuser');
 	ELSIF c11_rec.usesuper THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % is superuser', 
+		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % is superuser',
 			c11_rec.usename::VARCHAR);
 	ELSIF c11_rec.usecreatedb THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has database creation privilege', 
+		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has database creation privilege',
 			c11_rec.usename::VARCHAR);
-	ELSIF SUBSTR(version(), 12, 3)::NUMERIC < 9.5 THEN	
+	ELSIF SUBSTR(version(), 12, 3)::NUMERIC < 9.5 THEN
 		IF c11_rec.usecatupd THEN
-			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has update system catalog privilege', 
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has update system catalog privilege',
 				c11_rec.usename::VARCHAR);
 		END IF;
 	END IF;
-	
+
 --
 -- Setup logging
 --
 	PERFORM rif40_log_pkg.rif40_log_setup();
 --
--- Prepend user to search path if not RIF40 (otherwise the function will try and create the objects in the rif40 schema, 
+-- Prepend user to search path if not RIF40 (otherwise the function will try and create the objects in the rif40 schema,
 -- and you will use the rif40 t_rif40_num_denom). Add rif_studies (schema for study extracts/maps)
 --
 	OPEN c4;
@@ -493,11 +442,11 @@ BEGIN
 		CLOSE c4;
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'search_path not set for: %', USER::VARCHAR);
-	END IF;	
+	END IF;
 
 --
 -- Drop old rum_study() function
---	
+--
 	sql_stmt:='DROP FUNCTION IF EXISTS '||USER||'.rif40_run_study(INTEGER, INTEGER)';
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'SQL> %;', sql_stmt);
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -508,7 +457,7 @@ BEGIN
 	OPEN c2('g_rif40_study_areas');
 	FETCH c2 INTO c2_rec;
 --
--- Fixed - for multiple logons 
+-- Fixed - for multiple logons
 --
 	IF c2_rec.table_or_view = 'g_rif40_study_areas' THEN
 		g_rif40_study_areas:=TRUE;
@@ -516,7 +465,7 @@ BEGIN
 	CLOSE c2;
 	OPEN c2('g_rif40_comparison_areas');
 	FETCH c2 INTO c2_rec;
-	IF c2_rec.table_or_view = 'g_rif40_comparison_areas' THEN		
+	IF c2_rec.table_or_view = 'g_rif40_comparison_areas' THEN
 		g_rif40_comparison_areas:=TRUE;
 	END IF;
 	CLOSE c2;
@@ -547,11 +496,11 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.distance_from_nearest_source IS ''Distance from nearest source (Km)''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.nearest_rifshapepolyid IS ''Nearest rifshapepolyid (shape reference)''';	
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.exposure_value IS ''Exposure value (when bands selected by exposure values)''';	
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-		
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.nearest_rifshapepolyid IS ''Nearest rifshapepolyid (shape reference)''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.exposure_value IS ''Exposure value (when bands selected by exposure values)''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created temporary table: g_rif40_study_areas');
 		i:=i+1;
 	ELSE
@@ -583,16 +532,16 @@ BEGIN
 	FETCH c14 INTO c14_rec;
 	CLOSE c14;
 	sql_stmt:='SET rif40.application_name = '''||c14_rec.application_name||''';';
-	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	IF c14_rec.application_name = 'psql' THEN
 		sql_stmt:='SET application_name = ''RIF (psql)'';';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
 -- Need to detect JAVA
 --
 	ELSE
 		sql_stmt:='SET application_name = ''RIF (other/'||c14_rec.application_name||')'';';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	END IF;
 --
 -- If no checks flag is set, no further checks or object creation carried out
@@ -601,10 +550,10 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'No checks flag set, no checks or object creation carried out');
 		RETURN;
 	END IF;
-	
+
 --
 -- Check extensions Required: postgis plpgsql; optional: adminpack, plperl, oracle_fdw, postgis_topology, dblink
--- 
+--
 	OPEN c10('postgis');
 	FETCH c10 INTO c10_rec;
 	CLOSE c10;
@@ -636,7 +585,7 @@ BEGIN
 	OPEN c5;
 	FETCH c5 INTO c5_rec;
 	CLOSE c5;
-	IF c5_rec.fdwservername IS NULL OR c5_rec.fdwservertype IS NULL OR c5_rec.fdwdbserver IS NULL OR 
+	IF c5_rec.fdwservername IS NULL OR c5_rec.fdwservertype IS NULL OR c5_rec.fdwdbserver IS NULL OR
 	   c5_rec.fdwservername = ''    OR c5_rec.fdwservertype = ''    OR c5_rec.fdwdbserver = '' THEN
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'FDW functionality disabled - FDWServerName, FDWServerType, FDWDBServer RIF parameters not set.');
 	ELSE
@@ -647,7 +596,7 @@ BEGIN
 		FETCH c10 INTO c10_rec;
 		CLOSE c10;
 		IF c10_rec.extname IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'Foreign data wrapper server extension: % not loaded', 
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'Foreign data wrapper server extension: % not loaded',
 				c5_rec.fdwservertype::VARCHAR);
 		END IF;
 --
@@ -657,14 +606,14 @@ BEGIN
 		FETCH c6 INTO c6_rec;
 		CLOSE c6;
 		IF c6_rec.srvowner IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'FDW functionality disabled - FDWServerName: % not found', 
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'FDW functionality disabled - FDWServerName: % not found',
 				c5_rec.fdwservername::VARCHAR);
 		ELSIF has_server_privilege(c6_rec.srvowner, c6_rec.srvname, 'USAGE') THEN
 			fdw_enabled:=TRUE;
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'FDW functionality enabled to FDWServerName: %.% using % V%', 
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'FDW functionality enabled to FDWServerName: %.% using % V%',
 				c6_rec.srvowner::VARCHAR, c6_rec.srvname::VARCHAR, c5_rec.fdwservertype::VARCHAR, c10_rec.extversion::VARCHAR);
 		ELSE
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'FDW functionality disabled - no access to FDWServerName: %.%', 
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'FDW functionality disabled - no access to FDWServerName: %.%',
 				c6_rec.srvowner::VARCHAR, c6_rec.srvname::VARCHAR);
 		END IF;
 --
@@ -686,12 +635,6 @@ BEGIN
 --
 -- Check user objects exist
 --
-	OPEN c2('rif40_num_denom');
-	FETCH c2 INTO c2_rec;
-	IF c2_rec.table_or_view = 'rif40_num_denom' THEN
-		rif40_num_denom:=TRUE;
-	END IF;
-	CLOSE c2;
 	OPEN c2('rif40_num_denom_errors');
 	FETCH c2 INTO c2_rec;
 	IF c2_rec.table_or_view = 'rif40_num_denom_errors' THEN
@@ -704,7 +647,13 @@ BEGIN
 		t_rif40_num_denom:=TRUE;
 	END IF;
 	CLOSE c2;
-    
+	OPEN c2('t_rif40_num_denom_old');
+	FETCH c2 INTO c2_rec;
+	IF c2_rec.table_or_view = 't_rif40_num_denom_old' THEN
+		t_rif40_num_denom_old:=TRUE;
+	END IF;
+	CLOSE c2;
+
 	OPEN c2('rif40_user_version');
 	FETCH c2 INTO c2_rec;
 	IF c2_rec.table_or_view = 'rif40_user_version' THEN
@@ -730,10 +679,10 @@ BEGIN
 		FETCH c3 INTO c3_rec;
 		CLOSE c3;
 		IF cvs_revision = c3_rec.user_schema_revision THEN
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'V% DB version % matches', 
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'V% DB version % matches',
 				cvs_revision::VARCHAR, c3_rec.user_schema_revision::VARCHAR);
 		ELSE
-			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'V% DB version % mismatch; object; rebuild forced', 
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'V% DB version % mismatch; object; rebuild forced',
 				cvs_revision::VARCHAR, c3_rec.user_schema_revision::VARCHAR);
 			drop_objects:=TRUE;
 		END IF;
@@ -742,12 +691,12 @@ BEGIN
 -- Check for the presence of dependent tables
 --
 	IF c1_rec.total != 3 THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 
-			'V% rif40_geographies, rif40_tables, rif40_health_study_themes do not [YET] exist; rebuild forced when they do', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup',
+			'V% rif40_geographies, rif40_tables, rif40_health_study_themes do not [YET] exist; rebuild forced when they do',
 			cvs_revision::VARCHAR);
 		drop_objects:=TRUE;
 	ELSE
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'V% rif40_geographies, rif40_tables, rif40_health_study_themes exist for user: %', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'V% rif40_geographies, rif40_tables, rif40_health_study_themes exist for user: %',
 			cvs_revision::VARCHAR, USER::VARCHAR);
 	END IF;
 --
@@ -760,7 +709,7 @@ BEGIN
 --
 -- Display search path
 --
-	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'search_path: %, reset: %', 
+	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'search_path: %, reset: %',
 		c4_rec.setting::VARCHAR, c4_rec.reset_val::VARCHAR);
 --
 	IF drop_objects THEN
@@ -773,12 +722,6 @@ BEGIN
 			rif40_user_version:=FALSE;
 			j:=j+1;
 		END IF;
-		IF rif40_num_denom THEN
-			sql_stmt:='DROP VIEW rif40_num_denom';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-			rif40_num_denom:=FALSE;
-			j:=j+1;
-		END IF;
 		IF rif40_num_denom_errors THEN
 			sql_stmt:='DROP VIEW rif40_num_denom_errors';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -786,10 +729,12 @@ BEGIN
 			j:=j+1;
 		END IF;
 		IF t_rif40_num_denom THEN
-			sql_stmt:='DROP TABLE IF EXISTS '||USER||'.t_rif40_num_denom_old';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-            sql_stmt:='DROP INDEX rif40_num_denom_pk';
-			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+            IF t_rif40_num_denom_old THEN
+                sql_stmt:='DROP TABLE '||USER||'.t_rif40_num_denom_old CASCADE';
+                PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+                sql_stmt:='DROP INDEX IF EXISTS rif40_num_denom_pk';
+                PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+            END IF;
 			sql_stmt:='ALTER TABLE '||USER||'.t_rif40_num_denom RENAME TO t_rif40_num_denom_old';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			t_rif40_num_denom:=FALSE;
@@ -801,14 +746,14 @@ BEGIN
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			rif40_run_study:=FALSE;
 			j:=j+1;
-		END IF;		
+		END IF;
 	END IF;
 --
 -- Check for the presence of dependent tables - only continue of they do
 --
 	IF c1_rec.total != 3 THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 
-			'Check for the presence of dependent tables - only continue of they do, c1_rec.total: %', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup',
+			'Check for the presence of dependent tables - only continue of they do, c1_rec.total: %',
 			c1_rec.total::VARCHAR);
 		RETURN;
 	END IF;
@@ -817,7 +762,7 @@ BEGIN
 --
 	IF NOT rif40_run_study AND USER != 'rif40' THEN
 		sql_stmt:='CREATE OR REPLACE FUNCTION '||USER||'.rif40_run_study(study_id INTEGER, debug BOOLEAN, recursion_level INTEGER DEFAULT 0)'||E'\n'||
-'RETURNS BOOLEAN'||E'\n'||		
+'RETURNS BOOLEAN'||E'\n'||
 'SECURITY DEFINER'||E'\n'||
 'AS '||CHR(36)||'func'||CHR(36)||E'\n'||
 'DECLARE'||E'\n'||
@@ -848,9 +793,9 @@ CHR(36)||'func'||CHR(36)||E'\n'||
 E'\n'||
 'Runs DEFINER USER; calls rif40_sm_pkg.rif40_run_study(). Intended for batch.'||E'\n'||
 '''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='GRANT EXECUTE ON FUNCTION '||USER||'.rif40_run_study(INTEGER, BOOLEAN, INTEGER) TO rif40';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	END IF;
 	IF NOT t_rif40_num_denom THEN
 		sql_stmt:='CREATE TABLE '||USER||'.t_rif40_num_denom ('||E'\n';
@@ -862,7 +807,7 @@ E'\n'||
             sql_stmt:='INSERT INTO '||USER||'.t_rif40_num_denom(geography, numerator_table, denominator_table)'||E'\n';
             sql_stmt:=sql_stmt||'SELECT geography, numerator_table, denominator_table FROM '||
                 USER||'.t_rif40_num_denom_old';
-            PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt); 
+            PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
         END IF;
 		sql_stmt:='CREATE UNIQUE INDEX rif40_num_denom_pk ON '||USER||'.t_rif40_num_denom(geography, numerator_table, denominator_table)';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -881,13 +826,13 @@ E'\n'||
 --
 		sql_stmt:='CREATE TRIGGER t_rif40_num_denom_checks'||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||'BEFORE INSERT OR UPDATE OF geography, numerator_table, denominator_table ON t_rif40_num_denom'||E'\n';
-		sql_stmt:=sql_stmt||E'\t'||'FOR EACH ROW'||E'\n';	
+		sql_stmt:=sql_stmt||E'\t'||'FOR EACH ROW'||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||'WHEN ((NEW.geography IS NOT NULL AND NEW.geography::text <> '''') OR (NEW.numerator_table IS NOT NULL AND NEW.numerator_table::text <> '''') OR (NEW.denominator_table IS NOT NULL AND NEW.denominator_table::text <> ''''))'||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||'EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_t_rif40_num_denom_checks()';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='CREATE TRIGGER t_rif40_num_denom_checks_del'||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||'BEFORE DELETE ON t_rif40_num_denom'||E'\n';
-		sql_stmt:=sql_stmt||E'\t'||'FOR EACH ROW'||E'\n';	
+		sql_stmt:=sql_stmt||E'\t'||'FOR EACH ROW'||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||'EXECUTE PROCEDURE rif40_trg_pkg.trigger_fct_t_rif40_num_denom_checks()';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON TRIGGER t_rif40_num_denom_checks ON t_rif40_num_denom IS ''INSERT OR UPDATE trigger: calls rif40_trg_pkg.trigger_fct_t_rif40_num_denom_checks()''';
@@ -923,18 +868,18 @@ E'\n'||
 			E'\t'||E'\t'||' WHERE d.isindirectdenominator = 1'||E'\n'||
 			E'\t'||E'\t'||'   AND d.automatic             = 1) AS d1 /* Automatic denominators */'||E'\n'||
 			')'||E'\n'||
-			'SELECT n.geography,'||E'\n'|| 
-			'       n.numerator_owner,'||E'\n'|| 
-			'       n.numerator_table,'||E'\n'|| 
-			'       n.is_object_resolvable AS is_numerator_resolvable,'||E'\n'|| 
-			'       n.n_num_denom_validated,'||E'\n'|| 
-			'       n.numerator_description,'||E'\n'|| 
-			'       d.denominator_owner,'||E'\n'|| 
-			'       d.denominator_table,'||E'\n'|| 
-			'       d.is_object_resolvable AS is_denominator_resolvable,'||E'\n'|| 
-			'       d.d_num_denom_validated,'||E'\n'|| 
-			'       d.denominator_description,'||E'\n'|| 
-			'       n.automatic,'||E'\n'|| 
+			'SELECT n.geography,'||E'\n'||
+			'       n.numerator_owner,'||E'\n'||
+			'       n.numerator_table,'||E'\n'||
+			'       n.is_object_resolvable AS is_numerator_resolvable,'||E'\n'||
+			'       n.n_num_denom_validated,'||E'\n'||
+			'       n.numerator_description,'||E'\n'||
+			'       d.denominator_owner,'||E'\n'||
+			'       d.denominator_table,'||E'\n'||
+			'       d.is_object_resolvable AS is_denominator_resolvable,'||E'\n'||
+			'       d.d_num_denom_validated,'||E'\n'||
+			'       d.denominator_description,'||E'\n'||
+			'       n.automatic,'||E'\n'||
 			'       CASE'||E'\n'||
 			E'\t'||'	WHEN d.auto_indirect_error IS NULL THEN 0 ELSE 1 END AS auto_indirect_error_flag,'||E'\n'||
 			'       d.auto_indirect_error AS auto_indirect_error,'||E'\n'||
@@ -947,19 +892,19 @@ E'\n'||
 			' WHERE n.geography = d.geography'||E'\n';
 		IF  USER != 'rif40' THEN
 			sql_stmt:=sql_stmt||'UNION'||E'\n'||
-				'SELECT g.geography,'||E'\n'|| 
-			'       rif40_sql_pkg.rif40_object_resolve(g.numerator_table) AS numerator_owner,'||E'\n'|| 
-			'       g.numerator_table,'||E'\n'|| 
-			'       rif40_sql_pkg.rif40_is_object_resolvable(g.numerator_table) AS is_numerator_resolvable,'||E'\n'|| 
-			'       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.numerator_table) AS num_denom_validated,'||E'\n'|| 
+				'SELECT g.geography,'||E'\n'||
+			'       rif40_sql_pkg.rif40_object_resolve(g.numerator_table) AS numerator_owner,'||E'\n'||
+			'       g.numerator_table,'||E'\n'||
+			'       rif40_sql_pkg.rif40_is_object_resolvable(g.numerator_table) AS is_numerator_resolvable,'||E'\n'||
+			'       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.numerator_table) AS num_denom_validated,'||E'\n'||
 			'       n.description AS numerator_description,'||E'\n'||
-			'       rif40_sql_pkg.rif40_object_resolve(g.denominator_table) AS denominator_owner,'||E'\n'|| 
-			'       g.denominator_table,'||E'\n'|| 
-			'       rif40_sql_pkg.rif40_is_object_resolvable(g.denominator_table) AS is_denominator_resolvable,'||E'\n'|| 
-			'       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.denominator_table) AS num_denom_validated,'||E'\n'|| 
+			'       rif40_sql_pkg.rif40_object_resolve(g.denominator_table) AS denominator_owner,'||E'\n'||
+			'       g.denominator_table,'||E'\n'||
+			'       rif40_sql_pkg.rif40_is_object_resolvable(g.denominator_table) AS is_denominator_resolvable,'||E'\n'||
+			'       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.denominator_table) AS num_denom_validated,'||E'\n'||
 			'       d.description AS denominator_description,'||E'\n'||
-			'       0 AS automatic,'||E'\n'|| 
-			'       0 AS auto_indirect_error_flag,'||E'\n'|| 
+			'       0 AS automatic,'||E'\n'||
+			'       0 AS auto_indirect_error_flag,'||E'\n'||
 			'       NULL::text AS auto_indirect_error,'||E'\n'||
 			'       f.create_status AS n_fdw_create_status,'||E'\n'||
 			'       f.error_message AS n_fdw_error_message,'||E'\n'||
@@ -972,7 +917,7 @@ E'\n'||
 		END IF;
 		sql_stmt:=sql_stmt||' ORDER BY 1, 2, 5';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON VIEW '||USER||'.rif40_num_denom_errors 				IS ''All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.'''; 
+		sql_stmt:='COMMENT ON VIEW '||USER||'.rif40_num_denom_errors 				IS ''All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_num_denom_errors.geography 		IS ''Geography''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -1012,84 +957,7 @@ E'\n'||
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created view: rif40_num_denom_errors');
 		i:=i+1;
-	END IF;
-	IF NOT rif40_num_denom THEN
-		sql_stmt:='CREATE OR REPLACE VIEW '||USER||'.rif40_num_denom'||E'\n';
-		sql_stmt:=sql_stmt||'AS'||E'\n'||
-			'WITH n AS ('||E'\n'||
-			E'\t'||'SELECT geography, numerator_table, numerator_description, automatic, theme_description'||E'\n'||
-			E'\t'||'  FROM ('||E'\n'||
-			E'\t'||E'\t'||'SELECT g.geography, n.table_name AS numerator_table, n.description AS numerator_description, n.automatic,'||E'\n'||
-       			E'\t'||E'\t'||'       t.description AS theme_description'||E'\n'||
-			E'\t'||E'\t'||'  FROM rif40_geographies g, rif40_tables n, rif40_health_study_themes t'||E'\n'||
-			E'\t'||E'\t'||' WHERE n.isnumerator = 1'||E'\n'||
-			E'\t'||E'\t'||'   AND n.automatic   = 1'||E'\n'||
-			E'\t'||E'\t'||'   AND rif40_sql_pkg.rif40_is_object_resolvable(n.table_name) = 1'||E'\n'||
-			E'\t'||E'\t'||'   AND n.theme       = t.theme) AS n1'||E'\n'||
-			E'\t'||' WHERE rif40_sql_pkg.rif40_num_denom_validate(n1.geography, n1.numerator_table) = 1'||E'\n'||
-			'), d AS ('||E'\n'||
-			E'\t'||'SELECT geography, denominator_table, denominator_description'||E'\n'||
-			E'\t'||'  FROM ('||E'\n'||
-			E'\t'||E'\t'||'	SELECT g.geography, d.table_name AS denominator_table, d.description AS denominator_description'||E'\n'||
-			E'\t'||E'\t'||'	  FROM rif40_geographies g, rif40_tables d'||E'\n'||
-			E'\t'||E'\t'||'	 WHERE d.isindirectdenominator = 1'||E'\n'||
-			E'\t'||E'\t'||'	   AND d.automatic             = 1'||E'\n'||
-			E'\t'||E'\t'||'	   AND rif40_sql_pkg.rif40_is_object_resolvable(d.table_name) = 1) AS d1'||E'\n'||
-			E'\t'||'WHERE rif40_sql_pkg.rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1'||E'\n'||
-		   	E'\t'||'  AND rif40_sql_pkg.rif40_auto_indirect_checks(d1.denominator_table) IS NULL'||E'\n'||
-			')'||E'\n'||
-			'SELECT n.geography,'||E'\n'||
-			'       n.numerator_table,'||E'\n'||
-			'       n.numerator_description,'||E'\n'||
-			'       n.theme_description,'||E'\n'||
-			'       d.denominator_table,'||E'\n'||
-			'       d.denominator_description,'||E'\n'||
-			'       n.automatic'||E'\n'||
-			'  FROM n, d'||E'\n'||
-			' WHERE n.geography = d.geography'||E'\n';
---
--- Add t_rif40_num_denom for non rif40 users
---
-		IF  USER != 'rif40' THEN
-			sql_stmt:=sql_stmt||'UNION'||E'\n'||
-				'SELECT ta.geography,'||E'\n'||
-				'       ta.numerator_table,'||E'\n'||
-				'       ta.numerator_description,'||E'\n'||
-				'       COALESCE(h.description, ''Local user theme'') AS theme_description,'||E'\n'||
-				'       ta.denominator_table,'||E'\n'||
-				'       d.description AS denominator_description,'||E'\n'||
-				'       0 automatic'||E'\n'||
-				'  FROM (SELECT g.geography,'||E'\n'||
-				'               g.numerator_table,'||E'\n'||
-				'               g.denominator_table,'||E'\n'||
-				'               n.description AS numerator_description,'||E'\n'||
-				'               n.theme'||E'\n'||
-				'          FROM '||USER||'.t_rif40_num_denom g'||E'\n'||
-				'                LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)'||E'\n'||
-				'        ) AS ta'||E'\n'||  
- 				'        LEFT OUTER JOIN rif40_tables d ON (d.table_name = ta.denominator_table)'||E'\n'||
-				'        LEFT OUTER JOIN rif40_health_study_themes h ON (h.theme = ta.theme)'||E'\n';                
- 		END IF;
-		sql_stmt:=sql_stmt||' ORDER BY 1, 2, 4';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON VIEW '||USER||'.rif40_num_denom 				IS ''Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_num_denom.geography 		IS ''Geography''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_num_denom.numerator_table 	IS ''Numerator table''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_num_denom.denominator_table 	IS ''Denominator table''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_num_denom.numerator_description	IS ''Numerator table description''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_num_denom.denominator_description	IS ''Denominator table description''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_num_denom.automatic 		IS ''Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON COLUMN '||USER||'.rif40_num_denom.theme_description 	IS ''Numerator table health study theme description''';
-		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created view: rif40_num_denom');
-		i:=i+1;
+
 	END IF;
 
 --
@@ -1102,10 +970,10 @@ E'\n'||
 		i:=i+rif40_sql_pkg.rif40_create_fdw_views(drop_objects, c5_rec.fdwservername, c5_rec.fdwservertype);
 		FOR c7_rec IN c7 LOOP
 --
--- Attmept to create FDW tables for potential FDW tables i.e. those numerators in RIF40_NUM_DENOM_ERRORS with no local table of the same name 
+-- Attmept to create FDW tables for potential FDW tables i.e. those numerators in RIF40_NUM_DENOM_ERRORS with no local table of the same name
 --
 			IF c7_rec.foreign_table_exists = 0 AND c7_rec.table_ok = 1 THEN /* Local table - DO NOT TOUCH */
-				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Local numerator: %', 
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Local numerator: %',
 					c7_rec.foreign_table::VARCHAR);
 			ELSE
 				i:=i+rif40_sql_pkg.rif40_create_fdw_table(c7_rec.foreign_table, c7_rec.total_geographies, drop_objects, c5_rec.fdwservername, c5_rec.fdwservertype);
@@ -1115,7 +983,7 @@ E'\n'||
 -- It would also be desirable to clean up FDW tables no longer in use
 --
 		FOR c8_rec IN c8 LOOP
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_startup', 'Remote foreign data wrapper health table % is obsolete and needs to be removed', 
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_startup', 'Remote foreign data wrapper health table % is obsolete and needs to be removed',
 				c8_rec.foreign_table::VARCHAR);
 		END LOOP;
 	END IF;
@@ -1123,7 +991,7 @@ E'\n'||
 -- RIF40 doesn't have a version view
 --
 	IF NOT rif40_user_version THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'V% Creating view: rif40_user_version', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'V% Creating view: rif40_user_version',
 			cvs_revision::VARCHAR);
 		sql_stmt:='CREATE OR REPLACE VIEW '||USER||'.rif40_user_version AS SELECT CAST('''||cvs_revision||''' AS VARCHAR) AS user_schema_revision';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -1141,7 +1009,7 @@ E'\n'||
 	END IF;
 --
 	IF i > 0 OR j > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Deleted %, created % tables/views/foreign data wrapper tables', 
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Deleted %, created % tables/views/foreign data wrapper tables',
 			j::VARCHAR, i::VARCHAR);
 	END IF;
 --
@@ -1153,15 +1021,15 @@ GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_startup(BOOLEAN) TO rif40, PUBLIC;
 
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_startup(BOOLEAN) IS 'Function: 	rif40_startup()
 Parameters:	None
-Returns:	1 
+Returns:	1
 Description:	Startup functions - for calling from /usr/local/pgsql/etc/psqlrc
 		Postgres has no ON-LOGON trigger
 		Java users will need to run this first
-						
+
 		Check running non privileged, SET search path, setup logging
 		If no checks flag is set, no further checks or object creation carried out
 
-		Check if FDW functionality enabled (RIF40_PARAMETER FDWServerName), settings, FOREIGN SERVER setup OK 
+		Check if FDW functionality enabled (RIF40_PARAMETER FDWServerName), settings, FOREIGN SERVER setup OK
 		Create if required FDW tables i.e. those numerators in RIF40_NUM_DENOM_ERRORS with no local table of the same name
 
 Create:	 	TABLE t_rif40_num_denom [if required]
@@ -1239,12 +1107,12 @@ SELECT g.geography,
        rif40_sql_pkg.rif40_object_resolve(g.numerator_table) AS numerator_owner,
        g.numerator_table,
        rif40_sql_pkg.rif40_is_object_resolvable(g.numerator_table) AS is_numerator_resolvable,
-       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.numerator_table) AS n_num_denom_validated, 
+       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.numerator_table) AS n_num_denom_validated,
        n.description AS numerator_description,
        rif40_sql_pkg.rif40_object_resolve(g.denominator_table) AS denominator_owner,
        g.denominator_table,
        rif40_sql_pkg.rif40_is_object_resolvable(g.denominator_table) AS is_denominator_resolvable,
-       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.denominator_table) AS d_num_denom_validated, 
+       rif40_sql_pkg.rif40_num_denom_validate(g.geography, g.denominator_table) AS d_num_denom_validated,
        d.description AS denominator_description,
        0 AS automatic,
        0 AS auto_indirect_error_flag,
@@ -1261,9 +1129,9 @@ SELECT g.geography,
 
 Query to display RIF40_NUM_DENOM_ERRORS:
 
-SELECT geography AS geog, 
-       numerator_owner AS n_owner, numerator_table, is_numerator_resolvable AS n_resolv, n_num_denom_validated AS n_nd_valid, 
-       denominator_owner AS d_owner, denominator_table, is_denominator_resolvable AS d_resolv, d_num_denom_validated AS d_nd_valid, 
+SELECT geography AS geog,
+       numerator_owner AS n_owner, numerator_table, is_numerator_resolvable AS n_resolv, n_num_denom_validated AS n_nd_valid,
+       denominator_owner AS d_owner, denominator_table, is_denominator_resolvable AS d_resolv, d_num_denom_validated AS d_nd_valid,
        automatic AS auto, n_fdw_date_created,
        CASE WHEN n_num_denom_validated = 1 AND d_num_denom_validated = 1 THEN 1 ELSE 0 END AS ok
  FROM rif40_num_denom_errors
@@ -1319,11 +1187,11 @@ SELECT ta.geography,
                n.theme
           FROM peter.t_rif40_num_denom g
                 LEFT OUTER JOIN rif40_tables n ON (n.table_name = g.numerator_table)
-        ) AS ta  
+        ) AS ta
         LEFT OUTER JOIN rif40_tables d ON (d.table_name = ta.denominator_table)
         LEFT OUTER JOIN rif40_health_study_themes h ON (h.theme = ta.theme)
  ORDER BY 1, 2, 4;
- 
+
 d) Temporary study and comparision area tables.  Used to speed up extracts. On Postgres they are not global and need to be created for each session
 
 CREATE GLOBAL TEMPORARY TABLE g_rif40_study_areas (
@@ -1347,7 +1215,7 @@ CREATE TABLE study_status (
   creation_date 	timestamp without time zone NOT NULL,
   ith_update 		serial NOT NULL,
   message 			character varying(255));
-  
+
 ';
 
 \df rif40_sql_pkg.rif40_startup

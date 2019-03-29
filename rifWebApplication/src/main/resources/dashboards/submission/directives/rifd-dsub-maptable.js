@@ -115,7 +115,9 @@ angular.module("RIF")
                         //If geog changed then clear selected
                         var thisGeography = SubmissionStateService.getState().geography;
                         if (thisGeography !== $scope.input.geography) {
-							alertScope.consoleLog("[rifd-dsub-maptable.js] Geography change: clear $scope.input.selectedPolygon");
+							alertScope.consoleLog("[rifd-dsub-maptable.js] Geography change from: " + 
+                                SubmissionStateService.getState().geography + " to: " + thisGeography +
+                                "; clear $scope.input.selectedPolygon");
                             $scope.input.selectedPolygon.length = 0;
                             $scope.input.selectAt = "";
                             $scope.input.studyResolution = "";

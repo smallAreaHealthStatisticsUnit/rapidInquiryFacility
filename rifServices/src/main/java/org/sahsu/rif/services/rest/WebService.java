@@ -55,6 +55,8 @@ import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
+import org.json.JSONObject;
+
 public class WebService {
 
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss:SSS");
@@ -633,6 +635,44 @@ public class WebService {
 		return webServiceResponseGenerator.generateWebServiceResponse(
 				servletRequest,
 				result);
+	}
+
+	/**
+	 * retrieves the health theme, numerators and denominators.
+	 * @param userID
+	 * @return
+	 */
+	protected Response getRif40NumDenom(
+		final HttpServletRequest servletRequest,
+		final String userID) {
+
+		String result;
+
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudySubmissionAPI studySubmissionService
+				= rifStudyServiceBundle.getRIFStudySubmissionService();
+
+			JSONObject rif40NumDenomServiceJson = studySubmissionService.getRif40NumDenom(user);
+
+			result = rif40NumDenomServiceJson.toString();
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getRif40NumDenom error", exception);
+			//Convert exceptions to support JSON
+			result
+				= serialiseException(
+					servletRequest,
+					exception);
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);
 	}
 
 	protected Response getDenominator(

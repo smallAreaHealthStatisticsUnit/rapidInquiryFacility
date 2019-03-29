@@ -5,6 +5,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -22,6 +23,7 @@ import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.fileformats.AppFile;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -59,10 +61,10 @@ public class BaseSQLManager implements SQLManager {
 	private final String databaseURL;
 	private static HashMap<String, String> passwordHashList = null;
 
-	protected RIFDatabaseProperties rifDatabaseProperties;
-
 	private static Properties prop = null;
 	private static String lineSeparator = System.getProperty("line.separator");
+
+	protected RIFDatabaseProperties rifDatabaseProperties;
 	private static DatabaseType databaseType;
 
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
@@ -121,7 +123,7 @@ public class BaseSQLManager implements SQLManager {
 			rifDatabaseProperties.isCaseSensitive());
 		
 	}
-	
+    
 	@Override
 	public PreparedStatement createPreparedStatement(final Connection connection, final QueryFormatter queryFormatter)
 			throws SQLException {
@@ -431,10 +433,12 @@ public class BaseSQLManager implements SQLManager {
 	
 	/**
 	 * Get column comment from data dictionary
-	 *  @param connection,
+	 * @param connection,
 	 * @param schemaName,
 	 * @param tableName,
 	 * @param columnName
+     *
+     * @returns column comment from data dictionary
 	 */
 	@Override
 	public String getColumnComment(Connection connection, String schemaName, String tableName,
@@ -459,6 +463,8 @@ public class BaseSQLManager implements SQLManager {
 					0, "   AND UPPER(cols.table_name)    = UPPER(?)");
 			columnCommentQueryFormatter.addQueryLine(
 					0, "   AND UPPER(cols.table_name)    = UPPER(c.relname)");
+			columnCommentQueryFormatter.addQueryLine(
+					0, "   AND c.oid = (SELECT ('\"' || cols.table_name || '\"')::regclass::oid)");
 			columnCommentQueryFormatter.addQueryLine(
 					0, "   AND UPPER(cols.column_name)   = UPPER(?)");
 		}
@@ -502,7 +508,10 @@ public class BaseSQLManager implements SQLManager {
 		}
 		catch (SQLException exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
-				lineSeparator + columnCommentQueryFormatter.generateQuery(),
+				lineSeparator + columnCommentQueryFormatter.generateQuery() +
+                "; schema: " + schemaName +
+                "; table: " + tableName + 
+                "; column: " + columnName,
 				exception);
 			throw exception;
 		}
@@ -512,7 +521,192 @@ public class BaseSQLManager implements SQLManager {
 		
 		return columnComment;
 	}
-	
+
+	/**
+	 * Get view defintion SQL from data dictionary
+     *
+	 * @param connection,
+	 * @param schemaName,
+	 * @param tableName
+     *
+     * @returns view defintion SQL from data dictionary
+	 */
+	@Override	
+	public String getViewDefinition(Connection connection,
+			String schemaName, String viewName)
+			throws RIFSQLException {
+				
+		SQLGeneralQueryFormatter viewDefinitionQueryFormatter = new SQLGeneralQueryFormatter();
+		ResultSet resultSet;
+		String viewDefinition = null;
+		String sqlQueryText = null;
+		PreparedStatement statement = null;
+		
+		try {
+			if (databaseType == DatabaseType.POSTGRESQL) {
+				viewDefinitionQueryFormatter.addQueryLine(0, "SELECT STRING_AGG(definition, '\\n') AS definition");
+				viewDefinitionQueryFormatter.addQueryLine(0, "  FROM pg_views");
+				viewDefinitionQueryFormatter.addQueryLine(0, " WHERE schemaname = '" + 
+					schemaName.toLowerCase() + "'");
+				viewDefinitionQueryFormatter.addQueryLine(0, "   AND viewname   = '" + 
+					viewName.toLowerCase() + "'");
+			}
+			else if (databaseType == DatabaseType.SQL_SERVER) {
+				viewDefinitionQueryFormatter.addQueryLine(0, "SELECT OBJECT_DEFINITION(OBJECT_ID('" + 
+					schemaName.toLowerCase() + "." + 
+					viewName.toLowerCase() + "')) AS definition");
+			}
+			else {
+				throw new SQLException("getColumnComment(): invalid databaseType: " +
+					databaseType);
+			}
+			
+			sqlQueryText = logSQLQuery(
+						"getViewDefinition",
+						viewDefinitionQueryFormatter,
+						schemaName,
+						viewName);
+			statement = createPreparedStatement(connection, viewDefinitionQueryFormatter);
+			
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				viewDefinition=resultSet.getString(1);
+				if (resultSet.next()) {
+					throw new SQLException("getColumnComment() database: " + databaseType +
+						"; expected 1 row, got >1");
+				}
+                if (viewDefinition != null) {
+                    viewDefinition=viewDefinition.replaceAll("\\r\\n|\\r", "\n"); // Convert line endings to OS of J2EE container
+                    viewDefinition=viewDefinition.replaceAll("\\n", lineSeparator);
+                    if (databaseType == DatabaseType.SQL_SERVER) { // Remove CREATE VIEW line
+                        viewDefinition=viewDefinition.replace(
+                            "CREATE VIEW [" + schemaName.toLowerCase() + "].[" + viewName.toLowerCase() + 
+                                "] AS", "");
+						viewDefinition=viewDefinition.trim();
+                    }		
+                    else if (databaseType == DatabaseType.POSTGRESQL) {
+                        viewDefinition=viewDefinition.substring(1); // Remove first charscter
+                    }	
+                }                    
+			}
+			else {
+				rifLogger.debug(this.getClass(), "getColumnComment() database: " + databaseType +
+					"; expected 1 row, got none");
+			}
+		}
+		catch (SQLException sqlException) {	
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
+			throw rifSQLException;
+		}
+		finally {
+			closeStatement(statement);
+		}
+		
+		return viewDefinition;
+	}
+		
+   /**
+	 * Comment object
+     *
+	 * @param connection,
+	 * @param objectType,
+	 * @param schemaName,
+	 * @param objectName,
+	 * @param commentText
+	 */
+	@Override	
+	public void commentObject(Connection connection,
+			String objectType, String schemaName, String objectName, String commentText)
+			throws RIFSQLException {
+				
+		SQLGeneralQueryFormatter commentObjectFormatter = new SQLGeneralQueryFormatter();
+		String sqlQueryText = null;
+		Statement statement = null;
+		
+		try {
+			if (databaseType == DatabaseType.POSTGRESQL) {	
+				commentObjectFormatter.addQueryLine(0, "COMMENT ON " + objectType + " " + 
+					schemaName + "." + objectName + " IS ");
+				commentObjectFormatter.addQueryLine(0, "'" + commentText + "'");
+			}			
+			else if (databaseType == DatabaseType.SQL_SERVER) {
+				commentObjectFormatter.addQueryLine(0, "EXECUTE sp_addextendedproperty");
+				commentObjectFormatter.addQueryLine(0, "@name = N'MS_Description',");
+				commentObjectFormatter.addQueryLine(0, "@value = N'"+ commentText + "',");
+				commentObjectFormatter.addQueryLine(0, "@level0type = N'Schema', @level0name = '" + schemaName + "',  ");
+				commentObjectFormatter.addQueryLine(0, "@level1type = N'" + objectType + "', @level1name  = '" + objectName + "';");
+			}
+			else {
+				throw new SQLException("commentObject(): invalid databaseType: " +
+					databaseType);
+			}
+			sqlQueryText = logSQLQuery(
+						"commentObject",
+						commentObjectFormatter);
+		}
+		catch (SQLException sqlException) {	
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
+			throw rifSQLException;
+		}
+		finally {
+			closeStatement(statement);           
+		}
+	}
+			
+   /**
+	 * Comment column
+	 * @param connection,
+	 * @param objectType,
+	 * @param schemaName,
+	 * @param objectName,
+	 * @param columnName,
+	 * @param commentText
+	 */
+	@Override	
+	public void commentColumn(Connection connection,
+			String objectType, String schemaName, String objectName, String columnName, String commentText)
+			throws RIFSQLException {
+		SQLGeneralQueryFormatter commentObjectFormatter = new SQLGeneralQueryFormatter();
+		String sqlQueryText = null;
+		Statement statement = null;
+		
+		try {
+			if (databaseType == DatabaseType.POSTGRESQL) {	
+				commentObjectFormatter.addQueryLine(0, "COMMENT ON COLUMN " + 
+					schemaName + "." + objectName + "." + columnName + " IS ");
+				commentObjectFormatter.addQueryLine(0, "'" + commentText + "'");
+			}			
+			else if (databaseType == DatabaseType.SQL_SERVER) {
+				commentObjectFormatter.addQueryLine(0, "EXECUTE sp_addextendedproperty");
+				commentObjectFormatter.addQueryLine(0, "@name = N'MS_Description',");
+				commentObjectFormatter.addQueryLine(0, "@value = N'"+ commentText + "',");
+				commentObjectFormatter.addQueryLine(0, "@level0type = N'Schema', @level0name = '" + schemaName + "',  ");
+				commentObjectFormatter.addQueryLine(0, "@level1type = N'" + objectType + "', @level1name  = '" + objectName + "',");
+				commentObjectFormatter.addQueryLine(0, "@level2type = N'Column', @level2name = '" + columnName + "';");
+			}
+			else {
+				throw new SQLException("commentColumn(): invalid databaseType: " +
+					databaseType);
+			}
+			sqlQueryText = logSQLQuery(
+						"commentColumn",
+						commentObjectFormatter);
+
+            statement = connection.createStatement();
+			statement.execute(commentObjectFormatter.generateQuery());
+		}
+		catch (SQLException sqlException) {	
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
+			throw rifSQLException;
+		}
+		finally {
+			closeStatement(statement);        
+		}
+	}
+			
 	/** 
 	 * Convert database style names to JSON style, e.g. study_or_comparison becomes studyOrComparison
      *
@@ -751,7 +945,56 @@ public class BaseSQLManager implements SQLManager {
 		
 		return rVal;
 	}
+
+	@Override
+	public boolean doesTableExist(final Connection connection, final String schemaName, final String tableName) 
+		throws Exception {		
 	
+		boolean rVal=false;
+		
+		SQLGeneralQueryFormatter checkTableExistsQueryFormatter = new SQLGeneralQueryFormatter();
+		ResultSet resultSet;
+		
+		configureQueryFormatterForDB(checkTableExistsQueryFormatter);
+		checkTableExistsQueryFormatter.addQueryLine(0, "SELECT table_name");
+		checkTableExistsQueryFormatter.addQueryLine(0, "  FROM information_schema.tables");
+		checkTableExistsQueryFormatter.addQueryLine(0, " WHERE table_schema = ?");
+		checkTableExistsQueryFormatter.addQueryLine(0, "   AND table_name   = ?");
+
+		logSQLQuery(
+				"doesTableExist",
+				checkTableExistsQueryFormatter,
+				schemaName,
+				tableName);
+		PreparedStatement statement = createPreparedStatement(connection, checkTableExistsQueryFormatter);
+		
+		try {		
+			statement.setString(1, schemaName);
+			statement.setString(2, tableName);
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				String res=resultSet.getString(1);
+				if (resultSet.next()) {
+					throw new Exception("doesTableExist() database: " + databaseType +
+						"; expected 1 row, got >1");
+				}
+				rVal=true;
+			}
+			// Otherwise not found; i.e. false
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
+				lineSeparator + checkTableExistsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			closeStatement(statement);
+		}
+		
+		return rVal;
+	}
+		
 	@Override
 	public boolean isUserBlocked(
 			final User user) {
@@ -1003,6 +1246,18 @@ public class BaseSQLManager implements SQLManager {
 		}
 		catch(SQLException ignore) {}
 	}
+    
+	private void closeStatement(Statement statement) {
+
+		if (statement == null) {
+			return;
+		}
+
+		try {
+			statement.close();
+		}
+		catch(SQLException ignore) {}
+	}
 
 	/**
 	 * Register user.
@@ -1079,6 +1334,7 @@ public class BaseSQLManager implements SQLManager {
  * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
  * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
  * 3. alter_12.sql (post 13th February 2019 changes to support multiple and additional covariates)
+ * 4. alter_13.sql (post 17th March 2019 issue #138 changes: State 1: study setup modal errors fixes)
  */ 
 			String errorMessage = schemaVersionChecks(currentConnection);
 			if (errorMessage != null) { // Failed 
@@ -1125,6 +1381,7 @@ public class BaseSQLManager implements SQLManager {
  * 1. alter_10.sql (post 3rd August 2018 changes for risk analysis)
  * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
  * 3. alter_12.sql (post 13th February 2019 changes to support multiple and additional covariates)
+ * 4. alter_13.sql (post 17th March 2019 issue #138 changes: State 1: study setup modal errors fixes)
  */ 
 	private String schemaVersionChecks(Connection connection) throws RIFServiceException {
 	
@@ -1139,6 +1396,9 @@ public class BaseSQLManager implements SQLManager {
 			}
 			if (!doesColumnExist(connection, "rif40", "t_rif40_inv_covariates", "covariate_type")) { // alter_12.sql has not been run
 				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter12NotRun");
+			}
+			if (!doesColumnExist(connection, "rif40", "rif40_numerator_outcome_columns", "table_description")) { // alter_13.sql has not been run
+				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter13NotRun");
 			}
 		}
 		catch (Exception exception) {		

@@ -131,6 +131,56 @@ UPDATE rif40_table_outcomes
    AND numer_tab          = 'SAHSULAND_CANCER';
    
 \dS+ rif40_outcome_groups
+
+--
+-- Add rif40_num_denom manually for rif40 user only so that rif40_numerator_outcome_columns can be built.
+-- rif40_numerator_outcome_columns uses the users own rif40_num_denom
+--
+CREATE OR REPLACE VIEW rif40.rif40_num_denom AS
+WITH n AS (
+         SELECT n1.geography,
+            n1.numerator_table,
+            n1.numerator_description,
+            n1.automatic,
+            n1.theme_description
+           FROM ( SELECT g.geography,
+                    n_1.table_name AS numerator_table,
+                    n_1.description AS numerator_description,
+                    n_1.automatic,
+                    t.description AS theme_description
+                   FROM rif40_geographies g,
+                    rif40_tables n_1,
+                    rif40_health_study_themes t
+                  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1 AND rif40_is_object_resolvable(n_1.table_name) = 1 AND n_1.theme::text = t.theme::text) n1
+          WHERE rif40_num_denom_validate(n1.geography, n1.numerator_table) = 1
+        ), d AS (
+         SELECT d1.geography,
+            d1.denominator_table,
+            d1.denominator_description
+           FROM ( SELECT g.geography,
+                    d_1.table_name AS denominator_table,
+                    d_1.description AS denominator_description
+                   FROM rif40_geographies g,
+                    rif40_tables d_1
+                  WHERE d_1.isindirectdenominator = 1 AND d_1.automatic = 1 AND rif40_is_object_resolvable(d_1.table_name) = 1) d1
+          WHERE rif40_num_denom_validate(d1.geography, d1.denominator_table) = 1 AND rif40_auto_indirect_checks(d1.denominator_table) IS NULL
+        )
+ SELECT n.geography,
+    n.numerator_table,
+    n.numerator_description,
+    n.theme_description,
+    d.denominator_table,
+    d.denominator_description,
+    n.automatic
+   FROM n,
+    d
+  WHERE n.geography::text = d.geography::text
+  ORDER BY n.geography, n.numerator_table, n.theme_description;
+
+ALTER TABLE rif40.rif40_num_denom
+    OWNER TO rif40;
+COMMENT ON VIEW rif40.rif40_num_denom
+    IS 'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.';
    
 CREATE OR REPLACE VIEW rif40_numerator_outcome_columns   
 AS

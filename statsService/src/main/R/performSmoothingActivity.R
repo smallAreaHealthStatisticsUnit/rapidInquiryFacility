@@ -283,7 +283,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
                                                 }else{return(x[1]+(x[3]/sqrt(x[4])*(0.5*qchisq(0.975,2*x[4]+2)-x[4])))}})
     
     #Relative risk with Empirical bayesian estimates adjusted
-    RES$SMRR_ADJ=NA
+    RES$SMRR_ADJ=as.numeric(NA)
     # only do the emprirical Bayes smoothing if there is some data
     if (max(RES$observed[which(RES$gender==1)]) > 0 || max(RES$EXP_ADJ[which(RES$gender==1)]) > 0) {
       RES$SMRR_ADJ[which(RES$gender==1)]=EmpBayes(O=RES$observed[which(RES$gender==1)],E=RES$EXP_ADJ[which(RES$gender==1)])
@@ -426,7 +426,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     RES$RATEU95_UNADJ[which(is.na(RES$RATEU95_UNADJ))]=0
     
     #Relative risk with Empirical bayesian estimates non adjusted
-    RES$SMRR_UNADJ=NA
+    RES$SMRR_UNADJ=as.numeric(NA)
     if (max(RES$observed[which(RES$gender==1)]) > 0 || max(RES$EXP_UNADJ[which(RES$gender==1)])  > 0){
       RES$SMRR_UNADJ[which(RES$gender==1)]=EmpBayes(O=RES$observed[which(RES$gender==1)],E=RES$EXP_UNADJ[which(RES$gender==1)])
     }
@@ -625,135 +625,140 @@ performSmoothingActivity <- function(data, AdjRowset) {
     # the entries in the data.
     
     for (g in c(1,2,3)){
+      
       whichrows=which(data$gender==g)
+      # If the user has selected 'male' or 'female' instead of both sexes, then the observed will all be zero (so don't attempt the smoothing)
+      if (sum(data[whichrows,]$observed) > 0)
+      {
       
-      # finally execute the inla code
-      # result=inla(formula, family='poisson', E=get(Exp), data=data[whichrows,])
-      # the line above used to work until this code was moved into a function, which breats the get() call
-      # replaced with the explicit lines below
-      result = c()
-      if (adj==FALSE) {
-        #result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], verbose = FALSE)
-        # SpatialEpiApp inla method, required for diff extraction method
-        result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
-      } else {
-        # original inla method 
-        #result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], verbose = FALSE)
-        # SpatialEpiApp inla method, required for diff extraction method
-        result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
+        
+        # finally execute the inla code
+        # result=inla(formula, family='poisson', E=get(Exp), data=data[whichrows,])
+        # the line above used to work until this code was moved into a function, which breats the get() call
+        # replaced with the explicit lines below
+        result = c()
+        if (adj==FALSE) {
+          #result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], verbose = FALSE)
+          # SpatialEpiApp inla method, required for diff extraction method
+          result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
+        } else {
+          # original inla method 
+          #result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], verbose = FALSE)
+          # SpatialEpiApp inla method, required for diff extraction method
+          result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
+        }
+        
+        # store the results the dataframe
+        if (adj==FALSE){
+          if (model=='BYM'){
+            cte=result$summary.fixed[1]
+            
+            # spatially structured term, not currently used
+            #data$BYM_ssRR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,2])
+            #data$BYM_ssRRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,4])
+            #data$BYM_ssRRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,6])
+            
+            # original extraction method
+            #data$BYM_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
+            #data$BYM_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
+            #data$BYM_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6]) 
+            
+            # SpatialEpiApp extraction method
+            data$BYM_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
+            data$BYM_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
+            data$BYM_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"] 
+          }
+          if (model=='HET'){
+            cte=result$summary.fixed[1]
+            
+            # original extraction method
+            #data$HET_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
+            #data$HET_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
+            #data$HET_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
+            
+            # SpatialEpiApp extraction method
+            data$HET_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
+            data$HET_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
+            data$HET_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]          
+          }
+          if (model=='CAR'){
+            cte=result$summary.fixed[1]
+            
+            # original extraction method
+            #data$CAR_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
+            #data$CAR_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
+            #data$CAR_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
+            
+            # SpatialEpiApp extraction method
+            data$CAR_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
+            data$CAR_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
+            data$CAR_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]  
+          }
+        }else {
+          if (model=='BYM'){
+            cte=result$summary.fixed[1]
+            
+            # spatially structured term, not currently used
+            #data$BYM_ssRR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,2])
+            #data$BYM_ssRRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,4])
+            #data$BYM_ssRRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,6])
+            
+            # original extraction method
+            #data$BYM_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
+            #data$BYM_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
+            #data$BYM_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
+            
+            # SpatialEpiApp extraction method
+            data$BYM_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
+            data$BYM_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
+            data$BYM_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"] 
+          }
+          if (model=='HET'){
+            cte=result$summary.fixed[1]
+            
+            # original extraction method
+            #data$HET_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
+            #data$HET_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
+            #data$HET_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])
+            
+            # SpatialEpiApp extraction method
+            data$HET_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
+            data$HET_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
+            data$HET_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]          
+          }
+          if (model=='CAR'){
+            cte=result$summary.fixed[1]
+            
+            # original extraction method
+            #data$CAR_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
+            #data$CAR_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
+            #data$CAR_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
+            
+            # SpatialEpiApp extraction method
+            data$CAR_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
+            data$CAR_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
+            data$CAR_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]  
+          }
+        }
+        
+        csi <- result$marginals.random$area_order[1:narea]
+        #Calculate the residual relative risk (refer to pages 184 in Blangiardo and Cameletti)
+        zeta <- lapply(csi, function(x) inla.emarginal(exp, x))
+        data$RESIDUAL_RELATIVE_RISK[whichrows]=unlist(zeta)
+        q1 <- lapply(csi, function(x) { inla.qmarginal(c(0.025), exp(x))})
+        q2 <- lapply(csi, function(x) { inla.qmarginal(c(0.975), exp(x))})
+        #odds <- inla.tmarginal(function(x) exp(x), csi)
+        #q <-inla.qmarginal(c(0.025, 0.975),marginal = odds)
+        data$RESIDUAL_RR_LOWER95[whichrows]=unlist(q1)
+        data$RESIDUAL_RR_UPPER95[whichrows]=unlist(q2)
+        
+        
+        #Calculate the posterior probability (refer to page185 in Blangiardo and Cameletti)
+        a<- 0
+        prob.csi<- lapply(csi, function(x) {1 - inla.pmarginal(a, x)})
+        data$POSTERIOR_PROBABILITY[whichrows]=unlist(prob.csi)
+        #qPP <- lapply(prob.csi, function(x) { inla.qmarginal(c(0.025, 0.975), x)})
       }
-      
-      # store the results the dataframe
-      if (adj==FALSE){
-        if (model=='BYM'){
-          cte=result$summary.fixed[1]
-          
-          # spatially structured term, not currently used
-          #data$BYM_ssRR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,2])
-          #data$BYM_ssRRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,4])
-          #data$BYM_ssRRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,6])
-          
-          # original extraction method
-          #data$BYM_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-          #data$BYM_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-          #data$BYM_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6]) 
-          
-          # SpatialEpiApp extraction method
-          data$BYM_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
-          data$BYM_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
-          data$BYM_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"] 
-        }
-        if (model=='HET'){
-          cte=result$summary.fixed[1]
-          
-          # original extraction method
-          #data$HET_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-          #data$HET_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-          #data$HET_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-          
-          # SpatialEpiApp extraction method
-          data$HET_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
-          data$HET_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
-          data$HET_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]          
-        }
-        if (model=='CAR'){
-          cte=result$summary.fixed[1]
-          
-          # original extraction method
-          #data$CAR_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-          #data$CAR_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-          #data$CAR_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-          
-          # SpatialEpiApp extraction method
-          data$CAR_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
-          data$CAR_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
-          data$CAR_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]  
-        }
-      }else {
-        if (model=='BYM'){
-          cte=result$summary.fixed[1]
-          
-          # spatially structured term, not currently used
-          #data$BYM_ssRR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,2])
-          #data$BYM_ssRRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,4])
-          #data$BYM_ssRRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,6])
-          
-          # original extraction method
-          #data$BYM_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-          #data$BYM_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-          #data$BYM_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-          
-          # SpatialEpiApp extraction method
-          data$BYM_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
-          data$BYM_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
-          data$BYM_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"] 
-        }
-        if (model=='HET'){
-          cte=result$summary.fixed[1]
-          
-          # original extraction method
-          #data$HET_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-          #data$HET_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-          #data$HET_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])
-          
-          # SpatialEpiApp extraction method
-          data$HET_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
-          data$HET_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
-          data$HET_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]          
-        }
-        if (model=='CAR'){
-          cte=result$summary.fixed[1]
-          
-          # original extraction method
-          #data$CAR_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-          #data$CAR_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-          #data$CAR_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-          
-          # SpatialEpiApp extraction method
-          data$CAR_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
-          data$CAR_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
-          data$CAR_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]  
-        }
-      }
-      
-      csi <- result$marginals.random$area_order[1:narea]
-      #Calculate the residual relative risk (refer to pages 184 in Blangiardo and Cameletti)
-      zeta <- lapply(csi, function(x) inla.emarginal(exp, x))
-      data$RESIDUAL_RELATIVE_RISK[whichrows]=unlist(zeta)
-      q1 <- lapply(csi, function(x) { inla.qmarginal(c(0.025), exp(x))})
-      q2 <- lapply(csi, function(x) { inla.qmarginal(c(0.975), exp(x))})
-      #odds <- inla.tmarginal(function(x) exp(x), csi)
-      #q <-inla.qmarginal(c(0.025, 0.975),marginal = odds)
-      data$RESIDUAL_RR_LOWER95[whichrows]=unlist(q1)
-      data$RESIDUAL_RR_UPPER95[whichrows]=unlist(q2)
-      
-      
-      #Calculate the posterior probability (refer to page185 in Blangiardo and Cameletti)
-      a<- 0
-      prob.csi<- lapply(csi, function(x) {1 - inla.pmarginal(a, x)})
-      data$POSTERIOR_PROBABILITY[whichrows]=unlist(prob.csi)
-      #qPP <- lapply(prob.csi, function(x) { inla.qmarginal(c(0.025, 0.975), x)})
-      
     }
     cat("Posterior probability calculated\n")
   }  #end if model == BYM or HET or CAR
@@ -833,18 +838,20 @@ convertToDBFormatSmooth=function(dataIn){
   observed = dataIn$observed
   if (adj==FALSE){
     adjusted = 0
-    expected = dataIn$EXP_UNADJ # assuming direct = TRUE. If direct = FALSE, use RR_UNADJ
-    lower95 = dataIn$RRL95_UNADJ # assuming direct = TRUE. If direct = FALSE, use RRL95_UNADJ
-    upper95 = dataIn$RRU95_UNADJ # assuming direct = TRUE. If direct = FALSE, use RRU95_UNADJ
-    relative_risk = dataIn$RR_UNADJ # assuming indirect. If direct, use null
-    smoothed_relative_risk = dataIn$SMRR_UNADJ # assuming indirect. If direct, use null
+    expected = as.numeric(dataIn$EXP_UNADJ) # assuming direct = TRUE. If direct = FALSE, use RR_UNADJ
+    lower95 = as.numeric(dataIn$RRL95_UNADJ) # assuming direct = TRUE. If direct = FALSE, use RRL95_UNADJ
+    upper95 = as.numeric(dataIn$RRU95_UNADJ )# assuming direct = TRUE. If direct = FALSE, use RRU95_UNADJ
+    relative_risk = as.numeric(dataIn$RR_UNADJ) # assuming indirect. If direct, use null
+    smoothed_relative_risk = as.numeric(dataIn$SMRR_UNADJ) # assuming indirect. If direct, use null
+    #smoothed_relative_risk = as.numeric(NA) # assuming indirect. If direct, use null
   } else {
     adjusted = 1
-    expected = dataIn$EXP_ADJ # assuming direct = TRUE. If direct = FALSE, use RR_UNADJ
-    lower95 = dataIn$RRL95_ADJ # assuming direct = TRUE. If direct = FALSE, use RRL95_UNADJ
-    upper95 = dataIn$RRU95_ADJ # assuming direct = TRUE. If direct = FALSE, use RRU95_UNADJ
-    relative_risk = dataIn$RR_ADJ # assuming indirect. If direct, use null
-    smoothed_relative_risk = dataIn$SMRR_ADJ # assuming indirect. If direct, use null
+    expected = as.numeric(dataIn$EXP_ADJ) # assuming direct = TRUE. If direct = FALSE, use RR_UNADJ
+    lower95 = as.numeric(dataIn$RRL95_ADJ) # assuming direct = TRUE. If direct = FALSE, use RRL95_UNADJ
+    upper95 = as.numeric(dataIn$RRU95_ADJ) # assuming direct = TRUE. If direct = FALSE, use RRU95_UNADJ
+    relative_risk = as.numeric(dataIn$RR_ADJ) # assuming indirect. If direct, use null
+    smoothed_relative_risk = as.numeric(dataIn$SMRR_ADJ) # assuming indirect. If direct, use null
+    #smoothed_relative_risk = as.numeric(NA) # assuming indirect. If direct, use null
   }
   posterior_probability = as.numeric(NA)
   posterior_probability_upper95 = as.numeric(NA) # unclear what should go in here

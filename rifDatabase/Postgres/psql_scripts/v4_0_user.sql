@@ -108,9 +108,10 @@ BEGIN
 	PERFORM rif40_log_pkg.rif40_remove_from_debug('rif40_ddl_checks');
 END;
 $$;
-
+/*
 SELECT geography, numerator_table, theme_description, denominator_table, automatic 
-  FROM rif40_num_denom;
+  FROM rif40_num_denom; 
+ */
 /*
  geography |      numerator_table       |            theme_description             |      denominator_table      | automatic 
 -----------+----------------------------+------------------------------------------+-----------------------------+-----------

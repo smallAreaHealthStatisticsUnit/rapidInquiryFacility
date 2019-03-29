@@ -75,14 +75,22 @@ Disease submission modal investigation parameters (tree #3)
 <!--                                    <select type="text" class="pboxDrop" ng-model="covariate" ng-options="g for g in covariates"></select>
                                     <div class="pboxCaption">Covariate</div>     -->     
                                     <div class="pboxCovariatesMulti">
-                                        <label class="pboxLabel2" for="ngSelectCovariates">Covariates: </label> 
-                                        <select size="5" class="pboxDropMulti" name="ngSelectCovariates" ng-model="covariate.covariates" ng-change="covariatesChanged(covariate.covariates)" multiple>
-                                            <option ng-repeat="option in covariateList" ng-value="option.name">{{option.description}}</option>
-                                        </select>
-                                        <label class="pboxLabel2" for="ngSelectAdditionals">Extract only: </label> 
-                                        <select size="5" class="pboxDropMulti" name="ngSelectAdditionals" ng-model="covariate.additionals" ng-change="additionalsChanged(covariate.additionals)" multiple>
-                                            <option ng-repeat="option in additionalList" ng-value="option.name">{{option.description}}</option>
-                                        </select>
+                                        <div ng-show="multipleCovariatesEnabled"> 
+                                            <label class="pboxLabel2" for="ngSelectCovariates">Covariates: </label> 
+                                            <select size="5" class="pboxDropMulti" name="ngSelectCovariates" ng-model="covariate.covariates" ng-change="covariatesChanged(covariate.covariates)" multiple>
+                                                <option ng-repeat="option in covariateList" ng-value="option.name">{{option.description}}</option>
+                                            </select>
+                                            <label class="pboxLabel2" for="ngSelectAdditionals">Extract only: </label> 
+                                            <select size="5" class="pboxDropMulti" name="ngSelectAdditionals" ng-model="covariate.additionals" ng-change="additionalsChanged(covariate.additionals)" multiple>
+                                                <option ng-repeat="option in additionalList" ng-value="option.name">{{option.description}}</option>
+                                            </select>
+                                        </div>
+                                        <div ng-hide="multipleCovariatesEnabled"> 
+                                            <label class="pboxLabel2" for="ngSelectCovariates">Covariate: </label>  
+                                            <select size="5" class="pboxDropMulti" name="ngSelectCovariates" ng-model="covariate.covariates" ng-change="covariatesChanged(covariate.covariates)" multiple>
+                                                <option ng-repeat="option in covariateList" ng-value="option.name">{{option.description}}</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="pbox">
