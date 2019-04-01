@@ -960,8 +960,15 @@ WHERE
 				//Add in the optional fields that end users will have selected in the front end UI
 				int currentColumn = 7;
 				for (String smoothedAttributeToInclude : smoothedAttributesToInclude) {
-					data[currentRow][currentColumn]
-							= smoothedResultSet.getString(smoothedAttributeToInclude);
+                    String res = smoothedResultSet.getString(smoothedAttributeToInclude);							
+                    if (res != null &&
+                        res.equals("NaN")) { // Handle NaN
+                        res = "0";
+                    }
+                    else if (res == null) {
+                        res = "0";
+                    }
+					data[currentRow][currentColumn] = res;
 					currentColumn++;
 				}
 

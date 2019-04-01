@@ -48,7 +48,7 @@ angular.module("RIF",
             "ngPatternRestrict"
         ]
         )
-        .config(['$stateProvider', '$urlRouterProvider',
+        .config(['$stateProvider', '$urlRouterProvider', 
             function ($stateProvider, $urlRouterProvider) {
                 //Handle main page transitions in navbar, login
                 $stateProvider
@@ -86,6 +86,26 @@ angular.module("RIF",
 				function ($rootScope, $uibModalStack, AlertService, SelectStateService) {
 			
 			var savedSelectState = {};
+			if (window.console && window.console.log && typeof window.console.log === "function") { // console.log exists
+			}
+			else {
+				window.console.log = function(msg) { // Do nothing
+				};
+			}
+			
+			if (window.console && window.console.debug && typeof window.console.debug === "function") { // console.log exists
+			}
+			else {
+				window.console.debug = function(msg) { // Do nothing
+				};
+			}
+			
+			if (window.console && window.console.error && typeof window.console.error === "function") { // console.log exists
+			}
+			else {
+				window.console.error = function(msg) { // Do nothing
+				};
+			} 
 			
             $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
 				// Save/restore SelectStateService as require
