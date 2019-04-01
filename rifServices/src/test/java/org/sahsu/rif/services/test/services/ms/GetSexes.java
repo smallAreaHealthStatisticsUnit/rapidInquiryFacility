@@ -1,6 +1,6 @@
 package org.sahsu.rif.services.test.services.ms;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -112,7 +112,7 @@ public final class GetSexes
 	public void getSexes_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
-			ArrayList<Sex> sexs
+			List<Sex> sexs
 				= rifStudySubmissionService.getSexes(validUser);
 			assertEquals(3, sexs.size());
 		}

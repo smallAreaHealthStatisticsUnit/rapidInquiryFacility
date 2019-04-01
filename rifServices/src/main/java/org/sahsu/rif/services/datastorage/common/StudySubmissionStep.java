@@ -1003,9 +1003,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			String studyGeoLevelName
 					= rifMappingStudyArea.getGeoLevelToMap().getName();
 
-			ArrayList<AbstractCovariate> covariates
-					= investigation.getCovariates();
-			ResultSet getMinMaxCovariateValueResultSet = null;
+			List<AbstractCovariate> covariates = investigation.getCovariates();
+			ResultSet getMinMaxCovariateValueResultSet;
 			for (AbstractCovariate covariate : covariates) {
 
 				sqlQueryText = logSQLQuery(
@@ -1083,8 +1082,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
 			getOutcomeGroupNameQueryFormatter.addSelectField("field_name");
-			getOutcomeGroupNameQueryFormatter.addFromTable
-					                                  ("rif40.rif40_numerator_outcome_columns");
+			getOutcomeGroupNameQueryFormatter.addFromTable("rif40_numerator_outcome_columns");
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("geography");
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("table_name");
 
@@ -1105,85 +1103,92 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			getOutcomeGroupNameStatement.setString(2, ndPair.getNumeratorTableName());
 			getOutcomeGroupNameResultSet
 					= getOutcomeGroupNameStatement.executeQuery();
-			getOutcomeGroupNameResultSet.next();
-			String outcomeGroupName
-					= getOutcomeGroupNameResultSet.getString(1);
+			if (getOutcomeGroupNameResultSet.next()) {
+                String outcomeGroupName
+                        = getOutcomeGroupNameResultSet.getString(1);
 
-			//determine what kinds of codes the numerator table supports
+                //determine what kinds of codes the numerator table supports
 
-			ArrayList<HealthCode> healthCodes
-					= investigation.getHealthCodes();
-			int totalHealthCodes = healthCodes.size();
+                ArrayList<HealthCode> healthCodes
+                        = investigation.getHealthCodes();
+                int totalHealthCodes = healthCodes.size();
 
-			//KLG: TODO: try adding one health code maximum
-			//TODO: (DM) if multiple conditions supplied in currentHealthCode.getCode() 
-			if (totalHealthCodes > 0) {
+                //KLG: TODO: try adding one health code maximum
+                //TODO: (DM) if multiple conditions supplied in currentHealthCode.getCode() 
+                if (totalHealthCodes > 0) {
 
-				InsertQueryFormatter addHealthOutcomeQueryFormatter =
-						InsertQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+                    InsertQueryFormatter addHealthOutcomeQueryFormatter =
+                            InsertQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 
-				addHealthOutcomeQueryFormatter.setIntoTable("rif40.rif40_inv_conditions");
-				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");
-				addHealthOutcomeQueryFormatter.addInsertField("min_condition");
-				addHealthOutcomeQueryFormatter.addInsertField("max_condition");
-				addHealthOutcomeQueryFormatter.addInsertField("predefined_group_name");
-				addHealthOutcomeQueryFormatter.addInsertField("line_number");
+                    addHealthOutcomeQueryFormatter.setIntoTable("rif40.rif40_inv_conditions");
+                    addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");
+                    addHealthOutcomeQueryFormatter.addInsertField("min_condition");
+                    addHealthOutcomeQueryFormatter.addInsertField("max_condition");
+                    addHealthOutcomeQueryFormatter.addInsertField("predefined_group_name");
+                    addHealthOutcomeQueryFormatter.addInsertField("line_number");
 
-				for (int i = 1; i <= totalHealthCodes; i++) {
-					HealthCode currentHealthCode = healthCodes.get(i - 1);
+                    for (int i = 1; i <= totalHealthCodes; i++) {
+                        HealthCode currentHealthCode = healthCodes.get(i - 1);
 
-					rifLogger.info(this.getClass(),
-					               "XXXXXXXXXX currentHealthCode XXXXXXXXXXXXXXXXXXXXXX" + lineSeparator +
-					               "Code: " + currentHealthCode.getCode() +
-					               "; namespace: " + currentHealthCode.getNameSpace() +
-					               "; isTopLevelTerm: " + currentHealthCode.isTopLevelTerm() + lineSeparator +
-					               "; description: " + currentHealthCode.getDescription() +
-					               "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+                        rifLogger.info(this.getClass(),
+                                       "XXXXXXXXXX currentHealthCode XXXXXXXXXXXXXXXXXXXXXX" + lineSeparator +
+                                       "Code: " + currentHealthCode.getCode() +
+                                       "; namespace: " + currentHealthCode.getNameSpace() +
+                                       "; isTopLevelTerm: " + currentHealthCode.isTopLevelTerm() + lineSeparator +
+                                       "; description: " + currentHealthCode.getDescription() +
+                                       "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
-					addHealthCodeStatement
-							= createPreparedStatement(
-							connection,
-							addHealthOutcomeQueryFormatter);
-							
-					if (currentHealthCode.getCode().contains("-")) { // 
-						String minCondition=currentHealthCode.getCode().substring(0, currentHealthCode.getCode().indexOf("-"));
-						String maxCondition=currentHealthCode.getCode().substring(currentHealthCode.getCode().indexOf("-")+1);
-						sqlQueryText = logSQLQuery(
-								"add_inv_condition",
-								addHealthOutcomeQueryFormatter,
-								outcomeGroupName,
-								minCondition,
-								maxCondition,
-								null, //predefined_group_name not supported yet
-								String.valueOf(i));
+                        addHealthCodeStatement
+                                = createPreparedStatement(
+                                connection,
+                                addHealthOutcomeQueryFormatter);
+                                
+                        if (currentHealthCode.getCode().contains("-")) { // 
+                            String minCondition=currentHealthCode.getCode().substring(0, currentHealthCode.getCode().indexOf("-"));
+                            String maxCondition=currentHealthCode.getCode().substring(currentHealthCode.getCode().indexOf("-")+1);
+                            sqlQueryText = logSQLQuery(
+                                    "add_inv_condition",
+                                    addHealthOutcomeQueryFormatter,
+                                    outcomeGroupName,
+                                    minCondition,
+                                    maxCondition,
+                                    null, //predefined_group_name not supported yet
+                                    String.valueOf(i));
 
-						addHealthCodeStatement.setString(1, outcomeGroupName);
-						addHealthCodeStatement.setString(2, minCondition);
-						addHealthCodeStatement.setString(3, maxCondition);
-						addHealthCodeStatement.setString(4, null);
-						addHealthCodeStatement.setInt(5, i);
-					}
-					else {
-						logSQLQuery(
-								"add_inv_condition",
-								addHealthOutcomeQueryFormatter,
-								outcomeGroupName,
-								currentHealthCode.getCode(),
-								null, //max_condition not supported yet
-								null, //predefined_group_name not supported yet
-								String.valueOf(i));
-						addHealthCodeStatement.setString(1, outcomeGroupName);
-						addHealthCodeStatement.setString(2, currentHealthCode.getCode());
-						addHealthCodeStatement.setString(3, null);
-						addHealthCodeStatement.setString(4, null);
-						addHealthCodeStatement.setInt(5, i);
+                            addHealthCodeStatement.setString(1, outcomeGroupName);
+                            addHealthCodeStatement.setString(2, minCondition);
+                            addHealthCodeStatement.setString(3, maxCondition);
+                            addHealthCodeStatement.setString(4, null);
+                            addHealthCodeStatement.setInt(5, i);
+                        }
+                        else {
+                            sqlQueryText = logSQLQuery(
+                                    "add_inv_condition",
+                                    addHealthOutcomeQueryFormatter,
+                                    outcomeGroupName,
+                                    currentHealthCode.getCode(),
+                                    null, //max_condition not supported yet
+                                    null, //predefined_group_name not supported yet
+                                    String.valueOf(i));
+                            addHealthCodeStatement.setString(1, outcomeGroupName);
+                            addHealthCodeStatement.setString(2, currentHealthCode.getCode());
+                            addHealthCodeStatement.setString(3, null);
+                            addHealthCodeStatement.setString(4, null);
+                            addHealthCodeStatement.setInt(5, i);
 
-					}
+                        }
 
-					addHealthCodeStatement.executeUpdate();
-					SQLQueryUtility.printWarnings(addHealthCodeStatement); // Print output from T-SQL or PL/pgsql
-				}
+                        addHealthCodeStatement.executeUpdate();
+                        SQLQueryUtility.printWarnings(addHealthCodeStatement); // Print output from T-SQL or PL/pgsql
+                    }
+                }
+                else {
+                    throw new Exception("addHealthOutcomes() no investigation conditions were provided by the front end");
+                }
 			}
+            else {
+                throw new Exception("addHealthOutcomes() no outcomes found (rif40_numerator_outcome_columns has no outcome_group_name/field_name for the numerator");
+            }
 		} catch(Exception exception) {
 			if (getOutcomeGroupNameStatement != null) {
 				sqlWarnings.append(SQLQueryUtility.printWarnings(getOutcomeGroupNameStatement) + lineSeparator); // Print output from PL/PGSQL

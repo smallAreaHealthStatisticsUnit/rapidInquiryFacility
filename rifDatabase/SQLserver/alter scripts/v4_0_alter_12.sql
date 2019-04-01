@@ -182,7 +182,7 @@ GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study area geolevel name. Must be a valid GEOLEVEL_NAME for the study GEOGRPAHY in T_RIF40_GEOLEVELS. Cannot be changed by the user; present to allow a foreign key to be enforced.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_inv_covariates', @level2type=N'COLUMN',@level2name=N'study_geolevel_name'
 GO
 
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_inv_covariates_trigger.sql
+:r rif40_inv_covariates_trigger.sql
 
 SELECT geography, covariate_name, covariate_type, COUNT(*) AS total
   FROM rif40.t_rif40_inv_covariates
@@ -193,6 +193,8 @@ SELECT geography, covariate_name, covariate_type, COUNT(*) AS total
  GROUP BY geography, covariate_name, covariate_type; 
 GO
 
+:r ..\sahsuland_dev\rif40\functions\rif40_create_insert_statement.sql
+:r rif40_study_areas_trigger.sql
 --
 -- Testing stop
 --

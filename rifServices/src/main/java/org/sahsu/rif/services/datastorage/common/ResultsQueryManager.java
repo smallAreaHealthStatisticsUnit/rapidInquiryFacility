@@ -288,7 +288,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 				if (!resultSet1.next()) {
 					throw new RIFServiceException(
 						RIFServiceError.DATABASE_QUERY_FAILED,
-						"getHomogeneity query 1; expected 1+ rows, got NONE for study_id: " + studyID);
+						"getCovariateLossReport query 1; expected 1+ rows, got NONE for study_id: "
+						+ studyID);
 				}
 				do {
 					

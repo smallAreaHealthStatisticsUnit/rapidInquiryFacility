@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.sahsu.rif.generic.fileformats.AbstractXMLContentHandler;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
@@ -245,7 +246,7 @@ final class InvestigationContentHandler
 		Sex sex = investigation.getSex();
 		xmlUtility.writeField(recordName, "sex", sex.getName());
 		
-		ArrayList<AbstractCovariate> covariates = investigation.getCovariates();
+		List<AbstractCovariate> covariates = investigation.getCovariates();
 		covariateContentHandler.writeXML(covariates);
 		
 		xmlUtility.writeRecordEndTag(recordName);		
@@ -389,7 +390,7 @@ final class InvestigationContentHandler
 			= RIFServiceMessages.getMessage("covariate.plural.label");
 		htmlUtility.writeBoldColumnValue(covariatesFieldLabelText);
 		htmlUtility.beginBulletedList();
-		ArrayList<AbstractCovariate> covariates = investigation.getCovariates();
+		List<AbstractCovariate> covariates = investigation.getCovariates();
 		for (AbstractCovariate covariate : covariates) {
 			htmlUtility.writeBulletedItem(covariate.getDisplayName());
 		}
@@ -574,8 +575,7 @@ final class InvestigationContentHandler
 					currentInvestigation.setYearRange(yearRange);
 				}
 				else if (currentDelegatedHandler == covariateContentHandler) {
-					ArrayList<AbstractCovariate> covariates
-						= covariateContentHandler.getCovariates();
+					List<AbstractCovariate> covariates = covariateContentHandler.getCovariates();
 					currentInvestigation.setCovariates(covariates);				
 				}
 				else if (currentDelegatedHandler == healthCodeContentHandler) {

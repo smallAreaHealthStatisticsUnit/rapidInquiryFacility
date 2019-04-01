@@ -16,6 +16,7 @@ import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.Sex;
 import org.sahsu.rif.services.system.RIFServiceError;
@@ -277,20 +278,35 @@ public class SmoothedResultManager extends BaseSQLManager {
 
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 
-		queryFormatter.addQueryLine(1, "SELECT");
-		queryFormatter.addQueryLine(2, "a.username, a.study_name, a.description, a.study_date, a.geography, "
+        if (rifDatabaseProperties.getDatabaseType() == DatabaseType.POSTGRESQL) {
+            queryFormatter.addQueryLine(1, "WITH b AS (");
+            queryFormatter.addQueryLine(1, "            SELECT STRING_AGG(covariate_name, '; ') AS covariate_name");
+            queryFormatter.addQueryLine(1, "              FROM rif40.rif40_inv_covariates b");
+            queryFormatter.addQueryLine(1, "             WHERE b.study_id = ?");
+            queryFormatter.addQueryLine(1, ")");
+        }
+        else { // SQL Server
+            queryFormatter.addQueryLine(1, "WITH b AS (");
+            queryFormatter.addQueryLine(1, "            SELECT covariate_name = STUFF(");
+            queryFormatter.addQueryLine(1, "                (SELECT '; ' + b.covariate_name");
+            queryFormatter.addQueryLine(1, "                      FROM rif40.rif40_inv_covariates b");
+            queryFormatter.addQueryLine(1, "                     WHERE b.study_id = a.study_id");
+            queryFormatter.addQueryLine(1, "                     FOR XML PATH('')), 1, 2, N''");
+            queryFormatter.addQueryLine(1, "                )  ");
+            queryFormatter.addQueryLine(1, "              FROM rif40.rif40_studies a");
+            queryFormatter.addQueryLine(1, "             WHERE a.study_id = ?");
+            queryFormatter.addQueryLine(1, ")");
+        }
+		queryFormatter.addQueryLine(1, "SELECT a.username, a.study_name, a.description, a.study_date, a.geography, "
 		                               + "a.study_type, a.comparison_geolevel_name, a.denom_tab, a.year_start, a.year_stop,  "
 		                               + "a.max_age_group, a.min_age_group, a.study_geolevel_name, a.project, a.project_description, "
 		                               + "a.stats_method, b.covariate_name, c.inv_name, c.genders, c.numer_tab");
-		queryFormatter.addQueryLine(1, "FROM");
-		queryFormatter.addQueryLine(2, "rif40.rif40_studies a left join rif40.rif40_inv_covariates b");
-		queryFormatter.addQueryLine(2, "on a.study_id = b.study_id,");
-		queryFormatter.addQueryLine(2, "rif40.rif40_investigations c");
-		queryFormatter.addQueryLine(1, "WHERE");
-		queryFormatter.addQueryLine(2, "a.study_id = c.study_id");
-		queryFormatter.addQueryLine(1, "AND");
-		queryFormatter.addQueryLine(2, "a.study_id = ?");
+		queryFormatter.addQueryLine(1, "  FROM rif40.rif40_investigations c, rif40.rif40_studies a");
+		queryFormatter.addQueryLine(1, "       LEFT OUTER JOIN b ON (1=1)");
+		queryFormatter.addQueryLine(1, " WHERE a.study_id = c.study_id");
+		queryFormatter.addQueryLine(1, "   AND a.study_id = ?");
 
+		String sqlQueryText = logSQLQuery("getDetailsForProcessedStudy", queryFormatter, studyID);
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		String[] results = new String[20];
@@ -298,6 +314,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 			connection.setAutoCommit(false);
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
+			statement.setInt(2, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			resultSet.next();
 			results[0] = resultSet.getString(1);
@@ -321,10 +338,10 @@ public class SmoothedResultManager extends BaseSQLManager {
 			results[18] = getGender(resultSet.getString(19));
 			results[19] = resultSet.getString(20);
 		}
-		catch(SQLException exception) {
-			rifLogger.error(this.getClass(),
-			                "SmoothedResultManager.getDetailsForProcessedStudy error", exception);
-		}
+        catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			throw new RIFSQLException(this.getClass(), sqlException, statement, sqlQueryText);
+		} 
 		finally {
 			SQLQueryUtility.close(statement);
 			SQLQueryUtility.close(resultSet);

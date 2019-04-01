@@ -3466,11 +3466,38 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
   * Issue #130 Risk analysis fault/issues (branch: risk-analysis-fixes-2); 
   * Issue #66 GeoJSON mouse over support with shapefile shapes
   * Issue #75 IE 11 only works with a browser console only;
+  * Issue #137: RIF WAR updates not applied because your browser cache needs to be emptied;
   
 ### 4th to 8th March
 
-TODO this week:
-* Swedish Data;
-   
- 
+* Planning;
+* Multiple covariate Edge CSS fix;
+* Swedish Data [1 day: halted with age group query];
+* Issue #75 IE 11 only works with a browser console only. Fixed on Windows 8.1; Windows 10 gives:
+  ```+4.5: [ERROR] AuthService.isLoggedIn() failed; transition from: state1 to state0; res: [{"result":"false"}]```
+* Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes - create a specification and a mock 
+  up for discussion Monday;
+* Document tile generator;
+* Document info button and risk graphs;
+* Create issue #137: RIF WAR updates not applied because your browser cache needs to be emptied;
+* Update plans for issue #129: Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes);
 
+### 11th to 14th March
+
+* Issue #138: State 1: study setup modal errors;
+* Add support for multiple covariates #124;
+* Issue #129: Pooled or individual analysis for multiple risk analysis points/shapes: initial design;
+
+### 18th to 21st March
+
+* Issue #129: Pooled or individual analysis for multiple risk analysis points/shapes: add stratification 
+  from shapefile;
+* Rebuild SWedish data with correct age groups for denominator;
+* Install and Patch Swedish test laptop;
+
+### 25th to 28th March
+
+* Swedish collaborator teoeconference, RIF meeting, State 1: study setup modal errors testing, issue #129 coding
+* Postgres Oracle interconnection
+* State 1: study setup modal errors testing, R update fix, make new functionality modular
+* State 1: study setup modal errors test and merge, make multiple covariates modular. Issue #129: populate stratification geolevels column

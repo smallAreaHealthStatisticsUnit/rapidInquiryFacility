@@ -6,7 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.sahsu.rif.generic.concepts.User;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
 
@@ -67,7 +69,19 @@ public interface SQLManager {
 	
 	String getColumnComment(Connection connection,
 			String schemaName, String tableName, String columnName)
-			throws Exception;
+			throws SQLException;
+			
+	String getViewDefinition(Connection connection,
+			String schemaName, String viewName)
+			throws RIFSQLException;
+			
+	void commentObject(Connection connection,
+			String objectType, String schemaName, String objectName, String commentText)
+			throws RIFSQLException;
+			
+	void commentColumn(Connection connection,
+			String objectType, String schemaName, String objectName, String columnName, String commentText)
+			throws RIFSQLException;
 			
 	CachedRowSet getRifViewData(
 			final Connection connection,
@@ -108,6 +122,9 @@ public interface SQLManager {
 	
 	boolean doesColumnExist(final Connection connection, final String schemaName, final String tableName, final String columnName)
 		throws Exception;
+        
+	boolean doesTableExist(final Connection connection, final String schemaName, final String tableName)
+		throws Exception;
 	
 	boolean isUserBlocked(final User user);
 	
@@ -134,6 +151,8 @@ public interface SQLManager {
 	void logout(final User user) throws RIFServiceException;
 	
 	void deregisterAllUsers() throws RIFServiceException;
+
+	DatabaseType getDbType();
 	
 	default CallableStatement createPreparedCall(final Connection connection, final String query)
 			throws SQLException {

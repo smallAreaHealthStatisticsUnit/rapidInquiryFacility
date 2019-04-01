@@ -17,20 +17,29 @@ names of geolevels
 */
 
 
+/****** Object:  Trigger [tr_inv_covariate]    Script Date: 13/02/2019 11:47:17 ******/
 IF EXISTS (SELECT *  FROM sys.triggers tr
-INNER JOIN sys.tables t ON tr.parent_id = t.object_id
-WHERE t.schema_id = SCHEMA_ID(N'rif40') 
-and tr.name=N'tr_inv_covariate')
+    INNER JOIN sys.tables t ON tr.parent_id = t.object_id
+    WHERE t.schema_id = SCHEMA_ID(N'rif40')
+    and tr.name=N'tr_inv_covariate')
 BEGIN
-	DROP TRIGGER [rif40].[tr_inv_covariate]
+    DROP TRIGGER [rif40].[tr_inv_covariate]
 END
 GO
+
+/****** Object:  Trigger [rif40].[tr_inv_covariate]    Script Date: 13/02/2019 11:47:17 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
 
 
 -------------------------
  -- create trigger code 
  --------------------------
- CREATE trigger [tr_inv_covariate]
+ CREATE trigger [rif40].[tr_inv_covariate]
  on [rif40].[t_rif40_inv_covariates]
  for insert, update 
  as
@@ -478,3 +487,8 @@ END;
 
 end;
 GO
+
+ALTER TABLE [rif40].[t_rif40_inv_covariates] ENABLE TRIGGER [tr_inv_covariate]
+GO
+
+

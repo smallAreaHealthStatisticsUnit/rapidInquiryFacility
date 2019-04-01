@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.json.JSONObject;
+
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.AggregateValueQueryFormatter;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
@@ -13,6 +15,7 @@ import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.datastorage.RIFSQLException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
@@ -27,12 +30,15 @@ import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 public class RIFContextManager extends BaseSQLManager {
 
+    private static RIFServiceStartupOptions options = null;
+    
 	/**
 	 * Instantiates a new SQLRIF context manager.
 	 */
 	public RIFContextManager(final RIFServiceStartupOptions options) {
 
 		super(options);
+        this.options=options;
 		if (rifDatabaseProperties == null) {
 			rifDatabaseProperties = options.getRIFDatabaseProperties();
 		}
@@ -238,7 +244,8 @@ public class RIFContextManager extends BaseSQLManager {
 				= new ArrayList<NumeratorDenominatorPair>();;
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
-
+        String sqlQueryText = null;
+           
 		try {
 
 			//Create SQL query
@@ -252,8 +259,7 @@ public class RIFContextManager extends BaseSQLManager {
 			queryFormatter.addFromTable(numeratorDenominatorTableName(user));
 			queryFormatter.addWhereParameter("numerator_table");
 
-
-			logSQLQuery(
+			sqlQueryText = logSQLQuery(
 					"getNDPairFromNumeratorTableName",
 					queryFormatter,
 					numeratorTableName);
@@ -304,6 +310,8 @@ public class RIFContextManager extends BaseSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
 			SQLQueryUtility.rollback(connection);
 			String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -317,7 +325,8 @@ public class RIFContextManager extends BaseSQLManager {
 
 			throw new RIFServiceException(
 					RIFServiceError.GET_NUMERATOR_DENOMINATOR_PAIR,
-					errorMessage);
+					errorMessage,
+                    rifSQLException);
 		}
 		finally {
 			//Cleanup database resources
@@ -326,7 +335,24 @@ public class RIFContextManager extends BaseSQLManager {
 		}
 
 	}
-
+    
+	/**
+	 * Gets RIF40_NUM_DENOM as a JSONArray
+	 *
+	 * @param connection the connection
+	 * @param user the user
+	 * @return RIF40_NUM_DENOM as a JSONArray
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public JSONObject getRif40NumDenom(
+			final Connection connection,
+			final User user)
+			throws RIFServiceException {
+            
+        Rif40NumDenomService rif40NumDenomService = new Rif40NumDenomService(this.options);
+        return rif40NumDenomService.get(connection, user);
+    }
+    
 	/**
 	 * Gets the numerator denominator pairs.
 	 *
@@ -352,22 +378,23 @@ public class RIFContextManager extends BaseSQLManager {
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
 		ArrayList<NumeratorDenominatorPair> results
-				= new ArrayList<>();;
-
+				= new ArrayList<>();
+        String sqlQueryText = null;
+        
 		try {
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
 					rifDatabaseProperties.getDatabaseType());
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
-			queryFormatter.addSelectField("numerator_table");
-			queryFormatter.addSelectField("numerator_description");
-			queryFormatter.addSelectField("denominator_table");
-			queryFormatter.addSelectField("denominator_description");
+			queryFormatter.addSelectField("numerator_table_name");
+			queryFormatter.addSelectField("numerator_table_description");
+			queryFormatter.addSelectField("denominator_table_name");
+			queryFormatter.addSelectField("denominator_table_description");
 			queryFormatter.addFromTable(numeratorDenominatorTableName(user));
 			queryFormatter.addWhereParameter("theme_description");
 			queryFormatter.addWhereParameter("geography");
 
-			logSQLQuery(
+			sqlQueryText = logSQLQuery(
 					"getNumeratorDenominatorPairs",
 					queryFormatter,
 					healthTheme.getDescription(),
@@ -416,6 +443,8 @@ public class RIFContextManager extends BaseSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, statement, sqlQueryText);
 			SQLQueryUtility.rollback(connection);
 			String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -429,7 +458,8 @@ public class RIFContextManager extends BaseSQLManager {
 
 			throw new RIFServiceException(
 					RIFServiceError.GET_NUMERATOR_DENOMINATOR_PAIR,
-					errorMessage);
+					errorMessage,
+                    rifSQLException);
 		}
 		finally {
 			//Cleanup database resources
@@ -1684,6 +1714,8 @@ public class RIFContextManager extends BaseSQLManager {
 
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
+        String sqlQueryText = null;
+        
 		try {
 			RecordExistsQueryFormatter ndPairExistsQueryFormatter =
 					RecordExistsQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
@@ -1693,7 +1725,7 @@ public class RIFContextManager extends BaseSQLManager {
 			ndPairExistsQueryFormatter.addWhereParameter("numerator_table");
 			ndPairExistsQueryFormatter.addWhereParameter("denominator_table");
 
-			logSQLQuery(
+			sqlQueryText = logSQLQuery(
 					"ndPairExistsQuery",
 					ndPairExistsQueryFormatter,
 					geography.getName(),
@@ -1732,6 +1764,8 @@ public class RIFContextManager extends BaseSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, getNDPairExistsStatement, sqlQueryText);
 			SQLQueryUtility.rollback(connection);
 			String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -1748,7 +1782,8 @@ public class RIFContextManager extends BaseSQLManager {
 			RIFServiceException rifServiceException
 					= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
+					errorMessage,
+                    rifSQLException);
 			throw rifServiceException;
 		}
 		finally {
@@ -1776,6 +1811,8 @@ public class RIFContextManager extends BaseSQLManager {
 
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
+        String sqlQueryText = null;
+        
 		try {
 			RecordExistsQueryFormatter queryFormatter = RecordExistsQueryFormatter.getInstance(
 					rifDatabaseProperties.getDatabaseType());
@@ -1784,7 +1821,7 @@ public class RIFContextManager extends BaseSQLManager {
 			queryFormatter.addWhereParameter("geography");
 			queryFormatter.addWhereParameter("numerator_table");
 
-			logSQLQuery(
+			sqlQueryText = logSQLQuery(
 					"checkNumeratorTableExists",
 					queryFormatter,
 					geography.getName(),
@@ -1823,7 +1860,8 @@ public class RIFContextManager extends BaseSQLManager {
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
+			RIFSQLException rifSQLException = new RIFSQLException(
+                this.getClass(), sqlException, getNDPairExistsStatement, sqlQueryText);
 			SQLQueryUtility.rollback(connection);
 			String recordType
 					= RIFServiceMessages.getMessage("numeratorDenominatorPair.numerator.label");
@@ -1833,16 +1871,11 @@ public class RIFContextManager extends BaseSQLManager {
 					recordType,
 					numeratorTableName);
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-					getClass(),
-					errorMessage,
-					sqlException);
-
 			throw new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-		}
+					errorMessage,
+                    rifSQLException);
+		}        
 		finally {
 			//Cleanup database resources
 			SQLQueryUtility.close(getNDPairExistsStatement);

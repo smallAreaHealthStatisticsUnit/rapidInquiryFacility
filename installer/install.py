@@ -22,6 +22,7 @@ from configparser import ConfigParser, ExtendedInterpolation
 from dataclasses import dataclass
 from distutils.util import strtobool
 from getpass import getpass
+from inspect import currentframe, getframeinfo
 from pathlib import Path
 
 WAR_FILES_LOCATION = "war_files_location"
@@ -41,7 +42,8 @@ prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
                   DB_TYPE: "Database type (pg or ms for PostgreSQL or MS "
                            "SQL Server)",
                   SCRIPT_HOME: "Directory for SQL scripts",
-                  TOMCAT_HOME: "Home directory for Tomcat",
+                  TOMCAT_HOME: "Tomcat's home directory (leave blank to "
+                               "use CATALINA_HOME)",
                   WAR_FILES_LOCATION: "Directory containing the WAR files",
                   EXTRACT_DIRECTORY: "Please specify a directory where files "
                                      "extracted by studies should be created",
@@ -103,7 +105,7 @@ def main():
         # This sends output to the specified file as well as stdout.
         outfile = Tee("install.log")
         sys.stdout = outfile
-        # sys.stderr = outfile
+        sys.stderr = outfile
 
         # Run SQL scripts
         if settings.db_type == "pg":
@@ -125,7 +127,6 @@ def main():
                                                             parent))
 
             process = subprocess.run(script.split(), cwd=parent,
-                                     # capture_output=True,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT,
                                      text=True)
@@ -134,20 +135,25 @@ def main():
 
             if process.returncode is not None and process.returncode != 0:
                 db_created = False
-                msg = """Something went wrong when running the script {} 
-                      
+                msg = """Something went wrong when running the script {}
+
                       Output from script: {}
-                      
-                      Errors from script: {} 
-                      
-                      
+
+                      {}
+
+
                       Database creation failed"""
-                banner(msg.format(script, process.stdout, process.stderr),
+                banner(msg.format(
+                        script, process.stdout,
+                        ("Errors from script: "
+                         + process.stderr) if process.stderr else ""),
                        120)
                 break
             db_created = True
 
         if db_created:
+            ensure_tomcat_directories_exist(settings)
+
             # Deploy WAR files
             for f in get_war_files(settings):
                 shutil.copy(f, settings.cat_home / "webapps")
@@ -240,9 +246,9 @@ def get_settings():
     # under the project root. The root directory is thus one level up.
     if settings.dev_mode:
 
-        # TODO: this should actually use the parent of the directory of the
-        #  current script, not of the current working directory.
-        settings.war_dir = Path.cwd().resolve().parent
+        # We want the parent of the directory containing the current script
+        this_script_name = getframeinfo(currentframe()).filename
+        settings.war_dir = Path(this_script_name).resolve().parent.parent
     else:
         settings.war_dir = base_path / "warfiles"
 
@@ -251,10 +257,10 @@ def get_settings():
     # Database name is hardcoded for now.
     # settings.db_name = get_value_from_user(DATABASE_NAME).strip()
     settings.db_name = "sahsuland"
-    settings.db_user = get_value_from_user(DATABASE_USER,
-                                           extra=settings.db_name).strip()
+    settings.db_user = get_value_from_user(
+        DATABASE_USER, extra=settings.db_name).strip().lower()
     settings.db_pass = get_password_from_user(
-        DATABASE_PASSWORD, extra=settings.db_user).strip()
+        DATABASE_PASSWORD, extra=settings.db_user)
 
     # For now the next few are only for Postgres
     if settings.db_type == "pg":
@@ -403,11 +409,24 @@ def get_war_files(settings):
     return war_files
 
 
+def ensure_tomcat_directories_exist(settings):
+    """We create the Tomcat subdirectories if they're not there. This shouldn't
+       normally happen, but if the user has specified a directory that isn't
+       actually Tomcat's home, and it or its subdirectories don't exist,
+       then it's better to just create what they've asked for than to fail
+       with a "File not found" error.
+    """
+    props_dir = Path(settings.cat_home / "conf")
+    props_dir.mkdir(parents=True, exist_ok=True)
+    webapps_dir = settings.cat_home / "webapps"
+    webapps_dir.mkdir(parents=True, exist_ok=True)
+
+
 def create_properties_file(settings):
     """Create the RIF startup properties file."""
 
-    props_file = Path(settings.cat_home / "conf" /
-                      "RIFServiceStartupProperties.properties")
+    props_file = (settings.cat_home / "conf" /
+                  "RIFServiceStartupProperties.properties")
 
     # Get the settings from the appropriate sections of the ini file.
     short_db = short_db_name(settings.db_type)
@@ -498,7 +517,7 @@ def get_pg_scripts(settings):
                           "v4_0_alter_5.sql", "v4_0_alter_7.sql",
                           "v4_0_alter_8.sql", "v4_0_alter_9.sql",
                           "v4_0_alter_10.sql", "v4_0_alter_11.sql",
-                          "v4_0_alter_12.sql"]
+                          "v4_0_alter_12.sql", "v4_0_alter_13.sql"]
 
     alter_scripts = [format_postgres_script(settings, script_template,
                                             script_root / "alter_scripts",
@@ -679,6 +698,14 @@ def set_windows_permissions(file_name):
     # complain.
     import ntsecuritycon
     import win32security
+    from win32com.shell import shell
+
+    # Have to run as an administrator for this bit.
+    if not shell.IsUserAnAdmin():
+        banner("This function requires elevated privileges. Please run again "
+               "from a command prompt started using the 'Run as "
+               "administrator' feature", 100)
+        sys.exit(-1)
 
     entries = [{'AccessMode': win32security.GRANT_ACCESS,
                 'AccessPermissions': 0,

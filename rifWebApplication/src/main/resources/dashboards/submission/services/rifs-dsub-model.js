@@ -36,9 +36,11 @@
  */
 angular.module("RIF")
         .factory('ModelService', ['StudyAreaStateService', 'CompAreaStateService', 'StatsStateService',
-                'SubmissionStateService', 'ParameterStateService', 'SelectStateService', 'user', '$rootScope', 'AlertService',
+                'SubmissionStateService', 'ParameterStateService', 'SelectStateService', 'user', '$rootScope', 
+                'AlertService', 'ParametersService', 
 				function (StudyAreaStateService, CompAreaStateService, StatsStateService,
-                SubmissionStateService, ParameterStateService, SelectStateService, user, $rootScope, AlertService) {
+                SubmissionStateService, ParameterStateService, SelectStateService, user, $rootScope, AlertService,
+                ParametersService) {
 
             var type = "disease_mapping_study";
             var areaType = "disease_mapping_study_area";
@@ -206,15 +208,41 @@ angular.module("RIF")
                         "<th>Sex</th>" +
                         "<th>Age Range</th>" +
                         "<th>Covariates</th>" +
+                        "<th>Additional</th>" +
                         "</tr>";
                 for (var i = 0; i < inv.length; i++) {
                     var covars = "";
                     for (var v = 0; v < inv[i].covariates.length; v++) {
-                        covars += inv[i].covariates[v].adjustable_covariate.name;
-                        if (v !== inv[i].covariates.length - 1) {
-                            covars += "; ";
+                        if (inv[i].covariates[v].adjustable_covariate) {
+                            covars += inv[i].covariates[v].adjustable_covariate.name;
+                            if (v !== inv[i].covariates.length - 1) {
+                                covars += "; ";
+                            }
                         }
                     }
+                    var additions = "";
+                    for (var v = 0; v < inv[i].additionals.length; v++) {
+                        if (inv[i].additionals[v].additional_covariate) {
+                            additions += inv[i].additionals[v].additional_covariate.name;
+                            if (v !== inv[i].additionals.length - 1) {
+                                additions += "; ";
+                            }
+                        }
+                    }
+                    var totalCovariates=inv[i].covariates.length + inv[i].additionals.length;
+                    if (totalCovariates > 1 && ParametersService.isModuleEnabled('multipleCovariates')) { 
+                        if (ParametersService.getModuleStatus('multipleCovariates') != "production") {
+                            AlertService.showWarning(ParametersService.getModuleDescription('multipleCovariates') +
+                                " support is still in " + 
+                                ParametersService.getModuleStatus('multipleCovariates'));
+                        }
+                    }
+                    else if (totalCovariates > 1 && !ParametersService.isModuleEnabled('multipleCovariates')) { 
+                        AlertService.showError(ParametersService.getModuleDescription('multipleCovariates') +
+                            " support is not available");
+                        covariateErrorCount++;
+                    }
+                        
                     for (var j = 0; j < inv[i].health_codes.health_code.length; j++) {
                         if (j === 0) {
                             studyTable += "<tr><td>" + inv[i].title + "</td><td>" +
@@ -225,6 +253,7 @@ angular.module("RIF")
                                     "<td>" + inv[i].sex + "</td>" +
                                     "<td> LWR: " + inv[i].age_band.lower_age_group.name + ", UPR: " + inv[i].age_band.upper_age_group.name + "</td>" +
                                     "<td>" + covars + "</td>" +
+                                    "<td>" + additions + "</td>" +                                    
                                     "</tr>";
                         } else {
                             studyTable += "<tr><td></td>" + "</td><td>" +
@@ -274,6 +303,13 @@ angular.module("RIF")
 				var studyType = SubmissionStateService.getState().studyType; // "Disease Mapping" or "Risk Analysis"
 				//  type = "disease_mapping_study" or "risk_analysis_study"
 				var errors=0;
+                
+                if (ParameterStateService.getState().errors > 0) {
+					AlertService.consoleLog("[rifs-dsub-model.js] WARNING ParameterStateService has " + 
+                        ParameterStateService.getState().errors + "error(s)");
+					errors+=ParameterStateService.getState().errors;
+                }
+                
 				if (modelJSON["rif_job_submission"].study_selection.studyType == type) {
 					// OK
 				}
