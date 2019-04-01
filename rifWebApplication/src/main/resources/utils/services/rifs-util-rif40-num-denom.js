@@ -59,7 +59,7 @@ angular.module("RIF")
                         initialise: function () {
                             return initialiseRif40NumDenomService(); // A promise!
                         },
-                        checkInitialised() {
+                        checkInitialised: function() {
                             if (rif40NumDenom == undefined) {
                                 return false;
                             }
