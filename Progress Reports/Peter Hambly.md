@@ -3501,3 +3501,11 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 * Postgres Oracle interconnection
 * State 1: study setup modal errors testing, R update fix, make new functionality modular
 * State 1: study setup modal errors test and merge, make multiple covariates modular. Issue #129: populate stratification geolevels column
+
+### 1st April to 4th April
+
+* IE 11.379.17763.0 on Windows 10 logon problem is a cache issue. Disabling webpage caching in Internet Explorer 11:
+  * From the top right corner of Internet Explorer 11, click the Gear icon .
+  * From the menu, select Internet options.
+  * On the General tab, locate the Browsing history section, and click Settings.
+  * On the Temporary Internet Files tab, confirm that Every time I visit the webpage is selected
