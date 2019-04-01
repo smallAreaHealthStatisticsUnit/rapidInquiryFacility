@@ -3190,7 +3190,7 @@ you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HO
 
 ## Additional Modules
 
-RIF 4.1 will add additional modules. 
+RIF 4.1 will add additional modules giving extra functionality. A limited amount of the code is in RIF 4.0 and is disabled by default:
 
 | Module name              | Enabled | Status              | Description                                                                                                                                                           |
 |--------------------------|---------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -3203,13 +3203,13 @@ RIF 4.1 will add additional modules.
 
 The multiple covariates module is in the master branch but is still under test and the results have not been validated.
 
-The statii are:
+The statuses are:
 
 * **notYetImplemented**: The module has not yet been implemented;
 * **inDevelopment**: The module is in development;
 * **alpha**: The module has been implemented but is not fully tested;
-* **beta: The module has been implemented, is fully tested and will SAHSU collaborators for acceptance testing;
-* **production: The module is in production.
+* **beta**: The module has been implemented, is fully tested and will SAHSU collaborators for acceptance testing;
+* **production**: The module is in production.
 
 Attempts use use module functionality when disabled (e.g. loading a multiple coviarates JSON5 file) will result in an error.
 When using the functionality the RIF will warn users until the module is in production.   
