@@ -82,7 +82,11 @@ angular.module("RIF")
 									thisPolyID);
 							}
                             else {
-								var newSelectedPolygon = {id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand};
+								var newSelectedPolygon = {
+                                       id: thisPolyID, 
+                                       gid: thisPolyID, 
+                                       label: thisPoly, 
+                                       band: $scope.currentBand};
 								AlertService.consoleDebug("[rifc-util-multiselect.js] add: " + thisPolyID +
 									"; newSelectedPolygon: " + JSON.stringify(newSelectedPolygon));
 								$scope.selectedPolygon = CommonMappingStateService.getState("areamap").addToSelectedPolygon($scope.input.name,

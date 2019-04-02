@@ -67,6 +67,7 @@ angular.module("RIF")
 						shapes: undefined,
 						drawnItems: undefined,
 						info: undefined,
+                        coordinatesList: {},
 						StudyAreaMap: {
 							selectedPolygon: [],				
 							selectedPolygonObj: {},
@@ -439,9 +440,15 @@ angular.module("RIF")
 							}
 							return this.areaType.selectedPolygon;
 						},
-						getNextShapeId: function() {
-							shapeId++;
-							return 'RIF_' + shapeId;
+						getNextShapeId: function(coordinates) {
+                            if (coordinates && this.coordinatesList[JSON.stringify(coordinates)]) {
+                                return this.coordinatesList[JSON.stringify(coordinates)];
+                            }
+                            else {
+                                shapeId++;
+                                this.coordinatesList[JSON.stringify(coordinates)]=shapeId;
+                                return 'RIF_' + shapeId;
+                            }
 						},
 						getNextShapeFileId: function (areaType, shapefile) {
 							checkAreaType(areaType);	

@@ -1429,8 +1429,8 @@ angular.module("RIF")
 														if (!bFound) {	
 															var newSelectedPolygon = {
 																id: thisPolyID, 
-																gid: e.target.feature.properties.gid, label: 
-																e.target.feature.properties.name, 
+																gid: e.target.feature.properties.gid, 
+                                                                label: e.target.feature.properties.name, 
 																band: CommonMappingStateService.getState("areamap").currentBand,
 																stratification: ($scope.input.stratifyTo || "ERROR")};
 															$scope.selectedPolygon = 
@@ -1438,7 +1438,6 @@ angular.module("RIF")
 																	newSelectedPolygon);
 														}       
 
-							//							ModalAreaService.setStratification($scope.input.stratifyTo, thisPolyID);
 														$scope.input.selectedPolygon = CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name); 														
 														$scope.selectedPolygonCount = $scope.selectedPolygon.length; //total for display
 														$scope.$digest(); // Force $watch sync
@@ -2124,15 +2123,25 @@ angular.module("RIF")
 									$scope.gridOptions.data[i].area_id);
 								if (selectedPolygon) {
 									foundCount++;
-                                    $scope.gridOptions.data[i].band = selectedPolygon.band;					
-                                    $scope.gridOptions.data[i].stratification = (
-											selectedPolygon.stratification ||
-											"UNKNOWN");
-//									if (foundCount < 5) {
-//										alertScope.consoleLog("[rifd-dsub-maptable.js] found: " + foundCount + "; area_id: " + 
-//											$scope.gridOptions.data[i].area_id + "; data[" + i + "]: " + 
-//											JSON.stringify($scope.gridOptions.data[i]));
-//									}
+                                    $scope.gridOptions.data[i].band = selectedPolygon.band;	
+                                    if ($scope.input.stratifyTo && $scope.input.stratifyTo.name == "MULTIPOLYGON") {
+                                        var stratification="UNKNOWN";
+                                        if (selectedPolygon.nearestRifShapePolyId &&
+                                            selectedPolygon.shapeIdList &&
+                                            selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId] &&
+                                            selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId) {
+                                            stratification=selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId;
+                                        }
+                                        $scope.gridOptions.data[i].stratification = stratification;
+                                    }
+//							ModalAreaService.setStratification($scope.input.stratifyTo, thisPolyID);
+			
+									if (foundCount < 5) {
+										alertScope.consoleLog("[rifd-dsub-maptable.js] found: " + foundCount + 
+                                            "; area_id: " + $scope.gridOptions.data[i].area_id + 
+                                            "; data[" + i + "]: " + JSON.stringify($scope.gridOptions.data[i]) +
+                                            "; selectedPolygon: " + JSON.stringify(selectedPolygon, null, 1));
+									}
                                 }
                             }
 		

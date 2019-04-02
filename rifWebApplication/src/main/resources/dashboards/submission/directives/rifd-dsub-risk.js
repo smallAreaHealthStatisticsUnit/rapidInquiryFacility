@@ -535,7 +535,9 @@ angular.module("RIF")
 								
 								var points = 0;
                                 for (var j in poly._layers) {
-									var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId();
+									var rifShapeId= CommonMappingStateService.getState("areamap").getNextShapeId(
+                                        [poly._layers[j].feature.geometry.coordinates[1],
+                                             poly._layers[j].feature.geometry.coordinates[0]]);
 									for (i=0; i < scope.bandAttr.length; i++) {
 										var rifShapePolyId= CommonMappingStateService.getState("areamap").getNextShapePolyId();
                                         //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
