@@ -58,7 +58,7 @@ Used by rifd-dsub-maptable.js
         <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
         <div class="dropDownLabel">Selection Resolution</div>
     </div>
-    <div id = "maptableDrop3" ng-if="isRiskAnalysis">
+    <div id = "maptableDrop3" ng-if="isRiskAnalysis && pooledAnalysisEnabled">
         <select type="text" ng-model="input.stratifyTo" title="{{input.stratifyTo.description}}" id='stratification' class='dropdownSelect' ng-options="l.name for l in stratificationList" ng-change="stratificationChange(input.stratifyTo)">
 		</select>
         <div class="dropDownLabel">Multi Site Risk Stratification</div>

@@ -130,6 +130,12 @@ angular.module("RIF")
 							scope.hasGrid = false;
 							scope.shapefileGridOptions = {};
 							scope.disableSubmit=false;
+                             
+                            scope.pooledAnalysisEnabled=false;
+                            if (ParametersService.isModuleEnabled('pooledAnalysis')) {
+                                scope.pooledAnalysisEnabled=true;
+                            }
+                            
 							if (scope.$parent.stratificationField) {
 								scope.stratificationField = scope.$parent.stratificationField;
 							}

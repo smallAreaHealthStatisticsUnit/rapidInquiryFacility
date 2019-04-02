@@ -73,7 +73,11 @@ angular.module("RIF")
 						$scope.noMouseClocks=false;						
 //						$scope.geoJSONLayers = [];
 						$scope.selectionData = [];
-                        $scope.isRiskAnalysis=false;                
+                        $scope.isRiskAnalysis=false;  
+                        $scope.pooledAnalysisEnabled=false;
+                        if (ParametersService.isModuleEnabled('pooledAnalysis')) {
+                            $scope.pooledAnalysisEnabled=true;
+                        }
 						var stratificationNone={ 
 							name: "NONE", stratificationType: "NONE", description: "No stratification"};   
                         $scope.stratificationList=angular.copy(
@@ -413,7 +417,7 @@ angular.module("RIF")
 						var refreshModalTable = function () {
 							if ($scope.gridOptions.data && $scope.gridOptions.data.length > 0) {
 								$scope.gridOptions.columnDefs = 
-									ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis);
+									ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis && $scope.pooledAnalysisEnabled);
 								var dataColumns=Object.keys($scope.gridOptions.data[0]).length;
 								$scope.gridOptions.data=ModalAreaService.refillTable($scope.gridOptions.data); // Force UI-grid watchers
 								if (oldColumnDefsLength != $scope.gridOptions.columnDefs.length) {
@@ -1963,7 +1967,8 @@ angular.module("RIF")
                             "; minRowsToShow: " + minRowsToShow +
                             "; headerRowHeight: " + headerRowHeight +
 							"; $scope.gridOptions.minRowsToShow: " + $scope.gridOptions.minRowsToShow);
-                        $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis);
+                        $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis &&
+                            $scope.pooledAnalysisEnabled);
                         //Enable row selections
                         $scope.gridOptions.onRegisterApi = function (gridApi) {
                             $scope.gridApi = gridApi;
