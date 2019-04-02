@@ -152,7 +152,21 @@ var geojsonToCSV = function geojsonToCSV(response, xmlConfig, req, res, endCallb
 							for (var key in topojson.geojson.features[k].properties) {
 								row[key] = (topojson.geojson.features[k].properties[key]||
 									topojson.geojson.features[k].properties[key.toUpperCase()]||
+									topojson.geojson.features[k].properties[key.toLowerCase()]||
 									"");
+                                if (row[key] == "") {
+                                    if (k < 9) {
+                                        console.error("geoJSON2WKTSeries() update k: " + k + 
+                                            "; i: " + i + 
+                                            "; m: " + m + 
+                                            "; l: " + l + 
+                                            "; k: " + k + 
+                                            "; zoomlevel: " + topojson.zoomlevel + 
+                                            "; null key: " + key + 
+                                            "; properties: " + JSON.stringify(topojson.geojson.features[k].properties) + 
+                                            "; fileName: " + fileName );
+                                    }
+                                }
 							}
 							row[zoomlevelFieldName]=topojson.wkt[k];
 							csvFiles[i].rows.push(row);							

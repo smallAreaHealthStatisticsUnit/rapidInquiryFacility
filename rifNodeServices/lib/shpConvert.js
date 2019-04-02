@@ -592,7 +592,13 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 				for (var property in record.properties) {
 					if (typeof record.properties[property] === 'string' || record.properties[property] instanceof String) {
 						record.properties[property]=record.properties[property].replace(/\0/g, ''); 
+						
 					}
+                    // Force property names to upper case
+                    if (property.toUpperCase() != property) {
+                        var savedProperty=record.properties[property];
+                        record.properties[property.toUpperCase()]=savedProperty;
+                    }
 				}
 //				if (recNo < 4) {
 //					serverLog.serverLog2(__file, __line, "Remove NUL from properties [" + recNo + "]: " + JSON.stringify(record.properties));
