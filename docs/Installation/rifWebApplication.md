@@ -3214,7 +3214,10 @@ The statuses are:
 Attempts use use module functionality when disabled (e.g. loading a multiple coviarates JSON5 file) will result in an error.
 When using the functionality the RIF will warn users until the module is in production.   
 
-```JSON5
+To enable module functionality in the front end, copy frontEndParameters.json5 from %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Copy this file to *%CATALINA_HOME%\conf* (if not done already).
+Set *enabled* to *true* for the relevant module.
+
+```json
        additionalModules: {
             multipleCovariates: {
                 enabled: false,
