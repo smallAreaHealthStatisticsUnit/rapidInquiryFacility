@@ -3497,7 +3497,20 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 
 ### 25th to 28th March
 
-* Swedish collaborator teoeconference, RIF meeting, State 1: study setup modal errors testing, issue #129 coding
+* Swedish collaborator teleconference, RIF meeting, State 1: study setup modal errors testing, issue #129 coding
 * Postgres Oracle interconnection
 * State 1: study setup modal errors testing, R update fix, make new functionality modular
 * State 1: study setup modal errors test and merge, make multiple covariates modular. Issue #129: populate stratification geolevels column
+
+### 1st April to 4th April
+
+* Resolve IE 11.379.17763.0 on Windows 10 logon problem is a cache issue. Disabling webpage caching in Internet Explorer 11:
+  * From the top right corner of Internet Explorer 11, click the Gear icon .
+  * From the menu, select Internet options.
+  * On the General tab, locate the Browsing history section, and click Settings.
+  * On the Temporary Internet Files tab, confirm that Every time I visit the webpage is selected
+  Create and merge pull #148 for Issue #75 fix for IE console.log. Note was unable to detect caching in the 
+  Javascript data. The only sensible way to resolve this would be to get isLoggedIn REST call to return a data 
+  time string as well. This would probably prevent IE caching and could be checked to detect it;
+* Load SYDVAST DESO data; create mixed case DBF fields fix as pull #149;
+* Document new module functionality;

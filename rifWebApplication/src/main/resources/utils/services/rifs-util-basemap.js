@@ -263,7 +263,7 @@ angular.module("RIF")
                         getNoBaseMap: function (map) {
                             return noBaseMap[map];
                         },
-						setDefaultBaseMap(map) {
+						setDefaultBaseMap: function(map) {
 							noBaseMap[map] = false;
 							
 							AlertService.consoleDebug("[rifs-util-basemap.js] map: " + map + "; default baseMapInUse: " + defaultBaseMap);

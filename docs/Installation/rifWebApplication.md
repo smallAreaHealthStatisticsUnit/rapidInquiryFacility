@@ -1295,7 +1295,7 @@ This setup will support:
 
 - Android 4.4.2 and later
 - Firefox 32 and later. Note that Firefox 45 does not work!
-- IE 11 and later
+- Internet Explorer 11 and later
 - Microsoft Edge 38 and later
 - IE Mobile 11 and later
 - Java 8 b132 (March 10, 2014)
@@ -1769,6 +1769,25 @@ b) Check your firewall/other security software is permitting access to your serv
 * Test cases are provided in the *tests* folder of the SAHSU supplied bundle:
   - *TEST 1002 LUNG CANCER HET 95_96.json typically takes around 85 seconds on a Postgres database;
   - *TEST 1003 LUNG CANCER BYM ALL YEARS 89_16.json* typically takes around 160 seconds on a Postgres database
+
+The RIF will support:
+  
+- Android 4.4.2 and later
+- Firefox 32 and later. Note that Firefox 45 does not work!
+- Internet Explorer 11 and later
+- Microsoft Edge 38 and later
+- IE Mobile 11 and later
+- Java 8 b132 (March 10, 2014)
+- Safari 7 and later
+
+To use Internet Explorer 11 you must disable webpage caching:
+
+* From the top right corner of Internet Explorer 11, click the Gear icon .
+* From the menu, select Internet options.
+* On the General tab, locate the Browsing history section, and click Settings.
+* On the Temporary Internet Files tab, confirm that Every time I visit the webpage is selected
+
+![Disabling webpage caching]({{ site.baseurl }}/rifWebApplication/IE_11_browser_caching_settings.PNG)
 
 ## Logging On
 
@@ -2285,7 +2304,7 @@ You will need to check the code to see what they have:
 * rrDropLineRedrawDisabled: Disable rrDropLineRedraw handler [for leak testing]
 * rrchartWatchDisabled: Disable Angular $watch on rrchart<mapID> [for leak testing]
 
-Aslo:
+Also:
 
 * mapLockingOptions: Map locking options (options for Leaflet.Sync())
 
@@ -2383,7 +2402,7 @@ Comments:
 		mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
 
 		/*
-		 * For the Color Brewer names see: https://github.com/timothyrenner/ColorBrewer.jl
+		 * For the Color Brewer names see: https://github.com/timothyrenner/ColorBrewer.js
 		 * Derived from: http://colorbrewer2.org/
 		 */
 		mappingDefaults: {
@@ -2429,9 +2448,49 @@ Comments:
 					brewerName:	"RdYlGn",
                     invalidScales: ["Constant"]
 			}
-		}
+        },
+		selectorBands: { // Study and comparison are selectors
+			weight: 3,
+			opacity: 0.8,
+			fillOpacity: 0,
+			bandColours: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
+		},
+		disableMouseClicksAt: 5000, // Areas
+        // Additional modules support. Not enabled by default until in production
+        additionalModules: {
+            multipleCovariates: {
+                enabled: true,
+                description: "Multiple study and additional extract covariates",
+                status: "alpha" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            pooledAnalysis: {
+                enabled: true,
+                description: "Individual site and pooled analysis (1 or more groups of sites). Groups are defined from a categorisation variable in the shapefile or from regional area identifiers",
+                status: "inDevelopment" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            priorSensitivityAnalysis: {
+                enabled: false,
+                description: "Prior sensitivity analysis",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            informationGovernance: {
+                enabled: false,
+                description: "Information governance module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            dataLoading: {
+                enabled: false,
+                description: "Integrated data loading module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            geospatialDataLoading: {
+                enabled: false,
+                description: "Integrated geospatial data loading module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            }
+        }
 	}
-}
+}              
 ```
 
 Change the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
@@ -3128,5 +3187,69 @@ Rengine Started; Rpid: 10644; JRI version: 266; thread ID: 30
 R will be limited to the maximum private memory (resident set size) of Java, typically around 3.3GB on Windows 8.1. To go beyond this
 you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HOME%\bin\setenv.bat*; e.g. add ```-Xmx6g``` to
 *CATALINA_OPTS*
+
+## Additional Modules
+
+RIF 4.1 will add additional modules giving extra functionality. A limited amount of the code is in RIF 4.0 and is disabled by default:
+
+| Module name              | Enabled | Status              | Description                                                                                                                                                           |
+|--------------------------|---------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| multipleCovariates       | false   | Alpha               | Multiple study and additional extract covariates                                                                                                                      | 
+| pooledAnalysis           | false   | In development      | Individual site and pooled analysis (1 or more groups of sites). Groups are defined from a categorisation variable in the shapefile or from regional area identifiers |
+| priorSensitivityAnalysis | false   | Not yet implemented | Prior sensitivity analysis modification                                                                                                                               |
+| informationGovernance    | false   | Not yet implemented | Information governance module                                                                                                                                         |
+| dataLoading              | false   | Not yet implemented | Integrated data loading module                                                                                                                                        |
+| geospatialDataLoading    | false   | Not yet implemented | Integrated geospatial data loading module                                                                                                                             |
+
+The multiple covariates module is in the master branch but is still under test and the results have not been validated.
+
+The statuses are:
+
+* **notYetImplemented**: The module has not yet been implemented;
+* **inDevelopment**: The module is in development;
+* **alpha**: The module has been implemented but is not fully tested;
+* **beta**: The module has been implemented, is fully tested and will SAHSU collaborators for acceptance testing;
+* **production**: The module is in production.
+
+Attempts use use module functionality when disabled (e.g. loading a multiple coviarates JSON5 file) will result in an error.
+When using the functionality the RIF will warn users until the module is in production.   
+
+To enable module functionality in the front end, copy frontEndParameters.json5 from %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Copy this file to *%CATALINA_HOME%\conf* (if not done already).
+Set *enabled* to *true* for the relevant module.
+
+```json
+       additionalModules: {
+            multipleCovariates: {
+                enabled: false,
+                description: "Multiple study and additional extract covariates",
+                status: "alpha" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            pooledAnalysis: {
+                enabled: false,
+                description: "Individual site and pooled analysis (1 or more groups of sites). Groups are defined from a categorisation variable in the shapefile or from regional area identifiers",
+                status: "inDevelopment" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            priorSensitivityAnalysis: {
+                enabled: false,
+                description: "Prior sensitivity analysis",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            informationGovernance: {
+                enabled: false,
+                description: "Information governance module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            dataLoading: {
+                enabled: false,
+                description: "Integrated data loading module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            },
+            geospatialDataLoading: {
+                enabled: false,
+                description: "Integrated geospatial data loading module",
+                status: "notYetImplemented" // notYetImplemented/inDevelopment/alpha/beta/production
+            }
+        }
+```        
 
 **Peter Hambly, 12th April 2017; revised 4th August 2017 and 12th April 2018**

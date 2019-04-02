@@ -50,11 +50,13 @@ angular.module("RIF")
                                     if (angular.isUndefined(res) || angular.isUndefined(res.data) || res.data[0].result === "false") {
                                         //Redirect to login screen
 										if (currentStateName == 'state0') {
-											AlertService.consoleError("AuthService.isLoggedIn() failed; already in state0; res: " + 
+											AlertService.consoleError("AuthService.isLoggedIn(" + AuthService.currentUser + 
+                                                ") failed; already in state0; res: " + 
 												((res && res.data) ? JSON.stringify(res.data) : "no res.data"));
 										}
 										else {
-											AlertService.consoleError("AuthService.isLoggedIn() failed; transition from: " + 
+											AlertService.consoleError("AuthService.isLoggedIn(" + AuthService.currentUser + 
+                                                ") failed; transition from: " + 
 											currentStateName + 
 												" to state0; res: " + ((res && res.data) ? JSON.stringify(res.data) : "no res.data"));
 											$injector.get('$state').transitionTo('state0');
@@ -65,11 +67,13 @@ angular.module("RIF")
 									//Redirect to login screen
 									
 									if (currentStateName == 'state0') {
-										AlertService.consoleError("AuthService.isLoggedIn() error; already in state0; error: " + 
+										AlertService.consoleError("AuthService.isLoggedIn(" + AuthService.currentUser + 
+                                                ") error; already in state0; error: " + 
 											(err ? err : "no error"));
 									}
 									else {
-										AlertService.consoleError("AuthService.isLoggedIn() error; transition from: " + 
+										AlertService.consoleError("AuthService.isLoggedIn(" + AuthService.currentUser + 
+                                                ") error; transition from: " + 
 											currentStateName + 
 											" to state0; error: " + (err ? err : "no error"));
 										$injector.get('$state').transitionTo('state0');

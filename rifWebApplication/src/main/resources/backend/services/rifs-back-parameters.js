@@ -162,7 +162,7 @@ angular.module("RIF")
 							}
 							parameters.debugEnabled=params.debugEnabled||true;
                         },
-                        isModuleEnabled(moduleName) {
+                        isModuleEnabled: function(moduleName) {
                             if (parameters && parameters.additionalModules && parameters.additionalModules[moduleName] &&
                                 parameters.additionalModules[moduleName].enabled &&
                                 parameters.additionalModules[moduleName].enabled == true) {
@@ -172,7 +172,7 @@ angular.module("RIF")
                                 return false;
                             }
                         },
-                        getModuleDescription(moduleName) {
+                        getModuleDescription: function(moduleName) {
                             if (parameters && parameters.additionalModules && parameters.additionalModules[moduleName]) {
                                 return (parameters.additionalModules[moduleName].description ||
                                         "No description for module: " + moduleName);
@@ -181,7 +181,7 @@ angular.module("RIF")
                                 throw new Error("Invalid module: " + moduleName);
                             }
                         },
-                        getModuleStatus(moduleName) {
+                        getModuleStatus: function(moduleName) {
                             if (parameters && parameters.additionalModules && parameters.additionalModules[moduleName]) {
                                 if (parameters.additionalModules[moduleName].status) {
                                     switch (parameters.additionalModules[moduleName].status) {
