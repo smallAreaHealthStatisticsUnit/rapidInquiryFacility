@@ -46,11 +46,11 @@ angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
 			'SelectStateService', 'ParametersService', 'StudyAreaStateService', 'CompAreaStateService', 'CommonMappingStateService', 
-			'DrawSelectionService', '$q', '$timeout', 'uiGridConstants',
+			'DrawSelectionService', '$q', '$timeout', 'uiGridConstants', 'AlertService',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     LeafletBaseMapService, $timeout, user, SubmissionStateService,
 					SelectStateService, ParametersService, StudyAreaStateService, CompAreaStateService, CommonMappingStateService,
-					DrawSelectionService, $q, $timeout, uiGridConstants) {
+					DrawSelectionService, $q, $timeout, uiGridConstants, AlertService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -81,13 +81,34 @@ angular.module("RIF")
 						var stratificationNone={ 
 							name: "NONE", stratificationType: "NONE", description: "No stratification"};   
                         $scope.stratificationList=angular.copy(
-							$scope.stratificationList || [stratificationNone]);            
+							$scope.stratificationList || [stratificationNone]);
+                        $scope.stratifyTo = angular.copy($scope.stratifyTo || $scope.input.stratifyTo || stratificationNone);       
 						if ($scope.input.type == "Risk Analysis") {
                             $scope.isRiskAnalysis=true;   
-							$scope.input.stratifyTo=SubmissionStateService.getState().stratifyTo;
-                            $scope.input.stratifyTo = angular.copy($scope.input.stratifyTo || stratificationNone);
+                            $scope.input.stratifyTo = stratificationNone;
+                            $scope.stratifyTo = stratificationNone;
+                            if (SubmissionStateService.getState().stratifyTo &&
+                                SubmissionStateService.getState().stratificationList) {
+                                stratificationChange(SubmissionStateService.getState().stratifyTo);                         
+                                $scope.stratificationList = SubmissionStateService.getState().stratificationList;
+                                AlertService.consoleDebug("[rifd-dsub-maptable.js] restore stratification " +
+                                    "; $scope.input.stratifyTo: " + JSON.stringify($scope.input.stratifyTo) +
+                                    "; $scope.stratifyTo: " + JSON.stringify($scope.stratifyTo) +
+                                    "; $scope.stratificationList: " + JSON.stringify($scope.stratificationList, null, 1));
+                            }
+                            else {                            
+                                AlertService.consoleDebug("[rifd-dsub-maptable.js] default stratification " +
+                                    "; $scope.input.stratifyTo: " + JSON.stringify($scope.input.stratifyTo) +
+                                    "; $scope.stratifyTo: " + JSON.stringify($scope.stratifyTo) +
+                                    "; $scope.stratificationList: " + JSON.stringify($scope.stratificationList, null, 1));
+                            }
                         }
-                        $scope.stratifyTo =  angular.copy($scope.stratifyTo || $scope.input.stratifyTo || stratificationNone);
+                        else {
+                            AlertService.consoleDebug("[rifd-dsub-maptable.js] no stratification " +
+                                "; $scope.input.stratifyTo: " + JSON.stringify($scope.input.stratifyTo) +
+                                "; $scope.stratifyTo: " + JSON.stringify($scope.stratifyTo) +
+                                "; $scope.stratificationList: " + JSON.stringify($scope.stratificationList, null, 1));
+                        }
 						CommonMappingStateService.getState("areamap").map = // Initialise if required
 							L.map("areamap", {condensedAttributionControl: false}).setView([0, 0], 1);	
                         $scope.areamap = CommonMappingStateService.getState("areamap").map;
@@ -103,12 +124,11 @@ angular.module("RIF")
                         //Reference the child scope
                         //will be from the comparison area or study area controller
                         $scope.child = {};
-                        var alertScope = $scope.$parent.$$childHead.$parent.$parent.$$childHead;
 						CommonMappingStateService.getState("areamap").map.on('remove', function(e) {
-                            alertScope.consoleDebug("[rifd-dsub-maptable.js] removed shared areamap");
+                            AlertService.consoleDebug("[rifd-dsub-maptable.js] removed shared areamap");
 						});
 						CommonMappingStateService.getState("areamap").map.on('error', function(errorEvent){
-                            alertScope.consoleError("[rifd-dsub-maptable.js] error in areamap" +
+                            AlertService.consoleError("[rifd-dsub-maptable.js] error in areamap" +
 								(errorEvent.message || "(no message)"));
 						});	
 
@@ -119,7 +139,7 @@ angular.module("RIF")
                         //If geog changed then clear selected
                         var thisGeography = SubmissionStateService.getState().geography;
                         if (thisGeography !== $scope.input.geography) {
-							alertScope.consoleLog("[rifd-dsub-maptable.js] Geography change from: " + 
+							AlertService.consoleLog("[rifd-dsub-maptable.js] Geography change from: " + 
                                 SubmissionStateService.getState().geography + " to: " + thisGeography +
                                 "; clear $scope.input.selectedPolygon");
                             $scope.input.selectedPolygon.length = 0;
@@ -134,7 +154,7 @@ angular.module("RIF")
 
                         //selectedPolygon array synchronises the map <-> table selections 
 						var selectedPolygon = angular.copy($scope.input.selectedPolygon); // Copy to prevent going out of scope						
-						alertScope.consoleLog("[rifd-dsub-maptable.js] initialiseSelectedPolygon(" + $scope.input.name + ") $scope.input.selectedPolygon: " +
+						AlertService.consoleLog("[rifd-dsub-maptable.js] initialiseSelectedPolygon(" + $scope.input.name + ") $scope.input.selectedPolygon: " +
 							selectedPolygon.length);                  
                         CommonMappingStateService.getState("areamap").initialiseSelectedPolygon($scope.input.name, selectedPolygon);       
 						$scope.selectedPolygon = CommonMappingStateService.getState("areamap").sortSelectedPolygon($scope.input.name);		
@@ -165,7 +185,7 @@ angular.module("RIF")
                          */
 
                         $scope.geoLevelChange = function () {
-							alertScope.consoleLog("[rifd-dsub-maptable.js] $scope.geoLevelChange() clear $scope.input.selectedPolygon");
+							AlertService.consoleLog("[rifd-dsub-maptable.js] $scope.geoLevelChange() clear $scope.input.selectedPolygon");
                             //Clear the map
 							$scope.clear();
 
@@ -217,12 +237,16 @@ angular.module("RIF")
 						 *				($scope.input.stratifyTo being set to undefined) by saving value
 						 */
 						$scope.stratificationChange = function(nStratification) {
+                            stratificationChange(nStratification);
+                        }
+                        
+						function stratificationChange(nStratification) {
 							if (nStratification == undefined) { 
 								// $scope.input.stratification is being reset by redraw map
 								if ($scope.input.stratifyTo == undefined && $scope.stratifyTo) {
 									// Used saved
 									$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] DEFAULT stratificationChange: " + 
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] DEFAULT stratificationChange: " + 
 										JSON.stringify($scope.input.stratifyTo, null, 1) +
 										"; $scope.stratifyTo: " + 
 										JSON.stringify($scope.stratifyTo, null, 1) +
@@ -231,42 +255,55 @@ angular.module("RIF")
 								}
 								else { // Set to none
 									$scope.input.stratifyTo = stratificationNone;
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] NULL stratificationChange: " + 
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] NULL stratificationChange: " + 
 										JSON.stringify($scope.input.stratifyTo, null, 1) +
 										"; $scope.stratificationList: " + 
 										JSON.stringify($scope.stratificationList, null, 1));
-									$scope.gridOptions.data=ModalAreaService.setAllStratification($scope.input.stratifyTo, $scope.gridOptions.data);		
+                                    if ($scope.gridOptions && $scope.gridOptions.data) {
+                                        $scope.gridOptions.data=ModalAreaService.setAllStratification(
+                                            $scope.input.stratifyTo, $scope.gridOptions.data);		
+                                    }
 								}									
 							}
 							else if ($scope.input.stratifyTo && $scope.input.stratifyTo.name &&
 							    nStratification && nStratification.name &&
 								$scope.stratifyTo.name == nStratification.name) { // No change
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] No stratificationChange: " + 
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] No stratificationChange: " + 
 									JSON.stringify($scope.input.stratifyTo, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
+								$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
 							}
 							else if ($scope.input.stratifyTo && $scope.input.stratifyTo.name &&
 							    nStratification && nStratification.name &&
 								$scope.stratifyTo.name != nStratification.name) { // Change
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] stratificationChange from: " + 
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] stratificationChange from: " + 
 									JSON.stringify($scope.input.stratifyTo, null, 1) + 
 									" to: " + JSON.stringify(nStratification, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
 								$scope.input.stratifyTo = nStratification;
-								$scope.gridOptions.data=ModalAreaService.setAllStratification($scope.input.stratifyTo, $scope.gridOptions.data);
+                                if ($scope.gridOptions && $scope.gridOptions.data) {
+                                    $scope.gridOptions.data=ModalAreaService.setAllStratification(
+                                        $scope.input.stratifyTo, $scope.gridOptions.data);
+                                }
 							}
 							else { // No longer valid
 								$scope.input.stratifyTo = stratificationNone;
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] no longer valid stratificationChange from: " + 
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] no longer valid stratificationChange from: " + 
 									JSON.stringify($scope.input.stratifyTo, null, 1) + 
 									" to: " + JSON.stringify(nStratification, null, 1) +
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
-								$scope.gridOptions.data=ModalAreaService.setAllStratification($scope.input.stratifyTo, $scope.gridOptions.data);
+                                if ($scope.gridOptions && $scope.gridOptions.data) {
+                                    $scope.gridOptions.data=ModalAreaService.setAllStratification(
+                                        $scope.input.stratifyTo, $scope.gridOptions.data);
+                                }
 							}
 							$scope.stratifyTo = stratifyToCopy($scope.input.stratifyTo); // Save
+                            if ($scope.isRiskAnalysis) {
+                                SubmissionStateService.getState().stratifyTo = stratifyToCopy($scope.input.stratifyTo);
+                            }
 						}
 						
 						/* 
@@ -328,9 +365,12 @@ angular.module("RIF")
 									});
 								}
 							}
-							alertScope.consoleDebug("[rifd-dsub-maptable.js] rebuild stratificationList: " +
+							AlertService.consoleDebug("[rifd-dsub-maptable.js] rebuild stratificationList: " +
 								JSON.stringify(stratificationList, null, 1));
-								
+
+                            if ($scope.isRiskAnalysis) {
+                                SubmissionStateService.getState().stratificationList = $scope.stratificationList;	
+                            }                                
 /*							if ($scope.stratificationField && 
 								$scope.stratificationField != "NONE" &&
 								(nStratifyTo == undefined || nStratifyTo.name == "NONE")) {
@@ -365,9 +405,11 @@ angular.module("RIF")
 															
 								SubmissionStateService.getState().studyType = $scope.input.type;
 								StudyAreaStateService.getState().setType($scope.input.type);		
-								CompAreaStateService.getState().type = $scope.input.type;			
-								SubmissionStateService.getState().stratifyTo = $scope.input.stratifyTo;		
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(RA): " + 
+								CompAreaStateService.getState().type = $scope.input.type;	
+                                if ($scope.isRiskAnalysis) {		
+                                    SubmissionStateService.getState().stratifyTo = $scope.input.stratifyTo;		
+                                }
+								AlertService.consoleLog("[rifd-dsub-maptable.js] setStudyType(RA): " + 
 									SubmissionStateService.getState().studyType);	
         
 							}
@@ -384,12 +426,12 @@ angular.module("RIF")
 								SubmissionStateService.getState().studyType = $scope.input.type;
 								StudyAreaStateService.getState().setType($scope.input.type);		
 								CompAreaStateService.getState().type = $scope.input.type;		
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType(DM): " + 
+								AlertService.consoleLog("[rifd-dsub-maptable.js] setStudyType(DM): " + 
 									SubmissionStateService.getState().studyType);	
 
 							}					
 							else if ($scope.input.type === SelectStateService.getState().studyType) { // No change	
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType() No change: " +
+								AlertService.consoleLog("[rifd-dsub-maptable.js] setStudyType() No change: " +
 									SelectStateService.getState().studyType);
 							}								
 							else if ($scope.input.type == undefined) {
@@ -404,7 +446,7 @@ angular.module("RIF")
 								else {
 									throw new Error("setStudyType: undefined $scope.input.type");
 								}		
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setStudyType() No change, set ComparisionAreaMap $scope.input.type: " +
+								AlertService.consoleLog("[rifd-dsub-maptable.js] setStudyType() No change, set ComparisionAreaMap $scope.input.type: " +
 									SelectStateService.getState().studyType);
 							}
 							else {
@@ -422,7 +464,7 @@ angular.module("RIF")
 								$scope.gridOptions.data=ModalAreaService.refillTable($scope.gridOptions.data); // Force UI-grid watchers
 								if (oldColumnDefsLength != $scope.gridOptions.columnDefs.length) {
 									refreshModalTableCount++;
-									alertScope.consoleLog("[rifd-dsub-maptable.js] refreshModalTable: " +
+									AlertService.consoleLog("[rifd-dsub-maptable.js] refreshModalTable: " +
 										refreshModalTableCount +
 										"; data columns: " + dataColumns +
 										"; data rows: " + $scope.gridOptions.data.length +
@@ -435,13 +477,13 @@ angular.module("RIF")
 								
 							}
 							else {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] Unable to refreshModalTable: no data");
+								AlertService.consoleLog("[rifd-dsub-maptable.js] Unable to refreshModalTable: no data");
 							}							
 						}
 					
                         //Clear all selection from map and table
                         $scope.clear = function () {
-							alertScope.consoleLog("[rifd-dsub-maptable.js] $scope.clear() $scope.input.selectedPolygon");
+							AlertService.consoleLog("[rifd-dsub-maptable.js] $scope.clear() $scope.input.selectedPolygon");
                             $scope.input.selectedPolygon.length = 0;
 							$scope.selectedPolygonCount = 0;
                             $scope.selectedPolygon = CommonMappingStateService.getState("areamap").clearSelectedPolygon($scope.input.name);
@@ -494,7 +536,7 @@ angular.module("RIF")
 									if (shapeLayer.options.icon) { // Factory icon - ignore
 									}										
 									else if (shapeLayer.options.band == undefined) {	
-										alertScope.consoleLog("[rifd-dsub-maptable.js] cannot resolve shapesLayerList[" + i + 
+										AlertService.consoleLog("[rifd-dsub-maptable.js] cannot resolve shapesLayerList[" + i + 
 											 "].options.band/area; options: " + JSON.stringify(shapeLayer.options));
 										shapeLayerOptionsBanderror++;
 									}
@@ -525,12 +567,12 @@ angular.module("RIF")
 									shapesLayerAreaList=Object.keys(shapesLayerAreas); 
 									shapesLayerAreaList.sort(function(a, b){return b - a}); 
 									// Sort into descended list so the smallest areas are in front
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] sorted shape areas: " + shapesLayerAreaList.length + 
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] sorted shape areas: " + shapesLayerAreaList.length + 
 										"; " + JSON.stringify(shapesLayerAreaList));
 									
 									var areaNameList=CommonMappingStateService.getState("areamap").getAreaNameList(
 										$scope.input.name);
-									alertScope.consoleLog("[rifd-dsub-maptable.js] getAreaNameList() for: " + 
+									AlertService.consoleLog("[rifd-dsub-maptable.js] getAreaNameList() for: " + 
 										$scope.input.name + 
 										"; areaNameList: " + (areaNameList ? Object.keys(areaNameList).length : "0"));
 										
@@ -545,7 +587,7 @@ angular.module("RIF")
 
 														if (areaNameList == undefined || 
 														    (Object.keys(areaNameList).length === 0 && areaNameList.constructor === Object)) {
-															alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
+															AlertService.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
 																"; band: " + shapeLayer.options.band +
 																"; area: " + shapeLayer.options.area +
 																"; polygons: unknown");
@@ -554,14 +596,14 @@ angular.module("RIF")
 														else if (shapeLayer.options.band && 
 															areaNameList && areaNameList[shapeLayer.options.band] &&
 														    areaNameList[shapeLayer.options.band].length > 0) {
-															alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
+															AlertService.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
 																"; band: " + shapeLayer.options.band +
 																"; area: " + shapeLayer.options.area +
 																"; polygons: " + areaNameList[shapeLayer.options.band].length);
 															shapeLayer.bringToFront();
 														}
 														else {
-															alertScope.consoleDebug("[rifd-dsub-maptable.js] ignore layer: " + areaIdList[l] + " to front" +
+															AlertService.consoleDebug("[rifd-dsub-maptable.js] ignore layer: " + areaIdList[l] + " to front" +
 																"; band: " + shapeLayer.options.band +
 																"; area: " + shapeLayer.options.area +
 																"; areaNameList: " + JSON.stringify(areaNameList) +
@@ -570,7 +612,7 @@ angular.module("RIF")
 													}
 													else {		
 														shapeLayerBringToFrontError++;
-														alertScope.consoleLog("[rifd-dsub-maptable.js] cannot resolve shapesLayerAreas[" + area + 
+														AlertService.consoleLog("[rifd-dsub-maptable.js] cannot resolve shapesLayerAreas[" + area + 
 															"][" + l + "].bringToFront()");
 													}
 												}
@@ -581,7 +623,7 @@ angular.module("RIF")
 								else { // Use bands
 									
 									for (var j=maxBands; j>0; j--) { 
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] band: " + j + "/" + maxBands + 
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] band: " + j + "/" + maxBands + 
 											"; areas: "  + Object.keys(shapesLayerAreas).length +
 											"; bands: " + Object.keys(shapesLayerBands).length + 
 											"; layers: " + shapesLayerBands[j].length + "; ids: " + JSON.stringify(shapesLayerBands[j]));
@@ -592,21 +634,21 @@ angular.module("RIF")
 											}
 											else {		
 												shapeLayerBringToFrontError++;
-												alertScope.consoleLog("[rifd-dsub-maptable.js] cannot resolve shapesLayerBands[" + j + 
+												AlertService.consoleLog("[rifd-dsub-maptable.js] cannot resolve shapesLayerBands[" + j + 
 													"][" + k + "].bringToFront()");
 											}
 										}
 									}
 								} 
 								
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] brought " + layerCount + " shapes in " + 
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] brought " + layerCount + " shapes in " + 
 									maxBands + " layer(s) to the front");
 								if (shapeLayerOptionsBanderror > 0) {	
-									alertScope.showError("[rifd-dsub-maptable.js] no band set in shapeLayer options (" + 
+									AlertService.showError("[rifd-dsub-maptable.js] no band set in shapeLayer options (" + 
 										shapeLayerOptionsBanderror + ")");
 								}
 								if (shapeLayerBringToFrontError > 0) {
-									alertScope.showError("[rifd-dsub-maptable.js] shapeLayer bingToFront() error (" + 
+									AlertService.showError("[rifd-dsub-maptable.js] shapeLayer bingToFront() error (" + 
 										shapeLayerBringToFrontError + ")");
 								}
 							}
@@ -696,14 +738,14 @@ angular.module("RIF")
                         // Show-hide shapes and associated info
 						$scope.showShapes = function () {
                             if (CommonMappingStateService.getState("areamap").shapes == undefined) {
-								alertScope.showError("[rifd-dsub-maptable.js] no shapes layerGroup");
+								AlertService.showError("[rifd-dsub-maptable.js] no shapes layerGroup");
 							}
 							else if (CommonMappingStateService.getState("areamap").map.hasLayer(CommonMappingStateService.getState("areamap").shapes)) {
                                 CommonMappingStateService.getState("areamap").map.removeLayer(CommonMappingStateService.getState("areamap").shapes);
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] remove shapes layerGroup");
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] remove shapes layerGroup");
 								if (CommonMappingStateService.getState("areamap").info._map) { // Remove info control
 									CommonMappingStateService.getState("areamap").info.remove();
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] remove info control");
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] remove info control");
 								}
 								
 								$scope.bShowHideSelectionShapes = false;
@@ -712,10 +754,10 @@ angular.module("RIF")
                             } 
 							else {
                                 CommonMappingStateService.getState("areamap").map.addLayer(CommonMappingStateService.getState("areamap").shapes);
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
 								if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
 									CommonMappingStateService.getState("areamap").info.addTo(CommonMappingStateService.getState("areamap").map);
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] add info control");
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] add info control");
 								}
 								
 								$scope.bShowHideSelectionShapes = true;
@@ -723,7 +765,7 @@ angular.module("RIF")
 								
 								$scope.bringShapesToFront();
                             }
-							alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + 
+							AlertService.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + 
 								SelectStateService.getState().showHideSelectionShapes);
 
                         };
@@ -732,7 +774,7 @@ angular.module("RIF")
                          * DISEASE MAPPING OR RISK MAPPING
                          */
                         $scope.studyTypeChanged = function () {
-							alertScope.consoleDebug("[rifd-dsub-maptable.js] studyTypeChanged(): " +
+							AlertService.consoleDebug("[rifd-dsub-maptable.js] studyTypeChanged(): " +
 								"to input.type: " + $scope.input.type + 
 								"; from SubmissionStateService.getState().studyType: " + SubmissionStateService.getState().studyType + 
 								"; and from StudyAreaStateService.getState().type: " + StudyAreaStateService.getState().type);
@@ -908,11 +950,11 @@ angular.module("RIF")
 								// Create LatLng List for centroids
 								return createLatLngList(res);	
 							}, function (err) { // Error case: not an error - processing continues
-								alertScope.consoleError("[rifd-dsub-maptable.js] user.getTileMakerCentroids had error: " + 
+								AlertService.consoleError("[rifd-dsub-maptable.js] user.getTileMakerCentroids had error: " + 
 									(err ? err : "no error specified"));
 								
                                 //couldn't get weighted centres so generate geographic with leaflet
-                                alertScope.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
+                                AlertService.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
                                 bWeightedCentres = false;	// Force use of GeoJSON centroids
 								$scope.centroid_type="Leaflet calculated geographic";
                             }).then(function (res) { // No res etc
@@ -930,14 +972,14 @@ angular.module("RIF")
 									}, function(err) { // Error case
 										promisesErrorHandler("user.getTileMakerTilesAttributes", err); // Abort												
 									}).then(function (res) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerTilesAttributes OK: " + 
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerTilesAttributes OK: " + 
 											(res ? res : "no status"));
 										// Delays are to allow the map to initialise
 										$timeout(function() {
 											
 											CommonMappingStateService.getState("areamap").map.whenReady(function() {
 												return $timeout(function() { //  Return promise
-													alertScope.consoleDebug("[rifd-dsub-maptable.js] map ready, zoomlevel: " +
+													AlertService.consoleDebug("[rifd-dsub-maptable.js] map ready, zoomlevel: " +
 														CommonMappingStateService.getState("areamap").map.getZoom() +
 														"; range: " + CommonMappingStateService.getState("areamap").map.getMinZoom() +
 														" to " + CommonMappingStateService.getState("areamap").map.getMaxZoom());
@@ -948,17 +990,17 @@ angular.module("RIF")
 									}, function(err) { // Error case
 										promisesErrorHandler("mapInitialise", err); // Abort												
 									}).then(function (res) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] mapInitialise OK: " + 
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] mapInitialise OK: " + 
 											(res ? res : "no status"))
 										// Add topoJSON tiles to map
 										return asyncCreateTileLayer(topojsonURL);
 									}).then(function (res) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] TileLayer OK: " + 
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] TileLayer OK: " + 
 											(res ? res : "no status"))
 										// Add topoJSON tiles to map
 										return asyncCreateTopoJsonLayer(topojsonURL);
 									}).then(function (res) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer OK: " + 
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] asyncCreateTopoJsonLayer OK: " + 
 											(res ? res : "no status"));
 										// Adds centroids to map from GeoJSON. Build eachFeatureArray for centroids using LatLng list 
 										// or $scope.latlngListById
@@ -967,14 +1009,14 @@ angular.module("RIF")
 									}, function(err) { // Error case
 										promisesErrorHandler("addCentroidsToMap", err); // Abort												
 									}).then(function (res) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] addCentroidsToMap OK: " + (res ? res : "no status"));
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] addCentroidsToMap OK: " + (res ? res : "no status"));
 									                   
 										// Get overall layer properties from lookup table
 										user.getTileMakerAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerAttributes: " + 
+											AlertService.consoleDebug("[rifd-dsub-maptable.js] user.getTileMakerAttributes: " + 
 												(res ? "OK" : "no status"));
 											if (angular.isUndefined(res.data.attributes)) {
-												alertScope.showError("Could not get tile attributes from database");
+												AlertService.showError("Could not get tile attributes from database");
 												return; // Stop processing
 											}      
 											else {								
@@ -984,7 +1026,7 @@ angular.module("RIF")
 												$scope.gridOptions.data = ModalAreaService.fillTable(res.data);		
 												refreshModalTable();
 												
-												alertScope.consoleDebug("[rifd-dsub-maptable.js] ModalAreaService.fillTable: " + 
+												AlertService.consoleDebug("[rifd-dsub-maptable.js] ModalAreaService.fillTable: " + 
 													$scope.totalPolygonCount + " rows");
 												/* Check selected polygon list matches:
 												 *		Sort CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name) alphabetically by id
@@ -1000,14 +1042,14 @@ angular.module("RIF")
 										}, function (err) {
 											promisesErrorHandler("user.getTileMakerAttributes", err); // Abort	
 										}).then(function (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
+											AlertService.consoleDebug("[rifd-dsub-maptable.js] checkSelectedPolygonList: " + 
 												(res ? res : "no status"));
 											// Add selected shapes to map
 											return addSelectedShapes(); // promise
 										}, function(err) { // Error case
 											promisesErrorHandler("addSelectedShapes", err); // Abort	
 										}).then(function (res) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes: " + 
+											AlertService.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes: " + 
 												(res ? res : "no status"));
 												
 											if ($scope.selectedPolygonCount > 0) {
@@ -1037,7 +1079,7 @@ angular.module("RIF")
                         }; // End of getMyMap()
 
 						function promisesErrorHandler(functionName, err) { // Abort the chain of promises processing
-							alertScope.showError("[rifd-dsub-maptable.js] " + functionName + " had error: " + 
+							AlertService.showError("[rifd-dsub-maptable.js] " + functionName + " had error: " + 
 								(err ? err : "no error specified"));
 							CommonMappingStateService.getState("areamap").map.spin(false);  // off	
 							enableMapSpinners();
@@ -1109,7 +1151,7 @@ angular.module("RIF")
 										catch (e) {
 											latlngListWarnings++;
 											if (latlngListWarnings < 10) {
-												alertScope.consoleError("[rifd-dsub-maptable.js] Unable to create population weighted centroid from: [" + 
+												AlertService.consoleError("[rifd-dsub-maptable.js] Unable to create population weighted centroid from: [" + 
 													p.pop_y + ", " + p.pop_x + "]; using GeoJSON", e);
 											}
 										}
@@ -1157,7 +1199,7 @@ angular.module("RIF")
 										catch (e) {
 											latlngListWarnings++;
 											if (latlngListWarnings < 10) {
-												alertScope.consoleError("[rifd-dsub-maptable.js] Unable to create database centroid from: [" + 
+												AlertService.consoleError("[rifd-dsub-maptable.js] Unable to create database centroid from: [" + 
 													p.y + ", " + p.x + "]; using GeoJSON", e);
 											}
 										}
@@ -1197,7 +1239,7 @@ angular.module("RIF")
                                 } // End of for loop
 								
 								if (latlngListDups > 0) {
-									alertScope.showWarning(latlngListDups + " duplicate IDs in centroid list");
+									AlertService.showWarning(latlngListDups + " duplicate IDs in centroid list");
 								}
 								var pctPopWeighted=Math.round(10000*popWeightedCount/res.data.smoothed_results.length)/100;
 									
@@ -1224,7 +1266,7 @@ angular.module("RIF")
 								}
 								
 								if (latlngListWarnings > 0) {
-									alertScope.showWarning(latlngListWarnings + 
+									AlertService.showWarning(latlngListWarnings + 
 										" coordinates in centroid list were invalid; calculated instead from GeoJSON shape");
 									$scope.centroid_type=$scope.centroid_type + "; " + latlngListWarnings + " invalid centroids";
 								}
@@ -1236,7 +1278,7 @@ angular.module("RIF")
 									$scope.noMouseClocks=false;
 								}
 								
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] " + thisGeography + "; " + $scope.input.selectAt +
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] " + thisGeography + "; " + $scope.input.selectAt +
 									"; polygons: " + res.data.smoothed_results.length +
 									"; dbCentroidCount: " + dbCentroidCount +
 									"; popWeightedCount: " + popWeightedCount +
@@ -1256,7 +1298,7 @@ angular.module("RIF")
 								if ($scope.noMouseClocks && 
 								    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
 									var pngURL=topojsonURL.replace('&tileType=topojson', '&tileType=png');
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] TileLayer enabled; pngURL: " +
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] TileLayer enabled; pngURL: " +
 										pngURL);
                                     // Needs to handle PNG creation timeouts, e.g: https://jsfiddle.net/rendrom/0bef9r7z/                                     
 									$scope.pngTiles = new L.TileLayer(pngURL, {
@@ -1274,12 +1316,12 @@ angular.module("RIF")
 										$scope.pngTiles.on('load', function(layer) {
                                             var zoomLevel = CommonMappingStateService.getState("areamap").map.getZoom();
                                             if (pngTileErrorCount > 0) {
-                                                alertScope.showWarning("PNG TileLayer loaded zoomlevel " + zoomLevel + 
+                                                AlertService.showWarning("PNG TileLayer loaded zoomlevel " + zoomLevel + 
                                                     " with " + pngTileErrorCount + " errors (please re-try in one minute)");
                                                 pngTileErrorCount=0;
                                             }
                                             else {
-                                                alertScope.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
+                                                AlertService.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
                                                     " tileLayer: " + pngURL + " loaded");
                                             }
 											resolve("topoJsonGridLayer enable areaId filtering: added TileLayer");
@@ -1287,33 +1329,33 @@ angular.module("RIF")
 										$scope.pngTiles.on('moveend', function(layer) {
                                             var zoomLevel = CommonMappingStateService.getState("areamap").map.getZoom();
                                             if (pngTileErrorCount > 0) {
-                                                alertScope.showWarning("Zoomlevel " + zoomLevel + 
+                                                AlertService.showWarning("Zoomlevel " + zoomLevel + 
                                                     " PNG TileLayer moved with " + 
                                                     pngTileErrorCount + " errors (please re-try in one minute)");
                                                 pngTileErrorCount=0;
                                             }
                                             else {
-                                                alertScope.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
+                                                AlertService.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
                                                     " tileLayer: " + pngURL + " moved");
                                             }
 										});
 										$scope.pngTiles.on('zoomend', function(layer) {
                                             var zoomLevel = CommonMappingStateService.getState("areamap").map.getZoom();
                                             if (pngTileErrorCount > 0) {
-                                                alertScope.showWarning("Zoomlevel " + zoomLevel + 
+                                                AlertService.showWarning("Zoomlevel " + zoomLevel + 
                                                     " PNG TileLayer zoomed with " + 
                                                     pngTileErrorCount + " errors (please re-try in one minute)");
                                                 pngTileErrorCount=0;
                                             }
                                             else {
-                                                alertScope.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
+                                                AlertService.consoleDebug("[rifd-dsub-maptable.js] zoomlevel " + zoomLevel + 
                                                     " tileLayer: " + pngURL + " zoomed");
                                             }
 										});
 										$scope.pngTiles.on('tileerror', function(error) {
                                             var zoomLevel = CommonMappingStateService.getState("areamap").map.getZoom();
                                             pngTileErrorCount++;
-											alertScope.consoleError("[rifc-util-mapping.js] Error[" + pngTileErrorCount + 
+											AlertService.consoleError("[rifc-util-mapping.js] Error[" + pngTileErrorCount + 
                                                 "]: loading PNG tile using URL: " + pngURL +
                                                 "; zoomLevel: " + zoomLevel + 
                                                 "; error: " + ((error && error.message && error.error.message) ? error.error.message : "N/A") +
@@ -1338,11 +1380,11 @@ angular.module("RIF")
 								var areaIdObj={};
 								if ($scope.noMouseClocks && 
 								    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length > 0) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering");
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer enable areaId filtering");
 									areaIdObj=CommonMappingStateService.getState("areamap").getAllSelectedPolygonObj($scope.input.name);
 								}
 								else {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer disable areaId filtering");
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer disable areaId filtering");
 								}
 								eachFeatureArray = [];
 								CommonMappingStateService.getState("areamap").map.spin(true);  // on
@@ -1350,7 +1392,7 @@ angular.module("RIF")
 								   areaIdObj: areaIdObj,
 								   consoleDebug: function(msg) {
 									   if (msg) {
-											alertScope.consoleDebug(msg);
+											AlertService.consoleDebug(msg);
 									   }
 								   },
                                    attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
@@ -1368,7 +1410,7 @@ angular.module("RIF")
 														
 												if (!$scope.noMouseClocks) {
 													layer.on('mouseover', function (e) {
-	//													alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer " + e.type + ": " + 
+	//													AlertService.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer " + e.type + ": " + 
 	//														feature.properties.name + "; " + e.target._leaflet_id);
 														//if drawing then return
 														if ($scope.input.bDrawing) {
@@ -1453,13 +1495,13 @@ angular.module("RIF")
 								}
 								else {
 									$scope.geoJSON.on('loading', function(layer) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loading " + $scope.input.selectAt + ": " + ($scope.geoJSONLoadCount+1));
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loading " + $scope.input.selectAt + ": " + ($scope.geoJSONLoadCount+1));
 										if ($scope.geoJSONLoadCount == 0) {
 											$scope.shapeLoadUpdate = "Loading " + $scope.input.selectAt + "...";
 										}
 									});
 									$scope.geoJSON.on('load', function(layer) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loaded " + $scope.input.selectAt + ": " + ($scope.geoJSONLoadCount+1));
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] topoJsonGridLayer loaded " + $scope.input.selectAt + ": " + ($scope.geoJSONLoadCount+1));
 										$scope.geoJSONLoadCount++;
 										$timeout(function() { // Slow things down a bit for MS Edge to avoid crash [DID NOT WORK]
 											if ($scope.geoJSONLoadCount == 1) {
@@ -1499,7 +1541,7 @@ angular.module("RIF")
 								var foundCount=0;
 								var missingLatLng=0;
 											
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] checking selectedPolygon: " + 
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] checking selectedPolygon: " + 
 									CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length);
 									
 //								var notFoundPolys = [];
@@ -1541,35 +1583,35 @@ angular.module("RIF")
 								// or c) area IDs were not found in the Lat/long list							
 								var hasErrors=false;
 								if (missingLatLng > 0) {
-									alertScope.showError(missingLatLng + 
+									AlertService.showError(missingLatLng + 
 										" area IDs were not found in the Lat/long list");
 									hasErrors=true;
 								}								
 								if (foundCount != CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length) {
 									
 									if (CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length < 10) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] unmatchable selectedPolygon[" + 
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] unmatchable selectedPolygon[" + 
 											CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length + "]: " +
 											JSON.stringify(CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)) +
 											"; foundCount: " + foundCount);										
 									}
 									else {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] unmatchable selectedPolygon: " + 
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] unmatchable selectedPolygon: " + 
 											CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length + 
 											"; foundCount: " + foundCount);										
 									}
 	
-									alertScope.showError("Could not match " + (CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length - foundCount) + " polygons from database with selected polygons list");
+									AlertService.showError("Could not match " + (CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length - foundCount) + " polygons from database with selected polygons list");
 									hasErrors=true;
 								}
 								
 								if (hasErrors) {
 									reject("error processing selected polygons list");
 										
-	//								alertScope.consoleDebug("[rifd-dsub-maptable.js] CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name): " + 
+	//								AlertService.consoleDebug("[rifd-dsub-maptable.js] CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name): " + 
 	//									JSON.stringify(CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name), null, 1));
 									
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] foundCount: " + foundCount + 
 										"; data.attributes: " + collectionLength + 
 										"; $scope.totalPolygonCount: " + $scope.totalPolygonCount + 
 										"; selectedPolygon.length " + CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name).length +
@@ -1602,7 +1644,7 @@ angular.module("RIF")
 								}
                                 
 								if (selectedShapes) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() selectedShapes " + 
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() selectedShapes " + 
 										$scope.input.name + ": " + 
 										selectedShapes.length + " shape");
 									for (var i=0; i<selectedShapes.length; i++) {
@@ -1611,7 +1653,7 @@ angular.module("RIF")
 											selectedShapes[i].geojson.geometry.coordinates[0]) {
 											points=selectedShapes[i].geojson.geometry.coordinates[0].length;
 										}
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShape[" + i + "] " +
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] selectedShape[" + i + "] " +
 											"band: " + selectedShapes[i].band +
 											"; color[" + (selectedShapes[i].band-1) + "]: " + selectorBands.bandColours[selectedShapes[i].band-1] +
 											"; circle: " + selectedShapes[i].circle +
@@ -1620,33 +1662,33 @@ angular.module("RIF")
 									}
 										
 								
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + SelectStateService.getState().showHideSelectionShapes +
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + SelectStateService.getState().showHideSelectionShapes +
 									 "; $scope.bShowHideSelectionShapes: " + $scope.bShowHideSelectionShapes + 
 									 "; map.hasLayer(shapes): " + CommonMappingStateService.getState("areamap").map.hasLayer(CommonMappingStateService.getState("areamap").shapes));
 									if (SelectStateService.getState().showHideSelectionShapes) {
 										$scope.bShowHideSelectionShapes = true;
 										if (!CommonMappingStateService.getState("areamap").map.hasLayer(CommonMappingStateService.getState("areamap").shapes)) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
+											AlertService.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
 											CommonMappingStateService.getState("areamap").map.addLayer(CommonMappingStateService.getState("areamap").shapes);
 											if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
 												CommonMappingStateService.getState("areamap").info.addTo(CommonMappingStateService.getState("areamap").map);
-												alertScope.consoleDebug("[rifd-dsub-maptable.js] add info control");
+												AlertService.consoleDebug("[rifd-dsub-maptable.js] add info control");
 											}
 										}
 										if (CommonMappingStateService.getState("areamap").shapes.getLayers().length == 0) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has no layers");				
+											AlertService.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has no layers");				
 										}
 										else {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has " +
+											AlertService.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has " +
 												CommonMappingStateService.getState("areamap").shapes.getLayers().length + " layers");
 										}
 									} else {
 										if (CommonMappingStateService.getState("areamap").map.hasLayer(CommonMappingStateService.getState("areamap").shapes)) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] remove shapes layerGroup");
+											AlertService.consoleDebug("[rifd-dsub-maptable.js] remove shapes layerGroup");
 											CommonMappingStateService.getState("areamap").map.removeLayer(CommonMappingStateService.getState("areamap").shapes);
 											if (CommonMappingStateService.getState("areamap").info._map) { // Remove info control
 												CommonMappingStateService.getState("areamap").info.remove();
-												alertScope.consoleDebug("[rifd-dsub-maptable.js] remove info control");
+												AlertService.consoleDebug("[rifd-dsub-maptable.js] remove info control");
 											}
 										}
 										$scope.bShowHideSelectionShapes = false;
@@ -1661,14 +1703,14 @@ angular.module("RIF")
 											$scope.shapeLoadUpdate = (i) + " / " + selectedShapes.length + " shapes, " + 
 												(Math.round(((i)/selectedShapes.length)*100)) + "%";
 											function selectedShapesHighLightFeature(e, selectedShape) {
-		//										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesHighLightFeature " + 
+		//										AlertService.consoleDebug("[rifd-dsub-maptable.js] selectedShapesHighLightFeature " + 
 		//											"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
 		//											"; " + JSON.stringify((e.target._latlng || e.latlng)) + "): " +
 		//											(JSON.stringify(selectedShape.properties) || "no properties"));
 												CommonMappingStateService.getState("areamap").info.update(selectedShape, (e.target._latlng || e.latlng));
 											}									
 											function selectedShapesResetFeature(e) {
-		//										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesResetFeature " +  
+		//										AlertService.consoleDebug("[rifd-dsub-maptable.js] selectedShapesResetFeature " +  
 		//											"(" + e.target._leaflet_id + "; for: " + e.originalEvent.currentTarget._leaflet_id + 
 		//											"; " + JSON.stringify((e.target._latlng || e.latlng)) + "): " +
 		//											(JSON.stringify(selectedShape.properties) || "no properties"));
@@ -1701,7 +1743,7 @@ angular.module("RIF")
 													
 													if (circle) {
 														CommonMappingStateService.getState("areamap").shapes.addLayer(circle);
-														alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): " +
+														AlertService.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): " +
 															"adding circle: " + JSON.stringify(selectedShape.latLng) + 
 															"; color[" + (selectedShapes[i].band-1) + "]: " + (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue') + 
 															"; radius: " + selectedShape.radius + 
@@ -1709,7 +1751,7 @@ angular.module("RIF")
 															"; area: " + selectedShape.area);
 													}
 													else {
-														alertScope.showError("Could not restore circle");
+														AlertService.showError("Could not restore circle");
 														errorCount++;
 													}
 													
@@ -1753,7 +1795,7 @@ angular.module("RIF")
 														} 
 													}); 
 													CommonMappingStateService.getState("areamap").shapes.addLayer(polygon);
-													alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): adding polygon" + 
+													AlertService.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): adding polygon" + 
 														"; band: " + selectedShape.band +
 														"; area: " + selectedShape.area +
 														"; freehand: " + selectedShape.freehand +
@@ -1761,14 +1803,14 @@ angular.module("RIF")
 														JSON.stringify(coordinates).substring(0,100) + "...");							
 												}
 												else {
-													alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): L.Polygon is undefined" +
+													AlertService.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): L.Polygon is undefined" +
 														"; geoJSON: " + JSON.stringify(selectedShape.geojson, null, 1));
 													errorCount++;
 													if (selectedShape.freehand) {	
-														alertScope.showError("Could not restore freehand Polygon shape");
+														AlertService.showError("Could not restore freehand Polygon shape");
 													}
 													else {
-														alertScope.showError("Could not restore shapefile Polygon shape");
+														AlertService.showError("Could not restore shapefile Polygon shape");
 													}
 												}
 											}
@@ -1806,13 +1848,13 @@ angular.module("RIF")
 
 							return $q(function(resolve, reject) {					
 
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] start add " + eachFeatureArray.length + 
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] start add " + eachFeatureArray.length + 
 									" feature centroids");
 											
 								async.eachOfSeries(eachFeatureArray, 
 									function eachFeatureArrayIteratee(eachFeature, indexKey, eachFeatureCallback) {
 										if (indexKey % 500 == 0) {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] processing feature " + indexKey + "/" + eachFeatureArray.length + 
+											AlertService.consoleDebug("[rifd-dsub-maptable.js] processing feature " + indexKey + "/" + eachFeatureArray.length + 
 												" feature centroids; call $timeout()");		
 											$scope.shapeLoadUpdate = "Loading centroids: " + indexKey + "/" + eachFeatureArray.length + "; " + 
 												(Math.round(((indexKey)/eachFeatureArray.length)*100)) + "%";											
@@ -1826,17 +1868,17 @@ angular.module("RIF")
 											});
 										}	
 										else {
-	//										alertScope.consoleDebug("[rifd-dsub-maptable.js] processing feature " + indexKey + "/" + eachFeatureArray.length + 
+	//										AlertService.consoleDebug("[rifd-dsub-maptable.js] processing feature " + indexKey + "/" + eachFeatureArray.length + 
 	//											" feature centroids");	
 											eachFeaureFunction(eachFeature.feature, eachFeature.layer, eachFeatureCallback);
 										}
 									}, function done(err) {
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] end add " + eachFeatureArray.length + 
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] end add " + eachFeatureArray.length + 
 											" feature centroids");
 										$scope.shapeLoadUpdate = "Loaded " + eachFeatureArray.length + " centroids";	
 										eachFeatureArray = [];
 										
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideCentroid: " + SelectStateService.getState().showHideCentroids +
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] showHideCentroid: " + SelectStateService.getState().showHideCentroids +
 										 "; $scope.bShowHideCentroids: " + $scope.bShowHideCentroids + 
 		//								 "; centroidMarkers: " + JSON.stringify(centroidMarkers) + 
 										 "; map.hasLayer(centroidMarkers): " + CommonMappingStateService.getState("areamap").map.hasLayer(centroidMarkers));
@@ -1934,8 +1976,8 @@ angular.module("RIF")
 								getMyMap();
 							}
 							catch (e) {
-								alertScope.consoleError("[rifd-dsub-maptable.js] Unable to fetch map: ", e);
-                                alertScope.showError("Unable to fetch map: " + e.message);
+								AlertService.consoleError("[rifd-dsub-maptable.js] Unable to fetch map: ", e);
+                                AlertService.showError("Unable to fetch map: " + e.message);
                             }
 								
                         }
@@ -1962,7 +2004,7 @@ angular.module("RIF")
                             headerRowHeight=Math.round((height-(25*minRowsToShow))/2);
                         }
                         $scope.gridOptions = ModalAreaService.getAreaTableOptions(minRowsToShow, headerRowHeight);
-                        alertScope.consoleLog("[rifd-dsub-maptable.js] areaSelectionMap height: " + height +
+                        AlertService.consoleLog("[rifd-dsub-maptable.js] areaSelectionMap height: " + height +
                             "; minRowsToShow: " + minRowsToShow +
                             "; headerRowHeight: " + headerRowHeight +
 							"; $scope.gridOptions.minRowsToShow: " + $scope.gridOptions.minRowsToShow);
@@ -1973,7 +2015,7 @@ angular.module("RIF")
                             $scope.gridApi = gridApi;
 							
 							$scope.gridApi.grid.registerDataChangeCallback(function() {
-							alertScope.consoleLog("[rifd-dsub-maptable.js] modalTable COLUMN change" +
+							AlertService.consoleLog("[rifd-dsub-maptable.js] modalTable COLUMN change" +
 								"; columns: " + $scope.gridOptions.columnDefs.length);
 								}, [uiGridConstants.dataChange.COLUMN]);
                         };
@@ -1982,7 +2024,7 @@ angular.module("RIF")
                             //if data length is smaller, we shrink. otherwise we can do pagination.
                             $scope.gridOptions.minRowsToShow = Math.min($scope.gridOptions.data.length, $scope.maxRowToShow);
                             $scope.gridOptions.virtualizationThreshold = $scope.gridOptions.minRowsToShow;
-							alertScope.consoleLog("[rifd-dsub-maptable.js]setMinRowsToShow()" +
+							AlertService.consoleLog("[rifd-dsub-maptable.js]setMinRowsToShow()" +
 								"; $scope.gridOptions.minRowsToShow: " + $scope.gridOptions.minRowsToShow +
 								"; $scope.gridOptions.virtualizationThreshold: " + $scope.gridOptions.virtualizationThreshold);
                         }
@@ -2006,14 +2048,14 @@ angular.module("RIF")
 								setBaseMapCallback(undefined /* No error */, mapID);
 							}
 							else if (thisGeography) {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setDefaultMapBackground for map: " + mapID + 
+								AlertService.consoleLog("[rifd-dsub-maptable.js] setDefaultMapBackground for map: " + mapID + 
 									"; geography: " + thisGeography + 
 									"; currentBaseMapInUse: " + currentBaseMapInUse + 
 									"; getCurrentBaseMap: " + getCurrentBaseMap, new Error("Dummy"));		
 								LeafletBaseMapService.setDefaultMapBackground(thisGeography, setBaseMapCallback, mapID);
 							}
 							else {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
+								AlertService.consoleLog("[rifd-dsub-maptable.js] WARNING unable to LeafletBaseMapService.setDefaultMapBackground; no geography defined for map: " +
 									mapID);
 								LeafletBaseMapService.setDefaultBaseMap(mapID);
 								setBaseMapCallback(undefined /* No error */, mapID);
@@ -2022,7 +2064,7 @@ angular.module("RIF")
 					
 						function setBaseMapCallback(err, areamap) {
 							if (err) { // LeafletBaseMapService.setDefaultMapBackground had error
-								alertScope.consoleLog("[rifd-dsub-maptable.js] LeafletBaseMapService.setDefaultMapBackground had error: " + 
+								AlertService.consoleLog("[rifd-dsub-maptable.js] LeafletBaseMapService.setDefaultMapBackground had error: " + 
 									err);
 							}
 								
@@ -2043,10 +2085,10 @@ angular.module("RIF")
 										}
 										else if (getCurrentBaseMap != currentBaseMapInUse) {
 											if (basemapError == 0) {
-												alertScope.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
+												AlertService.showSuccess("Change current base map in use to: " + getCurrentBaseMap);
 											}
 											else {
-												alertScope.showWarning("Unable to change current base map in use from: " + currentBaseMapInUse + 
+												AlertService.showWarning("Unable to change current base map in use from: " + currentBaseMapInUse + 
 													"; to: " + getCurrentBaseMap + "; " + basemapError +
 													" tiles loaded with errors");
 												LeafletBaseMapService.setNoBaseMap("areamap", true); // Disable
@@ -2054,12 +2096,12 @@ angular.module("RIF")
 										}
 										else {	
 											if (basemapError == 0) {
-												alertScope.consoleLog("[rifd-dsub-maptable.js] setCurrentBaseMapInUse for map: areamap" + 
+												AlertService.consoleLog("[rifd-dsub-maptable.js] setCurrentBaseMapInUse for map: areamap" + 
 													"; currentBaseMapInUse: " + currentBaseMapInUse + 
 													"; getCurrentBaseMap: " + getCurrentBaseMap);
 											}
 											else {	
-												alertScope.showWarning("Unable to set base map to: " + getCurrentBaseMap + "; " + basemapError +
+												AlertService.showWarning("Unable to set base map to: " + getCurrentBaseMap + "; " + basemapError +
 													" tiles loaded with errors");
 												LeafletBaseMapService.setNoBaseMap("areamap", true); // Disable
 											}
@@ -2072,12 +2114,12 @@ angular.module("RIF")
 									$scope.thisLayer.addTo(CommonMappingStateService.getState("areamap").map);
 								}
 								else {
-									alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + getCurrentBaseMap +
+									AlertService.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + getCurrentBaseMap +
 										" disabled by previous basemapErrors: " + basemapError);
 								}
                             }
 							else {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + getCurrentBaseMap + " disabled by getNoBaseMap");
+								AlertService.consoleLog("[rifd-dsub-maptable.js] setBaseMap: " + getCurrentBaseMap + " disabled by getNoBaseMap");
 							}
                             //hack to refresh map
                             $timeout(function () {
@@ -2133,11 +2175,17 @@ angular.module("RIF")
                                             stratification=selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId;
                                         }
                                         $scope.gridOptions.data[i].stratification = stratification;
+                                        selectedPolygon.stratification = stratification;
                                     }
+                                    else if ($scope.input.stratifyTo && $scope.input.stratifyTo.stratificationType == "GEOLEVEL" &&
+                                        $scope.gridOptions.data[i].stratification) {
+                                        selectedPolygon.stratification = $scope.gridOptions.data[i].stratification;
+                                    }
+                                    
 //							ModalAreaService.setStratification($scope.input.stratifyTo, thisPolyID);
 			
 									if (foundCount < 5) {
-										alertScope.consoleLog("[rifd-dsub-maptable.js] found: " + foundCount + 
+										AlertService.consoleLog("[rifd-dsub-maptable.js] found: " + foundCount + 
                                             "; area_id: " + $scope.gridOptions.data[i].area_id + 
                                             "; data[" + i + "]: " + JSON.stringify($scope.gridOptions.data[i]) +
                                             "; selectedPolygon: " + JSON.stringify(selectedPolygon, null, 1));
@@ -2156,7 +2204,7 @@ angular.module("RIF")
 									$scope.geoJSON._geojsons.default.eachLayer(handleLayer);
 								}	
 							}
-							alertScope.consoleLog("[rifd-dsub-maptable.js] doWatchUpdate() newNames: " + newNames.length +
+							AlertService.consoleLog("[rifd-dsub-maptable.js] doWatchUpdate() newNames: " + newNames.length +
 								"; oldNames: " + oldNames.length +
 								"; foundCount: " + foundCount +
 								"; $scope.selectedPolygonCount: " + $scope.selectedPolygonCount +
@@ -2229,14 +2277,14 @@ angular.module("RIF")
 								if (fn && (typeof(fn) === 'function')) {
 									fn();
 								}
-								alertScope.consoleLog("[rifd-dsub-maptable.js] (" + count + ") No need to apply(), in progress");
+								AlertService.consoleLog("[rifd-dsub-maptable.js] (" + count + ") No need to apply(), in progress");
 								if (count <= 10) { // try again up to 10 times
 									$timeout(function() {
 										$scope.safeApply(count++, fn);
 										}, 1000);
 								}
 							} else {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] (" + count + ") Call apply() to trigger watchers");
+								AlertService.consoleLog("[rifd-dsub-maptable.js] (" + count + ") Call apply() to trigger watchers");
 								this.$apply(fn);
 							}
 						};
@@ -2248,7 +2296,7 @@ angular.module("RIF")
 							CommonMappingStateService.getState("areamap").map.whenReady(function() {
 								$timeout(function() {										
 										
-										alertScope.consoleLog("[rifd-dsub-maptable.js] redraw map");
+										AlertService.consoleLog("[rifd-dsub-maptable.js] redraw map");
 										CommonMappingStateService.getState("areamap").map.fitBounds(CommonMappingStateService.getState("areamap").map.getBounds()); // Force map to redraw after 0.5s delay
 									}, 500);	
 							});									
@@ -2286,14 +2334,14 @@ angular.module("RIF")
 								}
 							}, function done(err) {
 								if (err) {
-									alertScope.showError("[rifd-dsub-maptable.js] completedDrawSelection error: " + err);
+									AlertService.showError("[rifd-dsub-maptable.js] completedDrawSelection error: " + err);
 								}
 								else {
 									var end=new Date().getTime();
 									var elapsed=(Math.round((end - start)/100))/10; // in S	
 									$scope.shapeLoadUpdate = $scope.selectionData.length + " shapes loaded in " + elapsed + " S";
 									CommonMappingStateService.getState("areamap").map.spin(false);  // off	
-									alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection in " + elapsed + " S");
+									AlertService.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection in " + elapsed + " S");
 								}
 								
 								// Update maxIntersectCount
@@ -2340,7 +2388,7 @@ angular.module("RIF")
 										}	
 										properties=SelectStateService.getState().studySelection.studyShapes[i].properties;
 									}
-									alertScope.consoleLog("[rifd-dsub-maptable.js] process shape[" + i + "] area: " + savedShapes[i].area + 
+									AlertService.consoleLog("[rifd-dsub-maptable.js] process shape[" + i + "] area: " + savedShapes[i].area + 
 										"; maxIntersectCount: " + maxIntersectCount +
 										"; intersectCount: " + JSON.stringify(intersectCount) +
 										"; properties: " + JSON.stringify(properties) +
@@ -2358,7 +2406,7 @@ angular.module("RIF")
 										else if (riskAnalysisExposureField == savedShapes[i].riskAnalysisExposureField) {
 										}
 										else {
-											alertScope.showError("[rifd-dsub-maptable.js] Multi riskAnalysisExposureFields used: " + 
+											AlertService.showError("[rifd-dsub-maptable.js] Multi riskAnalysisExposureFields used: " + 
 												riskAnalysisExposureField + "; " + savedShapes[i].riskAnalysisExposureField);
 										}
 									}
@@ -2414,7 +2462,7 @@ angular.module("RIF")
                             DrawSelectionService.makeDrawSelection(data, selectorBands, $scope.input, "areamap", latlngList, 
 								function makeDrawSelection2Callback(err) { 
 									if (err) {
-										alertScope.showError("[rifd-dsub-maptable.js] makeDrawSelection2 error: " + err);
+										AlertService.showError("[rifd-dsub-maptable.js] makeDrawSelection2 error: " + err);
 									}
 								});
                         });
@@ -2432,7 +2480,7 @@ angular.module("RIF")
 						CommonMappingStateService.getState("areamap").info = L.control();
 						CommonMappingStateService.getState("areamap").info.onAdd = function(map) {
 							
-							alertScope.consoleDebug("[rifd-dsub-maptable.js] create info <div>");
+							AlertService.consoleDebug("[rifd-dsub-maptable.js] create info <div>");
 							this._div = L.DomUtil.create('div', 'info');
 							this.update();
 							return this._div;
@@ -2528,19 +2576,19 @@ angular.module("RIF")
 									this._div.innerHTML = '<h4>Mouse over area names</h4>';
 								}
 								this._div.innerHTML += '<b>Centroids: ' + $scope.centroid_type + '</b>';
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] set info: " + this._div.innerHTML);
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] set info: " + this._div.innerHTML);
 							}
 							else {
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] no info <div>"); 
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] no info <div>"); 
 								
 								if (CommonMappingStateService.getState("areamap").shapes == undefined) {
-									alertScope.showError("[rifd-dsub-maptable.js] no shapes layerGroup");
+									AlertService.showError("[rifd-dsub-maptable.js] no shapes layerGroup");
 								}
 								else if (CommonMappingStateService.getState("areamap").map.hasLayer(CommonMappingStateService.getState("areamap").shapes)) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
 									if (CommonMappingStateService.getState("areamap").info._map == undefined) { // Add back info control
 										CommonMappingStateService.getState("areamap").info.addTo(CommonMappingStateService.getState("areamap").map);
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] add info control");
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] add info control");
 									}
 									
 									$scope.bShowHideSelectionShapes = true;
@@ -2548,7 +2596,7 @@ angular.module("RIF")
 									
 									$scope.bringShapesToFront();
 								}
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + 
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] showHideSelectionShapes: " + 
 									SelectStateService.getState().showHideSelectionShapes);
 
 							}
@@ -2629,7 +2677,7 @@ angular.module("RIF")
                                         for (var j = 0; j < $scope.gridOptions.data.length; j++) {
                                             if ($scope.gridOptions.data[j].area_id === listOfIDs[i].ID) {
                                                 var thisBand = Number(listOfIDs[i].Band);
-//												alertScope.consoleLog("[rifd-dsub-maptable.js] [" + i + "," + j + "] MATCH area_id: " + $scope.gridOptions.data[j].area_id + 
+//												AlertService.consoleLog("[rifd-dsub-maptable.js] [" + i + "," + j + "] MATCH area_id: " + $scope.gridOptions.data[j].area_id + 
 //													"; ID: " + listOfIDs[i].ID +
 //													"; thisBand: " + thisBand);
                                                 if (CommonMappingStateService.getState("areamap").possibleBands.indexOf(thisBand) !== -1) {
@@ -2647,15 +2695,15 @@ angular.module("RIF")
                                         }
                                     }
                                     if (!bPushed) {
-                                        alertScope.showWarning("No valid 'ID' fields or 'Band' numbers found in your list");
-//										alertScope.consoleDebug("[rifd-dsub-maptable.js] " + JSON.stringify(listOfIDs, null, 2));
+                                        AlertService.showWarning("No valid 'ID' fields or 'Band' numbers found in your list");
+//										AlertService.consoleDebug("[rifd-dsub-maptable.js] " + JSON.stringify(listOfIDs, null, 2));
                                     } else if (!bInvalid) {
-                                        alertScope.showSuccess("List uploaded sucessfully");
+                                        AlertService.showSuccess("List uploaded sucessfully");
                                     } else {
-                                        alertScope.showSuccess("List uploaded sucessfully, but some 'ID' fields or 'Band' numbers were not valid");
+                                        AlertService.showSuccess("List uploaded sucessfully, but some 'ID' fields or 'Band' numbers were not valid");
                                     }
                                 } catch (e) {
-                                    alertScope.showError("Could not read or process the file: Please check formatting");
+                                    AlertService.showError("Could not read or process the file: Please check formatting");
                                 }
                             };
 							
@@ -2709,7 +2757,7 @@ angular.module("RIF")
 						// NOT CURRENTLY IN USE
 						function shapesClickThrough(e, map, geojsonLayers) {
 							if (e._stopped) { 
-//								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough " +  
+//								AlertService.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough " +  
 //									"(" + e.target._leaflet_id + "): " + e.type + "; STOPPED");
 									L.DomEvent.stop(e);
 								return; 
@@ -2727,7 +2775,7 @@ angular.module("RIF")
 								var layerPoint = map.latLngToLayerPoint(latlngList[0].latLng);
 								var containerPoint = map.latLngToContainerPoint(latlngList[0].latLng);
 								var mousePoint = map.mouseEventToContainerPoint(e);
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
 									"; latlngList[0]: " + JSON.stringify(latlngList[0]) + 
 									"; client: [" + e.clientX + "," + e.clientY + "]" + 
 //									"; layerPoint: [" + layerPoint.x + "," + layerPoint.y + "]" + 
@@ -2735,7 +2783,7 @@ angular.module("RIF")
 									"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
 							}
 							else {
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
+								AlertService.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough; latlngList.length: " + latlngList.length +
 									"; latlngList[0]: " + JSON.stringify(latlngList[0]) + "; client: [" + e.clientX + "," + e.clientY + "]");
 							} */
 							
@@ -2761,22 +2809,22 @@ angular.module("RIF")
 									if (target._leaflet_id && leafletId && target._leaflet_id == leafletId) {
 										leafletIdFound=true;
 									}
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
 										"(" + e.target._leaflet_id + "; for: " + (e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
 										"; PROPAGATE to: (" +
 										(target._leaflet_id || 'N/A') + ")" +
 										"; leafletIdFound: " + leafletIdFound); 
 								}
 								else if (!target._leaflet_id) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
 										"(no target._leaflet_id for: " + e.currentTarget._leaflet_id + "): " + e.type); 
 								}
 								else if (!target) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
 										"(no target for: " + e.currentTarget._leaflet_id + "): " + e.type); 
 								}
 								else if (target === shapes) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough[" + k + "/" + elementList.length + "] " +  
 										"(target === shapes for: " + e.currentTarget._leaflet_id + "): " + e.type); 
 								} 
 							} */
@@ -2792,7 +2840,7 @@ angular.module("RIF")
 									else if (e.type == 'mouseout')  {
                                         $scope.thisPolygon = "";
 									}
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough direct to geoJSON for: " + 
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] shapesClickThrough direct to geoJSON for: " + 
 										(e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
 										"; name: " + properties.name  +
 										"; leafletId: " + leafletId +
@@ -2800,7 +2848,7 @@ angular.module("RIF")
                                     $scope.$digest(); */
 								}
 								else {
-									alertScope.consoleError("[rifd-dsub-maptable.js] unable shapesClickThrough direct to geoJSON for: " + 
+									AlertService.consoleError("[rifd-dsub-maptable.js] unable shapesClickThrough direct to geoJSON for: " + 
 										(e.currentTarget._leaflet_id || 'N/A') + "): " + e.type + 
 										"; properties: " + JSON.stringify(properties)  +
 										"; mousePoint: [" + mousePoint.x + "," + mousePoint.y + "]");
