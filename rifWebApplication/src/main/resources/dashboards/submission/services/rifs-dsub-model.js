@@ -102,9 +102,21 @@ angular.module("RIF")
 				}
 				model.rif_job_submission.study_selection.studyType = type;
 				
+                if (SubmissionStateService.getState().stratifyTo && 
+                    SubmissionStateService.getState().stratifyTo.name && 
+                    SubmissionStateService.getState().stratifyTo.name != "NONE") {
+                    if (ParametersService.getModuleStatus('pooledAnalysis') != "production") {
+                        AlertService.showWarning(ParametersService.getModuleDescription('pooledAnalysis') +
+                            " support is still in " + 
+                            ParametersService.getModuleStatus('pooledAnalysis'));
+                    }
+                }
                 model["rif_job_submission"][type] = {
                     "name": SubmissionStateService.getState().studyName,
                     "description": SubmissionStateService.getState().studyDescription,
+                    "stratificationList": SubmissionStateService.getState().stratificationList,
+                    "stratificationField": SubmissionStateService.getState().stratificationField,
+                    "stratifyTo": SubmissionStateService.getState().stratifyTo,
                     "geography": {
                         "name": SubmissionStateService.getState().geography,
                         "description": SubmissionStateService.getState().geography
@@ -137,7 +149,7 @@ angular.module("RIF")
                         "map_area": function () {
                             var tmp = [];
                             for (var i = 0; i < StudyAreaStateService.getState().polygonIDs.length; i++) {
-                                tmp.push({
+                                var nPoly={
                                     "id": StudyAreaStateService.getState().polygonIDs[i].id,
                                     "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
                                     "label": StudyAreaStateService.getState().polygonIDs[i].label,
@@ -146,8 +158,11 @@ angular.module("RIF")
                                     "centroid": StudyAreaStateService.getState().polygonIDs[i].centroid,
 									"shapeIdList": StudyAreaStateService.getState().polygonIDs[i].shapeIdList,
 									"nearestRifShapePolyId": StudyAreaStateService.getState().polygonIDs[i].nearestRifShapePolyId,
-									"exposureValue": StudyAreaStateService.getState().polygonIDs[i].exposureValue
-                                });
+									"exposureValue": StudyAreaStateService.getState().polygonIDs[i].exposureValue,
+                                    "stratification": StudyAreaStateService.getState().polygonIDs[i].stratification
+                                }
+                                tmp.push(nPoly);
+                                
                             }
                             return tmp;
                         }()

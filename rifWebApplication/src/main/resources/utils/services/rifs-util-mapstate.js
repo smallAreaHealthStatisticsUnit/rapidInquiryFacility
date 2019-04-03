@@ -127,19 +127,35 @@ angular.module("RIF")
 						},
 						getSelectedPolygon: function(areaType) { // Get selectedPolygon list
 							checkAreaType(areaType);
-							return this.areaType.selectedPolygon;
+                            
+							if (this.areaType && this.areaType.selectedPolygon) {
+                                return this.areaType.selectedPolygon;
+                            }
+                            else {
+                                return undefined;
+                            }
 						},
 						getSelectedPolygonObj: function(areaType, thisPolyId) { // Get selectedPolygon list element
 							checkAreaType(areaType);
-							return this.areaType.selectedPolygonObj[thisPolyId];
+                            
+							if (this.areaType && this.areaType.selectedPolygonObj[thisPolyId]) {
+                                return this.areaType.selectedPolygonObj[thisPolyId];
+                            }
+                            else {
+                                return undefined;
+                            }
 						},
 						getAreaNameList: function(areaType) { // Get areaNameList list 
 							checkAreaType(areaType);
 							
-							var areaNameList=this.areaType.areaNameList;
-//							AlertService.consoleLog("[rifs-util-mapstate.js] getAreaNameList() for: " + areaType + 
-//								"; areaNameList: " + (areaNameList ? Object.keys(areaNameList).length : "0"));
-							return this.areaType.areaNameList;
+							if (this.areaType && this.areaType.areaNameList) {
+//			    				AlertService.consoleLog("[rifs-util-mapstate.js] getAreaNameList() for: " + areaType + 
+//			    					"; areaNameList: " + (areaNameList ? Object.keys(areaNameList).length : "0"));
+                                return this.areaType.areaNameList;
+                            }
+                            else {
+                                return undefined;
+                            }
 						},
 						setAreaNameList: function(areaType) { // Set areaNameList list
 							checkAreaType(areaType);

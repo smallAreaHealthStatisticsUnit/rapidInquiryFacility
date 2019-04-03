@@ -741,6 +741,18 @@ angular.module("RIF")
 						}
 
 						SubmissionStateService.getState().studyDescription = rifJob[studyType].description;
+                        SubmissionStateService.getState().stratificationList = rifJob[studyType].stratificationList;
+                        SubmissionStateService.getState().stratificationField = rifJob[studyType].stratificationField;
+                        SubmissionStateService.getState().stratifyTo = rifJob[studyType].stratifyTo;
+                        if (rifJob[studyType].stratifyTo && 
+                            rifJob[studyType].stratifyTo.name && 
+                            rifJob[studyType].stratifyTo.name != "NONE") {
+                            if (ParametersService.getModuleStatus('pooledAnalysis') != "production") {
+                                AlertService.showWarning(ParametersService.getModuleDescription('pooledAnalysis') +
+                                    " support is still in " + 
+                                    ParametersService.getModuleStatus('pooledAnalysis'));
+                            }
+                        }
                         if (rifJob[studyType].investigations.investigation[0].health_theme &&
                             rifJob[studyType].investigations.investigation[0].health_theme.name) {
                             SubmissionStateService.getState().healthTheme = rifJob[studyType].investigations.investigation[0].health_theme;
