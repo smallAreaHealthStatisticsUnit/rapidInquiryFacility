@@ -55,7 +55,10 @@ angular.module("RIF")
                         projectDescription: "",
                         studyDescription: "",
                         studyType: "Disease Mapping",
-						removeMap: undefined
+						removeMap: undefined,
+                        stratificationList: [],
+                        stratificationField: undefined,
+                        stratifyTo: {name: "NONE", stratificationType: "NONE", description: "No stratification"}
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
 					
