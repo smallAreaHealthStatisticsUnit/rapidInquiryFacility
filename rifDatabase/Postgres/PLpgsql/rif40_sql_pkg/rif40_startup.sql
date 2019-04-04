@@ -480,7 +480,8 @@ BEGIN
 			E'\t'||'risk_stratification 		    INTEGER 		NULL,'||E'\n'||
 			E'\t'||'distance_from_nearest_source 	NUMERIC 		NULL,'||E'\n'||
 			E'\t'||'nearest_rifshapepolyid 			VARCHAR 		NULL,'||E'\n'||
-			E'\t'||'exposure_value					NUMERIC			NULL) ON COMMIT PRESERVE ROWS';
+			E'\t'||'exposure_value					NUMERIC			NULL,'||E'\n'||
+			E'\t'||'stratification					VARCHAR(30)			NULL) ON COMMIT PRESERVE ROWS';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON TABLE g_rif40_study_areas 		IS ''Local session cache of links study areas and bands for a given study. Created for high performance in extracts.''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
@@ -499,6 +500,8 @@ BEGIN
 		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.nearest_rifshapepolyid IS ''Nearest rifshapepolyid (shape reference)''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.exposure_value IS ''Exposure value (when bands selected by exposure values)''';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		sql_stmt:='COMMENT ON COLUMN g_rif40_study_areas.stratification IS ''Stratification value; risk analysis only''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Created temporary table: g_rif40_study_areas');

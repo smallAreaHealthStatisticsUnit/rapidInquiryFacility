@@ -1335,6 +1335,7 @@ public class BaseSQLManager implements SQLManager {
  * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
  * 3. alter_12.sql (post 13th February 2019 changes to support multiple and additional covariates)
  * 4. alter_13.sql (post 17th March 2019 issue #138 changes: State 1: study setup modal errors fixes)
+ * 5. alter_14.sql (post 4th April 2019 issue #129 changes: Pooled or individual analysis for multiple risk analysis points/shapes)
  */ 
 			String errorMessage = schemaVersionChecks(currentConnection);
 			if (errorMessage != null) { // Failed 
@@ -1382,6 +1383,7 @@ public class BaseSQLManager implements SQLManager {
  * 2. alter_11.sql (post 1st September 2018 changes for risk analysis)
  * 3. alter_12.sql (post 13th February 2019 changes to support multiple and additional covariates)
  * 4. alter_13.sql (post 17th March 2019 issue #138 changes: State 1: study setup modal errors fixes)
+ * 5. alter_14.sql (post 4th April 2019 issue #129 changes: Pooled or individual analysis for multiple risk analysis points/shapes)
  */ 
 	private String schemaVersionChecks(Connection connection) throws RIFServiceException {
 	
@@ -1399,6 +1401,9 @@ public class BaseSQLManager implements SQLManager {
 			}
 			if (!doesColumnExist(connection, "rif40", "rif40_numerator_outcome_columns", "table_description")) { // alter_13.sql has not been run
 				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter13NotRun");
+			}
+			if (!doesColumnExist(connection, "rif40", "rif40_study_areas", "stratification")) { // alter_14.sql has not been run
+				errorMessage=SERVICE_MESSAGES.getMessage("sqlConnectionManager.error.alter14NotRun");
 			}
 		}
 		catch (Exception exception) {		

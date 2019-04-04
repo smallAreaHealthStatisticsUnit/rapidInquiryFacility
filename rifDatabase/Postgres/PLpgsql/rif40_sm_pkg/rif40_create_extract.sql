@@ -104,12 +104,13 @@ CREATE TABLE <extract_table> (
     distance_from_nearest_source NUMERIC,  
     nearest_rifshapepolyid      VARCHAR,
     exposure_value              NUMERIC,	
+    stratification			    VARCHAR,
  	sex                     	SMALLINT,
  	age_group               	VARCHAR,
  	total_pop               	DOUBLE PRECISION,
 
 Disease mapping extract tables do not contain: intersect_count, distance_from_nearest_source, 
-nearest_rifshapepolyid, exposure_value
+nearest_rifshapepolyid, exposure_value, stratification
 
 One column per distinct covariate
 
@@ -241,16 +242,17 @@ BEGIN
 	
 --
 -- Disease mapping extract tables do not contain: intersect_count, distance_from_nearest_source, 
--- nearest_rifshapepolyid, exposure_value  
+-- nearest_rifshapepolyid, exposure_value, stratification  
 --	
 	IF c1_rec.study_type != 1 THEN /* Risk analysis */
 		table_columns := ARRAY['year', 'study_or_comparison', 'study_id', 'area_id',
 			'band_id', 'sex',  'age_group', 'total_pop', 
-			'intersect_count', 'distance_from_nearest_source', 'nearest_rifshapepolyid', 'exposure_value'];
+			'intersect_count', 'distance_from_nearest_source', 'nearest_rifshapepolyid', 
+			'exposure_value', 'stratification'];
 		column_comments := ARRAY['Year', 'Study (S) or comparison (C) area', 'Study ID', 'Area ID',
 			'Band ID', 'Sex',  'Age group', 'Total population', 'Number of intersects with shapes', 
 			'Distance from nearest source (Km)', 'Nearest rifshapepolyid (shape reference)', 
-			'Exposure value (when bands selected by exposure values)'];
+			'Exposure value (when bands selected by exposure values)', 'Stratification value'];
 	ELSE
 		table_columns := ARRAY['year', 'study_or_comparison', 'study_id', 'area_id',
 			'band_id', 'sex',  'age_group', 'total_pop'];
@@ -274,12 +276,13 @@ BEGIN
 --  distance_from_nearest_source NUMERIC, 
 --  nearest_rifshapepolyid      VARCHAR,
 --  exposure_value              NUMERIC,
+--  stratification			    VARCHAR,
 -- 	sex                     	SMALLINT,
 -- 	age_group               	VARCHAR,
 -- 	total_pop               	DOUBLE PRECISION,
 --
 -- Disease mapping extract tables do not contain: intersect_count, distance_from_nearest_source, 
--- nearest_rifshapepolyid, exposure_value  
+-- nearest_rifshapepolyid, exposure_value, stratification  
 --
 	sql_stmt:='CREATE TABLE rif_studies.'||LOWER(c1_rec.extract_table)||' ('||E'\n'||
 		 	E'\t'||'year                    	SMALLINT 	NOT NULL,'||E'\n'||
@@ -291,7 +294,8 @@ BEGIN
 		sql_stmt:=sql_stmt||E'\t'||'intersect_count         	INTEGER,'||E'\n'||
 							E'\t'||'distance_from_nearest_source NUMERIC,'||E'\n'||
 							E'\t'||'nearest_rifshapepolyid      VARCHAR,'||E'\n'||
-							E'\t'||'exposure_value    	     	NUMERIC,'||E'\n';
+							E'\t'||'exposure_value    	     	NUMERIC,'||E'\n'||
+							E'\t'||'stratification    	     	VARCHAR,'||E'\n';
 	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'sex                     	SMALLINT,'||E'\n'||
 					    E'\t'||'age_group               	SMALLINT,'||E'\n';
@@ -488,7 +492,7 @@ Index: year, study_or_comparison if no partitoning
        area_id, band_id, sex, age_group
 
 Disease mapping extract tables do not contain: intersect_count, distance_from_nearest_source, 
-nearest_rifshapepolyid, exposure_value
+nearest_rifshapepolyid, exposure_value, stratification
 
 Comment extract table and columns
 
