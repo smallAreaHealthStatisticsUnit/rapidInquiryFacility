@@ -26112,26 +26112,22 @@ Comments:
         {
           "name": "NONE",
           "stratificationType": "NONE",
-          "description": "No stratification",
-          "$$hashKey": "object:1721"
+          "description": "No stratification"
         },
         {
           "name": "MULTIPOLYGON",
           "stratificationType": "MULTIPOLYGON",
-          "description": "Stratification by multiple polygons",
-          "$$hashKey": "object:1724"
+          "description": "Stratification by multiple polygons"
         },
         {
           "name": "SAHSU_GRD_LEVEL2",
           "stratificationType": "GEOLEVEL",
-          "description": "Stratification by geolevel(1): SAHSU_GRD_LEVEL2",
-          "$$hashKey": "object:1725"
+          "description": "Stratification by geolevel(1): SAHSU_GRD_LEVEL2"
         },
         {
           "name": "SAHSU_GRD_LEVEL3",
           "stratificationType": "GEOLEVEL",
-          "description": "Stratification by geolevel(2): SAHSU_GRD_LEVEL3",
-          "$$hashKey": "object:1726"
+          "description": "Stratification by geolevel(2): SAHSU_GRD_LEVEL3"
         }
       ],
       "stratifyTo": {
