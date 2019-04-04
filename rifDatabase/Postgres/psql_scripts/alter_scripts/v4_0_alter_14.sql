@@ -86,22 +86,28 @@ BEGIN;
 DO LANGUAGE plpgsql $$
 BEGIN
 	ALTER TABLE t_rif40_studies ADD COLUMN stratification_field VARCHAR(30) NULL;
-	COMMENT ON COLUMN t_rif40_studies.stratification_field 
-		IS 'Stratification field if selected from shapefile; risk analysis only';
 EXCEPTION
 	WHEN duplicate_column THEN
 		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
 END;
 $$;
-
+COMMENT ON COLUMN t_rif40_studies.stratification_field 
+	IS 'Stratification field if selected from shapefile; risk analysis only';
+		
 DO LANGUAGE plpgsql $$
 BEGIN	
 	ALTER TABLE t_rif40_studies ADD COLUMN stratify_to JSON NULL;
-	COMMENT ON COLUMN t_rif40_studies.stratify_to IS 'Stratification to perform; risk analysis only.
+EXCEPTION
+	WHEN duplicate_column THEN
+		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
+END;
+$$;
+COMMENT ON COLUMN t_rif40_studies.stratify_to IS 'Stratification to perform; risk analysis only.
 The stratificationType is one of:
 * "NONE": No stratification;
 * "GEOLEVEL": Stratification by geolevel, usually region. Geolevels 2 and 3 are available for choice;
 * "MULTIPOLYGON": Stratification by a single multi polygon site;
+* "SHAPEFILE_FIELD": Stratification by a field in the shape file.
 
 E.g.
 
@@ -110,16 +116,16 @@ E.g.
 	"stratificationType": "GEOLEVEL",
 	"description": "Stratification by geolevel(1): SAHSU_GRD_LEVEL2"
 }';
+
+DO LANGUAGE plpgsql $$
+BEGIN	
+	ALTER TABLE t_rif40_studies ADD COLUMN stratification_list JSON NULL;
 EXCEPTION
 	WHEN duplicate_column THEN
 		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
 END;
 $$;
-
-DO LANGUAGE plpgsql $$
-BEGIN	
-	ALTER TABLE t_rif40_studies ADD COLUMN stratification_list JSON NULL;
-	COMMENT ON COLUMN t_rif40_studies.stratification_list IS 'List of stratifications available. E.g.
+COMMENT ON COLUMN t_rif40_studies.stratification_list IS 'List of stratifications available. E.g.
 	[{
 		"name": "NONE",
 		"stratificationType": "NONE",
@@ -142,11 +148,6 @@ BEGIN
 		"description": "Stratification by geolevel(2): SAHSU_GRD_LEVEL3"
 	}
 ]';
-EXCEPTION
-	WHEN duplicate_column THEN
-		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
-END;
-$$;
 
 --
 -- 2. Add the following column to rif40_study_areas/t_rif40_study_areas
@@ -155,12 +156,12 @@ $$;
 DO LANGUAGE plpgsql $$
 BEGIN
 	ALTER TABLE t_rif40_study_areas ADD COLUMN stratification VARCHAR(30) NULL;
-	COMMENT ON COLUMN t_rif40_study_areas.stratification IS 'Stratification value; risk analysis only';
 EXCEPTION
 	WHEN duplicate_column THEN
 		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
 END;
 $$;
+COMMENT ON COLUMN t_rif40_study_areas.stratification IS 'Stratification value. Multi Site Risk Stratification: NONE, <rifshapepolyid: poygon identifier for band 1> or <geolevel code: usually a regional code> or <field from shapefile DBF>; risk analysis only';
 
 --
 -- Rebuild View: rif40_studies
@@ -318,6 +319,7 @@ The stratificationType is one of:
 * "NONE": No stratification;
 * "GEOLEVEL": Stratification by geolevel, usually region. Geolevels 2 and 3 are available for choice;
 * "MULTIPOLYGON": Stratification by a single multi polygon site;
+* "SHAPEFILE_FIELD": Stratification by a field in the shape file
 
 E.g.
 
@@ -557,7 +559,7 @@ COMMENT ON COLUMN rif40_study_areas.nearest_rifshapepolyid
 COMMENT ON COLUMN rif40_study_areas.exposure_value 
 	IS 'Exposure value (when bands selected by exposure values)';
 COMMENT ON COLUMN rif40_study_areas.stratification 
-	IS 'Stratification value; risk analysis only';
+	IS 'Stratification value. Multi Site Risk Stratification: NONE, <rifshapepolyid: poygon identifier for band 1> or <geolevel code: usually a regional code> or <field from shapefile DBF>; risk analysis only';
 
 GRANT ALL ON TABLE rif40.rif40_study_areas TO rif40;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE rif40.rif40_study_areas TO rif_user;

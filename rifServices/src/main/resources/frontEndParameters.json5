@@ -145,7 +145,7 @@ Comments:
             },
             pooledAnalysis: {
                 enabled: false,
-                description: "Individual site and pooled analysis (1 or more groups of sites). Groups are defined from a categorisation variable in the shapefile or from regional area identifiers",
+                description: "Individual site and pooled analysis (1 or more groups of sites)",
                 status: "inDevelopment" // notYetImplemented/inDevelopment/alpha/beta/production
             },
             priorSensitivityAnalysis: {
