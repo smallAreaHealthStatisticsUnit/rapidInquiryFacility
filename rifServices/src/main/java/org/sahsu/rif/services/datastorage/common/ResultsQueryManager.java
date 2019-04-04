@@ -1801,7 +1801,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 				SelectQueryFormatter getGeolevelNamesQueryFormatter =
 						SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 				getGeolevelNamesQueryFormatter.addSelectField("a", "geolevel_name");
-				getGeolevelNamesQueryFormatter.addFromTable("rif40_geolevels a");
+				getGeolevelNamesQueryFormatter.addFromTable("rif40.rif40_geolevels a");
 				getGeolevelNamesQueryFormatter.addWhereParameterWithOperator("a.geolevel_id", ">");
 				getGeolevelNamesQueryFormatter.addWhereParameterWithOperator("a.geolevel_id", "<=");
 				getGeolevelNamesQueryFormatter.addWhereParameter("a.geography");
