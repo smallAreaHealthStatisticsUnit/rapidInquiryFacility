@@ -81,16 +81,6 @@ Disease submission main 'trees' menu
             </div>
         </div>
         <div>
-            <div class='styleUnderline dropdowns availablesWrapper'>
-                <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">
-                </select>
-                <div id='healthThemeAvailables' class='availables'></div>
-                <div class="dropDownLabel">Health Theme
-                    <md-tooltip md-direction="right" md-delay="1000">{{healthTheme.description}}</md-tooltip>
-                </div>
-            </div>
-        </div>
-        <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
                 <select type="text" ng-model="fraction" id='numerator' class='dropdownSelect' ng-options="s.numeratorTableName for s in fractions" ng-change="fractionChange()">
                 </select>
