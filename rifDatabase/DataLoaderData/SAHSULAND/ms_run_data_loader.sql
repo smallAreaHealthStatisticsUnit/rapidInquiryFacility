@@ -117,7 +117,8 @@ WITH
 (
    FIRSTROW=2,
    FORMATFILE = '$(pwd)/pop_sahsuland_pop.fmt',
-   TABLOCK
+   TABLOCK,
+   DATAFILETYPE = 'widechar'
 );
 GO
 ALTER TABLE rif_data.POP_SAHSULAND_POP ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY CLUSTERED(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4);
@@ -275,7 +276,8 @@ WITH
 (
    FORMATFILE = '$(pwd)/num_sahsuland_cancer.fmt',
    TABLOCK,
-   FIRSTROW=2
+   FIRSTROW=2,
+   DATAFILETYPE = 'widechar'
 );
 GO
 ALTER TABLE rif_data.NUM_SAHSULAND_CANCER ADD CONSTRAINT num_sahsuland_cancer_pk PRIMARY KEY CLUSTERED(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4,ICD);
@@ -469,7 +471,8 @@ WITH
 (
    FORMATFILE = '$(pwd)/covar_sahsuland_covariates3.fmt',
    TABLOCK,
-   FIRSTROW=2
+   FIRSTROW=2,
+   DATAFILETYPE = 'widechar'
 );
 GO
 ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES3 ADD CONSTRAINT covar_sahsuland_covariates3_pk PRIMARY KEY CLUSTERED(YEAR,SAHSU_GRD_LEVEL3);
@@ -581,7 +584,8 @@ WITH
 (
    FORMATFILE = '$(pwd)/covar_sahsuland_covariates4.fmt',
    TABLOCK,
-   FIRSTROW=2
+   FIRSTROW=2,
+   DATAFILETYPE = 'widechar'
 );
 GO
 ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY CLUSTERED(YEAR,SAHSU_GRD_LEVEL4);

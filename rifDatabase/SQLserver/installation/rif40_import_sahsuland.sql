@@ -82,7 +82,8 @@ FROM '$(path)\SQLserver\sahsuland_dev\rif_data\rif40_columns.txt'
 WITH
 (
 FIELDTERMINATOR = '|',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 BULK
@@ -91,7 +92,8 @@ FROM '$(path)\SQLserver\sahsuland_dev\rif_data\rif40_tables_and_views.txt'
 WITH
 (
 FIELDTERMINATOR = '|',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 
@@ -172,7 +174,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_version.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 
@@ -182,7 +185,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_age_groups.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 BULK
@@ -191,7 +195,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_age_group_names.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 
@@ -201,7 +206,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_reference_tables.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 
@@ -211,7 +217,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_outcomes.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 
@@ -221,7 +228,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_health_study_themes.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 /*
@@ -273,7 +281,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_outcome_groups.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 
@@ -283,7 +292,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_table_outcomes.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 
@@ -307,7 +317,8 @@ FROM '$(path)\Postgres\sahsuland\data\t_rif40_parameters.csv'
 WITH
 (
 FIELDTERMINATOR = ',',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 
 --
@@ -321,7 +332,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_triggers_mssql.csv'
 WITH
 (
 FIELDTERMINATOR = '|',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 
@@ -331,7 +343,8 @@ FROM '$(path)\Postgres\sahsuland\data\rif40_predefined_groups_mssql.csv'
 WITH
 (
 FIELDTERMINATOR = '|',
-ROWTERMINATOR = '0x0a'
+ROWTERMINATOR = '0x0a',
+DATAFILETYPE = 'widechar'
 )
 GO
 /*

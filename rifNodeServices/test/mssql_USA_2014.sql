@@ -487,7 +487,8 @@ FROM '$(pwd)/cb_2014_us_county_500k.csv'	-- Note use of pwd; set via -v pwd="%cd
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_cb_2014_us_county_500k.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -1283,7 +1284,8 @@ FROM '$(pwd)/cb_2014_us_nation_5m.csv'	-- Note use of pwd; set via -v pwd="%cd%"
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_cb_2014_us_nation_5m.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -2211,7 +2213,8 @@ FROM '$(pwd)/cb_2014_us_state_500k.csv'	-- Note use of pwd; set via -v pwd="%cd%
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_cb_2014_us_state_500k.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
