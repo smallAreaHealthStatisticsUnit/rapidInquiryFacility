@@ -65,8 +65,7 @@
 \echo Running SAHSULAND schema alter script #14 Individual site and pooled analysis (1 or more groups of sites) Enhancements.
 
 /*
-
-* Alter 14: Individual site and pooled analysis (1 or more groups of sites) Enhancements
+ * Alter 14: Individual site and pooled analysis (1 or more groups of sites) Enhancements
 
  1. Add the following columns to rif40_studies/t_rif40_studies:
     * stratification_field: VARCHAR(30)
@@ -161,7 +160,8 @@ EXCEPTION
 		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
 END;
 $$;
-COMMENT ON COLUMN t_rif40_study_areas.stratification IS 'Stratification value. Multi Site Risk Stratification: NONE, <rifshapepolyid: poygon identifier for band 1> or <geolevel code: usually a regional code> or <field from shapefile DBF>; risk analysis only';
+COMMENT ON COLUMN t_rif40_study_areas.stratification 
+	IS 'Stratification value. Multi Site Risk Stratification: NONE, <rifshapepolyid: poygon identifier for band 1> or <geolevel code: usually a regional code> or <field from shapefile DBF>; risk analysis only';
 
 --
 -- Rebuild View: rif40_studies

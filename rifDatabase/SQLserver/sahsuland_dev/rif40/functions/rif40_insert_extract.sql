@@ -113,7 +113,7 @@ Description:	Insert data into extract table
 	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
 --
 	IF @c1_rec_study_type != 1 /* Risk Analysis */ 
-		SET @sql_stmt='SELECT study_id, area_id, band_id, intersect_count, distance_from_nearest_source, nearest_rifshapepolyid, exposure_value' + @crlf +
+		SET @sql_stmt='SELECT study_id, area_id, band_id, intersect_count, distance_from_nearest_source, nearest_rifshapepolyid, exposure_value, stratification' + @crlf +
 			'  INTO ##g_rif40_study_areas' + @crlf + 
 			'  FROM rif40.rif40_study_areas' + @crlf +
 			' WHERE study_id = @study_id /* Current study ID */' + @crlf +

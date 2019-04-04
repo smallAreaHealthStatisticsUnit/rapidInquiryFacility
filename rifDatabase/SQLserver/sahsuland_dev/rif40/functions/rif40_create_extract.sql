@@ -82,6 +82,7 @@ CREATE TABLE <extract_table> (
     distance_from_nearest_source NUMERIC,  
     nearest_rifshapepolyid      VARCHAR(30),
     exposure_value              NUMERIC,
+    stratification      		VARCHAR(30),
  	sex               		  	SMALLINT,
     age_group					SMALLINT,
     ses							VARCHAR(30),
@@ -273,6 +274,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 		INSERT INTO @table_columns(column_name, column_comment) VALUES ('distance_from_nearest_source', 'Distance from nearest source (Km)');
 		INSERT INTO @table_columns(column_name, column_comment) VALUES ('nearest_rifshapepolyid', 'Nearest rifshapepolyid (shape reference)');
 		INSERT INTO @table_columns(column_name, column_comment) VALUES ('exposure_value', 'Exposure value (when bands selected by exposure values)');
+		INSERT INTO @table_columns(column_name, column_comment) VALUES ('stratification', 'Stratification value. Multi Site Risk Stratification: NONE, <rifshapepolyid: poygon identifier for band 1> or <geolevel code: usually a regional code> or <field from shapefile DBF>; risk analysis only');
 	END;
 	
 --
@@ -291,6 +293,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 --  distance_from_nearest_source NUMERIC, 
 --  nearest_rifshapepolyid      VARCHAR(30),
 --  exposure_value              NUMERIC,
+--  stratification			    VARCHAR(30),
 -- 	sex                 		SMALLINT,
 -- 	age_group           		SMALLINT,
 -- 	total_pop           		DOUBLE PRECISION,
@@ -311,7 +314,8 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 			@tab + 'intersect_count         		INTEGER 		NULL,' + @crlf +
 			@tab + 'distance_from_nearest_source 	NUMERIC 		NULL,' + @crlf +
 			@tab + 'nearest_rifshapepolyid      	VARCHAR(30)		NULL,' + @crlf +
-			@tab + 'exposure_value    	     		NUMERIC 		NULL,' + @crlf;
+			@tab + 'exposure_value    	     		NUMERIC 		NULL,' + @crlf +
+			@tab + 'stratification    	     		VARCHAR(30)     NULL,' + @crlf;
 	END;
 		
 --	IF @c1_rec_study_type != '1' SET @sql_stmt=@sql_stmt + @tab + 

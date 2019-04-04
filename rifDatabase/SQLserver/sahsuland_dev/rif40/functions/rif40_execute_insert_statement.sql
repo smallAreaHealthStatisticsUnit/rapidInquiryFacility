@@ -80,7 +80,7 @@ Description:	Execute INSERT SQL statement
 	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
 --
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
-	DECLARE @err_msg 	NVARCHAR(2048);
+	DECLARE @err_msg 	NVARCHAR(MAX);
 --
 	OPEN c1_dml;
 	FETCH NEXT FROM c1_dml INTO @sql_stmt, @name;

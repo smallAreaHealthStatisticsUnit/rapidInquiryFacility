@@ -160,6 +160,8 @@ This may be added to extract creation later.
 --
 	EXECUTE AS CALLER /* RIF user */;
 --
+	SET @msg='rif40_compute_results() start';
+	PRINT @msg;
 	OPEN c1comp;
 	FETCH NEXT FROM c1comp INTO @c1_rec_study_id, @c1_rec_extract_table, @c1_rec_geography,
 		@c1_rec_study_type, @c1_rec_map_table, @c1_rec_extract_permitted, @c1_rec_description,
@@ -172,6 +174,9 @@ This may be added to extract creation later.
 	END;
 	CLOSE c1comp;
 	DEALLOCATE c1comp;
+
+	SET @msg='Create DDL start';
+	PRINT @msg;
 	
 --
 -- Calculate observed
@@ -259,6 +264,7 @@ This may be added to extract creation later.
 --
 -- Populate rif40_results from extract table
 --
+	BEGIN TRY
 	EXECUTE @rval=rif40.rif40_ddl
 			@dml_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
@@ -274,7 +280,20 @@ This may be added to extract creation later.
 				@crlf + 'SQL>' + @sql_stmt;
 			PRINT @msg;
 		END; 
+	END TRY
+	BEGIN CATCH	
 		
+		SET @etp=GETDATE();
+		SET @etime=CAST(@etp - @stp AS TIME);				
+		
+--	 			[55999] SQL statement had error: %s%sSQL[%s]> %s;	
+		SET @msg='55999: rif40.rif40_ddl() had error.' + @crlf;
+		PRINT @msg; -- Split into 2 so missing output is obvious; splitting SQL statement on CRLFs
+	
+		SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, '(see above)'); 
+		THROW 56699, @err_msg, 1;
+	END CATCH
+			
 --
 -- Create map table [DOES NOT CREATE ANY ROWS]
 --

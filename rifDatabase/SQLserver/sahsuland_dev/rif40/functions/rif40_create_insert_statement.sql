@@ -548,7 +548,7 @@ GO
 			LOWER(@c8_rec_age_sex_group_field_name) + ',' + @crlf
 	ELSE IF @c1_rec_study_type != 1 /* Risk analysis */ SET @sql_stmt=@sql_stmt + 
 		@tab + 'SELECT d1.year, s.area_id, s.band_id,' + @crlf + 
-		@tab + @tab + 's.intersect_count, s.distance_from_nearest_source, s.nearest_rifshapepolyid, s.exposure_value, d1.' +
+		@tab + @tab + 's.intersect_count, s.distance_from_nearest_source, s.nearest_rifshapepolyid, s.exposure_value, s.stratification, d1.' +
 			LOWER(@c8_rec_age_sex_group_field_name) + ',' + @crlf;
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 'SELECT d1.year, s.area_id, s.band_id, d1.' +
 			LOWER(@c8_rec_age_sex_group_field_name) + ',' + @crlf;
@@ -623,7 +623,7 @@ GO
 		@tab + ' GROUP BY d1.year, s.area_id,' + @crlf;
 	ELSE IF @c1_rec_study_type != 1 /* Risk analysis */ SET @sql_stmt=@sql_stmt + 
 		@tab + ' GROUP BY d1.year, s.area_id, s.band_id,' + @crlf + 
-		@tab + @tab + 's.intersect_count, s.distance_from_nearest_source, s.nearest_rifshapepolyid, s.exposure_value,' + @crlf;
+		@tab + @tab + 's.intersect_count, s.distance_from_nearest_source, s.nearest_rifshapepolyid, s.exposure_value, s.stratification,' + @crlf;
 	ELSE SET @sql_stmt=@sql_stmt + 
 		@tab + ' GROUP BY d1.year, s.area_id, s.band_id,' + @crlf;
 	IF @covariate_list IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + '          ' + @covariate_list;
@@ -697,11 +697,12 @@ GO
 		IF @study_or_comparison = 'C' 
 			SET @sql_stmt=@sql_stmt + @crlf +
 				@tab + @tab + 
-				'NULL AS intersect_count, NULL AS distance_from_nearest_source, NULL AS nearest_rifshapepolyid, NULL AS exposure_value,' + @crlf;
+				'NULL AS intersect_count, NULL AS distance_from_nearest_source, ' +
+				'NULL AS nearest_rifshapepolyid, NULL AS exposure_value, NULL AS stratification,' + @crlf;
 		ELSE
 			SET @sql_stmt=@sql_stmt + @crlf +
 				@tab + @tab + 
-				'd.intersect_count, d.distance_from_nearest_source, d.nearest_rifshapepolyid, d.exposure_value,' + @crlf;
+				'd.intersect_count, d.distance_from_nearest_source, d.nearest_rifshapepolyid, d.exposure_value, d.stratification,' + @crlf;
 	END;
 	
 --
