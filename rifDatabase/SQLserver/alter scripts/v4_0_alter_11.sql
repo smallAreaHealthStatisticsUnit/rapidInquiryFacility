@@ -57,6 +57,8 @@
 --
 -- The middleware must be down for this to run
 --
+-- MAKE SURE YOU ADD TO run_alter_scripts.bat for the installer
+--
 SET QUOTED_IDENTIFIER ON;
 -- SET STATISTICS TIME ON;
 

@@ -56,6 +56,8 @@
 --
 -- The middleware must be down for this to run
 --
+-- MAKE SURE YOU ADD TO installer\install.py
+--
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
