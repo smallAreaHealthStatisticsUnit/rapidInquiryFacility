@@ -26107,7 +26107,7 @@ Comments:
     },
     "risk_analysis_study": {
       "name": "TEST 1005",
-      "description": "TEST 1005 LUNG CANCER 95 96 Risk Analyisis 01 points",
+      "description": "TEST 1005 LUNG CANCER 95 96 Risk Analysis 01 points",
       "stratificationList": [
         {
           "name": "NONE",
