@@ -254,6 +254,9 @@ angular.module("RIF")
                                     $scope.stratifyTo) {
 									// Used saved
 									$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
+									if (($scope.stratificationList == undefined || Object.keys($scope.stratificationList).length == 0)) {
+										setupStratificationList($scope.input.stratifyTo);
+									}
 									AlertService.consoleDebug("[rifd-dsub-maptable.js] DEFAULT stratificationChange: " + 
 										JSON.stringify($scope.input.stratifyTo, null, 1) +
 										"; $scope.stratifyTo: " + 
@@ -548,6 +551,20 @@ angular.module("RIF")
 							if (CommonMappingStateService.getState("areamap").maxbounds) { //  Zoom back to maximum extent of geolevel
 								CommonMappingStateService.getState("areamap").map.fitBounds(
 									CommonMappingStateService.getState("areamap").maxbounds);
+							}
+							
+							if ($scope.input.type == "Risk Analysis") {
+								$scope.input.stratifyTo = stratificationNone;
+								$scope.stratifyTo = stratificationNone;
+								setupStratificationList($scope.input.stratifyTo);
+							}							
+
+//							$scope.parent.tree = false;
+							if ($scope.input.name == "ComparisionAreaMap") {
+								SubmissionStateService.getState().comparisonTree = false;
+							}
+							else {
+								SubmissionStateService.getState().studyTree = false;
 							}
                         };
 						
