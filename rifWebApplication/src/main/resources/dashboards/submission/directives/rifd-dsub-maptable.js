@@ -83,6 +83,8 @@ angular.module("RIF")
                         $scope.stratificationList=angular.copy(
 							$scope.stratificationList || [stratificationNone]);
                         $scope.stratifyTo = angular.copy($scope.stratifyTo || $scope.input.stratifyTo || stratificationNone);       
+						$scope.input.stratifyTo = angular.copy($scope.stratifyTo);
+						
 						if ($scope.input.type == "Risk Analysis") {
                             $scope.isRiskAnalysis=true;   
                             $scope.input.stratifyTo = stratificationNone;
@@ -286,6 +288,13 @@ angular.module("RIF")
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
 								$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
+								$timeout(function() { // Wait a bit and start another disest
+									$scope.safeApply(0, function() {
+										$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
+										AlertService.consoleDebug("[rifd-dsub-maptable.js] No stratificationChange, safeApply: " + 
+										JSON.stringify($scope.input.stratifyTo, null, 1));
+									});
+								}, 200);
 							}
 							else if ($scope.input.stratifyTo && $scope.input.stratifyTo.name &&
 							    nStratification && nStratification.name &&
@@ -557,9 +566,13 @@ angular.module("RIF")
 								$scope.input.stratifyTo = stratificationNone;
 								$scope.stratifyTo = stratificationNone;
 								setupStratificationList($scope.input.stratifyTo);
+
+								if ($scope.gridOptions && $scope.gridOptions.data) {
+									$scope.gridOptions.data=ModalAreaService.setAllStratification(
+										$scope.input.stratifyTo, $scope.gridOptions.data);		
+								}								
 							}							
 
-//							$scope.parent.tree = false;
 							if ($scope.input.name == "ComparisionAreaMap") {
 								SubmissionStateService.getState().comparisonTree = false;
 							}
@@ -2284,7 +2297,7 @@ angular.module("RIF")
                                         }
                                         else if ($scope.input.stratifyTo && 
                                                  $scope.input.stratifyTo.stratificationType == "SHAPEFILE_FIELD") { // Stratification by shapefile field
-                                            if ($scope.input.stratifyTo.name &&
+                                            if ($scope.input.stratifyTo.name && selectedPolygon.properties &&
                                                 selectedPolygon.properties[$scope.input.stratifyTo.name]) { 
                                                 stratification = 
 													selectedPolygon.properties[$scope.input.stratifyTo.name];
@@ -2344,7 +2357,14 @@ angular.module("RIF")
                                     "; stratificationErrors: " + stratificationErrors +
                                     "; $scope.selectedPolygonCount: " + $scope.selectedPolygonCount +
                                     "; $scope.gridOptions.data: " + $scope.gridOptions.data.length);
-                                if (stratificationErrors > 0) {
+                                if (stratificationErrors > 0) {									
+									if ($scope.input.name == "ComparisionAreaMap") {
+										SubmissionStateService.getState().comparisonTree = false;
+									}
+									else {
+										SubmissionStateService.getState().studyTree = false;
+									}
+									SubmissionStateService.getState().stratificationErrors = stratificationErrors;
                                     AlertService.showError(stratificationErrors + " errors occurred in stratification");
                                 }            
                             }                    
