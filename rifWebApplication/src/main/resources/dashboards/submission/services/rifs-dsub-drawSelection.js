@@ -813,6 +813,9 @@ angular.module("RIF")
 													distanceFromNearestSource: distanceFromNearestSource,
 													centroid: centroid
 												};
+											if (shape.properties) {
+												selectedPolygonObj.shapeIdList[shape.rifShapePolyId].properties = shape.properties;
+											}
 											// Re-calculate intersectCount
 											var radius;
 											if (shape.circle) {
@@ -944,6 +947,7 @@ angular.module("RIF")
 												intersectCount: 1,
 												shapeIdList: undefined,
 												exposureValue: shape.exposureValue,
+												properties: shape.properties
 											};
 										if (shape.band === -1) {
 											newSelectedPolygon.band = CommonMappingStateService.getState(mapName).currentBand;

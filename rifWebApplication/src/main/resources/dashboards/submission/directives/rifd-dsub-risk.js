@@ -499,7 +499,8 @@ angular.module("RIF")
 											}
 										}
 									}
-                                } else {
+                                } 
+								else { // Shapes
 									if (scope.bandAttr.length == 0) {
 										alertScope.showError("File: " + scope.shapeFile.fileName + ": has no exposure attribute values supplied for shapefile");
 										return false;

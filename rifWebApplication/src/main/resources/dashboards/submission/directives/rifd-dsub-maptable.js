@@ -1507,7 +1507,13 @@ angular.module("RIF")
 																gid: e.target.feature.properties.gid, 
                                                                 label: e.target.feature.properties.name, 
 																band: CommonMappingStateService.getState("areamap").currentBand,
-																stratification: ($scope.input.stratifyTo || "ERROR")};
+																stratification: ($scope.input.stratifyTo || "ERROR")}
+															if ($scope.input.stratifyTo.stratificationType == "SHAPEFILE_FIELD" &&
+															    $scope.input.stratifyTo.name &&
+																e.target.feature.properties[$scope.input.stratifyTo.name]) {
+																newSelectedPolygon[$scope.input.stratifyTo.name] =
+																	e.target.feature.properties[$scope.input.stratifyTo.name];
+															}																
 															$scope.selectedPolygon = 
 																CommonMappingStateService.getState("areamap").addToSelectedPolygon($scope.input.name,
 																	newSelectedPolygon);
@@ -2262,13 +2268,18 @@ angular.module("RIF")
                                         else if ($scope.input.stratifyTo && 
                                                  $scope.input.stratifyTo.stratificationType == "SHAPEFILE_FIELD") { // Stratification by shapefile field
                                             if ($scope.input.stratifyTo.name &&
-                                                $scope.gridOptions.data[i][$scope.input.stratifyTo.name]) { 
-                                                stratification = $scope.gridOptions.data[i][$scope.input.stratifyTo.name];
+                                                selectedPolygon.properties[$scope.input.stratifyTo.name]) { 
+                                                stratification = 
+													selectedPolygon.properties[$scope.input.stratifyTo.name];
+//												$scope.gridOptions.data[i][$scope.input.stratifyTo.name] = 
+//													selectedPolygon.properties[$scope.input.stratifyTo.name];
                                             }
                                             else {
                                                 stratificationErrors++;
                                                 stratification="ERROR";
-                                                stratificationErrorMsg="No shapefile field found in data for stratification type: SHAPEFILE_FIELD";
+                                                stratificationErrorMsg="No shapefile field '" + 
+													$scope.input.stratifyTo.name + 
+													"' found in data for stratification type: SHAPEFILE_FIELD";
                                             }   
                                             $scope.gridOptions.data[i].stratification = stratification;
                                             selectedPolygon.stratification = stratification;
@@ -2501,7 +2512,7 @@ angular.module("RIF")
 									AlertService.consoleLog("[rifd-dsub-maptable.js] process shape[" + i + "] area: " + savedShapes[i].area + 
 										"; maxIntersectCount: " + maxIntersectCount +
 										"; intersectCount: " + JSON.stringify(intersectCount) +
-										"; properties: " + JSON.stringify(properties) +
+										"; properties[" + Object.keys(properties).length + "]: " + JSON.stringify(properties) +
 										"; rifShapePolyId: " + savedShapes[i].rifShapePolyId +
 										"; rifShapeId: " + savedShapes[i].rifShapeId +
 										"; exposureValue: " + savedShapes[i].exposureValue +
@@ -2516,7 +2527,7 @@ angular.module("RIF")
 										else if (riskAnalysisExposureField == savedShapes[i].riskAnalysisExposureField) {
 										}
 										else {
-											AlertService.showError("[rifd-dsub-maptable.js] Multi riskAnalysisExposureFields used: " + 
+											AlertService.showError("[rifd-dsub-maptable.js] Multiple riskAnalysisExposureFields used: " + 
 												riskAnalysisExposureField + "; " + savedShapes[i].riskAnalysisExposureField);
 										}
 									}
