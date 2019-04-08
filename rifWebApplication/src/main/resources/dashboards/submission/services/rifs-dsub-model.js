@@ -114,9 +114,9 @@ angular.module("RIF")
                 model["rif_job_submission"][type] = {
                     "name": SubmissionStateService.getState().studyName,
                     "description": SubmissionStateService.getState().studyDescription,
-                    "stratificationList": angular.toJson(SubmissionStateService.getState().stratificationList),
-                    "stratificationField": angular.toJson(SubmissionStateService.getState().stratificationField),
-                    "stratifyTo": SubmissionStateService.getState().stratifyTo,
+                    "stratificationList": JSON.parse(angular.toJson(SubmissionStateService.getState().stratificationList)),
+                    "stratificationField": SubmissionStateService.getState().stratificationField,
+                    "stratifyTo": JSON.parse(angular.toJson(SubmissionStateService.getState().stratifyTo)),
                     "geography": {
                         "name": SubmissionStateService.getState().geography,
                         "description": SubmissionStateService.getState().geography
