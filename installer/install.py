@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import time
+import natsort
 from configparser import ConfigParser, ExtendedInterpolation
 from dataclasses import dataclass
 from distutils.util import strtobool
@@ -52,12 +53,13 @@ prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
                   DATABASE_USER: "We will create a new user in the {} "
                                  "database, which will also be your RIF user "
                                  "name; what do you want to call it?",
-                  DATABASE_PASSWORD: "Please set a password for the '{}' user",
+                  DATABASE_PASSWORD: "Please set a password for the '{}' "
+                                     "user: ",
                   RIF40_PASSWORD: "Please set a password for the 'rif40' "
-                                  "user, which we will also create",
+                                  "user, which we will also create: ",
                   POSTGRES_PASSWORD: "Please give the password for the "
                                      "'postgres' user, which is the "
-                                     "administrator of the Postgres system"
+                                     "administrator of the Postgres system: "
                   }
 
 # We have the default settings file in the current directory and the user's
@@ -276,6 +278,12 @@ def get_settings():
                 POSTGRES_PASSWORD,
                 confirm=False).strip()
 
+        settings.alter_scripts_root = (settings.script_root / "Postgres" /
+                                       "psql_scripts" / "alter_scripts" )
+    else:
+        settings.alter_scripts_root = (settings.script_root / "SQLserver"
+                                       / "alter scripts")
+
     # Update the user's config file
     with user_props.open("w") as props_file:
         user_parser.write(props_file)
@@ -381,7 +389,7 @@ def get_password_from_user(key, confirm=True, extra=""):
         p1 = getpass(prompt_strings.get(key).format(extra))
         if not confirm:
             return p1
-        p2 = getpass("Confirm password")
+        p2 = getpass("Confirm password: ")
         if p1.strip() != p2.strip():
             print()
             print("Passwords do not match")
@@ -510,26 +518,26 @@ def get_pg_scripts(settings):
                                             script_root, "",
                                             db=settings.db_name)
 
-    # Note that not all the numbered scripts are used here, because some
-    # would not run -- and did not seem to be necessary -- at the time of
-    # writing, which was Feb-Mar 2019.
-    alter_script_names = ["v4_0_alter_1.sql", "v4_0_alter_2.sql",
-                          "v4_0_alter_5.sql", "v4_0_alter_7.sql",
-                          "v4_0_alter_8.sql", "v4_0_alter_9.sql",
-                          "v4_0_alter_10.sql", "v4_0_alter_11.sql",
-                          "v4_0_alter_12.sql", "v4_0_alter_13.sql"]
+    alter_script_list = get_alter_scripts(settings.alter_scripts_root)
 
     alter_scripts = [format_postgres_script(settings, script_template,
                                             script_root / "alter_scripts",
-                                            script_name,
+                                            script,
                                             db=settings.db_name,
                                             user=settings.db_owner_name)
-                     for script_name in alter_script_names]
+                     for script in alter_script_list]
 
     scripts = [main_script, sahsuland_script, dump_script, restore_script]
     scripts.extend(alter_scripts)
 
     return [(script, script_root) for script in scripts]
+
+
+def get_alter_scripts(script_root):
+    """Return the alter scripts found in the received directory."""
+
+    return natsort.natsorted(path.name for path in
+                             script_root.glob("v4_0_alter_*.sql"))
 
 
 def format_postgres_script(settings, template, script_root, script_name,
@@ -644,8 +652,16 @@ def get_windows_scripts(settings):
     main_script_string = "{} {} {}".format(str(main_script),
                                            settings.db_user, settings.db_pass)
     scripts = [(main_script_string, main_script.parent)]
-    alter_script = win_root / "alter scripts" / "run_alter_scripts.bat"
-    scripts.append((str(alter_script), alter_script.parent))
+
+    alter_script_list = get_alter_scripts(settings.alter_scripts_root)
+
+    script_template = """sqlcmd -E -d {} -b -m-1 -e -r1 -i {} -v pwd="%cd%" """
+    alter_scripts = [script_template.format(settings.db_name, script)
+                     for script in alter_script_list]
+
+    scripts.extend((script, settings.alter_scripts_root)
+                   for script in alter_scripts)
+
     return scripts
 
 
@@ -815,6 +831,7 @@ class Settings():
 
     db_type: str = ""
     script_root: Path = Path()
+    alter_scripts_root = Path()
     cat_home: Path = Path()
     war_dir: Path = Path()
     dev_mode: bool = False
