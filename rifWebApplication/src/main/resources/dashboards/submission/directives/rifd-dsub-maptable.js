@@ -322,16 +322,22 @@ angular.module("RIF")
                                         $scope.input.stratifyTo, $scope.gridOptions.data);
                                 }
 							}
-                            if ($scope.isRiskAnalysis && 
-                                Object.keys($scope.input.stratifyTo).length > 0) { 
-                                $scope.stratifyTo = stratifyToCopy($scope.input.stratifyTo); // Save
-                                AlertService.consoleDebug("[rifd-dsub-maptable.js] (save/restore) save stratifyTo: " +
-                                    JSON.stringify($scope.input.stratifyTo));
-                                SubmissionStateService.getState().stratifyTo = stratifyToCopy($scope.input.stratifyTo);
-                                doWatchUpdate(
-                                    CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name),
-									CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)); 
-                                    // Do a watchCollection update on grid table
+							
+                            if ($scope.isRiskAnalysis) {
+                                if (Object.keys($scope.input.stratifyTo).length > 0) { 
+									$scope.stratifyTo = stratifyToCopy($scope.input.stratifyTo); // Save
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] (save/restore) save stratifyTo: " +
+										JSON.stringify($scope.input.stratifyTo));
+									SubmissionStateService.getState().stratifyTo = stratifyToCopy($scope.input.stratifyTo);
+									doWatchUpdate(
+										CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name),
+										CommonMappingStateService.getState("areamap").getSelectedPolygon($scope.input.name)); 
+										// Do a watchCollection update on grid table
+								}
+								else {
+									AlertService.consoleDebug("[rifd-dsub-maptable.js] (save/restore) no keys in stratifyTo: " +
+										JSON.stringify($scope.input.stratifyTo));
+								}
                             }
 						}
 						
@@ -2221,10 +2227,12 @@ angular.module("RIF")
 						function doWatchUpdate(newNames, oldNames) {
 
                             //Update table selection
-                            if ($scope.gridApi && $scope.gridApi.selection && $scope.gridOptions && $scope.gridOptions.data) {
+                            if ($scope.gridApi && $scope.gridApi.selection && $scope.gridOptions && 
+							    $scope.gridOptions.data) {
                                 $scope.gridApi.selection.clearSelectedRows();
                                 var foundCount=0;
                                 var stratificationErrors=0;
+                                var stratificationChanges=0;
                                 var stratificationErrorMsg;
                                 for (var i = 0; i < $scope.gridOptions.data.length; i++) {
                                     $scope.gridOptions.data[i].band = 0;
@@ -2256,62 +2264,61 @@ angular.module("RIF")
                                             $scope.gridOptions.data[i].stratification = "NONE";
                                             selectedPolygon.stratification = "NONE";
                                         }
-                                        else if ($scope.input.stratifyTo && 
-                                            $scope.input.stratifyTo.name == "MULTIPOLYGON") { // Stratification by polygon
-                                            if (selectedPolygon.nearestRifShapePolyId &&
-                                                selectedPolygon.shapeIdList &&
-                                                selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId] &&
-                                                selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId) {
-                                                stratification=selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId;
-                                            }
-                                            else {
-                                                stratificationErrors++;
-                                                stratification="ERROR";
-                                                stratificationErrorMsg="No selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId field found for stratification type: MULTIPOLYGON";
-                                            }
-                                            $scope.gridOptions.data[i].stratification = stratification;
-                                            selectedPolygon.stratification = stratification;
-                                        }
-                                        else if ($scope.input.stratifyTo && 
-                                                 $scope.input.stratifyTo.stratificationType == "GEOLEVEL") { // Stratification by geolevel
-                                            if ($scope.gridOptions.data[i].stratification &&
-                                                $scope.gridOptions.data[i].stratification != "NONE") {
-                                                stratification = $scope.gridOptions.data[i].stratification;
-                                            }
-                                            else if ($scope.gridOptions.data[i][$scope.input.stratifyTo.name.toLowerCase()]) {
-                                                stratification = $scope.gridOptions.data[i][$scope.input.stratifyTo.name.toLowerCase()];
-                                            }
-                                            else {
-                                                stratificationErrors++;
-                                                stratification="ERROR";
-                                                stratificationErrorMsg="No stratification field found in data for stratification type: GEOLEVEL";
-                                            } 
-                                            $scope.gridOptions.data[i].stratification = stratification;
-                                            selectedPolygon.stratification = stratification;
-                                        }
-                                        else if ($scope.input.stratifyTo && 
-                                                 $scope.input.stratifyTo.stratificationType == "SHAPEFILE_FIELD") { // Stratification by shapefile field
-                                            if ($scope.input.stratifyTo.name && selectedPolygon.properties &&
-                                                selectedPolygon.properties[$scope.input.stratifyTo.name]) { 
-                                                stratification = 
-													selectedPolygon.properties[$scope.input.stratifyTo.name];
-//												$scope.gridOptions.data[i][$scope.input.stratifyTo.name] = 
-//													selectedPolygon.properties[$scope.input.stratifyTo.name];
-                                            }
-                                            else {
-                                                stratificationErrors++;
-                                                stratification="ERROR";
-                                                stratificationErrorMsg="No shapefile field '" + 
-													$scope.input.stratifyTo.name + 
-													"' found in data for stratification type: SHAPEFILE_FIELD";
-                                            }   
-                                            $scope.gridOptions.data[i].stratification = stratification;
-                                            selectedPolygon.stratification = stratification;
-                                        }                               
                                         else {
-                                            stratificationErrors++;
-                                            stratificationErrorMsg="Unsupported stratification: "  + JSON.stringify($scope.input.stratifyTo);
-                                        }
+											if ($scope.input.stratifyTo && 
+												$scope.input.stratifyTo.name == "MULTIPOLYGON") { // Stratification by polygon
+												if (selectedPolygon.nearestRifShapePolyId &&
+													selectedPolygon.shapeIdList &&
+													selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId] &&
+													selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId) {
+													stratification=selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId;
+													stratificationChanges++;
+												}
+												else {
+													stratificationErrors++;
+													stratification="ERROR";
+													stratificationErrorMsg="No selectedPolygon.shapeIdList[selectedPolygon.nearestRifShapePolyId].rifShapeId field found for stratification type: MULTIPOLYGON";
+												}
+												$scope.gridOptions.data[i].stratification = stratification;
+												selectedPolygon.stratification = stratification;
+											}
+											else if ($scope.input.stratifyTo && 
+													 $scope.input.stratifyTo.stratificationType == "GEOLEVEL") { // Stratification by geolevel
+												if ($scope.gridOptions.data[i][$scope.input.stratifyTo.name.toLowerCase()]) {
+													stratification = $scope.gridOptions.data[i][$scope.input.stratifyTo.name.toLowerCase()];
+													stratificationChanges++;
+												}
+												else {
+													stratificationErrors++;
+													stratification="ERROR";
+													stratificationErrorMsg="No stratification field found in data for stratification type: GEOLEVEL";
+												} 
+												$scope.gridOptions.data[i].stratification = stratification;
+												selectedPolygon.stratification = stratification;
+											}
+											else if ($scope.input.stratifyTo && 
+													 $scope.input.stratifyTo.stratificationType == "SHAPEFILE_FIELD") { // Stratification by shapefile field
+												if ($scope.input.stratifyTo.name && selectedPolygon.properties &&
+													selectedPolygon.properties[$scope.input.stratifyTo.name]) { 
+													stratification = 
+														selectedPolygon.properties[$scope.input.stratifyTo.name];
+													stratificationChanges++;
+												}
+												else {
+													stratificationErrors++;
+													stratification="ERROR";
+													stratificationErrorMsg="No shapefile field '" + 
+														$scope.input.stratifyTo.name + 
+														"' found in data for stratification type: SHAPEFILE_FIELD";
+												}   
+												$scope.gridOptions.data[i].stratification = stratification;
+												selectedPolygon.stratification = stratification;
+											}                               
+											else {
+												stratificationErrors++;
+												stratificationErrorMsg="Unsupported stratification: "  + JSON.stringify($scope.input.stratifyTo);
+											}
+										}
                                            
                                         if (stratificationErrors && stratificationErrors < 5) {
                                             AlertService.consoleError("[rifd-dsub-maptable.js] stratification error " + stratificationErrorMsg +
@@ -2348,16 +2355,26 @@ angular.module("RIF")
                                 AlertService.consoleLog("[rifd-dsub-maptable.js] doWatchUpdate() newNames: " + newNames.length +
                                     "; oldNames: " + oldNames.length +
                                     "; foundCount: " + foundCount +
+                                    "; stratificationChanges: " + stratificationChanges +
                                     "; stratificationErrors: " + stratificationErrors +
                                     "; $scope.selectedPolygonCount: " + $scope.selectedPolygonCount +
-                                    "; $scope.gridOptions.data: " + $scope.gridOptions.data.length);
+                                    "; $scope.gridOptions.data: " + $scope.gridOptions.data.length +
+									"; $scope.input.stratifyTo: " + JSON.stringify($scope.input.stratifyTo, null, 1));
  
                                 if (stratificationErrors > 0) {
 									SubmissionStateService.getState().stratificationErrors += stratificationErrors;
                                     AlertService.showError(stratificationErrors + 
 										" errors occurred in stratification");
                                 }         								 
-                            }                    
+                            }
+							else {
+                                AlertService.consoleLog("[rifd-dsub-maptable.js] doWatchUpdate() no update; newNames: " + 
+									(newNames ? newNames.length : 'undefined') +
+                                    "; oldNames: " +
+									(oldNames ? oldNames.length : 'undefined') +
+									"; $scope.gridApi: " + JSON.stringify($scope.gridApi, null, 1) +
+									"; $scope.gridOptions: " + JSON.stringify($scope.gridOptions, null, 1));
+							}	
 						}
 						
                         //********************************************************************************************************
