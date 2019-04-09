@@ -214,6 +214,7 @@ angular.module("RIF")
 								
 								if (savedShape.properties == undefined) {
 									savedShape.properties = {};
+									savedShape.noPproperties = true;
 								}	
 								
 								if (savedShape.properties.area == undefined) {
@@ -811,11 +812,13 @@ angular.module("RIF")
 													rifShapeId: shape.rifShapeId,
 													rifShapePolyId: shape.rifShapePolyId,
 													distanceFromNearestSource: distanceFromNearestSource,
-													centroid: centroid
+													centroid: centroid,
+													properties: shape.properties
 												};
-											if (shape.properties) {
-												selectedPolygonObj.shapeIdList[shape.rifShapePolyId].properties = shape.properties;
-											}
+											if (selectedPolygonObj.shapeIdList[shape.rifShapePolyId].properties == undefined) {
+												selectedPolygonObj.shapeIdList[shape.rifShapePolyId].properties = {};
+												selectedPolygonObj.shapeIdList[shape.rifShapePolyId].noPproperties = true;
+											}							
 											// Re-calculate intersectCount
 											var radius;
 											if (shape.circle) {
@@ -932,8 +935,14 @@ angular.module("RIF")
 												rifShapeId: shape.rifShapeId,
 												rifShapePolyId: shape.rifShapePolyId,
 												distanceFromNearestSource: distanceFromNearestSource,
-												centroid: centroid
+												centroid: centroid,
+												properties: shape.properties
 											};
+											
+										if (shapeIdList[shape.rifShapePolyId].properties == undefined) {
+											shapeIdList[shape.rifShapePolyId].properties = {};
+											shapeIdList[shape.rifShapePolyId].noPproperties = true;
+										}	
 										if (shape.circle) {
 											shapeIdList[shape.rifShapePolyId].radius = shape.data.getRadius();
 										}
@@ -949,6 +958,11 @@ angular.module("RIF")
 												exposureValue: shape.exposureValue,
 												properties: shape.properties
 											};
+										
+										if (newSelectedPolygon.properties == undefined) {
+											newSelectedPolygon.properties = {};
+											newSelectedPolygon.noPproperties = true;
+										}		
 										if (shape.band === -1) {
 											newSelectedPolygon.band = CommonMappingStateService.getState(mapName).currentBand;
 											latlngList[itemsProcessed].band=CommonMappingStateService.getState(mapName).currentBand;

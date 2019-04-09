@@ -79,8 +79,10 @@ angular.module("RIF")
                                     });
                                 }
                             }
-                            SubmissionStateService.getState().studyTree = true;
-                            $scope.tree = true;
+							else {
+								SubmissionStateService.getState().studyTree = true;
+								$scope.tree = true;
+							}
                         }
 
 						$scope.areamap=SubmissionStateService.getAreaMap();
@@ -107,9 +109,11 @@ angular.module("RIF")
 								SelectStateService.initialiseRiskAnalysis();
 							}
 						}
-						if (SelectStateService.getState().studyType == "disease_mapping_study" && input.type == "Disease Mapping") {
+						if (SelectStateService.getState().studyType == "disease_mapping_study" && 
+						    input.type == "Disease Mapping") {
 						}
-						else if (SelectStateService.getState().studyType == "risk_analysis_study" && input.type == "Risk Analysis") {
+						else if (SelectStateService.getState().studyType == "risk_analysis_study" && 
+						    input.type == "Risk Analysis") {
 						}
 						else {
 							$scope.showErrorNoHide("[rifc-dsub-studyarea.js] Study type mismatch, expecting SelectStateService.getState().studyType: " +
@@ -127,10 +131,17 @@ angular.module("RIF")
 								input.selectedPolygon);
 						}
 						
-						try {
-							if (SelectStateService.getState().studySelection.studySelectedAreas.length > 0) {
+						try {	
+							if (SubmissionStateService.getState().stratificationErrors &&
+									 SubmissionStateService.getState().stratificationErrors > 0) {
+								SubmissionStateService.getState().studyTree = false;
+								$scope.tree = false;
+							}
+							else if (SelectStateService.getState().studySelection.studySelectedAreas.length > 0) {
 								var r=SelectStateService.verifyStudySelection;
 								var areaNameList=CommonMappingStateService.getState("areamap").setAreaNameList(input.name);
+                                SubmissionStateService.getState().studyTree = true;
+                                $scope.tree = true;
 							}
 							else {
 								$scope.showWarning("No study areas selected");

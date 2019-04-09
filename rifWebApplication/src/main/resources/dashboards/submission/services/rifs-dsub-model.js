@@ -148,22 +148,32 @@ angular.module("RIF")
                     "map_areas": {
                         "map_area": function () {
                             var tmp = [];
-                            for (var i = 0; i < StudyAreaStateService.getState().polygonIDs.length; i++) {
-                                var nPoly={
-                                    "id": StudyAreaStateService.getState().polygonIDs[i].id,
-                                    "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
-                                    "label": StudyAreaStateService.getState().polygonIDs[i].label,
-                                    "band": StudyAreaStateService.getState().polygonIDs[i].band,
-                                    "intersectCount": StudyAreaStateService.getState().polygonIDs[i].intersectCount,
-                                    "centroid": StudyAreaStateService.getState().polygonIDs[i].centroid,
-									"shapeIdList": StudyAreaStateService.getState().polygonIDs[i].shapeIdList,
-									"nearestRifShapePolyId": StudyAreaStateService.getState().polygonIDs[i].nearestRifShapePolyId,
-									"exposureValue": StudyAreaStateService.getState().polygonIDs[i].exposureValue,
-                                    "stratification": StudyAreaStateService.getState().polygonIDs[i].stratification
-                                }
-                                tmp.push(nPoly);
-                                
-                            }
+							var keys = [];
+							if (StudyAreaStateService.getState().polygonIDs &&
+							    StudyAreaStateService.getState().polygonIDs.length > 0) {
+								keys = Object.keys(StudyAreaStateService.getState().polygonIDs[0]);
+								for (var i = 0; i < StudyAreaStateService.getState().polygonIDs.length; i++) {
+									var nPoly={};		
+									for (var j = 0; j < keys.length; j++) {
+										nPoly[keys[j]] = StudyAreaStateService.getState().polygonIDs[i][keys[j]];
+									}
+									if (i == 0 && Object.keys(nPoly).length == 0) {
+										var err = new Error("Study model study area has no keys: " +
+											JSON.stringify(keys));
+								
+										AlertService.rifMessage('error', "Study model study area has no keys: " +
+											JSON.stringify(keys), err);
+										throw err;
+									}
+									tmp.push(nPoly);					
+								}
+							}
+							if (tmp.length == 0) {
+								var err = new Error("Study model has no study area(s)");
+								
+								AlertService.rifMessage('error', "Study model has no study area(s)", err);
+								throw err;
+							}
                             return tmp;
                         }()
                     }

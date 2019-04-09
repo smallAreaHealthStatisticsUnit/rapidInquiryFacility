@@ -570,15 +570,9 @@ angular.module("RIF")
 								if ($scope.gridOptions && $scope.gridOptions.data) {
 									$scope.gridOptions.data=ModalAreaService.setAllStratification(
 										$scope.input.stratifyTo, $scope.gridOptions.data);		
-								}								
+								}	
+								SubmissionStateService.getState().stratificationErrors = 0;								
 							}							
-
-							if ($scope.input.name == "ComparisionAreaMap") {
-								SubmissionStateService.getState().comparisonTree = false;
-							}
-							else {
-								SubmissionStateService.getState().studyTree = false;
-							}
                         };
 						
 						// Bring shapes to front by descending band order; lowest in front (so mouseover/mouseout works!)
@@ -1121,7 +1115,7 @@ angular.module("RIF")
 											else {
 												$scope.zoomToExtent(); // Zoom to extent
 											}
-											
+							
 											$timeout(function() {	
 
 												CommonMappingStateService.getState("areamap").map.spin(false);  	// off	
@@ -2330,13 +2324,13 @@ angular.module("RIF")
                                                 "; selectedPolygon: " + JSON.stringify(selectedPolygon, null, 1) +
                                                 "; oldData: " + JSON.stringify(oldData, null, 1));
                                         }
-                                        else if (foundCount < 5) {
+/*                                        else if (foundCount < 5) {
                                             AlertService.consoleLog("[rifd-dsub-maptable.js] found: " + foundCount + 
                                                 "; area_id: " + $scope.gridOptions.data[i].area_id + 
                                                 "; data[" + i + "]: " + JSON.stringify($scope.gridOptions.data[i]) +
                                                 "; $scope.input.stratifyTo: " + JSON.stringify($scope.input.stratifyTo, null, 1) +
                                                 "; selectedPolygon: " + JSON.stringify(selectedPolygon, null, 1));
-                                        }
+                                        } */
                                     }
                                 }
             
@@ -2357,16 +2351,12 @@ angular.module("RIF")
                                     "; stratificationErrors: " + stratificationErrors +
                                     "; $scope.selectedPolygonCount: " + $scope.selectedPolygonCount +
                                     "; $scope.gridOptions.data: " + $scope.gridOptions.data.length);
-                                if (stratificationErrors > 0) {									
-									if ($scope.input.name == "ComparisionAreaMap") {
-										SubmissionStateService.getState().comparisonTree = false;
-									}
-									else {
-										SubmissionStateService.getState().studyTree = false;
-									}
-									SubmissionStateService.getState().stratificationErrors = stratificationErrors;
-                                    AlertService.showError(stratificationErrors + " errors occurred in stratification");
-                                }            
+ 
+                                if (stratificationErrors > 0) {
+									SubmissionStateService.getState().stratificationErrors += stratificationErrors;
+                                    AlertService.showError(stratificationErrors + 
+										" errors occurred in stratification");
+                                }         								 
                             }                    
 						}
 						

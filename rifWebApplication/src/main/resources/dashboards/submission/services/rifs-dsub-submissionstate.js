@@ -38,6 +38,8 @@ angular.module("RIF")
         .factory('SubmissionStateService', ['AlertService',
                 function (AlertService) {
 					var areamap;
+					var stratificationNone={ 
+						name: "NONE", stratificationType: "NONE", description: "No stratification"};  
                     var s = {
                         //these are on the main disease submission page
                         studyTree: false,
@@ -56,9 +58,10 @@ angular.module("RIF")
                         studyDescription: "",
                         studyType: "Disease Mapping",
 						removeMap: undefined,
-                        stratificationList: [],
+                        stratificationList: [stratificationNone],
                         stratificationField: undefined,
-                        stratifyTo: {name: "NONE", stratificationType: "NONE", description: "No stratification"}
+                        stratifyTo: stratificationNone,
+						stratificationErrors: 0
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
 					

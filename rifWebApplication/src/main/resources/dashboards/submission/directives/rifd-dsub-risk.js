@@ -818,9 +818,9 @@ angular.module("RIF")
 								scope.bProgress = false;
                                 $rootScope.$broadcast('completedDrawSelection', {maxBand: maxBand});
                             } // End of isPolygon()
-
+							
                             return true;
-                        };
+                        }; // End of displayShapeFile()
                     }
                 };
             }]);
