@@ -46,15 +46,15 @@ angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
 			'SelectStateService', 'ParametersService', 'StudyAreaStateService', 'CompAreaStateService', 'CommonMappingStateService', 
-			'DrawSelectionService', '$q', '$timeout', 'uiGridConstants', 'AlertService',
+			'DrawSelectionService', '$q', '$timeout', 'uiGridConstants', 'AlertService', '$window',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     LeafletBaseMapService, $timeout, user, SubmissionStateService,
 					SelectStateService, ParametersService, StudyAreaStateService, CompAreaStateService, CommonMappingStateService,
-					DrawSelectionService, $q, $timeout, uiGridConstants, AlertService) {
+					DrawSelectionService, $q, $timeout, uiGridConstants, AlertService, $window) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
-                    link: function ($scope) {
+                    link: function ($scope, $element, $attrs) {
 						var parameters=ParametersService.getParameters();
 					    var selectorBands = { // Study and comparison are selectors
 								weight: 3,
@@ -288,7 +288,7 @@ angular.module("RIF")
 									"; $scope.stratificationList: " + 
 									JSON.stringify($scope.stratificationList, null, 1));
 								$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
-								$timeout(function() { // Wait a bit and start another disest
+								$timeout(function() { // Wait a bit and start another digest
 									$scope.safeApply(0, function() {
 										$scope.input.stratifyTo = getStratificationListItem($scope.stratifyTo);
 										AlertService.consoleDebug("[rifd-dsub-maptable.js] No stratificationChange, safeApply: " + 
@@ -2056,7 +2056,53 @@ angular.module("RIF")
                         function handleGeographyError() {
                             $scope.close();
                         }
-
+						
+						function onModalResize(isResize) {
+							var minRowsToShow=ModalAreaService.getDefaultMinRowsToShow();
+							var headerRowHeight=60;
+							//						var elementHeight=$element.height(); // Needs JQuery!
+							var elementHeight=$element[0].offsetHeight
+								-80  // For modalAreaSelectionMenu
+								-20  // For comparisonSelectionCounter
+								-20; // For borders	
+							if (CommonMappingStateService.getState("areamap").areaSelectionMapheight == undefined && 
+								elementHeight > 0) {
+								CommonMappingStateService.getState("areamap").areaSelectionMapheight = 
+									elementHeight;
+							}
+							else if (CommonMappingStateService.getState("areamap").areaSelectionMapheight && 
+								elementHeight > 0 &&
+								CommonMappingStateService.getState("areamap").areaSelectionMapheight != 
+								elementHeight) {
+								CommonMappingStateService.getState("areamap").areaSelectionMapheight = 
+									elementHeight;
+							}
+							if (CommonMappingStateService.getState("areamap").areaSelectionMapheight) {
+								minRowsToShow=Math.round((CommonMappingStateService.getState("areamap").areaSelectionMapheight-(2*headerRowHeight) /* Header */)/25 /* Row height */);
+								headerRowHeight=Math.round((CommonMappingStateService.getState("areamap").areaSelectionMapheight-(25*minRowsToShow))/2);
+							}
+							$scope.gridOptions = ModalAreaService.getAreaTableOptions(
+								minRowsToShow, headerRowHeight);	
+							AlertService.consoleLog("[rifd-dsub-maptable.js] " + 
+								(isResize ? "onModalResize()" : "init()") +
+								"; areaSelectionMap height: " + 
+								CommonMappingStateService.getState("areamap").areaSelectionMapheight +
+								"; minRowsToShow: " + minRowsToShow +
+								"; headerRowHeight: " + headerRowHeight +
+								"; $scope.gridOptions.minRowsToShow: " + $scope.gridOptions.minRowsToShow);
+							if (isResize) {	
+								// UI-grid resize does not work when you change $scope.gridOptions.minRowsToShow;
+								// https://github.com/angular-ui/ui-grid/issues/2531
+								// UI-layout appears to work
+								$scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.OPTIONS);
+								$scope.gridApi.core.queueRefresh().then(function() {
+								AlertService.consoleLog("[rifd-dsub-maptable.js] onModalResize() done" +
+									"; new height: " + 
+									CommonMappingStateService.getState("areamap").areaSelectionMapheight);
+								});
+							}								
+						}
+						
                         /*
                          * MAP SETUP
                          */
@@ -2067,18 +2113,12 @@ angular.module("RIF")
                         CommonMappingStateService.getState("areamap").map.addLayer(CommonMappingStateService.getState("areamap").shapes);
 
                         //Set up table (UI-grid)
-                        var minRowsToShow=ModalAreaService.getDefaultMinRowsToShow();
-                        var headerRowHeight=60;
-                        var height=d3.select("#areaSelectionMap").node().getBoundingClientRect().height;
-                        if (height) {
-                            minRowsToShow=Math.round((height-(2*headerRowHeight) /* Header */)/25 /* Row height */);
-                            headerRowHeight=Math.round((height-(25*minRowsToShow))/2);
-                        }
-                        $scope.gridOptions = ModalAreaService.getAreaTableOptions(minRowsToShow, headerRowHeight);
-                        AlertService.consoleLog("[rifd-dsub-maptable.js] areaSelectionMap height: " + height +
-                            "; minRowsToShow: " + minRowsToShow +
-                            "; headerRowHeight: " + headerRowHeight +
-							"; $scope.gridOptions.minRowsToShow: " + $scope.gridOptions.minRowsToShow);
+						onModalResize(false); // Size ui-grid from modal. 
+											  // It would be better to do it from the element
+						$window.addEventListener('resize', function(event) {
+							onModalResize(true);
+						});
+
                         $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs($scope.isRiskAnalysis &&
                             $scope.pooledAnalysisEnabled);
                         //Enable row selections

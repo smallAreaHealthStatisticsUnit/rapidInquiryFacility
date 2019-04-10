@@ -51,6 +51,7 @@ angular.module("RIF")
 //                        headerRowHeight: 60,
                         rowHeight: 25,
                         minRowsToShow: defaultMinRowsToShow,
+						virtualizationThreshold: defaultMinRowsToShow,
                         multiSelect: true,
                         rowTemplate: rowTemplate()
                     };
@@ -129,6 +130,7 @@ angular.module("RIF")
                         getAreaTableOptions: function (minRowsToShow, headerRowHeight) {
                             if (minRowsToShow > 5) {
                                 areaTableOptions.minRowsToShow=minRowsToShow;
+								areaTableOptions.virtualizationThreshold=minRowsToShow;
                             }
                             if (headerRowHeight > 30) {
                                 areaTableOptions.headerRowHeight=headerRowHeight;
