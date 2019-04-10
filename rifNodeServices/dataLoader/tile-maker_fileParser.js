@@ -278,7 +278,7 @@ function shpConvertInput(files, shpConvertInputCallback) {
 									data=fileContainedInZipFile.asArrayBuffer();
 								}
 								else {
-									console.log("asyncSeriesIteree() WARNING! Ignoring[" + ZipIndex + "]: " + zipName + "; size: " + 
+									console.log("asyncSeriesIteree() WARNING! Ignoring extension: " + zipExt + "; index: " + ZipIndex + ": " + zipName + "; size: " + 
 										fileContainedInZipFile._data.length || fileContainedInZipFile._data.uncompressedSize + " bytes");
 		//							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + zipName + 
 		//								"; expanded: " + unzipPct + 

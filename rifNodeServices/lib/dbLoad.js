@@ -1281,7 +1281,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 "(\n" + 
 "	FORMATFILE = '$(pwd)/mssql_" + csvFiles[i].tableName + ".fmt',		-- Use a format file\n" +
 "	TABLOCK,					-- Table lock\n" +
-"   DATAFILETYPE = 'widechar' -- Handle Unicode" +
+"   DATAFILETYPE = 'widechar' -- Handle Unicode\n" +
 ")";
 			}
 			sqlStmt.dbType=dbType;
@@ -2480,7 +2480,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 "(\n" + 
 "	FORMATFILE = '$(pwd)/mssql_" + lookupTable + ".fmt',		-- Use a format file\n" +
 "	TABLOCK,					-- Table lock\n" +
-"   DATAFILETYPE = 'widechar' -- Handle Unicode" +
+"   DATAFILETYPE = 'widechar' -- Handle Unicode\n" +
 ")";
 				}
 				sqlStmt.dbType=dbType;
@@ -2508,7 +2508,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 "(\n" + 
 "	FORMATFILE = '$(pwd)/mssql_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
 "	TABLOCK,					-- Table lock\n" +
-"   DATAFILETYPE = 'widechar' -- Handle Unicode" +
+"   DATAFILETYPE = 'widechar' -- Handle Unicode\n" +
 ")";
 			}
 			sqlStmt.dbType=dbType;
@@ -2536,7 +2536,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 "(\n" + 
 "	FORMATFILE = '$(pwd)/mssql_adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
 "	TABLOCK,					-- Table lock\n" +
-"   DATAFILETYPE = 'widechar' -- Handle Unicode" +
+"   DATAFILETYPE = 'widechar' -- Handle Unicode\n" +
 ")";
 			}
 			sqlStmt.dbType=dbType;
@@ -2603,7 +2603,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 "(\n" + 
 "	FORMATFILE = '$(pwd)/mssql_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',	-- Use a format file\n" +
 "	TABLOCK,					-- Table lock\n" +
-"   DATAFILETYPE = 'widechar' -- Handle Unicode" +
+"   DATAFILETYPE = 'widechar' -- Handle Unicode\n" +
 ")", 
 					sqlArray, dbType);
 				var sqlStmt=new Sql("Drop load geometry view", 
@@ -2715,7 +2715,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	"(\n" + 
 	"	FORMATFILE = '$(pwd)/mssql_t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".fmt',		-- Use a format file\n" +
 	"	TABLOCK,					-- Table lock\n" +
-	"   DATAFILETYPE = 'widechar' -- Handle Unicode" +
+	"   DATAFILETYPE = 'widechar' -- Handle Unicode\n" +
 	")";
 					sqlStmt.dbType=dbType;
 					sqlArray.push(sqlStmt);	
