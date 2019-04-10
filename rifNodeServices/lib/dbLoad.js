@@ -168,26 +168,26 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
    <FIELD ID="20" xsi:type="CharTerm" TERMINATOR='"\r\n' />
  </RECORD>
  <ROW>
-   <COLUMN SOURCE="1" NAME="statefp" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="2" NAME="countyfp" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="3" NAME="countyns" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="4" NAME="affgeoid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="5" NAME="geoid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="6" NAME="name" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="7" NAME="lsad" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="8" NAME="aland" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="9" NAME="awater" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="1" NAME="statefp" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="2" NAME="countyfp" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="3" NAME="countyns" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="4" NAME="affgeoid" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="5" NAME="geoid" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="6" NAME="name" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="7" NAME="lsad" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="8" NAME="aland" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="9" NAME="awater" xsi:type="SQLNVARCHAR" />
    <COLUMN SOURCE="10" NAME="gid" xsi:type="SQLINT" />
-   <COLUMN SOURCE="11" NAME="areaid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="12" NAME="areaname" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="11" NAME="areaid" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="12" NAME="areaname" xsi:type="SQLNVARCHAR" />
    <COLUMN SOURCE="13" NAME="area_km2" xsi:type="SQLNUMERIC" />
-   <COLUMN SOURCE="14" NAME="geographic_centroid_wkt" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="15" NAME="wkt_11" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="16" NAME="wkt_10" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="17" NAME="wkt_9" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="18" NAME="wkt_8" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="19" NAME="wkt_7" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="20" NAME="wkt_6" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="14" NAME="geographic_centroid_wkt" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="15" NAME="wkt_11" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="16" NAME="wkt_10" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="17" NAME="wkt_9" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="18" NAME="wkt_8" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="19" NAME="wkt_7" xsi:type="SQLNVARCHAR" />
+   <COLUMN SOURCE="20" NAME="wkt_6" xsi:type="SQLNVARCHAR" />
  </ROW>
 </BCPFORMAT>	 
 	 
@@ -2889,7 +2889,7 @@ function createSqlServerFmtFile(dir, tableName, rows, createSqlServerFmtFileCall
 	fmtBuf+=' </RECORD>\n'; 
 	fmtBuf+=' <ROW>\n'; 
 	for (var j=1; j<=columnList.length; j++) {
-		var bcpDtype="SQLVARYCHAR";
+		var bcpDtype="SQLNVARCHAR";
 		var column=columnList[(j-1)].toLowerCase();
 		if (column == "gid") {
 			bcpDtype="SQLINT"; // Integer
