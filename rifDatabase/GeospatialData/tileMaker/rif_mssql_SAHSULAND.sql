@@ -1105,7 +1105,8 @@ FROM '$(pwd)\mssql_lookup_sahsu_grd_level1.csv'	-- Note use of pwd; set via -v p
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_lookup_sahsu_grd_level1.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -1115,7 +1116,8 @@ FROM '$(pwd)\mssql_lookup_sahsu_grd_level2.csv'	-- Note use of pwd; set via -v p
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_lookup_sahsu_grd_level2.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -1125,7 +1127,8 @@ FROM '$(pwd)\mssql_lookup_sahsu_grd_level3.csv'	-- Note use of pwd; set via -v p
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_lookup_sahsu_grd_level3.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -1135,7 +1138,8 @@ FROM '$(pwd)\mssql_lookup_sahsu_grd_level4.csv'	-- Note use of pwd; set via -v p
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_lookup_sahsu_grd_level4.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -1394,7 +1398,8 @@ FROM '$(pwd)\mssql_hierarchy_sahsuland.csv'	-- Note use of pwd; set via -v pwd="
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_hierarchy_sahsuland.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -1795,7 +1800,8 @@ FROM '$(pwd)\mssql_geometry_sahsuland.csv'	-- Note use of pwd; set via -v pwd="%
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_geometry_sahsuland.fmt',	-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -2206,7 +2212,8 @@ FROM '$(pwd)\mssql_adjacency_sahsuland.csv'	-- Note use of pwd; set via -v pwd="
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_adjacency_sahsuland.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -4825,7 +4832,8 @@ FROM '$(pwd)\mssql_t_tiles_sahsu_grd_level1.csv'	-- Note use of pwd; set via -v 
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_t_tiles_sahsu_grd_level1.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -4846,7 +4854,8 @@ FROM '$(pwd)\mssql_t_tiles_sahsu_grd_level2.csv'	-- Note use of pwd; set via -v 
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_t_tiles_sahsu_grd_level2.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -4867,7 +4876,8 @@ FROM '$(pwd)\mssql_t_tiles_sahsu_grd_level3.csv'	-- Note use of pwd; set via -v 
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_t_tiles_sahsu_grd_level3.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -4888,7 +4898,8 @@ FROM '$(pwd)\mssql_t_tiles_sahsu_grd_level4.csv'	-- Note use of pwd; set via -v 
 WITH
 (
 	FORMATFILE = '$(pwd)\mssql_t_tiles_sahsu_grd_level4.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 

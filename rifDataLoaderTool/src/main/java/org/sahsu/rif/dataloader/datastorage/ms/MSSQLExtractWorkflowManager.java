@@ -264,7 +264,9 @@ final class MSSQLExtractWorkflowManager
 			queryFormatter.addQueryPhrase(destinationTableName);
 			queryFormatter.addQueryPhrase(" FROM '");
 			queryFormatter.addQueryPhrase(csvFilePath);
-			queryFormatter.addQueryPhrase("' WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', ROWTERMINATOR = '\\n', TABLOCK)");
+			queryFormatter.addQueryPhrase("' WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', "
+			                              + "ROWTERMINATOR = '\\n', TABLOCK, "
+			                              + "DATAFILETYPE = 'widechar')");
 			// by specifying FIRSTROW = 2 we skip the header row
 		
 			System.out.println(queryFormatter.generateQuery());

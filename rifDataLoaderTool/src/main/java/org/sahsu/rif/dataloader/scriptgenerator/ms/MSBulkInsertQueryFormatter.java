@@ -123,7 +123,8 @@ public class MSBulkInsertQueryFormatter extends AbstractSQLQueryFormatter {
 		addQueryPhrase("',");
 		finishLine();
 		addQueryLine(1, "TABLOCK,");
-		addQueryLine(1, "FIRSTROW=2");
+		addQueryLine(1, "FIRSTROW=2,");
+		addQueryLine(1, "DATAFILETYPE = 'widechar'");
 		addQueryPhrase(0, ")");
 		
 		return super.generateQuery();
