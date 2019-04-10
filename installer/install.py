@@ -12,19 +12,20 @@ __email__ = "m.mccallion@imperial.ac.uk"
 import hashlib
 import os
 import platform
-import psycopg2
 import re
 import shutil
 import subprocess
 import sys
 import time
-import natsort
 from configparser import ConfigParser, ExtendedInterpolation
 from dataclasses import dataclass
 from distutils.util import strtobool
 from getpass import getpass
 from inspect import currentframe, getframeinfo
 from pathlib import Path
+
+import natsort
+import psycopg2
 
 WAR_FILES_LOCATION = "war_files_location"
 TOMCAT_HOME = "tomcat_home"
@@ -39,7 +40,7 @@ DATABASE_PASSWORD = "db_password"
 RIF40_PASSWORD = "db_rif40_password"
 POSTGRES_PASSWORD = "db_pg_password"
 
-prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
+PROMPT_STRINGS = {DEVELOPMENT_MODE: "Development mode?",
                   DB_TYPE: "Database type (pg or ms for PostgreSQL or MS "
                            "SQL Server)",
                   SCRIPT_HOME: "Directory for SQL scripts",
@@ -79,6 +80,7 @@ user_props = Path()
 
 
 def main():
+    """The main work starts here."""
     banner("WARNING: This will DELETE any existing database named "
            "'sahsuland'.\n\n Proceed with caution.",
            55)
@@ -146,9 +148,9 @@ def main():
 
                       Database creation failed"""
                 banner(msg.format(
-                        script, process.stdout,
-                        ("Errors from script: "
-                         + process.stderr) if process.stderr else ""),
+                    script, process.stdout,
+                    ("Errors from script: "
+                     + process.stderr) if process.stderr else ""),
                        120)
                 break
             db_created = True
@@ -157,8 +159,8 @@ def main():
             ensure_tomcat_directories_exist(settings)
 
             # Deploy WAR files
-            for f in get_war_files(settings):
-                shutil.copy(f, settings.cat_home / "webapps")
+            for file in get_war_files(settings):
+                shutil.copy(file, settings.cat_home / "webapps")
 
             # Generate RIF startup properties file
             create_properties_file(settings)
@@ -190,7 +192,7 @@ def initialise_config():
             # and store its path in _MEIPASS. This feels like a hack,
             # but it is the documented way to get at the bundled files.
             base_path = Path(sys._MEIPASS)
-        except OSError | TypeError | RuntimeError:
+        except (OSError | TypeError, RuntimeError):
             base_path = Path.cwd()
     else:
         base_path = Path.cwd()
@@ -279,7 +281,7 @@ def get_settings():
                 confirm=False).strip()
 
         settings.alter_scripts_root = (settings.script_root / "Postgres" /
-                                       "psql_scripts" / "alter_scripts" )
+                                       "psql_scripts" / "alter_scripts")
     else:
         settings.alter_scripts_root = (settings.script_root / "SQLserver"
                                        / "alter scripts")
@@ -339,7 +341,7 @@ def get_value_from_user(key, is_path=False, extra=""):
     elif key in default_config:
         current_value = default_config[key]
 
-    base_prompt = prompt_strings.get(key)
+    base_prompt = PROMPT_STRINGS.get(key)
     prompt = "{} [{}]{} ".format(base_prompt.format(extra),
                                  current_value,
                                  "" if base_prompt.endswith("?") else ":")
@@ -357,9 +359,9 @@ def get_value_from_user(key, is_path=False, extra=""):
             if tomcat_home_str is None or tomcat_home_str.strip() == "":
                 print("CATALINA_HOME is not set in the environment and no "
                       "value given for {}."
-                      .format(prompt_strings.get(TOMCAT_HOME)))
+                      .format(PROMPT_STRINGS.get(TOMCAT_HOME)))
                 reply = input(
-                    "{} [{}] ".format(prompt_strings.get(key), current_value))
+                    "{} [{}] ".format(PROMPT_STRINGS.get(key), current_value))
             else:
                 reply = tomcat_home_str
 
@@ -386,7 +388,7 @@ def get_password_from_user(key, confirm=True, extra=""):
     p2 = "y"
     while p1.strip() != p2.strip():
         print()
-        p1 = getpass(prompt_strings.get(key).format(extra))
+        p1 = getpass(PROMPT_STRINGS.get(key).format(extra))
         if not confirm:
             return p1
         p2 = getpass("Confirm password: ")
@@ -824,7 +826,7 @@ def go(message):
 
 
 @dataclass
-class Settings():
+class Settings:
     """The settings values for the RIF installation process."""
 
     pass
