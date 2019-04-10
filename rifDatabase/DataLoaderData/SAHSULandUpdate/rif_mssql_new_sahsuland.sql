@@ -69,7 +69,8 @@ WITH
 (
 	FIRSTROW = 2,
 	FORMATFILE = '$(pwd)/covar_sahsuland_covariates3.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -141,7 +142,8 @@ WITH
 (
 	FIRSTROW = 2,
 	FORMATFILE = '$(pwd)/covar_sahsuland_covariates4.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -213,7 +215,8 @@ WITH
 (
 	FIRSTROW = 2,
 	FORMATFILE = '$(pwd)/num_sahsuland_cancer.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -299,7 +302,8 @@ WITH
 (
 	FIRSTROW = 2,
 	FORMATFILE = '$(pwd)/pop_sahsuland_pop.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
  

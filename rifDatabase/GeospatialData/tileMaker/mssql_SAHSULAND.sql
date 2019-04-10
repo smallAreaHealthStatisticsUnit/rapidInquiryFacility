@@ -790,7 +790,8 @@ FROM '$(pwd)/sahsu_grd_level1.csv'	-- Note use of pwd; set via -v pwd="%cd%" in 
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_sahsu_grd_level1.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -2115,7 +2116,8 @@ FROM '$(pwd)/sahsu_grd_level2.csv'	-- Note use of pwd; set via -v pwd="%cd%" in 
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_sahsu_grd_level2.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 
@@ -3395,7 +3397,8 @@ FROM '$(pwd)/sahsu_grd_level3.csv'	-- Note use of pwd; set via -v pwd="%cd%" in 
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_sahsu_grd_level3.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar'
 );
 GO
 
@@ -4765,7 +4768,8 @@ FROM '$(pwd)/sahsu_grd_level4.csv'	-- Note use of pwd; set via -v pwd="%cd%" in 
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_sahsu_grd_level4.fmt',		-- Use a format file
-	TABLOCK					-- Table lock
+	TABLOCK,					-- Table lock
+    DATAFILETYPE = 'widechar' -- Handle Unicode
 );
 GO
 

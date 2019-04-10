@@ -40,4 +40,5 @@ Documents for developers [are here](development/).
 
 # 2019 Plans
 
-Plans for 2019 [are here](plans/2019_Plans.html).
+- [2019 Handover Notes](plans/Handover_April_2019)
+- General plans for 2019 [are here](plans/2019_Plans.html).
