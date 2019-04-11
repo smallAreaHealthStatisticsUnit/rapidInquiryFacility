@@ -9,6 +9,7 @@ title: Developer Documentation
 
 ## General Developer Documentation
 
+* [How to build the RIF Installer](Building-the-Installer)
 * [Coding Standards]({{ site.baseurl }}/development/coding-standards) -- see this for our preferences for code formatting, and so on.
 * [RIF design documentation on Sourceforge](http://rapidinquiryfacility.sourceforge.net/index.html)
 * [Database Design]({{ site.baseurl }}/development/Database-design)
