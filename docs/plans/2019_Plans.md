@@ -11,10 +11,10 @@ title: 2019 Plans
 RIF Priorities for the first quarter of 2019 are:
 
 1. Make the RIF Usable within SAHSU [PH; in priority order];
-   * [Risk analysis specific D3 graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127);
+   * [Risk analysis specific D3 graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). Done;
    * [Multiple (used in statistical calculations) and additional (for use outside of the RIF) covariate support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124). One primary 
       covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
-     (this reduce resource risk). Multiple additional covariates available in the extract;
+     (this reduce resource risk). Multiple additional covariates available in the extract. Done;
    * [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
      Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
      * Individual site analysis;
@@ -24,21 +24,27 @@ RIF Priorities for the first quarter of 2019 are:
        * JSON study definition format;  
        * Study extract and result tables;
 	   * R risk analysis code.
+	 Front end complete with database changes (11/4/2019). Middleware and R support TODO;
    * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). IF access to remove 
-     numerator data in Oracle.
+     numerator data in Oracle; done.
  
   
 2. Improve the installation process [MM]
 
+   Done. The next step is to add Liquibase support
+
 3. One high priority bug. [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). 
    SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two). Postgres is 
    fully functional [PH];
+   
+   TODO
 
 For the rest of 2019 the focus is currently expected to be on:
 
 * Full multiple covariate support;
 * Information governance;
-* Data loading;
+* Integrated data loading module. This will require the PostgresSQL and SQL Server database build scripts to be converted to use  Liquibase (https://www.liquibase.org/) to manage the existing database and the data loading;
+* Prior sensitivity analysis module. This will allow users to change the priors used in Bayesian smoothing;
 * Logging and auditing;
 * Data extract improvements;
 * Cluster analysis;
@@ -55,11 +61,13 @@ See the [RIF Roadmap](https://trello.com/b/CTTtyxJR/the-rif-roadmap) on Trello o
   
 ### Make the RIF Usable within SAHSU
 
-These are a priority for end of February 2019, in priority order:
+These are a priority for end of April 2019, in priority order:
 
 * [Issue #127 risk analysis D3 maps](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). These will 
   replace the posterior probability J curve and the frequency count the FP defined D3 charts displaying the homogeneity data.
 
+  Done. 
+  
   This will be based on the visible displays in the RIF 3.2, for point source exposures (minimum displayed dataset to include 
   observed counts, expected counts, relative risk, trend test for each site, and adjusted by region with heterogeneity testing and 
   meta-analysis function. The content and layout should be discussed with FP:
@@ -118,7 +126,9 @@ These are a priority for end of February 2019, in priority order:
   REST parameters: username and studyID, returns two x number of covariates records for a risk analysis study using covariates; 
   otherwise an error; 	
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for 
-  March 2019). This will be implemented this in two stages:
+  March 2019); done. 
+  
+  This will be implemented this in two stages:
   * One primary covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
     (this reduce resource risk). Multiple additional covariates available in the extract.
   * Full multiple covariate support;
@@ -137,6 +147,7 @@ These are a priority for end of February 2019, in priority order:
   * Add support for multiple covariates in the R code;
   * Confirm multiple covariates appear in the extract and in the data viewer extract table;
   
+  Done.
 * [Issue #129 Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
   Currently the RIF analyses there in N bands with all the sites as one. It is proposed to extend the RIF to support:
   * Individual site analysis;
@@ -146,10 +157,14 @@ These are a priority for end of February 2019, in priority order:
     * JSON study definition format;  
     * Study extract and result tables;
 	* R risk analysis code.
+	
+  Front end complete with database changes (11/4/2019). Middleware and R support TODO;
 * [Issue #126 Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). Functionality is already
   in place, need to confirm that SQL Server works and both ports perform acceptably. Note that this is not considered suitable for denominator
   or covariate data;
-
+ 
+  Done.
+  
 These are not:
 
 * [Issue #68 risk analysis selection at high resolution does not work acceptably](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/68):
@@ -168,6 +183,8 @@ These are not:
 * [Issue #115 Improve the installation process](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/115). There 
   should be as few manual interactions as possible. Preferably none, though obviously the user giving details at the start is fine. A 
   middleware installer executable would be excellent;
+  
+  Done.
 
 ## Next (Q2-Q4 2019)
 
@@ -177,6 +194,8 @@ This is likely to change to adapt to funder requirements.
 
 * [Issue #124 Multiple covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124) (first part for March 2019);
   See above. This will focus on the statistical support.
+  
+  Done. 
   
 ### Information Governance
 
@@ -253,6 +272,19 @@ This is likely to change to adapt to funder requirements.
 
 ### Data Loading Improvements
 
+The current scripts for creating a RIF database rely on a core set of scripts, and up to 14 alter scripts. The 
+alter script in particular cause dependency issues when they modify trigger SQL. This needs to be resolved so 
+that the RIF can manage its own data structures and to remove dependency issue using Git version control and 
+dynamic triggers:
+
+* Convert the RIF to use [Liquibase](https://www.liquibase.org/) to manage the existing database and the 
+  data loading. This will require a Java console program to be run as the RIF40 schema owner and version 
+  checks between the Front end, middleware and Liquibase change set;
+* Move the existing state machine PL/pgSQL and T-SQL code that extracts a study into Java;
+* Make the trigger code column name dynamic (requires *hstore* for Postgres, SQL Server can do it natively)
+
+This is estimated at about 3 months work.
+
 [Data loader tools - issues #84](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/84)
 
 A new simple loading tool that is part of the main RIF web application that just loads data in a predefined format directly 
@@ -317,6 +349,8 @@ Support for geographies would require the tileMaker functionality to be moved in
  
   That should be two separate search boxes, aligned above the corresponding columns in the results table. If the user enters values 
   in both boxes they will be AND-ed together.
+  
+  The latest version of UI-Grid support hierarchies which will improve the look of the Taxonomy search table.
 
   Behaviour:
   
