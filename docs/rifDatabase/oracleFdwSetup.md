@@ -1,4 +1,4 @@
-1. Create roles and accounts in Oracle using SQL*Plus and SYSTEM (Sn4k3B1teBlack$), and test:
+1. Create roles and accounts in Oracle using SQL*Plus and SYSTEM, and test:
 
 * RIF_USER role. You could create more project specific roles
   ```
@@ -7,8 +7,9 @@
   
 * RIF User (peter)
   ```
-  CREATE USER peter IDENTIFIED BY Orz1cTentac1e$; 
+  CREATE USER peter IDENTIFIED BY XXXXXXXXXXXXXXXXXXXX; 
   GRANT CONNECT, rif_user TO peter;
+  ```
   
 * For explain plan to work logon as SYS with SYSDBA 
   ```
@@ -17,15 +18,16 @@
   ```
   
 * RIF Health Data (rif_data)
-
   ```  
-CREATE USER rif_health_data IDENTIFIED BY Culiembro2001#;
-GRANT CONNECT, RESOURCE TO rif_health_data;
-ALTER USER rif_health_data QUOTA UNLIMITED ON users;
+  CREATE USER rif_health_data IDENTIFIED BY XXXXXXXXXXXXXXXXXXXX;
+  GRANT CONNECT, RESOURCE TO rif_health_data;
+  ALTER USER rif_health_data QUOTA UNLIMITED ON users;
 
 * Logon as rif_health_data, create a dummy table:
   ```
-  CREATE TABLE my_all_tables AS SELECT owner, table_name, tablespace_name, num_rows, last_analyzed FROM all_tables;
+  CREATE TABLE my_all_tables AS 
+  SELECT owner, table_name, tablespace_name, num_rows, last_analyzed 
+    FROM all_tables;
   GRANT SELECT ON my_all_tables TO rif_user;
   ```
   
@@ -61,9 +63,10 @@ ALTER USER rif_health_data QUOTA UNLIMITED ON users;
 * Foreach RIF user needing remote tabler access create a user mapping  
   ```
   DROP USER MAPPING IF EXISTS FOR postgres SERVER orcl;
-  CREATE USER MAPPING FOR postgres SERVER orcl OPTIONS (user 'peter', password 'Orz1cTentac1e$');
+  CREATE USER MAPPING FOR postgres SERVER orcl OPTIONS (user 'peter', password 'XXXXXXXXXXXXXXXXXXXX');
   ```
-* Do **NOT** use LDAP. Oracle uses a non standard LDAP library which will interact badly with the Postgres standard library.
+* Do **NOT** use LDAP. Oracle uses a non standard LDAP library which will interact badly with the 
+  Postgres standard library.
   
 3. Setup 
 
@@ -132,9 +135,9 @@ ALTER USER rif_health_data QUOTA UNLIMITED ON users;
   (5 rows)
   ```
 
-4. Diagnsotics
+4. Diagnostics
  
-The information will also be avaiable in various *pg_* views.
+The information will also be available in various *pg_* views.
  
 * To check the Oracle_fdw version:
   ``` 
@@ -145,23 +148,22 @@ The information will also be avaiable in various *pg_* views.
     oracle_fdw | 1.1     | postgres | foreign data wrapper for Oracle access
   (1 row)
   ```
-  
-\des+
-\det+
-\deu+
 
 * To see the user mappings. You can see your own password, the superuser *postgres* can see all passwords
-sahsu=> \deu+
-                      List of user mappings
- Server | User name |                 FDW options
---------+-----------+---------------------------------------------
- orcl   | peter     | ("user" 'peter', password 'Orz1cTentac1e$')
- orcl   | postgres  |
-(2 rows)
-\dew+
-* To use the connection diagnostic *oracle_diag()*; as the user postgres. Be careful; this will also grant the Postgres user access to the data.
   ```
-  CREATE USER MAPPING FOR peter SERVER orcl OPTIONS (user 'peter', password 'Orz1cTentac1e$');
+  sahsu=> \deu+
+                        List of user mappings
+   Server | User name |                 FDW options
+  --------+-----------+---------------------------------------------
+   orcl   | peter     | ("user" 'peter', password 'XXXXXXXXXXXXXXXXXXXX')
+   orcl   | postgres  |
+  (2 rows)
+  \dew+
+  ```
+* To use the connection diagnostic *oracle_diag()*; as the user postgres. Be careful; this will also grant the 
+  Postgres user access to the data.
+  ```
+  CREATE USER MAPPING FOR peter SERVER orcl OPTIONS (user 'peter', password 'XXXXXXXXXXXXXXXXXXXX');
   SELECT oracle_diag('orcl'::Text);
                                         oracle_diag
   ---------------------------------------------------------------------------------------
@@ -171,13 +173,12 @@ sahsu=> \deu+
   
 5. HES Example
 
-* In Oracle as SYSTEM or RIF grant user access to data:
+* In Oracle as SYSTEM or RIF grant the RIF user access to data:
+  ```
+  GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
+  ```
 
-```
-GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
-```
-
-* Find and describe the table:
+* Then find and describe the table:
   ```
   SQL> select table_name from all_tables where owner = 'RIF';
 
@@ -243,8 +244,8 @@ GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
 	 LAD11                                              VARCHAR2(9)
 	 LSOA11                                             VARCHAR2(9)
 	 MSOA11                                             VARCHAR2(9)
-   ```
-* Create indexes and analyze as required:
+  ```
+* Finally create indexes and analyze as required:
   ```
   CREATE UNIQUE INDEX rif.rif_201617_apr2019_uk ON rif.rif_201617_apr2019(sahsu_id);
   CREATE BITMAP INDEX rif.rif_201617_apr2019_yr ON rif.rif_201617_apr2019(year);
@@ -257,7 +258,8 @@ GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
   CREATE BITMAP INDEX rif.rif_201617_apr2019_msoa11 ON rif.rif_201617_apr2019(msoa11);
   ANALYZE TABLE rif.rif_201617_apr2019 ESTIMATE STATISTICS;
   ```
-* In Postgres as rif40 create a foreign table, converting the datatype to Postgres; grant access as required:
+* In Postgres as the RIF schema owner *rif40* create a foreign table, converting the data type to Postgres; 
+  grant access as required:
   ```
   CREATE FOREIGN TABLE rif_201617_apr2019 (
 	 SAHSU_ID                                           NUMERIC,
@@ -316,9 +318,14 @@ GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
 	 LSOA11                                             VARCHAR(9),
 	 MSOA11                                             VARCHAR(9)
   ) SERVER orcl OPTIONS (schema 'RIF', table 'RIF_201617_APR2019', readonly 'true');
-  
+  ```
+* Then grant SELECT to either a role or directly to the user. A user cannot access the table unless it they
+  have a user mapping with a valid user name and password.    
+  ```
   GRANT SELECT ON rif_201617_apr2019 TO rif_user;
-
+  ```
+* Check the RIF user can describe the table structure 
+  ```
   \dS+ rif_201617_apr2019
 											   Foreign table "rif40.rif_201617_apr2019"
 		 Column     |         Type          | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description
@@ -383,14 +390,13 @@ GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
   ```
 
 * In Postgres as the end user (*peter*) check access to the table
+  ```
+  \timing
 
-	```
-	\timing
-
-	EXPLAIN VERBOSE SELECT year, COUNT(*) AS total 
-	  FROM rif40.rif_201617_apr2019
-	 GROUP BY year 
-	 ORDER BY year;
+  EXPLAIN VERBOSE SELECT year, COUNT(*) AS total 
+				    FROM rif40.rif_201617_apr2019
+				   GROUP BY year 
+			  	 ORDER BY year;
 
 										  QUERY PLAN                                                                                                                                                                                               
 	-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -437,8 +443,7 @@ GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
 	 2017 | 20395164
 	 2018 |  4993288
 	(25 rows)
-	 
-	``` 
+  ``` 
 
 * In Postgres as the end user (*peter*) test the linkage to EWS2011 geography:
   ```
@@ -469,14 +474,16 @@ GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
 
   (4 rows)
   ```
-* This shows there are three junk COA2011 codes in the SAHSU HES data (probably new codes created after the census); and the performance of the remote 
-  link is such that it must be materialized:
-  * *oracle_fdw* uses the remote indexes but brings backs all the columns for all the rows requested; not the column required;
+* The EXPLAIN output shows there are three junk COA2011 codes in the SAHSU HES data (probably new codes 
+  created after the census); and the performance of the remote link is such that it must be materialized:
+  * *oracle_fdw* uses the remote indexes but brings backs all the columns for all the rows requested; not the 
+    column required;
   * Aggregation is done locally;
   * Queries on tables that only return a few rows where **ALL** the predicates are indexed will be fast;
-  * Aggregation queries (typical for the RIF) will always be slow because all the columns are returned;
+  * Aggregation queries on tables with many columns (typical for the RIF) will always be slow because all 
+    the columns are returned;
 
-* In Postgres as the end user (*peter*) materialize a LOCAL COPY of the HES data:
+* In Postgres as the end user (*peter*) materialize a **LOCAL COPY** of the HES data:
   ```
   CREATE MATERIALIZED VIEW peter.hes_201617_apr2019
   AS 
@@ -492,8 +499,8 @@ GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
   SELECT 40623718
   Time: 2320353.069 ms (38:40.353)
   ```  
-  This can be refreshed by ```REFRESH MATERIALIZED VIEW peter.hes_201617_apr2019;```.
-* In Postgres as the end user (*peter*) index materialized view and analyze:
+  This can be refreshed by ```REFRESH MATERIALIZED VIEW peter.hes_201617_apr2019;```
+* In Postgres as the end user (*peter*) index the materialized view and analyze:
   ``` 
   CREATE UNIQUE INDEX hes_201617_apr2019_uk ON peter.hes_201617_apr2019(sahsu_id);
   CREATE INDEX hes_201617_apr2019_yr ON peter.hes_201617_apr2019(year);
@@ -507,81 +514,98 @@ GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
   CREATE INDEX hes_201617_apr2019_diag_01 ON peter.hes_201617_apr2019(diag_01);
   
   ANALYZE VERBOSE peter.hes_201617_apr2019;
-  
-  -- Data MUST appear in the rif_data schema and be a view
+  ```
+* To be visible to the RIF:
+  * The data **MUST** appear in the *rif_data* schema. This is because of hard coded schemas in the SQL SERVER
+    port; the RIF has not be tested to use the search path on PostgreSQL;
+  * Be a view or a table.
+* In Postgres as the end user (*peter*) create a view in the *rif_data* schema:
+  ```
   CREATE OR REPLACE VIEW rif_data.v_hes_201617_apr2019
   AS SELECT * FROM peter.hes_201617_apr2019;
-  
+  ```
+* In Postgres as the end user (*peter*) test the materialized view:
+  ```
   EXPLAIN VERBOSE SELECT year, 
                          COUNT(year) AS total, COUNT(coa2011) AS total_coa2011, COUNT(coa11) AS total_coa, COUNT(coa11) -  COUNT(coa2011) AS unlinked, 
 						 COUNT(sahsu_id) AS total  
 	 FROM peter.hes_201617_apr2019
 	GROUP BY year 
 	ORDER BY year;
-                                                           QUERY PLAN                                                   
---------------------------------------------------------------------------------------------------------------------------------
- Finalize GroupAggregate  (cost=1431012.80..1431013.06 rows=5 width=45)
-   Output: year, count(year), count(coa2011), count(coa11), (count(coa11) - count(coa2011)), count(sahsu_id)
-   Group Key: hes_201617_apr2019.year
-   ->  Sort  (cost=1431012.80..1431012.82 rows=10 width=37)
-         Output: year, (PARTIAL count(year)), (PARTIAL count(coa2011)), (PARTIAL count(coa11)), (PARTIAL count(sahsu_id))
-         Sort Key: hes_201617_apr2019.year
-         ->  Gather  (cost=1431011.58..1431012.63 rows=10 width=37)
-               Output: year, (PARTIAL count(year)), (PARTIAL count(coa2011)), (PARTIAL count(coa11)), (PARTIAL count(sahsu_id))
-               Workers Planned: 2
-               ->  Partial HashAggregate  (cost=1430011.58..1430011.63 rows=5 width=37)
-                     Output: year, PARTIAL count(year), PARTIAL count(coa2011), PARTIAL count(coa11), PARTIAL count(sahsu_id)
-                     Group Key: hes_201617_apr2019.year
-                     ->  Parallel Seq Scan on peter.hes_201617_apr2019  (cost=0.00..1218508.48 rows=16920248 width=37)
-                           Output: year, coa2011, coa11, sahsu_id
-(14 rows)	
+															   QUERY PLAN                                                   
+	--------------------------------------------------------------------------------------------------------------------------------
+	 Finalize GroupAggregate  (cost=1431012.80..1431013.06 rows=5 width=45)
+	   Output: year, count(year), count(coa2011), count(coa11), (count(coa11) - count(coa2011)), count(sahsu_id)
+	   Group Key: hes_201617_apr2019.year
+	   ->  Sort  (cost=1431012.80..1431012.82 rows=10 width=37)
+			 Output: year, (PARTIAL count(year)), (PARTIAL count(coa2011)), (PARTIAL count(coa11)), (PARTIAL count(sahsu_id))
+			 Sort Key: hes_201617_apr2019.year
+			 ->  Gather  (cost=1431011.58..1431012.63 rows=10 width=37)
+				   Output: year, (PARTIAL count(year)), (PARTIAL count(coa2011)), (PARTIAL count(coa11)), (PARTIAL count(sahsu_id))
+				   Workers Planned: 2
+				   ->  Partial HashAggregate  (cost=1430011.58..1430011.63 rows=5 width=37)
+						 Output: year, PARTIAL count(year), PARTIAL count(coa2011), PARTIAL count(coa11), PARTIAL count(sahsu_id)
+						 Group Key: hes_201617_apr2019.year
+						 ->  Parallel Seq Scan on peter.hes_201617_apr2019  (cost=0.00..1218508.48 rows=16920248 width=37)
+							   Output: year, coa2011, coa11, sahsu_id
+	(14 rows)	
   SELECT year, 
 		 COUNT(year) AS total, COUNT(coa2011) AS total_coa2011, COUNT(coa11) AS total_coa, COUNT(coa11) -  COUNT(coa2011) AS unlinked, 
 		 COUNT(sahsu_id) AS total 
-		 FROM peter.hes_201617_apr2019
-	GROUP BY year 
-	ORDER BY year;	
- year |  total   | total_coa2011 | total_coa | unlinked |  total
-------+----------+---------------+-----------+----------+----------
- 1978 |        1 |             0 |         0 |        0 |        1
- 1983 |        1 |             1 |         1 |        0 |        1
- 1985 |        1 |             1 |         1 |        0 |        1
- 1987 |        1 |             1 |         1 |        0 |        1
- 1994 |        2 |             2 |         2 |        0 |        2
- 1996 |        1 |             1 |         1 |        0 |        1
- 1999 |        2 |             2 |         2 |        0 |        2
- 2000 |        1 |             1 |         1 |        0 |        1
- 2001 |        1 |             1 |         1 |        0 |        1
- 2003 |        2 |             2 |         2 |        0 |        2
- 2004 |        1 |             1 |         1 |        0 |        1
- 2005 |       11 |            11 |        11 |        0 |       11
- 2006 |        8 |             8 |         8 |        0 |        8
- 2007 |       16 |            16 |        16 |        0 |       16
- 2008 |       13 |            13 |        13 |        0 |       13
- 2009 |       49 |            49 |        49 |        0 |       49
- 2010 |       62 |            62 |        62 |        0 |       62
- 2011 |       72 |            72 |        72 |        0 |       72
- 2012 |      172 |           172 |       172 |        0 |      172
- 2013 |      375 |           375 |       375 |        0 |      375
- 2014 |      924 |           924 |       924 |        0 |      924
- 2015 |     5777 |          5777 |      5777 |        0 |     5777
- 2016 | 15227773 |      15227707 |  15227773 |       66 | 15227773
- 2017 | 20395164 |      20395112 |  20395164 |       52 | 20395164
- 2018 |  4993288 |       4993280 |   4993288 |        8 |  4993288
-(25 rows)
+	FROM peter.hes_201617_apr2019
+   GROUP BY year 
+   ORDER BY year;	
+	 year |  total   | total_coa2011 | total_coa | unlinked |  total
+	------+----------+---------------+-----------+----------+----------
+	 1978 |        1 |             0 |         0 |        0 |        1
+	 1983 |        1 |             1 |         1 |        0 |        1
+	 1985 |        1 |             1 |         1 |        0 |        1
+	 1987 |        1 |             1 |         1 |        0 |        1
+	 1994 |        2 |             2 |         2 |        0 |        2
+	 1996 |        1 |             1 |         1 |        0 |        1
+	 1999 |        2 |             2 |         2 |        0 |        2
+	 2000 |        1 |             1 |         1 |        0 |        1
+	 2001 |        1 |             1 |         1 |        0 |        1
+	 2003 |        2 |             2 |         2 |        0 |        2
+	 2004 |        1 |             1 |         1 |        0 |        1
+	 2005 |       11 |            11 |        11 |        0 |       11
+	 2006 |        8 |             8 |         8 |        0 |        8
+	 2007 |       16 |            16 |        16 |        0 |       16
+	 2008 |       13 |            13 |        13 |        0 |       13
+	 2009 |       49 |            49 |        49 |        0 |       49
+	 2010 |       62 |            62 |        62 |        0 |       62
+	 2011 |       72 |            72 |        72 |        0 |       72
+	 2012 |      172 |           172 |       172 |        0 |      172
+	 2013 |      375 |           375 |       375 |        0 |      375
+	 2014 |      924 |           924 |       924 |        0 |      924
+	 2015 |     5777 |          5777 |      5777 |        0 |     5777
+	 2016 | 15227773 |      15227707 |  15227773 |       66 | 15227773
+	 2017 | 20395164 |      20395112 |  20395164 |       52 | 20395164
+	 2018 |  4993288 |       4993280 |   4993288 |        8 |  4993288
+	(25 rows)
 
-
-Time: 11739.462 ms (00:11.739)
+	Time: 11739.462 ms (00:11.739)
   ```
-
-* In Postgres as RIF40 setup materialized view as numerator  
-  ``` 
-  	
+  Note:
+  * The slight linkage problem affects a small number of rows, 126 in total;
+  * The Query plan did not use the index; but minimized the column usage;
   
-   INSERT INTO rif40.rif40_health_study_themes(theme , description) 
-   VALUES ('HES', 'England Hospital Inpatients');
+* In Postgres as RIF40 setup materialized view as numerator by:
+  * Creating a HES health theme;
+  * Insert into RIF40_TABLES as an automatic numerator for both the materialized view and the ordinary view;
+  * Setup ICD field (HES_DIAG). This was insufficient time to test the multiple ICD  codes functionality
+  
+  ``` 
+  --
+  -- Create a HES health theme
+  --
+  INSERT INTO rif40.rif40_health_study_themes(theme , description) 
+  VALUES ('HES', 'England Hospital Inpatients');
    
-	INSERT INTO rif40.rif40_tables (
+  --
+  -- Insert into RIF40_TABLES as an automatic numerator for both the materialized view and the ordinary view
+  --
+  INSERT INTO rif40.rif40_tables (
 	   theme,
 	   table_name,
 	   description,
@@ -642,8 +666,9 @@ Time: 11739.462 ms (00:11.739)
 	   NULL,				/* age_group_field_name */
 	   'AGE_SEX_GROUP',		/* age_sex_group_field_name */
 	   1					/* age_group_id */;
+	  
 	--
-	-- Setup ICD field (UK_ICD_SAHSU_01) 
+	-- Setup ICD field (HES_DIAG) 
 	--
 	INSERT INTO rif40.rif40_outcome_groups(
 	   outcome_type, outcome_group_name, outcome_group_description, field_name, multiple_field_count)
@@ -653,7 +678,8 @@ Time: 11739.462 ms (00:11.739)
 	   'UK diag_01' AS outcome_group_description,
 	   'diag_01' AS field_name,
 	   0 AS multiple_field_count
-	WHERE NOT EXISTS (SELECT outcome_group_name FROM  rif40.rif40_outcome_groups WHERE outcome_group_name = 'HES_DIAG');
+	WHERE NOT EXISTS (
+		SELECT outcome_group_name FROM  rif40.rif40_outcome_groups WHERE outcome_group_name = 'HES_DIAG');
 
 	INSERT INTO rif40.rif40_table_outcomes (
 	   outcome_group_name,
@@ -664,7 +690,7 @@ Time: 11739.462 ms (00:11.739)
 	   'HES_201617_APR2019',
 	   2016; 
   ```
-* In Postgres as the end user (*peter*)   
+* In Postgres as the end user (*peter*) test the RIF access to the data using *rif40_num_denom
   ```
   SELECT numerator_table, denominator_table, geography FROM rif40_num_denom;   numerator_table    | denominator_table  | geography
   ----------------------+--------------------+-----------
@@ -674,7 +700,11 @@ Time: 11739.462 ms (00:11.739)
    NUM_SAHSULAND_CANCER | POP_SAHSULAND_POP  | SAHSULAND
    SEER_CANCER          | SEER_POPULATION    | USA_2014
   (5 rows)
-    SELECT * FROM rif40_num_denom_errors
+  ```
+  Note that the materialized view is not visible, using the diagnostic view *rif40_num_denom_errors* shows 
+  that the colummn *is_numerator_resolvable* is zero:
+  ```
+  SELECT * FROM rif40_num_denom_errors
    WHERE numerator_table LIKE '%HES_201617_APR2019' 
      AND denominator_table = 'EWS2011_POPULATION' 
 	 AND geography = 'EWS2011';
@@ -684,8 +714,9 @@ Time: 11739.462 ms (00:11.739)
    EWS2011   |                 | HES_201617_APR2019   |                       0 |                     0 | England 2011 Census boundaries HES Inpatients data 2016-2017 | rif_data          | EWS2011_POPULATION |                         1 |                     1 | UK 2011 Census Population 1981-2018. |         1 |                        0 |                     |                     |                     |                    |
   (2 rows)	 
   ```
-  As can be seen, the view is resolvable, the materialized view is not. Cursor *c2* in *rif40_sql_pkg.rif40_is_object_resolvable()* needs to have 
-  support for materialized view added:
+  As can be seen, the view is resolvable, the materialized view is not. The cursor *c2* in 
+  *rif40_sql_pkg.rif40_is_object_resolvable()* needs to have support for materialized view added. The current 
+  code is:
   ```
   c2 CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR
 		SELECT schemaname, tablename
