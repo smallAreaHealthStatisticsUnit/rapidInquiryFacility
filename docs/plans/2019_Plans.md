@@ -159,6 +159,7 @@ These are a priority for end of April 2019, in priority order:
 	* R risk analysis code.
 	
   Front end complete with database changes (11/4/2019). Middleware and R support TODO;
+  
 * [Issue #126 Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). Functionality is already
   in place, need to confirm that SQL Server works and both ports perform acceptably. Note that this is not considered suitable for denominator
   or covariate data;
@@ -369,9 +370,9 @@ Support for geographies would require the tileMaker functionality to be moved in
   This is mainly complete as of 24/1/2019; freehand circles do not support multiple intersections and support added for analysing multiple 
   shapes in a group or individually 
 
-### Add Prior sensistivity analysis 
+### Add Prior sensitivity analysis 
   
-*  [Issue #121 Add Prior sensistivity analysis](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121)
+*  [Issue #121 Add Prior sensitivity analysis](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121)
 
 ### Cluster Analysis
 

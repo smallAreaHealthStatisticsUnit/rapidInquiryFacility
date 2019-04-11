@@ -33,6 +33,7 @@ The RIF has the following manuals:
 - [Manual data loading](rifDatabase/DataLoaderData/DataLoading)
 - [Tile maker Manual](rifNodeServices/tileMaker)
 - [Database Management Manual](rifDatabase/databaseManagementManual)
+- [Oracle FDW Setup for Postgres](rifDatabase/oracle_fdw_setup.html)
 
 # For Developers
 
