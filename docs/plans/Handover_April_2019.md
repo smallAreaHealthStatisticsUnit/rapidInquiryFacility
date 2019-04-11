@@ -9,15 +9,15 @@ title: Handover Notes for the Suspension of Development, April 2019
 
 Everything is up to date. The installer has been tested on Windows and Mac with both databases and works reliably. Multiple covariates work.
 
-## Things I wanted to get done
-
-There are [51 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at the time of writing. Some of them are mentioned below, but all are things that we could do with fixing, building, or improving.
-
 ### Completed, but not in `master`
 
 There is a branch called `installer_list_amend_scripts_in_single_place` which is not merged into `master`. It improves the installer, in that the current version in `master` has the various alter scripts listed in two places. The new branch will find any such scripts and run them as required, with no need to list them specifically.
 
 We did not have time to test the changes as fully as we would like, so we have left the branch unmerged.
+
+## Things I wanted to get done
+
+There are [51 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at the time of writing. Some of them are mentioned below, but all are things that we could do with fixing, building, or improving.
 
 ### Making the Installer Handle Updates
 
