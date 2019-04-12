@@ -52,11 +52,14 @@ may potentially be added in future releases:
 
 # Limitations
 
-Limitations in the current RIF
+Limitations in the current RIF:
 
+* Health and geographic data must be stored in the *rif_data* schema. SQL Server does not have the concepts of
+  either a search path or synonyms so the schema name has been hard coded. Postgres can use the schema search path
+  however the middleware has not been tested to use other schemas for the data;
 * No support for covariates embedded in numerator or denominator data. Data must be extracted into a separate
-  covariate table. Covariates must be merged into a single table and disaggregated (if required) by year. It is not planned to remove these
-  restrictions which were in the previous RIF.
+  covariate table. Covariates must be merged into a single table and disaggregated (if required) by year. It is 
+  not planned to remove these restrictions which were in the previous RIF;
 * Covariates must be quantilised. Support for continuous variable covariates (i.e. on the fly quantilisation) may be added in future releases.
 * Denominator data is always used in indirect standardisation. There is no support currently in the RIF for
   direct standardisation using standard populations. This was supported in previous versions of the RIF and will be put
@@ -78,7 +81,6 @@ Limitations in the current RIF
 
 It is planned to remove the following restrictions progressively in future releases:
 
-* One covariate only;
 * One investigation only;
 * Single ICD field names. Multiple field name support is in the database with partial support in the database;
 * Covariate study_geolevel_name must be the same as rif40_studies.study_geolevel_name,
@@ -3650,6 +3652,11 @@ This is technically possible but was not tested.
   DROP USER MAPPING IF EXISTS FOR postgres SERVER orcl;
   CREATE USER MAPPING FOR postgres SERVER orcl OPTIONS (user 'peter', password 'XXXXXXXXXXXXXXXXXXXX');
   ```
+* Be aware of character validity "£" is valid in Oracle, but not in Postgres
+* To change a password: 
+  ```
+  ALTER USER MAPPING FOR postgres SERVER orcl OPTIONS (SET password 'XXXXXXXXXXXXXXXXXXXX');
+  ```  
 * Do **NOT** use LDAP authentication to Oracle. Oracle uses a non standard LDAP library which will interact 
   badly with the Postgres standard library.
   
@@ -4030,6 +4037,7 @@ was decided to advise the use of materialize views to provide for a local copy o
 	 2017 | 20395164
 	 2018 |  4993288
 	(25 rows)
+  Time: 298478.042 ms (04:58.478)
   ``` 
 
 * In Postgres as the end user (*peter*) test the linkage to EWS2011 geography:

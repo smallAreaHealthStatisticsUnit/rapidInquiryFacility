@@ -26,7 +26,8 @@ RIF Priorities for the first quarter of 2019 are:
 	   * R risk analysis code.
 	 Front end complete with database changes (11/4/2019). Middleware and R support TODO;
    * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). IF access to remove 
-     numerator data in Oracle; done.
+     numerator data in Oracle; done; documented at: 
+	 (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/DataLoading#remote-data-links).
  
   
 2. Improve the installation process [MM]
@@ -36,8 +37,6 @@ RIF Priorities for the first quarter of 2019 are:
 3. One high priority bug. [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). 
    SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two). Postgres is 
    fully functional [PH];
-   
-   TODO
 
 For the rest of 2019 the focus is currently expected to be on:
 
@@ -345,7 +344,7 @@ Support for geographies would require the tileMaker functionality to be moved in
   anywhere in either the code or the description.
 
   Proposal - split the search into two:
-  1. A search of the code field (or "Term Name", as it appears on screen.
+  1. A search of the code field (or "Term Name"), as it appears on screen.
   2. A full-text search of the description field.
  
   That should be two separate search boxes, aligned above the corresponding columns in the results table. If the user enters values 

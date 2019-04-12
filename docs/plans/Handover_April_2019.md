@@ -44,3 +44,56 @@ Not forgetting everything on [the RIF Roadmap](https://trello.com/b/CTTtyxJR/the
 ## Contacting Me
 
 If you need me to look at anything you can email me at <martin@devilgate.org>. I'm on Twitter at [@devilgate](https://twitter.com/devilgate). Also [LinkedIn](https://www.linkedin.com/in/martinmccallion/?originalSubdomain=uk), [Facebook](http://www.facebook.com/martin.mccallion).
+
+# Peter
+
+## Current State of the Development
+
+   * [Risk analysis specific D3 graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). Done;
+   * [Multiple (used in statistical calculations) and additional (for use outside of the RIF) covariate support](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/124). One primary 
+      covariate, multiple additional covariates, No support for multiple covariates in the calculation or results 
+     (this reduce resource risk). Multiple additional covariates available in the extract. Done;
+   * [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
+     Currently the RIF analyses there in N bands with all the sites as on. It is proposed to extend the RIF to support:
+     * Individual site analysis;
+     * Pooled analysis (1 or more groups of sites). Groups would be defined from a categorisation variable in the shapefile. Would require 
+	   changes to:
+       * Shapefile load screen and controller;
+       * JSON study definition format;  
+       * Study extract and result tables;
+	   * R risk analysis code.
+	 Front end complete with database changes (11/4/2019). Middleware and R support TODO;
+   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). IF access to remove 
+     numerator data in Oracle; done; documented at: 
+	 (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/DataLoading#remote-data-links).
+ 
+## Bugs 
+
+[Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). 
+   SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two). Postgres is 
+   fully functional [PH];
+  
+[Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129) 
+also fixes sizing problems study/comparison area map table (to the left of the map). It cannot be re-sized because
+of a bug in UI-grid this is issue [#154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154)
+	
+## Database
+
+### Data Loading Improvements
+
+The current scripts for creating a RIF database rely on a core set of scripts, and up to 14 alter scripts. The 
+alter script in particular cause dependency issues when they modify trigger SQL. This needs to be resolved so 
+that the RIF can manage its own data structures and to remove dependency issue using Git version control and 
+dynamic triggers:
+
+* Convert the RIF to use [Liquibase](https://www.liquibase.org/) to manage the existing database and the 
+  data loading. This will require a Java console program to be run as the RIF40 schema owner and version 
+  checks between the Front end, middleware and Liquibase change set;
+* Move the existing state machine PL/pgSQL and T-SQL code that extracts a study into Java;
+* Make the trigger code column name dynamic (requires *hstore* for Postgres, SQL Server can do it natively)
+
+This is estimated at about 3 months work.
+
+## Contacting Me
+
+If you need me to look at anything you can email me at <phambly@fastmail.co.uk>. 

@@ -68,6 +68,11 @@
   DROP USER MAPPING IF EXISTS FOR postgres SERVER orcl;
   CREATE USER MAPPING FOR postgres SERVER orcl OPTIONS (user 'peter', password 'XXXXXXXXXXXXXXXXXXXX');
   ```
+* Be aware of character validity "£" is valid in Oracle, but not in Postgres
+* To change a password: 
+  ```
+  ALTER USER MAPPING FOR postgres SERVER orcl OPTIONS (SET password 'XXXXXXXXXXXXXXXXXXXX');
+  ```
 * Do **NOT** use LDAP authentication to Oracle. Oracle uses a non standard LDAP library which will interact 
   badly with the Postgres standard library.
   
