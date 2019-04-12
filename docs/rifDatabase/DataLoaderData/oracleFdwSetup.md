@@ -23,7 +23,7 @@
   GRANT CONNECT, RESOURCE TO rif_health_data;
   ALTER USER rif_health_data QUOTA UNLIMITED ON users;
 
-* Logon as rif_health_data, create a dummy table:
+* Logon as the schema owner *rif_health_data*, create a dummy table:
   ```
   CREATE TABLE my_all_tables AS 
   SELECT owner, table_name, tablespace_name, num_rows, last_analyzed 
@@ -31,7 +31,7 @@
   GRANT SELECT ON my_all_tables TO rif_user;
   ```
   
-* Logon as RIF User (peter), check access to dummy table:
+* Logon as RIF User (peter) and check access to dummy table:
   ```
   DESC rif_health_data.my_all_tables
      Name                                      Null?    Type
@@ -54,23 +54,26 @@
   
 2. Setup Oracle FDW as Postgres using psql
 
-* Create Oracle_fdw extension:
+* The documentation for the *Oracle_fdw* Postgres to Oracle data link is at: 
+  (https://pgxn.org/dist/oracle_fdw/1.5.0/)
+* Load the *Oracle_fdw* if not part of the distribution
+* Create *Oracle_fdw* extension:
   ```
   CREATE EXTENSION oracle_fdw;
   CREATE SERVER orcl FOREIGN DATA WRAPPER oracle_fdw OPTIONS (dbserver '//155.198.41.211/ORCL');
   GRANT USAGE ON FOREIGN SERVER orcl TO rif_user, rif40;  
   ```
-* Foreach RIF user needing remote tabler access create a user mapping  
+* For each RIF user needing remote table access create a user mapping  
   ```
   DROP USER MAPPING IF EXISTS FOR postgres SERVER orcl;
   CREATE USER MAPPING FOR postgres SERVER orcl OPTIONS (user 'peter', password 'XXXXXXXXXXXXXXXXXXXX');
   ```
-* Do **NOT** use LDAP. Oracle uses a non standard LDAP library which will interact badly with the 
-  Postgres standard library.
+* Do **NOT** use LDAP authentication to Oracle. Oracle uses a non standard LDAP library which will interact 
+  badly with the Postgres standard library.
   
 3. Setup 
 
-* As rif40 create a foreign table:
+* As *rif40* create a foreign table:
   ```
   CREATE FOREIGN TABLE my_all_tables (
 	OWNER                                    VARCHAR(128),
@@ -110,7 +113,7 @@
   FROM orcl OPTIONS (case 'lower', readonly 'true');
   ```
   
-* As RIF user (peter)
+* As RIF user (peter) test access to the table:
   ```
   \dS+ rif40.my_all_tables                                              Foreign table "rif40.my_all_tables"
   
@@ -158,7 +161,6 @@ The information will also be available in various *pg_* views.
    orcl   | peter     | ("user" 'peter', password 'XXXXXXXXXXXXXXXXXXXX')
    orcl   | postgres  |
   (2 rows)
-  \dew+
   ```
 * To use the connection diagnostic *oracle_diag()*; as the user postgres. Be careful; this will also grant the 
   Postgres user access to the data.
@@ -173,7 +175,10 @@ The information will also be available in various *pg_* views.
   
 5. HES Example
 
-* In Oracle as SYSTEM or RIF grant the RIF user access to data:
+The objective of this example is to test access to some HES test data in Oracle. As a result of this test it was 
+decide to advise the use of materialize views to provide for a local copy of the data.
+
+* In Oracle as *SYSTEM* or the schema owner grant the RIF user (peteR) access to data:
   ```
   GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
   ```
@@ -319,18 +324,18 @@ The information will also be available in various *pg_* views.
 	 MSOA11                                             VARCHAR(9)
   ) SERVER orcl OPTIONS (schema 'RIF', table 'RIF_201617_APR2019', readonly 'true');
   ```
-* Then grant SELECT to either a role or directly to the user. A user cannot access the table unless it they
+* Then in Postgres grant SELECT to either a role or directly to the user. A user cannot access the table unless they
   have a user mapping with a valid user name and password.    
   ```
   GRANT SELECT ON rif_201617_apr2019 TO rif_user;
   ```
-* Check the RIF user can describe the table structure 
+* Check the Postgres RIF user can describe the table structure 
   ```
   \dS+ rif_201617_apr2019
 											   Foreign table "rif40.rif_201617_apr2019"
-		 Column     |         Type          | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description
+         Column     |         Type          | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description
 	----------------+-----------------------+-----------+----------+---------+-------------+----------+--------------+-------------
-	 sahsu_id       | numeric               |           |          |         |             | main     |              |
+     sahsu_id       | numeric               |           |          |         |             | main     |              |
 	 age_sex_group  | numeric               |           |          |         |             | main     |              |
 	 extract_hesid  | character varying(32) |           |          |         |             | extended |              |
 	 diag_01        | character varying(6)  |           |          |         |             | extended |              |
@@ -396,7 +401,7 @@ The information will also be available in various *pg_* views.
   EXPLAIN VERBOSE SELECT year, COUNT(*) AS total 
 				    FROM rif40.rif_201617_apr2019
 				   GROUP BY year 
-			  	 ORDER BY year;
+			  	   ORDER BY year;
 
 										  QUERY PLAN                                                                                                                                                                                               
 	-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -475,9 +480,10 @@ The information will also be available in various *pg_* views.
   (4 rows)
   ```
 * The EXPLAIN output shows there are three junk COA2011 codes in the SAHSU HES data (probably new codes 
-  created after the census); and the performance of the remote link is such that it must be materialized:
-  * *oracle_fdw* uses the remote indexes but brings backs all the columns for all the rows requested; not the 
-    column required;
+  created after the census); and the performance of the remote link (~10 mins as opposed to 2 seconds locally) 
+  is such that it must be materialized:
+  * *oracle_fdw* uses the remote indexes but brings backs all the columns for all the rows requested; not 
+    just the columns required;
   * Aggregation is done locally;
   * Queries on tables that only return a few rows where **ALL** the predicates are indexed will be fast;
   * Aggregation queries on tables with many columns (typical for the RIF) will always be slow because all 
@@ -528,7 +534,7 @@ The information will also be available in various *pg_* views.
   ```
   EXPLAIN VERBOSE SELECT year, 
                          COUNT(year) AS total, COUNT(coa2011) AS total_coa2011, COUNT(coa11) AS total_coa, COUNT(coa11) -  COUNT(coa2011) AS unlinked, 
-						 COUNT(sahsu_id) AS total  
+                         COUNT(sahsu_id) AS total  
 	 FROM peter.hes_201617_apr2019
 	GROUP BY year 
 	ORDER BY year;
