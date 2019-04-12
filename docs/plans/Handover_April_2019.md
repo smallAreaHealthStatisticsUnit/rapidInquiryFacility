@@ -3,6 +3,9 @@ layout: default
 title: Handover Notes for the Suspension of Development, April 2019
 ---
 
+1. Contents
+{:toc}
+
 # Martin
 
 ## Status of Recent Work
@@ -17,7 +20,7 @@ We did not have time to test the changes as fully as we would like, so we have l
 
 ## Things I wanted to get done
 
-There are [51 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at the time of writing. Some of them are mentioned below, but all are things that we could do with fixing, building, or improving.
+There are [52 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at the time of writing. Some of them are mentioned below, but all are things that we could do with fixing, building, or improving.
 
 ### Making the Installer Handle Updates
 
@@ -63,19 +66,14 @@ If you need me to look at anything you can email me at <martin@devilgate.org>. I
        * Study extract and result tables;
 	   * R risk analysis code.
 	 Front end complete with database changes (11/4/2019). Middleware and R support TODO;
-   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). 
-     Support linking RIF DB tables to Oracle master DB; done; documented at: 
-	 (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/DataLoading#remote-data-links).
- 
-## Bugs 
+	 
+	 [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129) 
+     also fixes sizing problems study/comparison area map table (to the left of the map). It cannot be re-sized because
+     of a bug in UI-grid this is issue [#154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154)
 
-[Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). 
-   SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two). Postgres is 
-   fully functional [PH];
-  
-[Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129) 
-also fixes sizing problems study/comparison area map table (to the left of the map). It cannot be re-sized because
-of a bug in UI-grid this is issue [#154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154)
+   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). 
+     Support linking RIF DB tables to Oracle master DB; done; documented in 
+	 [Remote Data links](https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/DataLoading#remote-data-links).
 	
 ## RIF Test system
 
@@ -95,8 +93,12 @@ of a bug in UI-grid this is issue [#154](https://github.com/smallAreaHealthStati
   * RIF_TOTAL_CVD;
   * RIF_TOTAL_CHD;
   * RIF_TOTAL_STROKE;
-
-### Data Loading Improvements
+* The RIF test system is Postgres only because of 
+  [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). 
+  SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two). Postgres is 
+  fully functional [PH];
+  
+## Database Improvements needed before the Data Loader is built
 
 The current scripts for creating a RIF database rely on a core set of scripts, and up to 14 alter scripts. The 
 alter script in particular cause dependency issues when they modify trigger SQL. This needs to be resolved so 
@@ -111,6 +113,10 @@ dynamic triggers:
 
 This is estimated at about 3 months work.
 
+## Front End
+
+The use of Angular.js is discussed in [RIF Front End](rifWebApplication/rifFrontEnd.html).
+
 ## Contacting Me
 
-If you need me to look at anything you can email me at <phambly@fastmail.co.uk>. 
+If you need me to look at anything you can email me at: <phambly@fastmail.co.uk>. 

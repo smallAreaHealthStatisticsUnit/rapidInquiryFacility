@@ -3529,10 +3529,10 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 
 ### 15th to 17th April
 
-* Handover to Brandon and Hima
-* Handover notes
+* Handover to Brandon and Hima;
+* Handover notes.
 
-Fin.
+**Fin.**
 
 Peter Hambly
 17/4/2019

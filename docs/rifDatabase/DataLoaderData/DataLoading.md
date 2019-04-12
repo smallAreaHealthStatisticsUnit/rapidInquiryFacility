@@ -3562,6 +3562,19 @@ In this case the error is not an error as *n_num_denom_validated* and *d_num_den
 
 In both these case you need to check the grants on the tables: [Viewing your user setup]({{ site.baseurl }}/rifDatabase/databaseManagementManual#25-viewing-your-user-setup)
 
+## Check that the RIF can deduce the outcome columns for the numerator tables
+
+Check that the ICD column (HES_DIAG) is visible in *rif40_numerator_outcome_columns* for tables you have loaded, 
+e.g.*V_HES_201617_APR2019*:
+```
+sahsuland=> select * from rif40_numerator_outcome_columns;
+geography |      table_name      |            table_description                                 | outcome_group_name | outcome_type | outcome_group_description |  field_name  | multiple_field_count | columnn_exists |  column_comment
+-----------+----------------------+--------------------------------------------------------------+--------------------+--------------+---------------------------+--------------+----------------------+----------------+-------------------
+SAHSULAND | NUM_SAHSULAND_CANCER | cancer numerator                                             | SAHSULAND_ICD      | ICD          | SAHSULAND SingleICD      | ICD           |                    0 | t              | ICD code field
+EWS2011   | V_HES_201617_APR2019 | England 2011 Census boundaries HES Inpatients view 2016-2017 | HES_DIAG           | ICD          | UK diag_01               | diag_01       |                    0 | t              | 
+(2 rows)
+```
+  
 # Remote Data Links
 
 The RIF can access data through remote data links with the following limitations:
@@ -3987,7 +4000,7 @@ was decided to advise the use of materialize views to provide for a local copy o
   ```
   \timing
 
-  EXPLAIN VERBOSE SELECT year, COUNT(*) AS total 
+  EXPLAIN VERBOSE SELECT year, COUNT(year) AS total 
 				    FROM rif40.rif_201617_apr2019
 				   GROUP BY year 
 			  	   ORDER BY year;
@@ -4335,7 +4348,8 @@ was decided to advise the use of materialize views to provide for a local copy o
 		   AND n.nspname  = l_schema
 		   AND a.relname  = LOWER(l_table);
   ```
-* Check that the ICD column is visible in *rif40_numerator_outcokme_columns*
+* Check that the ICD column (HES_DIAG) is visible in *rif40_numerator_outcome_columns* for the table 
+  *V_HES_201617_APR2019*
   ```
   sahsuland=> select * from rif40_numerator_outcome_columns;
    geography |      table_name      |            table_description                                 | outcome_group_name | outcome_type | outcome_group_description |  field_name  | multiple_field_count | columnn_exists |  column_comment
