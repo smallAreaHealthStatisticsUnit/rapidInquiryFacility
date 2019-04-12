@@ -4283,7 +4283,7 @@ was decided to advise the use of materialize views to provide for a local copy o
 	   current_version_start_year) 
 	SELECT 
 	   'HES_DIAG',
-	   'HES_201617_APR2019',
+	   'V_HES_201617_APR2019',
 	   2016; 
   ```
 * In Postgres as the end user (*peter*) test the RIF access to the data using *rif40_num_denom
@@ -4335,5 +4335,14 @@ was decided to advise the use of materialize views to provide for a local copy o
 		   AND n.nspname  = l_schema
 		   AND a.relname  = LOWER(l_table);
   ```
-
+* Check that the ICD column is visible in *rif40_numerator_outcokme_columns*
+  ```
+  sahsuland=> select * from rif40_numerator_outcome_columns;
+   geography |      table_name      |            table_description                                 | outcome_group_name | outcome_type | outcome_group_description |  field_name  | multiple_field_count | columnn_exists |  column_comment
+  -----------+----------------------+--------------------------------------------------------------+--------------------+--------------+---------------------------+--------------+----------------------+----------------+-------------------
+   SAHSULAND | NUM_SAHSULAND_CANCER | cancer numerator                                             | SAHSULAND_ICD      | ICD          | SAHSULAND SingleICD      | ICD           |                    0 | t              | ICD code field
+   EWS2011   | V_HES_201617_APR2019 | England 2011 Census boundaries HES Inpatients view 2016-2017 | HES_DIAG           | ICD          | UK diag_01               | diag_01       |                    0 | t              | 
+  (2 rows)
+  ```
+  
 **Peter Hambly, April 2019**

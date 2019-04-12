@@ -63,8 +63,8 @@ If you need me to look at anything you can email me at <martin@devilgate.org>. I
        * Study extract and result tables;
 	   * R risk analysis code.
 	 Front end complete with database changes (11/4/2019). Middleware and R support TODO;
-   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). IF access to remove 
-     numerator data in Oracle; done; documented at: 
+   * [Oracle interconnect](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/126). 
+     Support linking RIF DB tables to Oracle master DB; done; documented at: 
 	 (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/DataLoading#remote-data-links).
  
 ## Bugs 
