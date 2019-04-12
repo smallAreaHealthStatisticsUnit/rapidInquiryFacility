@@ -77,7 +77,19 @@ If you need me to look at anything you can email me at <martin@devilgate.org>. I
 also fixes sizing problems study/comparison area map table (to the left of the map). It cannot be re-sized because
 of a bug in UI-grid this is issue [#154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154)
 	
-## Database
+## RIF Test system
+
+* All scripts used on the private network are in C:\RIFDEMO and G:\RIF\RIFDEMO
+* The RIF40_STARTUP stored procedure had to be edited slightly to run on the private network;
+* Two years of HES data have been added (April 2016 to April 2018) using a materialized view 
+  (V_HES_201617_APR2019) of a Postgres foreign data wrapper to an Oracle database;
+* The Population model was extended from 2015 to 2018 using the 2014 population;
+* Multiple covariates were enabled;
+* The Heathrow data was loaded into Oracle as: 
+  * HEATHROW_COA2011;
+  * RIF_TOTAL_CVD;
+  * RIF_TOTAL_CHD;
+  * RIF_TOTAL_STROKE;
 
 ### Data Loading Improvements
 
