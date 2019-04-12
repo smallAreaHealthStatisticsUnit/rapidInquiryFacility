@@ -3517,3 +3517,22 @@ Total time estimates for additional items 16 to 28: 18-30 days; time available: 
 * Issue #129: Pooled or individual analysis for multiple risk analysis points/shapes: complete front end so can save/load Json
   runs studies. Created alter_14 for database changes, integrated with installer;
 * Sandhurst meeting, chase HES extract   
+
+### 8th to 12th April
+
+* Issue #129: Pooled or individual analysis for multiple risk analysis points/shapes: test and bug fix 
+  front end;
+* RIF meeting;
+* Test and document Oracle Postgres interconnection;
+* Patch private network RIF to current;
+* Load two years of HES data and test performance, run RIF study
+
+### 15th to 17th April
+
+* Handover to Brandon and Hima
+* Handover notes
+
+Fin.
+
+Peter Hambly
+17/4/2019
