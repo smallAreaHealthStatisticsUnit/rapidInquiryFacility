@@ -79,12 +79,17 @@ of a bug in UI-grid this is issue [#154](https://github.com/smallAreaHealthStati
 	
 ## RIF Test system
 
-* All scripts used on the private network are in C:\RIFDEMO and G:\RIF\RIFDEMO
+* The Statistics Service does not support TLS connections from the rifServices middleware 
+  [issue #155](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/155)
+* All scripts used on the private network are in *C:\RIFDEMO* on the RIF server and *G:\RIF\RIFDEMO* on the
+  network;
 * The RIF40_STARTUP stored procedure had to be edited slightly to run on the private network;
 * Two years of HES data have been added (April 2016 to April 2018) using a materialized view 
   (V_HES_201617_APR2019) of a Postgres foreign data wrapper to an Oracle database;
 * The Population model was extended from 2015 to 2018 using the 2014 population;
 * Multiple covariates were enabled;
+* Tests showed that the RIF does not check that the numerator and denominator are valid for the study period. No 
+  denominator will result in an extract error;
 * The Heathrow data was loaded into Oracle as: 
   * HEATHROW_COA2011;
   * RIF_TOTAL_CVD;
