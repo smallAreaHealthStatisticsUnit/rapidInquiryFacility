@@ -115,7 +115,7 @@ This is estimated at about 3 months work.
 
 ## Front End
 
-The use of Angular.js is discussed in [RIF Front End](rifWebApplication/rifFrontEnd.html).
+The use of Angular.js is discussed in [RIF Front End](../rifWebApplication/rifFrontEnd.html).
 
 ## Contacting Me
 

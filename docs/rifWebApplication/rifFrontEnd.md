@@ -8,7 +8,9 @@ title: The use of Angular.js is discussed in RIF Front End, April 2019
 
 # Introduction
 
-# General Layout of the RIF files
+Assumes you are familiar with Angular nomenclature, so you know a partial from a directive.
+
+# General Layout of the RIF files in *rifWebApplication\src\main\resources*:
 
 * backend/services
 * css: stylesheets
@@ -21,6 +23,29 @@ title: The use of Angular.js is discussed in RIF Front End, April 2019
 * utils: common utilities, divided into controllers, directives, partials and services
 
 ## Naming Convention
+
+*rif[c/p/d/s]-&lt;specific dashboard or utility&gt;-&lt;name&gt;* E.g:
+
+* rifp-dsub-main.html: partial for the main submission screen (with the four trees)
+* rifc-dsub-main.js: controller for the main submission screen
+
+They will be found in dashboards/submission.
+
+The abbreviations [c/p/d/s] are:
+
+* **c**: controller;
+* **d**: directive;
+* **p**: partial;
+* **s**: service.
+
+The specific dashboard or utility is:
+
+* **dsub: study submission dashboard in in *dashboards/submission*;
+* **expt: study export dashboard;
+* **login**: login popup modal;
+* **dmap**: dual map mapping dashboard;
+* **view**: map and data viewer dashboard;
+* **util**: utilities;
 
 # Libraries
 
