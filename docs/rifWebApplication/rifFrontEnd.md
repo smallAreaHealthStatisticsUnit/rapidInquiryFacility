@@ -10,7 +10,9 @@ title: The use of Angular.js is discussed in RIF Front End, April 2019
 
 Assumes you are familiar with Angular nomenclature, so you know a partial from a directive.
 
-# General Layout of the RIF files in *rifWebApplication\src\main\resources*:
+# General Layout of the RIF files 
+
+The file are located in *rifWebApplication\src\main\resources*:
 
 * backend/services
 * css: stylesheets
@@ -40,8 +42,8 @@ The abbreviations [c/p/d/s] are:
 
 The specific dashboard or utility is:
 
-* **dsub: study submission dashboard in in *dashboards/submission*;
-* **expt: study export dashboard;
+* **dsub**: study submission dashboard in in *dashboards/submission*;
+* **expt**: study export dashboard;
 * **login**: login popup modal;
 * **dmap**: dual map mapping dashboard;
 * **view**: map and data viewer dashboard;
