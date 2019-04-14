@@ -36,6 +36,8 @@ Python
 
 You must have Python installed, and available from the command line. We developed it with Python 3.7, so we recommend using that version. It may work with earlier 3.x versions, but we haven't tested it with those. It won't work with 2.x.
 
+Do NOT use Python 2.7 required by Node.js - you will need to remove Python 2.7 remove it's scripts directory from the path.
+ 
 You will also need to install several Python modules using Pip. Run ``pip install <package-name>`` for each of the following packages:
 
 * ``PyInstaller``
