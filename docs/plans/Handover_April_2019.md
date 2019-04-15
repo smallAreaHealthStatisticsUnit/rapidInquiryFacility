@@ -86,7 +86,9 @@ For really fine detail about everything that happens, see the older
   network;
 * The RIF40_STARTUP stored procedure had to be edited slightly to run on the private network;
 * Two years of HES data have been added (April 2016 to April 2018) using a materialized view 
-  (V_HES_201617_APR2019) of a Postgres foreign data wrapper to an Oracle database;
+  (V_HES_201617_APR2019) of a Postgres foreign data wrapper to an Oracle database. Running s HES cancer 
+  mapping study at MSOA level for England (the equivalent of a Health Altas map) resulted in the R error: 
+  *Error: memory exhausted (limit reached?)*;
 * The Population model was extended from 2015 to 2018 using the 2014 population;
 * Multiple covariates were enabled;
 * Tests showed that the RIF does not check that the numerator and denominator are valid for the study period. No 
@@ -96,6 +98,7 @@ For really fine detail about everything that happens, see the older
   * RIF_TOTAL_CVD;
   * RIF_TOTAL_CHD;
   * RIF_TOTAL_STROKE;
+  It has not been loaded into the RIF.
 * The RIF test system is Postgres only because of 
   [Issue #128 SQL Server SAHSU Database not linked to geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/128). 
   SQL Server SAHSU Database not linked to geography. This is a column length issue (i.e. there is a spurious space or two). Postgres is 
