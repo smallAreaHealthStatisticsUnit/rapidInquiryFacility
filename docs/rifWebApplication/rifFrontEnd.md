@@ -27,17 +27,30 @@ Assumes you are familiar with Angular nomenclature, so you know a partial from a
 
 # General Layout of the RIF files 
 
-The file are located in *rifWebApplication\src\main\resources*:
+## Directory Structure
 
-* backend/services
-* css: stylesheets
-* dashboards: core dashboard modals, divided into export, login, mapping, submission and viewer
-  and then sub divided into: controllers, directives, partials and services
-* images: images used by the RIF, divided into: colorBrewer, glyphicon and trees
-* libs: libraries used by the RIF. Generally browserified code is is standalone and other libraries 
-  including RIF modified ones are in the root (libs)
-* modules: The RIF Angular module
-* utils: common utilities, divided into controllers, directives, partials and services
+The file are located in *rifWebApplication\src\main\resources*. From this file root, the RIF has the following 
+directory structure:
+
+| Directory name | Description                                                                                                                                                                                                                         |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| backend        | Functionality to deal with the database via the middleware                                                                                                                                                                          |
+| css            | RIF specific css                                                                                                                                                                                                                    |
+| dashboards     | Functionality to deal with the main RIF tab states. e.g. viewer, login. Core dashboard modals, divided into export, login, mapping, submission and viewer and then sub divided into: controllers, directives, partials and services |
+| images         | Images used by the RIF, divided into: colorBrewer, glyphicon and trees                                                                                                                                                              |
+| libs           | All third-party libraries - Hardwired in, do not use remote sources. Generally browserified code is is standalone and other libraries including RIF modified ones are in the root (libs)                                            |
+| modules        | Contains the definition of the RIF angular module                                                                                                                                                                                   |
+| utils          | Functionality shared over more than one part of the RIF, divided into controllers, directives, partials and services                                                                                                                |
+
+In the root there is also the index.html. Here all the paths to third-party libraries are given (i.e the local 
+libs directory), all RIF specific JavaScript files, css etc. The placeholder for the Angular content is also 
+defined within a div in the html body - "data-ui-view" and also the directive for the notifications bar. 
+Dashboards is further split into five directories, these represent the tabs seen in the RIF GUI, also in the 
+RIF main module, these are the five states defined in the "$stateProvider" (see below). The utils directory 
+has functionality that is shared by more than one of these dashboards, this is mostly to do with mapping of 
+results.
+
+Contained within these directories are separate folders for Angular controllers, directives, partials and services for the relevant part of the RIF.
 
 ## Naming Convention
 
@@ -80,30 +93,6 @@ The specific dashboard or utility is:
 * **dmap**: dual map mapping dashboard;
 * **view**: map and data viewer dashboard;
 * **util**: utilities;
-
-## Directory Structure
-
-From the file root, the RIF has the following directory structure:
-
-| Directory name | Description                                                               |
-|----------------|---------------------------------------------------------------------------|
-| backend        | Functionality to deal with the database via the middleware                |
-| css            | RIF specific css                                                          |
-| dashboards     | Functionality to deal with the main RIF tab states. e.g. viewer, login    |
-| images         | Images used by the RIF                                                    |
-| libs           | All third-party libraries - Hardwired in, do not use remote sources       |
-| modules        | Contains the definition of the RIF angular module                         |
-| utils          | Functionality shared over more than one part of the RIF                   |
-
-In the root there is also the index.html. Here all the paths to third-party libraries are given (i.e the local 
-libs directory), all RIF specific JavaScript files, css etc. The placeholder for the Angular content is also 
-defined within a div in the html body - "data-ui-view" and also the directive for the notifications bar. 
-Dashboards is further split into five directories, these represent the tabs seen in the RIF GUI, also in the 
-RIF main module, these are the five states defined in the "$stateProvider" (see below). The utils directory 
-has functionality that is shared by more than one of these dashboards, this is mostly to do with mapping of 
-results.
-
-Contained within these directories are separate folders for Angular controllers, directives, partials and services for the relevant part of the RIF.
 
 # Libraries
 
@@ -248,12 +237,25 @@ Investigation parameters is where the taxonomy service is used. This is a standa
 issues with the ICD10 codes (we cannot distribute this on github). ICD 9 and 10 are the only services available; 
 more taxonomies are planned to be incorporated. This dialog can now handle multiple covariates and in future 
 could use set lists of ICD codes and support multiple investigations. The taxonomy list is a ui-grid table. 
-UI-grid now supports "hierarchial" rows (in beta) and so the display could be improved to show a hierarchy:
+UI-grid now supports "hierarchial" rows (in beta) and so the display could be improved to show a hierarchy,
+e.g. for *C34*:
 
-* C: All malignant cancers
-  * C3:
-    * C33:
-      * C341:
+* C: All malignant neoplasms
+  * C30-C39: Malignant neoplasms of respiratory and intrathoracic organs  
+    * C30: Malignant neoplasm of nasal cavity and middle ear  
+    * C31: Malignant neoplasm of accessory sinuses  
+    * C32: Malignant neoplasm of larynx  
+    * C33: Malignant neoplasm of trachea  
+    * C34: Malignant neoplasm of bronchus and lung  
+      * C34.0: Main bronchus
+	  * C34.1: Upper lobe, bronchus or lung
+	  * C34.2: Middle lobe, bronchus or lung
+	  * C34.3: Lower lobe, bronchus or lung
+	  * C34.8: Overlapping lesion of bronchus and lung
+	  * C34.9: Bronchus or lung, unspecified
+    * C37: Malignant neoplasm of thymus  
+    * C38: Malignant neoplasm of heart, mediastinum and pleura  
+    * C39: Malignant neoplasm of other and ill-defined sites in the respiratory system and intrathoracic organs  
 
 Again, several calls are made to the middle ware (in **rifc-dsub-params**) to fill the drop-downs and results 
 are saved in **rifs-dsub-paramstate** for submission. This part of the front-end will probably need the most 
