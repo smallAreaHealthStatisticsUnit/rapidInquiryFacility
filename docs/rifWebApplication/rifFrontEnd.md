@@ -101,7 +101,7 @@ The specific dashboard or utility is:
 | [AngularJS 1.5.8 ](https://angularjs.org/)                                              | angular.min.js, angular-animate.min.js, angular-sanitize.min.js, angular-aria.min.js, angular-messages.min.js, angular-simple-logger.js                           |
 | - [Material Design components](https://material.angular.io/)                            | angular-material.min.js, libs/standalone/angular-material.min.css                                                                                                 |
 | - [UI Bootstrap modal windows](https://angular-ui.github.io/bootstrap/)                 | ui-bootstrap-tpls-2.3.0.min.js, bootstrap.min.css                                                                                                                 |
-| - [UI Route state machine](https://github.com/angular-ui/ui-router/wiki)                | angular-ui-router.min.js                                                                                                                                          |
+| - [UI Router state machine](https://github.com/angular-ui/ui-router/wiki)               | angular-ui-router.min.js                                                                                                                                          |
 | - [UI Grid](http://ui-grid.info/)                                                       | ui-grid.min.js, ui-grid.min.css                                                                                                                                   |
 | - [UI Layout](https://github.com/angular-ui/ui-layout)                                  | uui-layout.css, ui-layout.js                                                                                                                                      |
 | - [Notifications bar](https://github.com/alexbeletsky/ng-notifications-bar)             | ngNotificationsBar.css, ngNotificationsBar.min.js                                                                                                                 |
@@ -184,8 +184,20 @@ with the data-ui-view attribute. Changing the tab on the main RIF tab bar change
 Each dashboard has a main controller. These are often quite large and could be refactored in the future, in 
 particular there is a lot of functionality that could be moved into services. For example, it is not very 
 'angular' to have code that does not deal directly with the UI in the controller. In general, code has been
-moved into new services. Specific directives usually refer to a unique feature such as a D3 plot 
+moved into new services, e.g. **rifs-util-rif40-num-denom.js**. Specific directives usually refer to a unique feature such as a D3 plot 
 (e.g. **rifd-dmap-d3rrzoom**).
+
+As an example, the *Rif40NumDenomService* service in **rifs-util-rif40-num-denom.js** contains the code to initialise the
+data required for the study submission. The *initialise()* returns a promise so the controller can wait for 
+initialisation. This leads to the following recommendations:
+
+* Minimise the number of REST calls to simplify modal initialisation in the controller by creating more
+  complex JSON data structures in the middleware, using the [org.json](https://stleary.github.io/JSON-java/) 
+  Java library. This avoids the "waterfall of promises" needed to the ensure REST code executes in the correct 
+  order;
+* Ideally each REST call shouild have its own service wrapper;
+* Keep all the promises code together and call functions to make the control flow easy to understand;
+* Factor out non-controller UI-related code into new/existing services. 
 
 Where there is shared functionality between dashboards, this is usually found in the utils directory. For 
 example, choropleth mapping (**rifc-util-choro**), basemaps (**rifc-util-basemap**, available maps are 
@@ -199,6 +211,15 @@ dashboard. On failure, we remain with the login page.
 
 The logout method (click on the running man on the tool bar) is handled by (**rifc-util-tabctrl**) via a 
 yes/no modal.
+
+Note that:
+
+* Refresh logon you off: 
+  [issue #113](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113)
+* As will the back button
+
+Although there is little to be done about refresh, the back button should be trappable and the users asked 
+if it is OK.
 
 ## Submission
 
