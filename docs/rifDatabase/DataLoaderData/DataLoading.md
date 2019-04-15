@@ -3599,6 +3599,31 @@ The following steps are required to connect an Oracle table to a Postgres RIF da
   * Create roles and accounts in Oracle using SQL*Plus and SYSTEM, and test
   * Setup Oracle FDW as Postgres using psql
   * Test the foreign data wrapper functionality
+* HES Example:
+  * In Oracle:
+    * Grant the RIF user (peter) access to data;
+    * Find and describe the table;
+    * Finally create indexes and analyze as required;
+  * In Postgres as the RIF schema owner *rif40*:
+    * Create a foreign table, converting the data types to Postgres; 
+    * Grant access as required, e.g. ```GRANT SELECT``` to either a role or directly to the user;
+    * Check the Postgres RIF user can describe the table structure;
+  * In Postgres as the end user (*peter*) 
+    * Check access to the table;
+    * Test the linkage to EWS2011 geography
+    * Materialize a **LOCAL COPY** of the HES data
+    * Index the materialized view and analyze. To be visible to the RIF:
+      * The data **MUST** appear in the *rif_data* schema. This is because of hard coded schemas in the SQL SERVER
+        port; the RIF has not be tested to use the search path on PostgreSQL;
+      * Be a view or a table.
+  * Create a view in the *rif_data* schema;
+  * Setup materialized view as numerator by:
+    * Creating a HES health theme;
+    * Insert into RIF40_TABLES as an automatic numerator for both the materialized view and the ordinary view;
+    * Setup ICD field (HES_DIAG). This was insufficient time to test the multiple ICD  codes functionality
+ I* Test the RIF access to the data:
+    * Using *rif40_num_denom*
+    * Check that the ICD column (HES_DIAG) is visible in *rif40_numerator_outcome_columns* for the table *V_HES_201617_APR2019 
   
 ### Setting up
 
@@ -3779,8 +3804,8 @@ The information will also be available in various *pg_* views.
 
 The objective of this example is to test access to some HES test data in Oracle. As a result of this test it 
 was decided to advise the use of materialize views to provide for a local copy of the data.
-
-* In Oracle as *SYSTEM* or the schema owner grant the RIF user (peteR) access to data:
+  
+* In Oracle as *SYSTEM* or the schema owner grant the RIF user (peter) access to data:
   ```
   GRANT SELECT ON rif.rif_201617_apr2019 TO peter;
   ```
@@ -4299,7 +4324,7 @@ was decided to advise the use of materialize views to provide for a local copy o
 	   'V_HES_201617_APR2019',
 	   2016; 
   ```
-* In Postgres as the end user (*peter*) test the RIF access to the data using *rif40_num_denom
+* In Postgres as the end user (*peter*) test the RIF access to the data using *rif40_num_denom*
   ```
   SELECT numerator_table, denominator_table, geography FROM rif40_num_denom;   numerator_table    | denominator_table  | geography
   ----------------------+--------------------+-----------
