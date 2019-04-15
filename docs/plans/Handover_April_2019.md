@@ -82,7 +82,7 @@ For really fine detail about everything that happens, see the older
 
 * The Statistics Service does not support TLS connections from the rifServices middleware 
   [issue #155](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/155)
-* All scripts used on the private network are in *C:\RIFDEMO* on the RIF server and *G:\RIF\RIFDEMO* on the
+* All scripts used on the private network are in *C:\RIFDEMO* on the RIF server and *G:\RIF\WSRIF* on the
   network;
 * The RIF40_STARTUP stored procedure had to be edited slightly to run on the private network;
 * Two years of HES data have been added (April 2016 to April 2018) using a materialized view 

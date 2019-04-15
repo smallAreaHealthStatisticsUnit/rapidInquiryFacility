@@ -3603,149 +3603,142 @@ The following steps are required to connect an Oracle table to a Postgres RIF da
 ### Setting up
 
 1. Create roles and accounts in Oracle using SQL*Plus and SYSTEM, and test:
+   * RIF_USER role. You could create more project specific roles
+     ```
+     CREATE ROLE rif_user;
+     ```
+   * RIF User (peter)
+     ```
+     CREATE USER peter IDENTIFIED BY XXXXXXXXXXXXXXXXXXXX; 
+     GRANT CONNECT, rif_user TO peter;
+     ``` 
+   * For explain plan to work logon as SYS with SYSDBA 
+     ```
+     GRANT SELECT ON v_$sql TO rif_user;
+     GRANT SELECT ON v_$sql_plan TO rif_user;
+     ```
+   * RIF Health Data (rif_data)
+     ```  
+     CREATE USER rif_health_data IDENTIFIED BY XXXXXXXXXXXXXXXXXXXX;
+     GRANT CONNECT, RESOURCE TO rif_health_data;
+     ALTER USER rif_health_data QUOTA UNLIMITED ON users;
+     ```
+   * Logon as the schema owner *rif_health_data*, create a dummy table:
+     ```
+     CREATE TABLE my_all_tables AS 
+     SELECT owner, table_name, tablespace_name, num_rows, last_analyzed 
+       FROM all_tables;
+     GRANT SELECT ON my_all_tables TO rif_user;
+     ```
+   * Logon as RIF User (peter) and check access to dummy table:
+     ```
+     DESC rif_health_data.my_all_tables
+        Name                                      Null?    Type
+      ----------------------------------------- -------- ----------------------------  
+      OWNER                                     NOT NULL VARCHAR2(128) 
+      TABLE_NAME                                NOT NULL VARCHAR2(128)
+      TABLESPACE_NAME                                    VARCHAR2(30)
+      NUM_ROWS                                           NUMBER
+      LAST_ANALYZED                                      DATE
 
-  * RIF_USER role. You could create more project specific roles
-    ```
-    CREATE ROLE rif_user;
-    ```
-  
-  * RIF User (peter)
-    ```
-    CREATE USER peter IDENTIFIED BY XXXXXXXXXXXXXXXXXXXX; 
-    GRANT CONNECT, rif_user TO peter;
-    ```
-  
-  * For explain plan to work logon as SYS with SYSDBA 
-    ```
-    GRANT SELECT ON v_$sql TO rif_user;
-    GRANT SELECT ON v_$sql_plan TO rif_user;
-    ```
-  
-  * RIF Health Data (rif_data)
-    ```  
-    CREATE USER rif_health_data IDENTIFIED BY XXXXXXXXXXXXXXXXXXXX;
-    GRANT CONNECT, RESOURCE TO rif_health_data;
-    ALTER USER rif_health_data QUOTA UNLIMITED ON users;
-    ```
-  * Logon as the schema owner *rif_health_data*, create a dummy table:
-    ```
-    CREATE TABLE my_all_tables AS 
-    SELECT owner, table_name, tablespace_name, num_rows, last_analyzed 
-      FROM all_tables;
-    GRANT SELECT ON my_all_tables TO rif_user;
-    ```
-  
-  * Logon as RIF User (peter) and check access to dummy table:
-    ```
-    DESC rif_health_data.my_all_tables
-       Name                                      Null?    Type
-     ----------------------------------------- -------- ----------------------------  
-     OWNER                                     NOT NULL VARCHAR2(128) 
-     TABLE_NAME                                NOT NULL VARCHAR2(128)
-     TABLESPACE_NAME                                    VARCHAR2(30)
-     NUM_ROWS                                           NUMBER
-     LAST_ANALYZED                                      DATE
-
-    SELECT * FROM rif_health_data.my_all_tables;
-     owner  |           table_name           | tablespace_name | num_rows | last_analyzed
-    --------+--------------------------------+-----------------+----------+---------------
-     SYS    | DUAL                           | SYSTEM          |        1 | 2018-03-30
-     SYS    | SYSTEM_PRIVILEGE_MAP           | SYSTEM          |      257 | 2019-02-21
-     SYS    | TABLE_PRIVILEGE_MAP            | SYSTEM          |       26 | 2019-02-21
-     SYS    | USER_PRIVILEGE_MAP             | SYSTEM          |        4 | 2019-02-21
-    ...
-    ```
+     SELECT * FROM rif_health_data.my_all_tables;
+      owner  |           table_name           | tablespace_name | num_rows | last_analyzed
+     --------+--------------------------------+-----------------+----------+---------------
+      SYS    | DUAL                           | SYSTEM          |        1 | 2018-03-30
+      SYS    | SYSTEM_PRIVILEGE_MAP           | SYSTEM          |      257 | 2019-02-21
+      SYS    | TABLE_PRIVILEGE_MAP            | SYSTEM          |       26 | 2019-02-21
+      SYS    | USER_PRIVILEGE_MAP             | SYSTEM          |        4 | 2019-02-21
+     ...
+     ```
   
 2. Setup Oracle FDW as Postgres using psql
 
-  * The documentation for the *Oracle_fdw* Postgres to Oracle data link is at: 
-    [Oracle_fdw](https://pgxn.org/dist/oracle_fdw/1.5.0/)
-  * Load the *Oracle_fdw* if not part of the distribution
-  * Create *Oracle_fdw* extension:
-    ```
-    CREATE EXTENSION oracle_fdw;
-    CREATE SERVER orcl FOREIGN DATA WRAPPER oracle_fdw OPTIONS (dbserver '//155.198.41.211/ORCL');
-    GRANT USAGE ON FOREIGN SERVER orcl TO rif_user, rif40;  
-    ```
-  * For each RIF user needing remote table access create a user mapping  
-    ```
-    DROP USER MAPPING IF EXISTS FOR postgres SERVER orcl;
-    CREATE USER MAPPING FOR postgres SERVER orcl OPTIONS (user 'peter', password 'XXXXXXXXXXXXXXXXXXXX');
-    ```
-  * Be aware of character validity "£" is valid in Oracle, but not in Postgres
-  * To change a password: 
-    ```
-    ALTER USER MAPPING FOR postgres SERVER orcl OPTIONS (SET password 'XXXXXXXXXXXXXXXXXXXX');
-    ```  
-  * Do **NOT** use LDAP authentication to Oracle. Oracle uses a non standard LDAP library which will interact 
-    badly with the Postgres standard library.
+   * The documentation for the *Oracle_fdw* Postgres to Oracle data link is at: 
+     [Oracle_fdw](https://pgxn.org/dist/oracle_fdw/1.5.0/)
+   * Load the *Oracle_fdw* if not part of the distribution
+   * Create *Oracle_fdw* extension:
+     ```
+     CREATE EXTENSION oracle_fdw;
+     CREATE SERVER orcl FOREIGN DATA WRAPPER oracle_fdw OPTIONS (dbserver '//155.198.41.211/ORCL');
+     GRANT USAGE ON FOREIGN SERVER orcl TO rif_user, rif40;  
+     ```
+   * For each RIF user needing remote table access create a user mapping  
+     ```
+     DROP USER MAPPING IF EXISTS FOR postgres SERVER orcl;
+     CREATE USER MAPPING FOR postgres SERVER orcl OPTIONS (user 'peter', password 'XXXXXXXXXXXXXXXXXXXX');
+     ```
+   * Be aware of character validity "£" is valid in Oracle, but not in Postgres
+   * To change a password: 
+     ```
+     ALTER USER MAPPING FOR postgres SERVER orcl OPTIONS (SET password 'XXXXXXXXXXXXXXXXXXXX');
+     ```  
+   * Do **NOT** use LDAP authentication to Oracle. Oracle uses a non standard LDAP library which will interact 
+     badly with the Postgres standard library.
   
 3. Test the foreign data wrapper functionality 
 
-  * As *rif40* create a foreign table:
-    ```
-    CREATE FOREIGN TABLE my_all_tables (
-      OWNER                                    VARCHAR(128),
-  	  TABLE_NAME                               VARCHAR(128),
-  	  TABLESPACE_NAME                          VARCHAR(30),
-	  NUM_ROWS                                 INTEGER,
-	  LAST_ANALYZED                            DATE
-    ) SERVER orcl OPTIONS (schema 'RIF_HEALTH_DATA', table 'MY_ALL_TABLES', readonly 'true');
+   * As *rif40* create a foreign table:
+     ```
+     CREATE FOREIGN TABLE my_all_tables (
+          OWNER                                    VARCHAR(128),
+          TABLE_NAME                               VARCHAR(128),
+          TABLESPACE_NAME                          VARCHAR(30), 
+          NUM_ROWS                                 INTEGER,
+          LAST_ANALYZED                            DATE
+     ) SERVER orcl OPTIONS (schema 'RIF_HEALTH_DATA', table 'MY_ALL_TABLES', readonly 'true');
 
-    \dS+ my_all_tables
+     \dS+ my_all_tables
                                                  Foreign table "peter.my_all_tables"
-         Column      |          Type          | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description
-    -----------------+------------------------+-----------+----------+---------+-------------+----------+--------------+-------------
-     owner           | character varying(128) |           |          |         |             | extended |              |
-     table_name      | character varying(128) |           |          |         |             | extended |              | 
-     tablespace_name | character varying(30)  |           |          |         |             | extended |              |
-     num_rows        | integer                |           |          |         |             | plain    |              |
-     last_analyzed   | date                   |           |          |         |             | plain    |              |
-    Server: orcl
-    FDW options: (schema 'RIF_HEALTH_DATA', "table" 'MY_ALL_TABLES', readonly 'true')
-    ```
-  * Grant access as required. This can be to all RIF users as in this case, a project role or a specific user
-    ```
-    GRANT SELECT ON my_all_tables TO rif_user;
-    ```
-  * Check the schema owner has no access to the health data.   
-    ``` 
-    SELECT * FROM  my_all_tables LIMIT 5;
-    ERROR:  user mapping not found for "rif40"
-    ``` 
-    Note that the *postgres* superuser will also not have access unless it has a user mapping!
-  * Or for batch work use the import foreign schema command
-
-    ```
-    DROP FOREIGN TABLE IF EXISTS my_all_tables;
-    IMPORT FOREIGN SCHEMA 'RIF_HEALTH_DATA' LIMIT TO ('MY_ALL_TABLES', 'USER_TABLES') 
-    FROM orcl OPTIONS (case 'lower', readonly 'true');
-    ```
+          Column      |          Type          | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description
+     -----------------+------------------------+-----------+----------+---------+-------------+----------+--------------+-------------
+      owner           | character varying(128) |           |          |         |             | extended |              |
+      table_name      | character varying(128) |           |          |         |             | extended |              | 
+      tablespace_name | character varying(30)  |           |          |         |             | extended |              |
+      num_rows        | integer                |           |          |         |             | plain    |              |
+      last_analyzed   | date                   |           |          |         |             | plain    |              |
+     Server: orcl
+     FDW options: (schema 'RIF_HEALTH_DATA', "table" 'MY_ALL_TABLES', readonly 'true')
+     ```
+   * Grant access as required. This can be to all RIF users as in this case, a project role or a specific user
+     ```
+     GRANT SELECT ON my_all_tables TO rif_user;
+     ```
+   * Check the schema owner has no access to the health data.   
+     ``` 
+     SELECT * FROM  my_all_tables LIMIT 5;
+     ERROR:  user mapping not found for "rif40"
+     ``` 
+     Note that the *postgres* superuser will also not have access unless it has a user mapping!
+   * Or for batch work use the import foreign schema command
+     ```
+     DROP FOREIGN TABLE IF EXISTS my_all_tables;
+     IMPORT FOREIGN SCHEMA 'RIF_HEALTH_DATA' LIMIT TO ('MY_ALL_TABLES', 'USER_TABLES') 
+     FROM orcl OPTIONS (case 'lower', readonly 'true');
+     ```
+   * As RIF user (peter) test access to the table:
+     ```
+     \dS+ rif40.my_all_tables                                              Foreign table "rif40.my_all_tables"
   
-  * As RIF user (peter) test access to the table:
-    ```
-    \dS+ rif40.my_all_tables                                              Foreign table "rif40.my_all_tables"
+          Column      |          Type          | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description
+     -----------------+------------------------+-----------+----------+---------+-------------+----------+--------------+-------------
+      owner           | character varying(128) |           |          |         |             | extended |              |
+      table_name      | character varying(128) |           |          |         |             | extended |              | 
+      tablespace_name | character varying(30)  |           |          |         |             | extended |              |
+      num_rows        | integer                |           |          |         |             | plain    |              |
+      last_analyzed   | date                   |           |          |         |             | plain    |              |
+     Server: orcl
+     FDW options: (schema 'RIF_HEALTH_DATA', "table" 'MY_ALL_TABLES', readonly 'true')
   
-         Column      |          Type          | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description
-    -----------------+------------------------+-----------+----------+---------+-------------+----------+--------------+-------------
-     owner           | character varying(128) |           |          |         |             | extended |              |
-     table_name      | character varying(128) |           |          |         |             | extended |              | 
-     tablespace_name | character varying(30)  |           |          |         |             | extended |              |
-     num_rows        | integer                |           |          |         |             | plain    |              |
-     last_analyzed   | date                   |           |          |         |             | plain    |              |
-    Server: orcl
-    FDW options: (schema 'RIF_HEALTH_DATA', "table" 'MY_ALL_TABLES', readonly 'true')
-  
-    SELECT * FROM  my_all_tables LIMIT 5; 
-     owner |      table_name       | tablespace_name | num_rows | last_analyzed
-    -------+-----------------------+-----------------+----------+---------------
-     SYS   | DUAL                  | SYSTEM          |        1 | 2018-03-30
-     SYS   | SYSTEM_PRIVILEGE_MAP  | SYSTEM          |      257 | 2019-02-21
-     SYS   | TABLE_PRIVILEGE_MAP   | SYSTEM          |       26 | 2019-02-21
-     SYS   | USER_PRIVILEGE_MAP    | SYSTEM          |        4 | 2019-02-21
-     SYS   | STMT_AUDIT_OPTION_MAP | SYSTEM          |      337 | 2018-03-30
-    (5 rows)
-    ```
+     SELECT * FROM  my_all_tables LIMIT 5; 
+      owner |      table_name       | tablespace_name | num_rows | last_analyzed
+     -------+-----------------------+-----------------+----------+---------------
+      SYS   | DUAL                  | SYSTEM          |        1 | 2018-03-30
+      SYS   | SYSTEM_PRIVILEGE_MAP  | SYSTEM          |      257 | 2019-02-21
+      SYS   | TABLE_PRIVILEGE_MAP   | SYSTEM          |       26 | 2019-02-21
+      SYS   | USER_PRIVILEGE_MAP    | SYSTEM          |        4 | 2019-02-21
+      SYS   | STMT_AUDIT_OPTION_MAP | SYSTEM          |      337 | 2018-03-30
+     (5 rows)
+     ```
 	
 ### Diagnostics
  
