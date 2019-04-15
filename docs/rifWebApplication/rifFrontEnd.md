@@ -41,12 +41,11 @@ The file are located in *rifWebApplication\src\main\resources*:
 
 ## Naming Convention
 
-All RIF specific files use the same convention: rif(type)-(usedby)-(description).(extension)
+All RIF specific files use the same convention: *rif(type)-(usedby)-(description).(extension)*
 
 For example:
 
-	**rifc-dmap.main.js**
-	*rif(controller)-(used by disease mapping dashboard)-(the main controller).(js file)*
+* **rifc-dmap.main.js**: *rif(controller)-(used by disease mapping dashboard)-(the main controller).(js file)*
 
 File types can be:
 
@@ -102,9 +101,75 @@ Contained within these directories are separate folders for Angular controllers,
 
 # Libraries
 
-| Library        | Description                                                               |
-|----------------|---------------------------------------------------------------------------|
+| Library                      | URL                                     | Files                                                                                                                                                             |
+|------------------------------|-----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Angular 1.5.8                |                                         | angular.min.js, angular-animate.min.js, angular-sanitize.min.js, angular-aria.min.js, angular-messages.min.js, angular-ui-router.min.js, angular-simple-logger.js |
+| * Angular Material Library   |                                         | angular-material.min.js, libs/standalone/angular-material.min.css                                                                                                 |
+| * UI Bootstrap modal windows | https://angular-ui.github.io/bootstrap/ | ui-bootstrap-tpls-2.3.0.min.js, bootstrap.min.css                                                                                                                 |
+| * UI Grid                    | http://ui-grid.info/                    | ui-grid.min.js, ui-grid.min.css                                                                                                                                   |
+| * UI Layout                  | https://github.com/angular-ui/ui-layout | ui-layout.css|                                                                                                                                                    |
+| Leaflet 1.0.3                |                                         | http://leafletjs.com/ | leaflet.css, leaflet.js                                                                                                                   |
+| * Leaflet draw               |                                         | leaflet.draw.css, leaflet.draw.js                                                                                                                                 |
+| * Leaflet fullscreen         |                                         | Leaflet.fullscreen.min.js, /leaflet.fullscreen.css                                                                                                                |
+| * Leaflet map sync           |                                         | L.Map.Sync.js                                                                                                                                                     |
+| * Leaflet spin               |                                         | spin.min.js, spin.js, spin.css, leaflet.spin.min.js                                                                                                               |
+| Aynsc library                | https://caolan.github.io/async/         | async.js                                                                                                                                                          |
+| TopoJSON	                   |                                         | topojson.min.js                                                                                                                                                   |
+| * TopoJSON GridLayer         |                                         | TopoJSONGridLayer.js                                                                                                                                              |
+|D3 v3 and D3 export           | https://d3js.org/                       | d3.v4.min.js, canvas-toBlob.js, FileSaver.min.js                                                                                                                  |
+	
+```
+<script src="libs/moment.min.js"></script> 
+<script src="libs/leaflet-slider.js"></script> 
+<link rel="stylesheet" href="libs/leaflet-slider.css"> 
+<script type="text/javascript" src="libs/leaflet-control-condended-attribution.js"></script> 
+<script type="text/javascript" src="libs/leaflet.geometryutil.js"></script>
 
+
+
+<!-- UI layout grid -->
+<link rel="stylesheet" href="libs/standalone/">  
+
+<!-- THESE ONLY EVER AS STANDALONE LIBRARIES -->
+<!-- Angular -->
+<script src="libs/angular-simple-logger.js"></script>
+
+<!-- Leaflet -->
+<script src="libs/l.control.geosearch.js"></script>
+<script src="libs/l.geosearch.provider.openstreetmap.js"></script>
+<link rel="stylesheet" href="libs/l.geosearch.css" />
+<script src="libs/leaflet-image.js"></script>        
+<script src="libs/turf.min.js"></script>  
+<script src="libs/pouchdb.js"></script>
+<script src="libs/topoJSON.js"></script>
+
+<!-- proj4 (rep-projection) -->
+<script src="libs/proj4.js"></script>
+
+<!-- save html2canvas -->
+<script src="libs/html2canvas.js"></script>
+
+<!-- Simple Statistics -->
+<script src="libs/sstatistics.js"></script>
+
+<!-- UI layout grid -->
+<!--This version of ui-layout has patch for sticky mouse issue #181-->
+<script src="libs/ui-layout.js"></script>   
+
+<!-- notification -->
+<link rel="stylesheet" href="libs/ngNotificationsBar.css">
+<script src="libs/ngNotificationsBar.min.js"></script>   
+
+<!-- shapefile in leaflet -->
+<script src="libs/leaflet.shpfile.js"></script>
+<script src="libs/shp.min.js"></script>
+
+<!-- ngPatternRestrict -->
+<script src="libs/ng-pattern-restrict.min.js"></script>
+
+<!-- JSON5 parser -->
+<script src="libs/json5.js"></script>
+```
 For more information on:
 
 * The modal windows: https://angular-ui.github.io/bootstrap/
