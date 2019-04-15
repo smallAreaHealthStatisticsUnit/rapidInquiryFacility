@@ -225,7 +225,8 @@ if it is OK.
 
 **rifc-dsub-main**: Initially makes several chained calls to the database to fill all drop-downs etc depending 
 on the user. Once loaded, several other controllers are responsible for entering user defined submission data. 
-These all appear in bootstrap modal pop-ups. Each "tree" has at least its own controller, often multiple controllers.
+These all appear in bootstrap modal pop-ups. Each "tree" has at least its own controller, often multiple 
+controllers.
 
 The results of user selections are stored in the relevant states (see the submission/services). On clicking 
 "Run", we use these states to populate a lump of JSON (**rifs-dsub-model**). This JSON object is then posted 
@@ -246,7 +247,7 @@ different study types are recognised may need to be thought through again. The d
 "risk_analysis_study" and will throw an error. All this depends on how risk analysis will be handled in the 
 database and middle ware.
 
-Using rifd-dsub-maptable, areas can be selected at the required resolution,
+Using *rifd-dsub-maptable*, areas can be selected at the required resolution:
 
 * By clicking on the table or map (synced with a $watchCollection)
 * By drawing polygons and concentric circles (uses the LeafletDraw library modified in **rifs-util-leafletdraw** to broadcast on
@@ -254,18 +255,25 @@ Using rifd-dsub-maptable, areas can be selected at the required resolution,
 * By uploading a csv list of districts in the format: [ID, band] (**rifc-dsub-idlist**)
 * By selecting with a zipped shapefile (see **rifd-dsub-risk**). Various methods are possible; defining buffers 
   around a point file, defining selection by polygon extent, defining selection by polygon attribute.
+* By selecting by postal code (see *rifd-dsub-postal.js*). Postal code, grid X/Y and WGS co-ordinates are
+  supported;
 * Note that selection based on shapefile/polygon overlay is determined on the basis of intersection with the 
   districts centroid and the overlay. Essentially a simple point-in-polygon test: **rifs-util-gis**.
 * Study area for risk analysis allows 1:6 bands, disease mapping just one band. Comparison areas always only 
-  allow one band. It is possible to select comparison areas using shapefiles
+  allow one band. It is possible to select comparison areas using shapefiles;
 * Methods to select layers will be refined once we have some user feedback
+
+The *CommonMappingStateService* (see: *rifs-util-mapstate.js*) stores map state, and removed a lot of code
+from the map table directive and maintains selected areas lists in both list and hash forms for efficient 
+access. It is also used to implement intersection analysis. See also *rifs-dmap-mappingstate.js* which will 
+be merged in time.
 
 Investigation parameters is where the taxonomy service is used. This is a standalone service due to copyright 
 issues with the ICD10 codes (we cannot distribute this on github). ICD 9 and 10 are the only services available; 
-more taxonomies are planned to be incorporated. This dialog can now handle multiple covariates and in future 
-could use set lists of ICD codes and support multiple investigations. The taxonomy list is a ui-grid table. 
-UI-grid now supports "hierarchial" rows (in beta) and so the display could be improved to show a hierarchy,
-e.g. for *C34*:
+more taxonomies are planned to be incorporated. This dialog can now handle multiple covariates and additonal 
+covariates. In future the modal could use set lists of ICD codes and support multiple investigations. The 
+taxonomy list is a ui-grid table. UI-grid now supports "hierarchial" rows (in beta) and so the display could 
+be improved to show a hierarchy, e.g. for *C34*:
 
 * C: All malignant neoplasms
   * C30-C39: Malignant neoplasms of respiratory and intrathoracic organs  
@@ -286,7 +294,7 @@ e.g. for *C34*:
 
 Again, several calls are made to the middle ware (in **rifc-dsub-params**) to fill the drop-downs and results 
 are saved in **rifs-dsub-paramstate** for submission. This part of the front-end will probably need the most 
-work after the backend and middle ware are updated.
+work after the backend and middleware are updated.
 
 Statistical methods (**rifc-dsub-stats**) selects which smoothing method to run. Possible methods are defined in
 the middleware (not hard-typed). So far we have HET, BYM, CAR and none. It is also possible to store parameters 
@@ -299,8 +307,8 @@ model json structure has changed slightly in detail during RIF development, all 
 compatible.
 
 On submission, the job is run in the database behind the scenes. Clicking status (**rifc-dsub-status**) gives 
-the status for a user's RIF jobs. Status is also checked every 4 seconds to give a notification of c
-ompletion of any pending jobs (this is done in by the tab controller **rifc-util-tabctrl**). This can report a study 
+the status for a user's RIF jobs. Status is also checked every 4 seconds to give a notification of completion 
+of any pending jobs (this is done in by the tab controller **rifc-util-tabctrl**). This can report a study 
 completing twice, this is because the main timer loop is "stacking" up and the code needs to be modified to 
 prevent this.
 
@@ -323,6 +331,12 @@ very similar to handling normal geoJSON, just the call to the middle ware must b
 any geoJSON in Leaflet. This has since been extended to use bitmap tiles for all the areas in the geolevel not 
 selected/part of a study. This code has only been fitted to the study and comparison selectors and requires 
 more work to handle mous events efficiently. 
+
+The mapping initialisation code in the study and comparison area selector modals has been re-written as chained
+of promises and associated promise-ified functions. This has removed asynchronous races and this code is now more 
+reliable. This also needs to be imnplemented for the mapping and viewer screens and the remaining mapping related
+code refactored into services. The asynchronous races in the map and viewer screens are the reason why the maps
+sometimes do not zoom to the selection and why automatic choropleth setup does not work.
 
 There are a selection of mapping and selection tools as directives, see **rifd-util-leafletTools**. There are 
 also tools to save the D3 plots to png (**rifd-util-savechart**). There exists a directive to save the Leaflet 
