@@ -1,0 +1,37 @@
+Installation
+
+The RIF Quickstart Guide (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Installation/QuickstartGuide) will get most users up and running. For more detailed instructions see the Installation Guide (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Installation/InstallationGuide).
+RIF Web Application and Middleware Installation (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/Installation/rifWebApplication)
+The instructions for building the installer bundles from the source code are in: rapidInquiryFacility\installer\README.rst. For really fine detail about everything that happens, see the older Building and Installing the RIF section(https://smallareahealthstatisticsunit.github.io/introduction/building-and-installation). 
+
+Windows Postgres Install using pg_dump and scripts(https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/Postgres/docs/windows_install_from_pg_dump)
+SQL Server Production Database Installation (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/SQLserver/production/INSTALL)
+
+Manuals
+
+RIF 4.0 Manual (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/standalone/RIF_v40_Manual.pdf)
+RIF 4.0 Data Loader Manual [Java front end version - untested]
+Manual data loading (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/DataLoaderData/DataLoading)
+Tile maker Manual (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifNodeServices/tileMaker)
+Database Management Manual (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/rifDatabase/databaseManagementManual)
+
+Handover 
+
+2019 Handover Notes (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/plans/Handover_April_2019)
+General plans for 2019 (https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/plans/2019_Plans.html).
+
+Developer resources
+
+(https://smallareahealthstatisticsunit.github.io/rapidInquiryFacility/development/)
+
+How to build the RIF Installer
+Coding Standards – see this for our preferences for code formatting, and so on.
+RIF design documentation on Sourceforge
+Database Design
+Database test harness
+General RIF Installation Notes for the Middleware and the Data Loader Tool
+Opening the RIF front end in NetBeans8 for editing and debugging
+Opening the RIF repository in Eclipse for editing
+Setting up JRI in Eclipse
+RIF Front End Description
+Creating a new restful web service

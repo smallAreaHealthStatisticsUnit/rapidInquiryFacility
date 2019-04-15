@@ -18,7 +18,7 @@ title: Developer Documentation
 * [Opening the RIF front end in NetBeans8 for editing and debugging]({{ site.baseurl }}/development/Opening-the-RIF-front-end-in-NetBeans8-for-editing---debugging)
 * [Opening the RIF repository in Eclipse for editing]({{ site.baseurl }}/development/Opening-the-RIF-repository-in-Eclipse-for-editing)
 * [Setting up JRI in Eclipse]({{ site.baseurl }}/development/Setting-up-JRI-in-Eclipse)
-* [RIF Front End Description]({{ site.baseurl }}/development/RIF-front-end-description)
+* [RIF Front End Description]({{ site.baseurl }}/rifWebApplication/rifFrontEnd.html)
 * [Creating a new restful web service]({{ site.baseurl }}/development/Creating-a-new-restful-web-service)
 
 ## To-do Lists and Roadmaps

@@ -50,6 +50,9 @@ If you need me to look at anything you can email me at <martin@devilgate.org>. I
 
 # Peter
 
+For really fine detail about everything that happens, see the older 
+[Building and Installing the RIF section](../introduction/building-and-installation).
+
 ## Current State of the Development
 
    * [Risk analysis specific D3 graphs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/127). Done;
