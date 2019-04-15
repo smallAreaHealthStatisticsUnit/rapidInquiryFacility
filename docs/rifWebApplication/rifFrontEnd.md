@@ -98,9 +98,10 @@ The specific dashboard or utility is:
 
 | Library                                                                                 | Files                                                                                                                                                             |
 |-----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [AngularJS 1.5.8 ](https://angularjs.org/)                                              | angular.min.js, angular-animate.min.js, angular-sanitize.min.js, angular-aria.min.js, angular-messages.min.js, angular-ui-router.min.js, angular-simple-logger.js |
-| - [Angular Material Design components](https://material.angular.io/)                    | angular-material.min.js, libs/standalone/angular-material.min.css                                                                                                 |
+| [AngularJS 1.5.8 ](https://angularjs.org/)                                              | angular.min.js, angular-animate.min.js, angular-sanitize.min.js, angular-aria.min.js, angular-messages.min.js, angular-simple-logger.js                           |
+| - [Material Design components](https://material.angular.io/)                            | angular-material.min.js, libs/standalone/angular-material.min.css                                                                                                 |
 | - [UI Bootstrap modal windows](https://angular-ui.github.io/bootstrap/)                 | ui-bootstrap-tpls-2.3.0.min.js, bootstrap.min.css                                                                                                                 |
+| - [UI Route state machine](https://github.com/angular-ui/ui-router/wiki)                | angular-ui-router.min.js                                                                                                                                          |
 | - [UI Grid](http://ui-grid.info/)                                                       | ui-grid.min.js, ui-grid.min.css                                                                                                                                   |
 | - [UI Layout](https://github.com/angular-ui/ui-layout)                                  | uui-layout.css, ui-layout.js                                                                                                                                      |
 | - [Notifications bar](https://github.com/alexbeletsky/ng-notifications-bar)             | ngNotificationsBar.css, ngNotificationsBar.min.js                                                                                                                 |
@@ -116,11 +117,11 @@ The specific dashboard or utility is:
 | - [Shapefile support](https://github.com/calvinmetcalf/leaflet.shapefile)               | leaflet.shpfile.js, shp.min.js                                                                                                                                    |
 | - [Image export](https://github.com/mapbox/leaflet-image)                               | leaflet-image.js                                                                                                                                                  |
 | - [Condensed attribution](https://github.com/route360/Leaflet.CondensedAttribution)     | leaflet-control-condensed-attribution.js                                                                                                                          |
-| - [distances, linear referencing](https://github.com/makinacorpus/Leaflet.GeometryUtil) | leaflet.geometryutil.js                                                                                                                                           |
+| - [Distances, linear referencing](https://github.com/makinacorpus/Leaflet.GeometryUtil) | leaflet.geometryutil.js                                                                                                                                           |
 | [Aynsc library](https://caolan.github.io/async/)                                        | async.js                                                                                                                                                          |
 | [TopoJSON](https://github.com/topojson/topojson)                                        | topojson.min.js                                                                                                                                                   |
 | - TopoJSON GridLayer: Created from Leaflet.GeoJSONGridLayer                             | topoJSON.js, TopoJSONGridLayer.js                                                                                                                                 |
-| - [PouchDB open-source JavaScript database](https://pouchdb.com/)                       | pouchdb.js                                                                                                                                                        |
+| - [PouchDB JavaScript database](https://pouchdb.com/)                                   | pouchdb.js                                                                                                                                                        |
 | [D3 v4 and D3 export](https://d3js.org/)                                                | d3.v4.min.js, canvas-toBlob.js, FileSaver.min.js                                                                                                                  |                                                                                                          
 | [Turfjs modular geospatial engine](https://github.com/Turfjs/turf)                      | turf.min.js                                                                                                                                                       |
 | [Proj4js coordinare transformer](https://www.npmjs.com/package/proj4)                   | proj4.js                                                                                                                                                          |
@@ -141,15 +142,20 @@ rifm-app: The definition of the RIF angular module. This is where the "$statePro
 These broadly relate to the dashboards selected by the tabs in the main RIF toolbar. All subsequent 
 angular code chains to: angular.module("RIF").
 
-**ADD NOTE ON THE STATE MACHINE**
+The principal purpose of the main module is to control state using the 
+[UI Route state machine](https://github.com/angular-ui/ui-router/wiki) and:
+  
+* Save/restore SelectStateService as required;
+* Adds window.console to Internet Explorer to prevent browser hangs caused by no debugger/browser console 
+  in un-IE safe code
 
 ## CSS
 
 The RIF specific CSS is a bit of a mess and may have a lot of redundancy. This was inherited from the old 
 RIF prototype. Neither DM or PH had time to go through it properly. How the split containers refresh on 
-resize and on browser resize is now much improved. It is either jumpy at best, irresponsive at worst. The map
-tables do not have ui-layout and do not resize correctly. This is a known issue (#???) in ui-layout and not 
-the RIF.
+resize and on browser resize is now much improved. The map tables do not have ui-layout and do not resize 
+correctly. This is a known issue: [#154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154) 
+in ui-layout and not the RIF. IT is probably best fixed by fitting UI-layout to the map tables.
 
 ##  Alerts
 
