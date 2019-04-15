@@ -95,7 +95,13 @@ From the file root, the RIF has the following directory structure:
 | modules        | Contains the definition of the RIF angular module                         |
 | utils          | Functionality shared over more than one part of the RIF                   |
 
-In the root there is also the index.html. Here all the paths to third-party libraries are given (i.e the local libs directory), all RIF specific JavaScript files, css etc. The placeholder for the Angular content is also defined within a div in the html body - "data-ui-view" and also the directive for the notifications bar. Dashboards is further split into five directories, these represent the tabs seen in the RIF GUI, also in the RIF main module, these are the five states defined in the "$stateProvider" (see below). The utils directory has functionality that is shared by more than one of these dashboards, this is mostly to do with mapping of results.
+In the root there is also the index.html. Here all the paths to third-party libraries are given (i.e the local 
+libs directory), all RIF specific JavaScript files, css etc. The placeholder for the Angular content is also 
+defined within a div in the html body - "data-ui-view" and also the directive for the notifications bar. 
+Dashboards is further split into five directories, these represent the tabs seen in the RIF GUI, also in the 
+RIF main module, these are the five states defined in the "$stateProvider" (see below). The utils directory 
+has functionality that is shared by more than one of these dashboards, this is mostly to do with mapping of 
+results.
 
 Contained within these directories are separate folders for Angular controllers, directives, partials and services for the relevant part of the RIF.
 
@@ -113,7 +119,7 @@ Contained within these directories are separate folders for Angular controllers,
 | - [Logging](https://github.com/nmccready/angular-simple-logger)                         | angular-simple-logger.js                                                                                                                                          |
 | [Leaflet 1.0.3](https://leafletjs.com/)                                                 | leaflet.css, leaflet.js                                                                                                                                           |
 | - [Draw](https://github.com/Leaflet/Leaflet.draw)                                       | leaflet.draw.css, leaflet.draw.js                                                                                                                                 |
-| - [Fullscreen](https://github.com/Leaflet/Leaflet.fullscreen)                           | Leaflet.fullscreen.min.js, /leaflet.fullscreen.css                                                                                                                |
+| - [Fullscreen](https://github.com/Leaflet/Leaflet.fullscreen)                           | Leaflet.fullscreen.min.js, leaflet.fullscreen.css                                                                                                                 |
 | - [Map sync](https://github.com/jieter/Leaflet.Sync)                                    | L.Map.Sync.js                                                                                                                                                     |
 | - [Map spinner](https://github.com/makinacorpus/Leaflet.Spin)                           | spin.min.js, spin.js, spin.css, leaflet.spin.min.js                                                                                                               |
 | - [Geosearch](https://github.com/smeijer/leaflet-geosearch)                             | l.control.geosearch.js, l.geosearch.provider.openstreetmap.js, l.geosearch.css                                                                                    |
@@ -126,7 +132,7 @@ Contained within these directories are separate folders for Angular controllers,
 | [TopoJSON](https://github.com/topojson/topojson)                                        | topojson.min.js                                                                                                                                                   |
 | - TopoJSON GridLayer: Created from Leaflet.GeoJSONGridLayer                             | topoJSON.js, TopoJSONGridLayer.js                                                                                                                                 |
 | - [PouchDB open-source JavaScript database](https://pouchdb.com/)                       | pouchdb.js                                                                                                                                                        |
-| [D3 v4 and D3 export](https://d3js.org/)                                                | d3.v4.min.js, canvas-toBlob.js, FileSaver.min.js                                                                                                                  |                                                                                                                  |
+| [D3 v4 and D3 export](https://d3js.org/)                                                | d3.v4.min.js, canvas-toBlob.js, FileSaver.min.js                                                                                                                  |                                                                                                          
 | [Turfjs modular geospatial engine](https://github.com/Turfjs/turf)                      | turf.min.js                                                                                                                                                       |
 | [Proj4js coordinare transformer](https://www.npmjs.com/package/proj4)                   | proj4.js                                                                                                                                                          |
 | [JSON5 parser](https://github.com/json5/json5)                                          | json5.js                                                                                                                                                          |
@@ -139,16 +145,6 @@ Contained within these directories are separate folders for Angular controllers,
   considered;
 * TopoJSON GridLayer created from [Leaflet.GeoJSONGridLayer](https://github.com/ebrelsford/leaflet-geojson-gridlayer) by Eric Brelsford 
 * There is considerable overlap between the libraries. Turf could probably do most of geospatial functions
-
-For more information on:
-
-* The modal windows: https://angular-ui.github.io/bootstrap/
-* The split containers: https://github.com/angular-ui/ui-layout
-* The notification bar: https://github.com/alexbeletsky/ng-notifications-bar
-* The tables: http://ui-grid.info/
-* The maps: http://leafletjs.com/
-* The graphs: https://d3js.org/
-* Some of the fancy stuff: https://material.angularjs.org/latest/
 
 # The main module
 
