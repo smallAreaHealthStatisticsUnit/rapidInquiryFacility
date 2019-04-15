@@ -101,75 +101,45 @@ Contained within these directories are separate folders for Angular controllers,
 
 # Libraries
 
-| Library                                                                 | Files                                                                                                                                                             |
-|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [AngularJS 1.5.8 ](https://angularjs.org/)                              | angular.min.js, angular-animate.min.js, angular-sanitize.min.js, angular-aria.min.js, angular-messages.min.js, angular-ui-router.min.js, angular-simple-logger.js |
-| - [Angular Material Design components](https://material.angular.io/)    | angular-material.min.js, libs/standalone/angular-material.min.css                                                                                                 |
-| - [UI Bootstrap modal windows](https://angular-ui.github.io/bootstrap/) | ui-bootstrap-tpls-2.3.0.min.js, bootstrap.min.css                                                                                                                 |
-| - [UI Grid](http://ui-grid.info/)                                       | ui-grid.min.js, ui-grid.min.css                                                                                                                                   |
-| - [UI Layout](https://github.com/angular-ui/ui-layout)                  | ui-layout.css                                                                                                                                                     |
-| Leaflet 1.0.3](https://leafletjs.com/)                                  | leaflet.css, leaflet.js                                                                                                                                           |
-| - [Leaflet draw](https://github.com/Leaflet/Leaflet.draw)               | leaflet.draw.css, leaflet.draw.js                                                                                                                                 |
-| - [Leaflet fullscreen](https://github.com/Leaflet/Leaflet.fullscreen)   | Leaflet.fullscreen.min.js, /leaflet.fullscreen.css                                                                                                                |
-| - [Leaflet map sync](https://github.com/jieter/Leaflet.Sync)            | L.Map.Sync.js                                                                                                                                                     |
-| - [Leaflet map spinner](https://github.com/makinacorpus/Leaflet.Spin)   | spin.min.js, spin.js, spin.css, leaflet.spin.min.js                                                                                                               |
-| [Aynsc library](https://caolan.github.io/async/)                        | async.js                                                                                                                                                          |
-| [TopoJSON](https://github.com/topojson/topojson)                        | topojson.min.js                                                                                                                                                   |
-| - TopoJSON GridLayer: Created from Leaflet.GeoJSONGridLayer             | topoJSON.js, TopoJSONGridLayer.js                                                                                                                                 |
-| [D3 v3 and D3 export](https://d3js.org/)                                | d3.v4.min.js, canvas-toBlob.js, FileSaver.min.js                                                                                                                  |
+| Library                                                                                 | Files                                                                                                                                                             |
+|-----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [AngularJS 1.5.8 ](https://angularjs.org/)                                              | angular.min.js, angular-animate.min.js, angular-sanitize.min.js, angular-aria.min.js, angular-messages.min.js, angular-ui-router.min.js, angular-simple-logger.js |
+| - [Angular Material Design components](https://material.angular.io/)                    | angular-material.min.js, libs/standalone/angular-material.min.css                                                                                                 |
+| - [UI Bootstrap modal windows](https://angular-ui.github.io/bootstrap/)                 | ui-bootstrap-tpls-2.3.0.min.js, bootstrap.min.css                                                                                                                 |
+| - [UI Grid](http://ui-grid.info/)                                                       | ui-grid.min.js, ui-grid.min.css                                                                                                                                   |
+| - [UI Layout](https://github.com/angular-ui/ui-layout)                                  | uui-layout.css, ui-layout.js                                                                                                                                      |
+| - [Notifications bar](https://github.com/alexbeletsky/ng-notifications-bar)             | ngNotificationsBar.css, ngNotificationsBar.min.js                                                                                                                 |
+| - [Pattern restriction](https://github.com/AlphaGit/ng-pattern-restrict)                | ng-pattern-restrict.min.js                                                                                                                                        |
+| - [Logging](https://github.com/nmccready/angular-simple-logger)                         | angular-simple-logger.js                                                                                                                                          |
+| [Leaflet 1.0.3](https://leafletjs.com/)                                                 | leaflet.css, leaflet.js                                                                                                                                           |
+| - [Draw](https://github.com/Leaflet/Leaflet.draw)                                       | leaflet.draw.css, leaflet.draw.js                                                                                                                                 |
+| - [Fullscreen](https://github.com/Leaflet/Leaflet.fullscreen)                           | Leaflet.fullscreen.min.js, /leaflet.fullscreen.css                                                                                                                |
+| - [Map sync](https://github.com/jieter/Leaflet.Sync)                                    | L.Map.Sync.js                                                                                                                                                     |
+| - [Map spinner](https://github.com/makinacorpus/Leaflet.Spin)                           | spin.min.js, spin.js, spin.css, leaflet.spin.min.js                                                                                                               |
+| - [Geosearch](https://github.com/smeijer/leaflet-geosearch)                             | l.control.geosearch.js, l.geosearch.provider.openstreetmap.js, l.geosearch.css                                                                                    |
+| - [Opacity slider](https://github.com/Eclipse1979/leaflet-slider)                       | leaflet-slider.js, leaflet-slider.css                                                                                                                             |
+| - [Shapefile support](https://github.com/calvinmetcalf/leaflet.shapefile)               | leaflet.shpfile.js, shp.min.js                                                                                                                                    |
+| - [Image export](https://github.com/mapbox/leaflet-image)                               | leaflet-image.js                                                                                                                                                  |
+| - [Condensed attribution](https://github.com/route360/Leaflet.CondensedAttribution)     |                                                                                                                                                                   |
+| - [distances, linear referencing](https://github.com/makinacorpus/Leaflet.GeometryUtil) | leaflet.geometryutil.js"                                                                                                                                          |
+| [Aynsc library](https://caolan.github.io/async/)                                        | async.js                                                                                                                                                          |
+| [TopoJSON](https://github.com/topojson/topojson)                                        | topojson.min.js                                                                                                                                                   |
+| - TopoJSON GridLayer: Created from Leaflet.GeoJSONGridLayer                             | topoJSON.js, TopoJSONGridLayer.js                                                                                                                                 |
+| - [PouchDB open-source JavaScript database](https://pouchdb.com/)                       | pouchdb.js                                                                                                                                                        |
+| [D3 v4 and D3 export](https://d3js.org/)                                                | d3.v4.min.js, canvas-toBlob.js, FileSaver.min.js                                                                                                                  |                                                                                                                  |
+| [Turfjs modular geospatial engine](https://github.com/Turfjs/turf)                      | turf.min.js                                                                                                                                                       |
+| [Proj4js coordinare transformer](https://www.npmjs.com/package/proj4)                   | proj4.js                                                                                                                                                          |
+| [JSON5 parser](https://github.com/json5/json5)                                          | json5.js                                                                                                                                                          |
+| [Simple Statistics](https://simplestatistics.org/)                                      | sstatistics.js                                                                                                                                                    |
+| [Save html2canvas screenshots](https://github.com/niklasvh/html2canvas)                 | html2canvas.js                                                                                                                                                    |
+| [Time display](https://momentjs.com/)                                                   | moment.min.js                                                                                                                                                     |
 	
-* Angular 1.5.8 is ? releases behind current
-* TopoJSON GridLayer created from Leaflet.GeoJSONGridLayer: https://github.com/ebrelsford/leaflet-geojson-gridlayer by Eric Brelsford 
+* Angular 1.5.8 and Leaflet 1.0.3 are many releases behind current; this is deliberate to avoid stability issues 
+  during development. At the re-start of the RIF 4.0 development a progressive upgrade to current should be 
+  considered;
+* TopoJSON GridLayer created from [Leaflet.GeoJSONGridLayer](https://github.com/ebrelsford/leaflet-geojson-gridlayer) by Eric Brelsford 
+* There is considerable overlap between the libraries. Turf could probably do most of geospatial functions
 
-```
-<script src="libs/moment.min.js"></script> 
-<script src="libs/leaflet-slider.js"></script> 
-<link rel="stylesheet" href="libs/leaflet-slider.css"> 
-<script type="text/javascript" src="libs/leaflet-control-condended-attribution.js"></script> 
-<script type="text/javascript" src="libs/leaflet.geometryutil.js"></script>
-
-
-
-<!-- THESE ONLY EVER AS STANDALONE LIBRARIES -->
-<!-- Angular -->
-<script src="libs/angular-simple-logger.js"></script>
-
-<!-- Leaflet -->
-<script src="libs/l.control.geosearch.js"></script>
-<script src="libs/l.geosearch.provider.openstreetmap.js"></script>
-<link rel="stylesheet" href="libs/l.geosearch.css" />
-<script src="libs/leaflet-image.js"></script>        
-<script src="libs/turf.min.js"></script>  
-<script src="libs/pouchdb.js"></script>
-<script src="libs/"></script>
-
-<!-- proj4 (rep-projection) -->
-<script src="libs/proj4.js"></script>
-
-<!-- save html2canvas -->
-<script src="libs/html2canvas.js"></script>
-
-<!-- Simple Statistics -->
-<script src="libs/sstatistics.js"></script>
-
-<!-- UI layout grid -->
-<!--This version of ui-layout has patch for sticky mouse issue #181-->
-<script src="libs/ui-layout.js"></script>   
-
-<!-- notification -->
-<link rel="stylesheet" href="libs/ngNotificationsBar.css">
-<script src="libs/ngNotificationsBar.min.js"></script>   
-
-<!-- shapefile in leaflet -->
-<script src="libs/leaflet.shpfile.js"></script>
-<script src="libs/shp.min.js"></script>
-
-<!-- ngPatternRestrict -->
-<script src="libs/ng-pattern-restrict.min.js"></script>
-
-<!-- JSON5 parser -->
-<script src="libs/json5.js"></script>
-```
 For more information on:
 
 * The modal windows: https://angular-ui.github.io/bootstrap/
