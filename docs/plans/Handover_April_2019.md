@@ -8,9 +8,10 @@ title: Handover Notes for the Suspension of Development, April 2019
 
 # Issues
 
-There are [52 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at 17/4/2019. Some of them are mentioned below, but all are things that we could do with fixing, building, or improving.
+There are [53 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at 17/4/2019. Some of them are mentioned below, but all are things that we could do with fixing, building, or improving.
 
-* [Issue #156](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/156) The tilemaker needs python 2.7 and the installer build needs python 3 
+* [Issue #157](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/157) Study area database INSERT is slow;
+* [Issue #156](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/156) The tilemaker needs python 2.7 and the installer build needs python 3; 
 * [Issue #155](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/155) Statistics Service does not support TLS connections from the rifServices middleware;
 * [Issue #154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154) Cannot resize map table (study/comparison area) grids;
 * [Issue #151](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/151) Internet Explorer (IE) caching;
