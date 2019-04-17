@@ -1674,9 +1674,10 @@ Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
 Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
 ```
 
-In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator *romcat8w* the maximum memory size on the Java pane is 256M,
-increase this to a much larger value less than the maximum, at least 2048M. Tile generation can require large amounts of memory, UK census output area tiles
-require 7G of memory. Restart the tomcat service.
+In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator *tomcat8w* in 
+*%CATALINA_HOME%/bin* (usually *C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin*) the maximum memory size on the 
+Java pane is 256M, increase this to a much larger value less than the maximum, at least 4096M. Tile generation can require 
+large amounts of memory, UK census output area tiles require 7G of memory. Restart the tomcat service.
 
 ### Study extracts but R does not run
 
