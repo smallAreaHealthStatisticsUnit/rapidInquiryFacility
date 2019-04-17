@@ -32,7 +32,7 @@
  */
 
 /*
- * SERVICE for UI-Grid helper functions
+ * SERVICE for D3 charts helper functions
  */
 angular.module("RIF")
         .factory('D3ChartsService', ['AlertService', '$window', '$timeout',

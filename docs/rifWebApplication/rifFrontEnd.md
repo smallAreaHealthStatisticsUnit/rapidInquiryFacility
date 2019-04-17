@@ -410,7 +410,7 @@ middleware.
 
 ## Controllers
 
-| File name                       | Description                                                                       |                                                                                                                                                     |
+| File name                       | Description                                                                       |                                                                                                                                                    
 |---------------------------------|-----------------------------------------------------------------------------------|
 | rifc-util-alert.js              | Alert bars and notifications over whole application                               |
 | rifc-util-basemap.js            | Basemap selection modal                                                           |
@@ -421,7 +421,7 @@ middleware.
 
 ## Directives
 
-| File name                       | Description                                                                       |                                                                                                                                                     |
+| File name                       | Description                                                                       |                                                                                                                                                    
 |---------------------------------|-----------------------------------------------------------------------------------|
 | rifd-util-d3riskGraph.js        | Risk Graph                                                                        |
 | rifd-util-d3riskGraph3.js       | Common Risk Graph                                                                 |
@@ -432,7 +432,7 @@ middleware.
 
 ## Partials
 
-| File name                       | Description                                                                       |                                                                                                                                                     |
+| File name                       | Description                                                                       |                                                                                                                                                    
 |---------------------------------|-----------------------------------------------------------------------------------|
 | rifp-util-basemap.html          | Basemap modal                                                                     |
 | rifp-util-choro.html            | Symbology modal                                                                   |
@@ -441,24 +441,24 @@ middleware.
 
 ## Services
 
-| File name                       | Description                                                                       |                                                                                                                                                     |
+| File name                       | Description                                                                       |                                                                                                                                                    
 |---------------------------------|-----------------------------------------------------------------------------------|
-| rifs-util-alert.js              |                                                                                   |
-| rifs-util-basemap.js            |                                                                                   |
-| rifs-util-choro.js              |                                                                                   |
-| rifs-util-colorbrewer.js        |                                                                                   |
-| rifs-util-d3charts.js           |                                                                                   |
-| rifs-util-exceptionOverwrite.js |                                                                                   |
-| rifs-util-gis.js                |                                                                                   |
-| rifs-util-JSON.js               |                                                                                   |
-| rifs-util-leafletdraw.js        |                                                                                   |
-| rifs-util-mapping.js            |                                                                                   |
-| rifs-util-mapstate.js           |                                                                                   |
-| rifs-util-maptools.js           |                                                                                   |
-| rifs-util-projection.js         |                                                                                   |
-| rifs-util-rif40-num-denom.js    |                                                                                   |
-| rifs-util-selectstate.js        |                                                                                   |
-| rifs-util-uigrid.js             |                                                                                   |
+| rifs-util-alert.js              | Alerts functions. Calls Alert controller                                          |
+| rifs-util-basemap.js            | Supply pre-defined basemaps tiles to leaflet                                      |
+| rifs-util-choro.js              | Render choropleth maps using Colorbrewer                                          |
+| rifs-util-colorbrewer.js        | Colorbrewer (http://colorbrewer.org/)                                             |
+| rifs-util-d3charts.js           | D3 charts helper functions                                                        |
+| rifs-util-exceptionOverwrite.js | Override Angular exception handling, use the AlertService: disabled breaks Firefox|                               |
+| rifs-util-gis.js                | Basic GIS operations                                                              |
+| rifs-util-JSON.js               | JSON - text conversions                                                           |
+| rifs-util-leafletdraw.js        | Extend leafletdraw library                                                        |
+| rifs-util-mapping.js            | Mapping helper functions                                                          |
+| rifs-util-mapstate.js           | Stored map state: see also rifs-dmap-mappingstate.js which will be merged in time |
+| rifs-util-maptools.js           | Adds tool icons to leaflet containers                                             |
+| rifs-util-projection.js         | CRSS database - get projection from SRID                                          |
+| rifs-util-rif40-num-denom.js    | Numerator denominator pairs by geography and health theme                         |
+| rifs-util-selectstate.js        | Store state of selection modal                                                    |
+| rifs-util-uigrid.js             | UI-Grid helper functions                                                          |
 
 # Front End Issues
 

@@ -32,7 +32,7 @@
  */
 
 /*
- * SERVICE for RIF40_NUM_DENOM
+ * SERVICE for numerator denominator pairs by geography and health theme
  */
 angular.module("RIF")
         .factory('Rif40NumDenomService', ['user', 'AlertService', '$q',

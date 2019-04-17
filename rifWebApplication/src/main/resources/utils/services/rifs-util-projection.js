@@ -32,7 +32,7 @@
  */
 
 /*
- * SERVICE for Alerts functions. Calls Alert conbtroller
+ * SERVICE for crss database - get projection from SRID
  */
 angular.module("RIF")
         .factory('ProjectionService', ['$rootScope', 'AlertService',
