@@ -382,7 +382,9 @@ user feedback.
 After user testing, there will be loads of requests as to what needs to be outputted ("what-the-old-RIF-did" 
 etc. etc.)
 
-[Add print selection]
+An important change will be to save the MappingStateService (**rifs-dmap-mappingstate.js**) saved zoom latitude and
+longitude and also the choropleth map setting (ChoroService **rifs-util-choro.js**) in the database so they can be 
+used to render the midleware maps as they are setup by the user.
 
 ## Backend
 
@@ -406,6 +408,57 @@ middleware.
 
 # Utilities
 
+## Controllers
+
+| File name                       | Description                                                                       |                                                                                                                                                     |
+|---------------------------------|-----------------------------------------------------------------------------------|
+| rifc-util-alert.js              | Alert bars and notifications over whole application                               |
+| rifc-util-basemap.js            | Basemap selection modal                                                           |
+| rifc-util-choro.js              | Choropleth map symbology modal used by viewer and mapper                          |
+| rifc-util-mapping.js            | Map panels                                                                        |
+| rifc-util-multiselect.js        | Re-enables multiple selections on ui-grids. Selections on ui-grid are disabled    |
+| rifc-util-tabctrl.js            | Handles tab transitions, logout and alert on new study completion                 |
+
+## Directives
+
+| File name                       | Description                                                                       |                                                                                                                                                     |
+|---------------------------------|-----------------------------------------------------------------------------------|
+| rifd-util-d3riskGraph.js        | Risk Graph                                                                        |
+| rifd-util-d3riskGraph3.js       | Common Risk Graph                                                                 |
+| rifd-util-info.js               | Get info on a completed study - also covariates loss and homogeneity report       |
+| rifd-util-leafletTools.js       | Shared Leaflet tools                                                              |
+| rifd-util-preventRight.js       | Prevents right click in Leaflet maps                                              |
+| rifd-util-savechart.js          | Save D3 charts to a PNG                                                           |
+
+## Partials
+
+| File name                       | Description                                                                       |                                                                                                                                                     |
+|---------------------------------|-----------------------------------------------------------------------------------|
+| rifp-util-basemap.html          | Basemap modal                                                                     |
+| rifp-util-choro.html            | Symbology modal                                                                   |
+| rifp-util-info.html             | Study info modal                                                                  |
+| rifp-util-yesno.html            | Yes-No user choice modal                                                          |
+
+## Services
+
+| File name                       | Description                                                                       |                                                                                                                                                     |
+|---------------------------------|-----------------------------------------------------------------------------------|
+| rifs-util-alert.js              |                                                                                   |
+| rifs-util-basemap.js            |                                                                                   |
+| rifs-util-choro.js              |                                                                                   |
+| rifs-util-colorbrewer.js        |                                                                                   |
+| rifs-util-d3charts.js           |                                                                                   |
+| rifs-util-exceptionOverwrite.js |                                                                                   |
+| rifs-util-gis.js                |                                                                                   |
+| rifs-util-JSON.js               |                                                                                   |
+| rifs-util-leafletdraw.js        |                                                                                   |
+| rifs-util-mapping.js            |                                                                                   |
+| rifs-util-mapstate.js           |                                                                                   |
+| rifs-util-maptools.js           |                                                                                   |
+| rifs-util-projection.js         |                                                                                   |
+| rifs-util-rif40-num-denom.js    |                                                                                   |
+| rifs-util-selectstate.js        |                                                                                   |
+| rifs-util-uigrid.js             |                                                                                   |
 
 # Front End Issues
 
