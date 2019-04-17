@@ -407,4 +407,44 @@ middleware.
 # Utilities
 
 
+# Front End Issues
+
+There are [53 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at 17/4/2019. Of these, 
+32 are relevant to the front end
+
+## Faults
+
+* [Issue #154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154) Cannot resize map table (study/comparison area) grids;
+* [Issue #151](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/151) Internet Explorer (IE) caching;
+* [Issue #134](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/134) D3 graphs; todo;
+* [Issue #133](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/133) DM. Data viewer and Mapping tabs. Cannot select individual study areas within the overall study area;
+* [Issue #130](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/130) Risk analysis fault/issues (branch: risk-analysis-fixes-2);
+* [Issue #125](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/125) Add support for region-specific details around point sources;
+* [Issue #123](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/123) Improve search in taxonomies on Investigation Parameters screen;
+* [Issue #121](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121) Add Prior sensistivity analysis;
+* [Issue #120](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/120) Add model diagnostic tools (in the viewer and exportable as output);
+* [Issue #113](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113) Refresh logs you off;
+* [Issue #89](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/89) Local caching of base maps;
+* [Issue #86](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/86) Improve logging;
+* [Issue #85](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/85) Information Governance tool;
+* [Issue #84](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/84) Data loader tool;
+* [Issue #83](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/83) Support of statistical packages;
+* [Issue #82](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/82) Build and support new interfaces;
+* [Issue #78](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/78) Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably;
+* [Issue #77](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/77) Error messages with new default basemaps functionality when there is no Internet;
+* [Issue #76](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/76) Study reset sometimes does not reset the stats selection;
+* [Issue #67](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/67) Print state support;
+* [Issue #66](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66) GeoJSON mouse over support with shapefile shapes;
+* [Issue #63](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/63) Re-factor of Leaflet mapping code;
+* [Issue #62](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/62) studyType mismatch for map: viewermap; study ID: ...;
+* [Issue #61](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/61) Add support for risk analysis in map export;
+* [Issue #57](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/57) Front end mapping synchronisation fails sometimes when you change the study;
+* [Issue #56](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/56) Error loading study from database via middleware generated file;
+* [Issue #53](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/53) Database access: remove completely from R;
+* [Issue #46](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/46) The Exception handling seems designed to obfuscate rather than reveal;
+* [Issue #45](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/45) Consider changing the database handling such that we get a datasource via JNDI;
+* [Issue #42](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/42) We can include webapp dependencies in Maven;
+* [Issue #20](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/20) Parameter validity should be checked in the front end, or at least reported back to it;
+
+
 **Peter Hambly, April 2019**
