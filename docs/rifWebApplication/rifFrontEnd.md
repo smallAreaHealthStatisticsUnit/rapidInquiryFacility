@@ -410,26 +410,84 @@ middleware.
 # Front End Issues
 
 There are [53 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at 17/4/2019. Of these, 
-32 are relevant to the front end
+30 are relevant to the front end
 
 ## Faults
 
-* [Issue #154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154) Cannot resize map table (study/comparison area) grids;
+* [Issue #154](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/154) Cannot resize map table 
+  (study/comparison area) grids;
+  File: rifd-dsub-maptable.js; function onModalResize(). UI-grid resize does not work when you change 
+  $scope.gridOptions.minRowsToShow with a window resize. The sizing is OK if you go in and out of the modal, UI grid is not 
+  setting the new height.This is UI-grid issue 2531: [angular-ui/ui-grid#2531](https://github.com/angular-ui/ui-grid/issues/2531). UI-layout used in the viewer/mapper appears to work
 * [Issue #151](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/151) Internet Explorer (IE) caching;
-* [Issue #134](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/134) D3 graphs; todo;
-* [Issue #133](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/133) DM. Data viewer and Mapping tabs. Cannot select individual study areas within the overall study area;
-* [Issue #130](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/130) Risk analysis fault/issues (branch: risk-analysis-fixes-2);
-* [Issue #125](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/125) Add support for region-specific details around point sources;
-* [Issue #123](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/123) Improve search in taxonomies on Investigation Parameters screen;
-* [Issue #121](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121) Add Prior sensistivity analysis;
-* [Issue #120](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/120) Add model diagnostic tools (in the viewer and exportable as output);
-* [Issue #113](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113) Refresh logs you off;
-* [Issue #89](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/89) Local caching of base maps;
-* [Issue #86](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/86) Improve logging;
+  Resolution of issue #75 highlighted an issue Internet Explorer (IE) caching. This cannot be detected from the REST result data. The only sensible way to resolve this would be to get the isLoggedIn REST call to return a date time string as well. This would probably prevent IE caching and could be checked to detect the caching and warm the user.
+
+  This will impact any REST call that returns the same data multiple times and so appears to not change but actually does (e.g. 
+  login status, rif40_num_denom data)
+  
+## Major Enhancements
+
+* [Issue #125](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/125) Add support for region-specific 
+  details around point sources. This is [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
+* [Issue #121](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121) Add Prior sensistivity analysis.
+  This will allow users to change the priors used in Bayesian smoothing;
 * [Issue #85](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/85) Information Governance tool;
 * [Issue #84](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/84) Data loader tool;
 * [Issue #83](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/83) Support of statistical packages;
-* [Issue #82](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/82) Build and support new interfaces;
+
+## Minor Enhancements
+
+* [Issue #134](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/134) D3 graphs; todo:
+
+  1. Convert to info and viewer risk graphs to using common version with a single data source. Rename *rifd-util-d3riskGraph3.js* 
+     to *rifd-util-d3riskGraph.js* and remove *rifd-util-d3riskGraph2.js*;
+  2. Remove non d3 code from *rifs-util-d3charts.js* (functionality now in *rifd-util-d3riskGraph3.js*), rename to 
+     *rifs-util-d3riskgraph.js*;
+  3. Convert rr-zoom, dist-histo and pyramid directive so the d3 code is in a utils service and now use same the methods as 
+     *rifd-util-d3riskGraph.js*. Resizing should now work!
+  4. Remove rrZoomReset anti memory leak functionality. It should no longer be needed;
+  5. Multiple redraws in the mapping panes should be remove when the fetch code is all converted to use promises;
+  6. Add rr-zoom, dist-histo and pyramid to the info modal;
+  7. Add "NONE" to second gender selector in info risk graph. The work around is to set both to the same;
+
+* [Issue #133](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/133) DM. Data viewer and Mapping 
+   tabs. Cannot select individual study areas within the overall study area;
+   
+* [Issue #130](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/130) Risk analysis fault/issues:
+  
+  3. Using add by postcode produces errors on its own, but works;
+  4. Errors if nonsensical exposure bands are selected;
+  5. Clear does not work after restore from file;
+  6. Adding a point produces errors after restore from file;
+  7. Add disableMouseClicksAt from frontEndParameters.json5 to replace hard coded 5000 in Tile generation;
+  8. Load list from text file loads OK but does not display correctly;
+  9. Need a file type filter when loading JSON files;
+  10. Zip shapefile load to be able to cope with projections other than 4326 (e.g. local grid).
+  
+* [Issue #123](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/123) Improve search in taxonomies on 
+  Investigation Parameters screen:
+  
+  The taxonomy search can be confusing when users search by an ICD code. The search currently finds any occurrence of the 
+  entered string anywhere in either the code or the description. It is proposed to split the search into two:
+
+  * A search of the code field (or "Term Name", as it appears on screen.
+  * A full-text search of the description field.
+  
+  The UI-Grid module used to implement this now supports "tree" tables to provide a hierarchical display
+  
+* [Issue #120](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/120) Add model diagnostic tools 
+   (in the viewer and exportable as output);
+   
+* [Issue #113](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113) Refresh logs you off.
+
+  When the user refreshes angular goes to state 0 which effectively logs you off. State 0 needs to ask the database if the user 
+  (saved as a cookie) is still logged on the session will resume in state1 (study submission screen);
+  
+* [Issue #89](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/89) Local caching of base maps.
+
+  This is so that we display the underlying map details when the RIF is running on a secure network without access to the 
+  internet. Will need a webapp for the files, a downloader tool and the front end URLs changed to be a local version.
+
 * [Issue #78](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/78) Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably;
 * [Issue #77](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/77) Error messages with new default basemaps functionality when there is no Internet;
 * [Issue #76](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/76) Study reset sometimes does not reset the stats selection;
