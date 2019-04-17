@@ -410,7 +410,7 @@ middleware.
 # Front End Issues
 
 There are [53 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues) at 17/4/2019. Of these, 
-30 are relevant to the front end
+25 are relevant to the front end
 
 ## Faults
 
@@ -419,16 +419,25 @@ There are [53 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapi
   File: rifd-dsub-maptable.js; function onModalResize(). UI-grid resize does not work when you change 
   $scope.gridOptions.minRowsToShow with a window resize. The sizing is OK if you go in and out of the modal, UI grid is not 
   setting the new height.This is UI-grid issue 2531: [angular-ui/ui-grid#2531](https://github.com/angular-ui/ui-grid/issues/2531). UI-layout used in the viewer/mapper appears to work
+
 * [Issue #151](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/151) Internet Explorer (IE) caching;
   Resolution of issue #75 highlighted an issue Internet Explorer (IE) caching. This cannot be detected from the REST result data. The only sensible way to resolve this would be to get the isLoggedIn REST call to return a date time string as well. This would probably prevent IE caching and could be checked to detect the caching and warm the user.
 
   This will impact any REST call that returns the same data multiple times and so appears to not change but actually does (e.g. 
   login status, rif40_num_denom data)
   
+* [Issue #113](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113) Refresh logs you off.
+
+  When the user refreshes angular goes to state 0 which effectively logs you off. State 0 needs to ask the database if the user 
+  (saved as a cookie) is still logged on the session will resume in state1 (study submission screen);
+  
+* [Issue #57](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/57) Front end mapping synchronisation 
+  fails sometimes when you change the study. The auto choropleth setup has been sisabled; the long term fix is discussed above;
+  
 ## Major Enhancements
 
 * [Issue #125](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/125) Add support for region-specific 
-  details around point sources. This is [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129).
+  details around point sources. This is [Pooled or individual analysis for multiple risk analysis points/shapes (e.g COMARE postcodes)](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/129) development.
 * [Issue #121](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/121) Add Prior sensistivity analysis.
   This will allow users to change the priors used in Bayesian smoothing;
 * [Issue #85](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/85) Information Governance tool;
@@ -477,32 +486,59 @@ There are [53 open issues](https://github.com/smallAreaHealthStatisticsUnit/rapi
   
 * [Issue #120](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/120) Add model diagnostic tools 
    (in the viewer and exportable as output);
-   
-* [Issue #113](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/113) Refresh logs you off.
-
-  When the user refreshes angular goes to state 0 which effectively logs you off. State 0 needs to ask the database if the user 
-  (saved as a cookie) is still logged on the session will resume in state1 (study submission screen);
   
 * [Issue #89](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/89) Local caching of base maps.
 
   This is so that we display the underlying map details when the RIF is running on a secure network without access to the 
   internet. Will need a webapp for the files, a downloader tool and the front end URLs changed to be a local version.
 
-* [Issue #78](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/78) Risk Analysis selection at high resolution (e.g. MSOA) does not perform acceptably;
-* [Issue #77](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/77) Error messages with new default basemaps functionality when there is no Internet;
-* [Issue #76](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/76) Study reset sometimes does not reset the stats selection;
-* [Issue #67](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/67) Print state support;
-* [Issue #66](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66) GeoJSON mouse over support with shapefile shapes;
-* [Issue #63](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/63) Re-factor of Leaflet mapping code;
-* [Issue #62](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/62) studyType mismatch for map: viewermap; study ID: ...;
-* [Issue #61](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/61) Add support for risk analysis in map export;
-* [Issue #57](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/57) Front end mapping synchronisation fails sometimes when you change the study;
-* [Issue #56](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/56) Error loading study from database via middleware generated file;
-* [Issue #53](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/53) Database access: remove completely from R;
-* [Issue #46](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/46) The Exception handling seems designed to obfuscate rather than reveal;
-* [Issue #45](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/45) Consider changing the database handling such that we get a datasource via JNDI;
-* [Issue #42](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/42) We can include webapp dependencies in Maven;
-* [Issue #20](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/20) Parameter validity should be checked in the front end, or at least reported back to it;
+* [Issue #78](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/78) Risk Analysis selection at high 
+  resolution (e.g. MSOA) does not perform acceptably. Tiles have been generated using GeoTools and the study/comparision area 
+  selection modals converted to use the PNG tiles for areas not selected. Once GeoJSON mouse over support (issue #66) has been 
+  fixed this code can then be migrated to the viewer and mapping modals.
+  
+  Currently when selecting only the GeoJSON grids are used:
+  * Once you go review a previous loaded/selected study are by going back into the study area modal you cannot add/remove areas at
+    present. This would be complex but possible to fix if you have all the centroids and bounding boxes and can then fetch the area 
+    geojson use a new middleware call;
+  * Memory requirements will be high, census output area selection will crash all 32bit browsers and Chome (which is not fully 
+    64 bit);
+  
+* [Issue #67](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/67) Print state support. Add support 
+  for modifying *print_state* in the front end so the user sees the maps as last viewed. The GeoTools map generator will
+  also be able to reproduce the map exactly; including the extents visable;
+  
+* [Issue #66](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/66) GeoJSON mouse over support with 
+  shapefile shapes. GeoJSON hover support with shapefile shapes. This will allow the hover mode to display data from the area 
+  geoJSON below the shapefile shapes. I experimented with mouse click through but was unable to get to work without adverse 
+  performance implications:
+  
+  * TopoJSON grid layer blocks mouse clicks unless it is the in view pane;
+  * Using the mouse position to find the nearest TopoJSON grid layer does work, but you only get one mouse event per layer 
+    boundary cross.  We would need to modify the map shape pane to transmit more events (this may not be possible), this has 
+    performance implications as you will need to work out which GeoJSON shape is nearest the click. With tens of thousands of 
+    shapes this will be slow, requiring more complexity - e..g use 1km grids to reduce the search;
+    
+* [Issue #63](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/63) Re-factor of Leaflet mapping 
+  code. This is discussed above;
+  
+* [Issue #61](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/61) Add support for risk analysis in 
+  map export;
+  
+## Fixed, but open as not tested sufficently
+ 
+* [Issue #76](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/76) Study reset sometimes does not 
+  reset the stats selection;
+  
+* [Issue #62](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/62) studyType mismatch for map: 
+  viewermap; study ID: ...;
+  
+* [Issue #56](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/56) Error loading study from database via 
+   middleware generated file. This has partially fixed but it needs more work and a lot of testing;
+
+* [Issue #20](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/20) Parameter validity should be 
+   checked in the front end, or at least reported back to it. This particular error has been fixed by the multiple covarate 
+   development; but there will be more;
 
 
 **Peter Hambly, April 2019**
