@@ -448,7 +448,7 @@ middleware.
 | rifs-util-choro.js              | Render choropleth maps using Colorbrewer                                          |
 | rifs-util-colorbrewer.js        | Colorbrewer (http://colorbrewer.org/)                                             |
 | rifs-util-d3charts.js           | D3 charts helper functions                                                        |
-| rifs-util-exceptionOverwrite.js | Override Angular exception handling, use the AlertService: disabled breaks Firefox|                               |
+| rifs-util-exceptionOverwrite.js | Override Angular exception handling, use the AlertService: disabled breaks Firefox|                    
 | rifs-util-gis.js                | Basic GIS operations                                                              |
 | rifs-util-JSON.js               | JSON - text conversions                                                           |
 | rifs-util-leafletdraw.js        | Extend leafletdraw library                                                        |
