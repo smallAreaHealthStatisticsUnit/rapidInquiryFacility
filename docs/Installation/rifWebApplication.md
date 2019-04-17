@@ -1674,14 +1674,9 @@ Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
 Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
 ```
 
-<<<<<<< HEAD
-In the case the initial size is 192M and the maximum heap size is 3040M. In the Tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
-increase this to a much larger value less than the maximum, at least 2048M. Restart the Tomcat service.
-=======
-In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
+In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator *romcat8w* the maximum memory size on the Java pane is 256M,
 increase this to a much larger value less than the maximum, at least 2048M. Tile generation can require large amounts of memory, UK census output area tiles
 require 7G of memory. Restart the tomcat service.
->>>>>>> master
 
 ### Study extracts but R does not run
 
@@ -1986,15 +1981,9 @@ See the database Management manual: [Patching](https://smallareahealthstatistics
   and taxonomyServices trees to .old;
 * Follow the instructions in
   [installing the web services]({{ site.baseurl }}/Installation/rifWebApplication#rif-services).
-<<<<<<< HEAD
-  i.e. copy replacement *taxonomy.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
-* Start Tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
-* Restart Tomcat;
-=======
   i.e. copy replacement *taxonomy.war*, *statistics.war* and *rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart tomcat;
->>>>>>> master
 * When you are satisfied with the patch remove the .old files and directories in *%CATALINA_HOME%\webapps*.
 
 Do **NOT** attempt to warm upgrade the RIF middleware. It will fail if any of the following are true:
