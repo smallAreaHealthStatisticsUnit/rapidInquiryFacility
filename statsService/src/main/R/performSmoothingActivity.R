@@ -409,9 +409,19 @@ performSmoothingActivity <- function(data, AdjRowset) {
     SElog2=sqrt(colSums(cPOP3dNoArea[,2]^2*RATES[,2,]*(1-RATES[,2,])/POP[,2,]))/sum(cPOP3dNoArea[,2]*RATES[,2,])
     SElog3=sqrt(colSums(cPOP3dNoArea[,3]^2*RATES[,3,]*(1-RATES[,3,])/POP[,3,]))/sum(cPOP3dNoArea[,3]*RATES[,3,])
     
+    # replace NAs with zeros 
+    SElog1[is.na(SElog1)==TRUE] <- 0
+    SElog2[is.na(SElog2)==TRUE] <- 0
+    SElog3[is.na(SElog3)==TRUE] <- 0
+    
     SE1=sqrt(colSums(cPOP3dNoArea[,1]^2*RATES[,1,]*(1-RATES[,1,])/POP[,1,]))/sum(cPOP3dNoArea[,1])*100000
     SE2=sqrt(colSums(cPOP3dNoArea[,2]^2*RATES[,2,]*(1-RATES[,2,])/POP[,2,]))/sum(cPOP3dNoArea[,2])*100000
     SE3=sqrt(colSums(cPOP3dNoArea[,3]^2*RATES[,1,]*(1-RATES[,3,])/POP[,3,]))/sum(cPOP3dNoArea[,3])*100000
+    
+    # replace NAs with zeros 
+    SE1[is.na(SE1)==TRUE] <- 0
+    SE2[is.na(SE2)==TRUE] <- 0
+    SE3[is.na(SE3)==TRUE] <- 0
     
     #Lower 95% percent rate
     RES$RATEL95_UNADJ=NA
@@ -661,7 +671,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
           # SpatialEpiApp inla method, required for diff extraction method
           result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
         }
-        
+
         # store the results the dataframe
         if (adj==FALSE){
           if (model=='BYM'){
