@@ -576,9 +576,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     if (adj==FALSE){
       if (model=='BYM'){
         cat("Bayes smoothing with BYM model type no adjustment\n")
-        # need to set adjust.for.con.comp = FALSE for now
-        # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
-        formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = TRUE, 
+        formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = TRUE, scale.model = TRUE, 
                            hyper=list(prec.unstruct=list(param=c(0.5,0.0005)), 
                                       prec.spatial=list(param=c(0.5,0.0005))))
         data$BYM_RR_UNADJ=NA
@@ -599,9 +597,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
       }
       if (model=='CAR'){
         cat("Bayes smoothing with CAR model type no adjustment\n")
-        # need to set adjust.for.con.comp = FALSE for now
-        # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
-        formula=observed~f(area_order, model='besag', graph=IM,adjust.for.con.comp = FALSE,
+        formula=observed~f(area_order, model='besag', graph=IM, adjust.for.con.comp = TRUE, scale.model = TRUE,
                            hyper=list(prec=list(param=c(0.5,0.0005))))
         data$CAR_RR_UNADJ=NA
         data$CAR_RRL95_UNADJ=NA
@@ -611,9 +607,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     else {
       if (model=='BYM'){
         cat("Bayes smoothing with BYM model type, adjusted\n")
-        # need to set adjust.for.con.comp = FALSE for now
-        # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
-        formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = TRUE,
+        formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = TRUE, scale.model = TRUE,
                            hyper=list(prec.unstruct=list(param=c(0.5,0.0005)), 
                                       prec.spatial=list(param=c(0.5,0.0005))))
         data$BYM_RR_ADJ=NA
@@ -634,9 +628,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
       }
       if (model=='CAR'){
         cat("Bayes smoothing with CAR model type, adjusted\n")
-        # need to set adjust.for.con.comp = FALSE for now
-        # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
-        formula=observed~f(area_order, model='besag',graph=IM, adjust.for.con.comp = FALSE, 
+        formula=observed~f(area_order, model='besag',graph=IM, adjust.for.con.comp = TRUE, scale.model = TRUE, 
                            hyper=list(prec=list(param=c(0.5,0.0005))))
         data$CAR_RR_ADJ=NA
         data$CAR_RRL95_ADJ=NA
@@ -662,12 +654,9 @@ performSmoothingActivity <- function(data, AdjRowset) {
         # replaced with the explicit lines below
         result = c()
         if (adj==FALSE) {
-          #result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], verbose = FALSE)
           # SpatialEpiApp inla method, required for diff extraction method
           result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
         } else {
-          # original inla method 
-          #result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], verbose = FALSE)
           # SpatialEpiApp inla method, required for diff extraction method
           result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
         }
@@ -681,13 +670,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
             #data$BYM_ssRR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,2])
             #data$BYM_ssRRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,4])
             #data$BYM_ssRRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,6])
-            
-            # original extraction method
-            #data$BYM_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$BYM_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$BYM_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6]) 
-            
-            # SpatialEpiApp extraction method
+
             data$BYM_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$BYM_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$BYM_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"] 
@@ -695,12 +678,6 @@ performSmoothingActivity <- function(data, AdjRowset) {
           if (model=='HET'){
             cte=result$summary.fixed[1]
             
-            # original extraction method
-            #data$HET_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$HET_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$HET_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-            
-            # SpatialEpiApp extraction method
             data$HET_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$HET_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$HET_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]          
@@ -708,12 +685,6 @@ performSmoothingActivity <- function(data, AdjRowset) {
           if (model=='CAR'){
             cte=result$summary.fixed[1]
             
-            # original extraction method
-            #data$CAR_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$CAR_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$CAR_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-            
-            # SpatialEpiApp extraction method
             data$CAR_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$CAR_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$CAR_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]  
@@ -726,13 +697,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
             #data$BYM_ssRR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,2])
             #data$BYM_ssRRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,4])
             #data$BYM_ssRRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,6])
-            
-            # original extraction method
-            #data$BYM_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$BYM_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$BYM_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-            
-            # SpatialEpiApp extraction method
+
             data$BYM_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$BYM_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$BYM_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"] 
@@ -740,25 +705,13 @@ performSmoothingActivity <- function(data, AdjRowset) {
           if (model=='HET'){
             cte=result$summary.fixed[1]
             
-            # original extraction method
-            #data$HET_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$HET_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$HET_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])
-            
-            # SpatialEpiApp extraction method
             data$HET_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$HET_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$HET_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]          
           }
           if (model=='CAR'){
             cte=result$summary.fixed[1]
-            
-            # original extraction method
-            #data$CAR_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$CAR_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$CAR_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-            
-            # SpatialEpiApp extraction method
+
             data$CAR_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$CAR_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$CAR_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]  
