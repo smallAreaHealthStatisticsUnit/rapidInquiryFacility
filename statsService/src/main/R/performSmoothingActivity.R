@@ -175,7 +175,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     #Fill the array for comparative areas
     compComplete=compComplete[order(compComplete$comb,compComplete$year,compComplete$area_id,compComplete$sex,compComplete$age_group),]
     cCASES=array(compComplete$inv_1,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year)),m))
-    cCASES=apply(cCASES,MARGIN=c(1,2,3,5),FUN=sum) #Mean over the years -
+    cCASES=apply(cCASES,MARGIN=c(1,2,3,5),FUN=sum,na.rm=TRUE) #Mean over the years -
     cCASESNoArea=apply(cCASES,MARGIN=c(1,2,4),FUN=sum,na.rm=TRUE) #Mean over the areas
     
     cCASES=abind(cCASES,apply(cCASES,MARGIN=c(1,3,4),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
@@ -183,7 +183,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     
     cPOP=array(compComplete$total_pop,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year)),m))
     
-    cPOP=apply(cPOP,MARGIN=c(1,2,3,5),FUN=sum) #Mean over the years
+    cPOP=apply(cPOP,MARGIN=c(1,2,3,5),FUN=sum, na.rm=TRUE) #Mean over the years
     cPOPNoArea=apply(cPOP,MARGIN=c(1,2,4),FUN=sum,na.rm=TRUE) #Mean over the areas
     
     cPOP=abind(cPOP,apply(cPOP,MARGIN=c(1,3,4),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
@@ -210,15 +210,15 @@ performSmoothingActivity <- function(data, AdjRowset) {
     
     sADJRATESNoArea=FindAdjustNoArea(cADJRATESNoArea, StoCcomp=StoCcomp)
     
-    RES$EXP_ADJ[which(RES$gender==1)]=apply(POP[,1,]*sADJRATESNoArea[,1,],MARGIN=2,FUN=sum)
-    RES$EXP_ADJ[which(RES$gender==2)]=apply(POP[,2,]*sADJRATESNoArea[,2,],MARGIN=2,FUN=sum)
-    RES$EXP_ADJ[which(RES$gender==3)]=apply(POP[,3,]*sADJRATESNoArea[,3,],MARGIN=2,FUN=sum)
+    RES$EXP_ADJ[which(RES$gender==1)]=apply(POP[,1,]*sADJRATESNoArea[,1,],MARGIN=2,FUN=sum, na.rm = TRUE)
+    RES$EXP_ADJ[which(RES$gender==2)]=apply(POP[,2,]*sADJRATESNoArea[,2,],MARGIN=2,FUN=sum, na.rm = TRUE)
+    RES$EXP_ADJ[which(RES$gender==3)]=apply(POP[,3,]*sADJRATESNoArea[,3,],MARGIN=2,FUN=sum, na.rm = TRUE)
     
     #Relative Risk adjusted
     RES$RR_ADJ=NA
-    RES$RR_ADJ[which(RES$gender==1)]=colSums(CASES[,1,])/RES$EXP_ADJ[which(RES$gender==1)]
-    RES$RR_ADJ[which(RES$gender==2)]=colSums(CASES[,2,])/RES$EXP_ADJ[which(RES$gender==2)]
-    RES$RR_ADJ[which(RES$gender==3)]=colSums(CASES[,3,])/RES$EXP_ADJ[which(RES$gender==3)]
+    RES$RR_ADJ[which(RES$gender==1)]=colSums(CASES[,1,], na.rm = TRUE)/RES$EXP_ADJ[which(RES$gender==1)]
+    RES$RR_ADJ[which(RES$gender==2)]=colSums(CASES[,2,], na.rm = TRUE)/RES$EXP_ADJ[which(RES$gender==2)]
+    RES$RR_ADJ[which(RES$gender==3)]=colSums(CASES[,3,], na.rm = TRUE)/RES$EXP_ADJ[which(RES$gender==3)]
     RES[1:100,]
     
     #Lower 95 percent interval adjusted
@@ -325,7 +325,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     #Fill the array for comparative areas
     compComplete=compComplete[order(compComplete$year,compComplete$area_id,compComplete$sex,compComplete$age_group),]
     cCASES=array(compComplete$inv_1,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year))))
-    cCASES=apply(cCASES,MARGIN=c(1,2,3),FUN=sum) #Mean over the years -
+    cCASES=apply(cCASES,MARGIN=c(1,2,3),FUN=sum,na.rm=TRUE) #Mean over the years -
     cCASESNoArea=apply(cCASES,MARGIN=c(1,2),FUN=sum,na.rm=TRUE) #Mean over the areas
     
     cCASES=abind(cCASES,apply(cCASES,MARGIN=c(1,3),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
@@ -333,7 +333,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     
     cPOP=array(compComplete$total_pop,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year))))
     
-    cPOP=apply(cPOP,MARGIN=c(1,2,3),FUN=sum) #Mean over the years
+    cPOP=apply(cPOP,MARGIN=c(1,2,3),FUN=sum, na.rm=TRUE) #Mean over the years
     cPOPNoArea=apply(cPOP,MARGIN=c(1,2),FUN=sum,na.rm=TRUE) #Mean over the areas
     
     cPOPNoArea=abind(cPOPNoArea,apply(cPOPNoArea,MARGIN=c(1),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
