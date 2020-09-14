@@ -51,7 +51,8 @@ const serverLog = require('../lib/serverLog'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	  async = require('async'),
 	  clone = require('clone'),
-	  v8 = require('v8'); 
+	  v8 = require('v8'),
+      turf = require('@turf/turf');
 		  
 /*
  * Function:	shpConvertFieldProcessor()
@@ -380,7 +381,6 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	      reproject = require('reproject'),
 	      srs = require('srs'),
 	      async = require('async'),
-	      turf = require('turf'),
 	      wellknown = require('wellknown'),
 		  streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback'),
 		  simplifyGeoJSON = require('../lib/simplifyGeoJSON');
@@ -630,7 +630,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 //							"; record.properties: " + JSON.stringify(record.properties, null, 4);
 					}
 					
-					// Duplicate areaID detector; uinion together into multipolygon
+					// Duplicate areaID detector; union together into multipolygon
 					if (shapefileData["areaIDs"][record.properties[areaID]] &&
 						shapefileData["areaIDs"][record.properties[areaID]].areaID == record.properties[areaID]) {
 							
@@ -663,28 +663,86 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 								
 								try { // Replace feature with new Unioned feature in collection (record number: recNo)
 									
-									var newFeature=turf.union(record, dupRecord);	// Union records together
-									
-									newFeature.properties=dupRecord.properties;		// Add properties back
-									
-									addAreaAndCentroid(newFeature, shapefileData, recNo, areaID); // Add area and centooid
-									
-									shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)]=
-										newFeature;					
-									console.error("Duplicate area ID fixed in shapefile " + 
-										shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
-										"\nArea id field: " + areaID + 
-										"; value: " + record.properties[areaID] + 
-										"; gid: " + dupRecord.properties["gid"] + 
-										"; row: " + (recNo-1) +
-										"\record:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+                                    if (turf == undefined) {
+                                        throw new Error("Turf is not installed");
+                                    }
+                                    if (turf.area == undefined) {
+                                        throw new Error("Turf.area is not installed");
+                                    }
+                                    if (turf.getType == undefined) {
+                                        throw new Error("Turf.getType is not installed");
+                                    }
+                                    if (turf.union == undefined) {
+                                        throw new Error("Turf.union is not installed");
+                                    }
+                                    if (turf.truncate == undefined) {
+                                        throw new Error("Turf.truncate is not installed");
+                                    }
+                                    
+                                    var nRecord = record;
+                                    var nDupRecord = dupRecord;
+                                    
+                                    var newFeature=undefined;
+                                    if (turf.area(nRecord) > 0.01 && turf.area(nDupRecord) > 0.01) {
+                                        newFeature = turf.union(turf.truncate(nRecord,  {precision: 5, coordinates: 2}), 
+                                                                turf.truncate(nDupRecord, {precision: 5, coordinates: 2}));	
+                                                                // Union records together
+                                                                // Reduce precision to remove crap (sorry spurious sliver intersections)
+									}
+                                    else if (turf.area(nRecord) > 0.01) { // nDupRecord too small
+                                        newFeature = nRecord;
+                                    }
+                                    else if (turf.area(nDupRecord) > 0.01) { // nRecord too small
+                                        newFeature = nDupRecord;
+                                    }
+                                    
+                                    if (newFeature == undefined) {
+                                        console.error("Duplicate area ID cannot be fixed in shapefile " + 
+                                            shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+                                            "\nArea id field: " + areaID + 
+                                            "; value: " + record.properties[areaID] + 
+                                            "; gid: " + dupRecord.properties["gid"] + 
+                                            "; row: " + (recNo-1) +
+                                            "\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+                                    }
+                                    else {
+                                        newFeature.properties=dupRecord.properties;		// Add properties back
+                                        
+                                        addAreaAndCentroid(newFeature, shapefileData, recNo, areaID); // Add area and centooid
+                                        
+                                        shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)]=
+                                            newFeature;					
+                                        console.error("Duplicate area ID fixed in shapefile " + 
+                                            shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+                                            "\nArea id field: " + areaID + 
+                                            "; value: " + record.properties[areaID] + 
+                                            "; gid: " + dupRecord.properties["gid"] + 
+                                            "; row: " + (recNo-1) +
+                                            "\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+                                    }
 								}
 								catch (e) {
-									throw new Error("Duplicate area ID Union error in shapefile " + 
-										shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
-										"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
-										"; row: " + (recNo-1) + "\nError: " + e.message +
-										"\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+//                                    console.error("nRecord: " + JSON.stringify(nRecord, null, 4));
+//                                    console.error("nDupRecord: " + JSON.stringify(nDupRecord, null, 4));
+//                                    console.error("e: " + JSON.stringify(e, null, 4));
+                                    if (e.name == "TopologyException" && e.message.indexOf("found non-noded intersection") >= 0) {
+                                        console.error("Ignored self intersecting duplicate area ID Union error in shapefile " + 
+                                            shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+                                            "\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+                                            "; row: " + (recNo-1) + "\nError: " + e.message +
+                                            "\nrecord " + turf.getType(nRecord) + " area: " + turf.area(nRecord)/1000000 + 
+                                            "; duplicate " + turf.getType(nDupRecord) + " area: " + turf.area(nDupRecord)/1000000 + 
+                                            "\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+                                    }
+                                    else {
+                                        throw new Error("Duplicate area ID Union error in shapefile " + 
+                                            shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+                                            "\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+                                            "; row: " + (recNo-1) + "\nError: " + e.message +
+                                            "\nrecord " + turf.getType(nRecord) + " area: " + turf.area(nRecord)/1000000 + 
+                                            "; duplicate " + turf.getType(nDupRecord) + " area: " + turf.area(nDupRecord)/1000000 + 
+                                            "\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+                                    }
 								}								
 							}	
 							else {

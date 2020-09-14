@@ -80,7 +80,7 @@ angular.module("RIF")
 							enableRowHeaderSelection: false,
 							enableHorizontalScrollbar: uiGridConstants.scrollbars.ALWAYS,
 							enableVerticalScrollbar: uiGridConstants.scrollbars.ALWAYS,
-							minRowsToShow: 5,
+//							minRowsToShow: 5,
 							maxVisibleColumnCount: 4,
 							rowHeight: 20,
 							multiSelect: false, 

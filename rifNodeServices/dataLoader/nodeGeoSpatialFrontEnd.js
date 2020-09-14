@@ -919,7 +919,13 @@ function setStatus(msg, err, diagnostic, stack) {
 				}
 				tabs.tabs("refresh" );
 			}		
-			throw new Error("[" + elapsed + "] " + msg + "; " + errm);
+            setTimeout(function () {
+                $scope.$apply(function(){
+                    $scope.displayErrorMsg = false;
+                    throw new Error("[" + elapsed + "] " + msg + "; " + errm);
+                });
+            }, 10000); // Delay 500 status message for 10s
+            
 		}
 	}
 }
