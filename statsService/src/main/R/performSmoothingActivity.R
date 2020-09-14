@@ -142,6 +142,10 @@ performSmoothingActivity <- function(data, AdjRowset) {
   
   RATES=CASES/POP
   
+  # if there are zeros in the POP file (which may happen if all the pops in a certain area for a certain age cat are zero across all years) then need to get dif of NAs infs or NaNs
+  RATES[RATES==Inf] <- 0
+  RATES[is.na(RATES)==TRUE] <- 0
+  
   #from data, determine the total number of adjustement strata (all possible combination of adjustement variables)
   ADJ=matrix(NA,nrow=length(unique(data$area_id)),ncol=ncov)
   if (adj) {
@@ -171,7 +175,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     #Fill the array for comparative areas
     compComplete=compComplete[order(compComplete$comb,compComplete$year,compComplete$area_id,compComplete$sex,compComplete$age_group),]
     cCASES=array(compComplete$inv_1,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year)),m))
-    cCASES=apply(cCASES,MARGIN=c(1,2,3,5),FUN=sum) #Mean over the years -
+    cCASES=apply(cCASES,MARGIN=c(1,2,3,5),FUN=sum,na.rm=TRUE) #Mean over the years -
     cCASESNoArea=apply(cCASES,MARGIN=c(1,2,4),FUN=sum,na.rm=TRUE) #Mean over the areas
     
     cCASES=abind(cCASES,apply(cCASES,MARGIN=c(1,3,4),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
@@ -179,7 +183,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     
     cPOP=array(compComplete$total_pop,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year)),m))
     
-    cPOP=apply(cPOP,MARGIN=c(1,2,3,5),FUN=sum) #Mean over the years
+    cPOP=apply(cPOP,MARGIN=c(1,2,3,5),FUN=sum, na.rm=TRUE) #Mean over the years
     cPOPNoArea=apply(cPOP,MARGIN=c(1,2,4),FUN=sum,na.rm=TRUE) #Mean over the areas
     
     cPOP=abind(cPOP,apply(cPOP,MARGIN=c(1,3,4),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
@@ -206,15 +210,15 @@ performSmoothingActivity <- function(data, AdjRowset) {
     
     sADJRATESNoArea=FindAdjustNoArea(cADJRATESNoArea, StoCcomp=StoCcomp)
     
-    RES$EXP_ADJ[which(RES$gender==1)]=apply(POP[,1,]*sADJRATESNoArea[,1,],MARGIN=2,FUN=sum)
-    RES$EXP_ADJ[which(RES$gender==2)]=apply(POP[,2,]*sADJRATESNoArea[,2,],MARGIN=2,FUN=sum)
-    RES$EXP_ADJ[which(RES$gender==3)]=apply(POP[,3,]*sADJRATESNoArea[,3,],MARGIN=2,FUN=sum)
+    RES$EXP_ADJ[which(RES$gender==1)]=apply(POP[,1,]*sADJRATESNoArea[,1,],MARGIN=2,FUN=sum, na.rm = TRUE)
+    RES$EXP_ADJ[which(RES$gender==2)]=apply(POP[,2,]*sADJRATESNoArea[,2,],MARGIN=2,FUN=sum, na.rm = TRUE)
+    RES$EXP_ADJ[which(RES$gender==3)]=apply(POP[,3,]*sADJRATESNoArea[,3,],MARGIN=2,FUN=sum, na.rm = TRUE)
     
     #Relative Risk adjusted
     RES$RR_ADJ=NA
-    RES$RR_ADJ[which(RES$gender==1)]=colSums(CASES[,1,])/RES$EXP_ADJ[which(RES$gender==1)]
-    RES$RR_ADJ[which(RES$gender==2)]=colSums(CASES[,2,])/RES$EXP_ADJ[which(RES$gender==2)]
-    RES$RR_ADJ[which(RES$gender==3)]=colSums(CASES[,3,])/RES$EXP_ADJ[which(RES$gender==3)]
+    RES$RR_ADJ[which(RES$gender==1)]=colSums(CASES[,1,], na.rm = TRUE)/RES$EXP_ADJ[which(RES$gender==1)]
+    RES$RR_ADJ[which(RES$gender==2)]=colSums(CASES[,2,], na.rm = TRUE)/RES$EXP_ADJ[which(RES$gender==2)]
+    RES$RR_ADJ[which(RES$gender==3)]=colSums(CASES[,3,], na.rm = TRUE)/RES$EXP_ADJ[which(RES$gender==3)]
     RES[1:100,]
     
     #Lower 95 percent interval adjusted
@@ -253,10 +257,20 @@ performSmoothingActivity <- function(data, AdjRowset) {
     SElog1=sqrt(colSums(sADJPOPNoArea[,1,]^2*RATES[,1,]*(1-RATES[,1,])/POP[,1,]))/colSums(sADJPOPNoArea[,1,]*RATES[,1,])
     SElog2=sqrt(colSums(sADJPOPNoArea[,2,]^2*RATES[,2,]*(1-RATES[,2,])/POP[,2,]))/colSums(sADJPOPNoArea[,2,]*RATES[,2,])
     SElog3=sqrt(colSums(sADJPOPNoArea[,3,]^2*RATES[,3,]*(1-RATES[,3,])/POP[,3,]))/colSums(sADJPOPNoArea[,3,]*RATES[,3,])
-    
+
+    # replace NAs with zeros 
+    SElog1[is.na(SElog1)==TRUE] <- 0
+    SElog2[is.na(SElog2)==TRUE] <- 0
+    SElog3[is.na(SElog3)==TRUE] <- 0
+
     SE1=sqrt(colSums(sADJPOPNoArea[,1,]^2*RATES[,1,]*(1-RATES[,1,])/POP[,1,]))/colSums(sADJPOPNoArea[,1,])*100000
     SE2=sqrt(colSums(sADJPOPNoArea[,2,]^2*RATES[,2,]*(1-RATES[,2,])/POP[,2,]))/colSums(sADJPOPNoArea[,2,])*100000
     SE3=sqrt(colSums(sADJPOPNoArea[,3,]^2*RATES[,1,]*(1-RATES[,3,])/POP[,3,]))/colSums(sADJPOPNoArea[,3,])*100000
+    
+    # replace NAs with zeros 
+    SE1[is.na(SE1)==TRUE] <- 0
+    SE2[is.na(SE2)==TRUE] <- 0
+    SE3[is.na(SE3)==TRUE] <- 0
     
     #Lower 95% percent rate adjusted
     RES$RATEL95_ADJ=NA
@@ -311,7 +325,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     #Fill the array for comparative areas
     compComplete=compComplete[order(compComplete$year,compComplete$area_id,compComplete$sex,compComplete$age_group),]
     cCASES=array(compComplete$inv_1,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year))))
-    cCASES=apply(cCASES,MARGIN=c(1,2,3),FUN=sum) #Mean over the years -
+    cCASES=apply(cCASES,MARGIN=c(1,2,3),FUN=sum,na.rm=TRUE) #Mean over the years -
     cCASESNoArea=apply(cCASES,MARGIN=c(1,2),FUN=sum,na.rm=TRUE) #Mean over the areas
     
     cCASES=abind(cCASES,apply(cCASES,MARGIN=c(1,3),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
@@ -319,7 +333,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     
     cPOP=array(compComplete$total_pop,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year))))
     
-    cPOP=apply(cPOP,MARGIN=c(1,2,3),FUN=sum) #Mean over the years
+    cPOP=apply(cPOP,MARGIN=c(1,2,3),FUN=sum, na.rm=TRUE) #Mean over the years
     cPOPNoArea=apply(cPOP,MARGIN=c(1,2),FUN=sum,na.rm=TRUE) #Mean over the areas
     
     cPOPNoArea=abind(cPOPNoArea,apply(cPOPNoArea,MARGIN=c(1),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
@@ -395,9 +409,19 @@ performSmoothingActivity <- function(data, AdjRowset) {
     SElog2=sqrt(colSums(cPOP3dNoArea[,2]^2*RATES[,2,]*(1-RATES[,2,])/POP[,2,]))/sum(cPOP3dNoArea[,2]*RATES[,2,])
     SElog3=sqrt(colSums(cPOP3dNoArea[,3]^2*RATES[,3,]*(1-RATES[,3,])/POP[,3,]))/sum(cPOP3dNoArea[,3]*RATES[,3,])
     
+    # replace NAs with zeros 
+    SElog1[is.na(SElog1)==TRUE] <- 0
+    SElog2[is.na(SElog2)==TRUE] <- 0
+    SElog3[is.na(SElog3)==TRUE] <- 0
+    
     SE1=sqrt(colSums(cPOP3dNoArea[,1]^2*RATES[,1,]*(1-RATES[,1,])/POP[,1,]))/sum(cPOP3dNoArea[,1])*100000
     SE2=sqrt(colSums(cPOP3dNoArea[,2]^2*RATES[,2,]*(1-RATES[,2,])/POP[,2,]))/sum(cPOP3dNoArea[,2])*100000
     SE3=sqrt(colSums(cPOP3dNoArea[,3]^2*RATES[,1,]*(1-RATES[,3,])/POP[,3,]))/sum(cPOP3dNoArea[,3])*100000
+    
+    # replace NAs with zeros 
+    SE1[is.na(SE1)==TRUE] <- 0
+    SE2[is.na(SE2)==TRUE] <- 0
+    SE3[is.na(SE3)==TRUE] <- 0
     
     #Lower 95% percent rate
     RES$RATEL95_UNADJ=NA
@@ -552,9 +576,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     if (adj==FALSE){
       if (model=='BYM'){
         cat("Bayes smoothing with BYM model type no adjustment\n")
-        # need to set adjust.for.con.comp = FALSE for now
-        # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
-        formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = TRUE, 
+        formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = TRUE, scale.model = TRUE, 
                            hyper=list(prec.unstruct=list(param=c(0.5,0.0005)), 
                                       prec.spatial=list(param=c(0.5,0.0005))))
         data$BYM_RR_UNADJ=NA
@@ -575,9 +597,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
       }
       if (model=='CAR'){
         cat("Bayes smoothing with CAR model type no adjustment\n")
-        # need to set adjust.for.con.comp = FALSE for now
-        # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
-        formula=observed~f(area_order, model='besag', graph=IM,adjust.for.con.comp = FALSE,
+        formula=observed~f(area_order, model='besag', graph=IM, adjust.for.con.comp = TRUE, scale.model = TRUE,
                            hyper=list(prec=list(param=c(0.5,0.0005))))
         data$CAR_RR_UNADJ=NA
         data$CAR_RRL95_UNADJ=NA
@@ -587,9 +607,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     else {
       if (model=='BYM'){
         cat("Bayes smoothing with BYM model type, adjusted\n")
-        # need to set adjust.for.con.comp = FALSE for now
-        # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
-        formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = TRUE,
+        formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = TRUE, scale.model = TRUE,
                            hyper=list(prec.unstruct=list(param=c(0.5,0.0005)), 
                                       prec.spatial=list(param=c(0.5,0.0005))))
         data$BYM_RR_ADJ=NA
@@ -610,9 +628,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
       }
       if (model=='CAR'){
         cat("Bayes smoothing with CAR model type, adjusted\n")
-        # need to set adjust.for.con.comp = FALSE for now
-        # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
-        formula=observed~f(area_order, model='besag',graph=IM, adjust.for.con.comp = FALSE, 
+        formula=observed~f(area_order, model='besag',graph=IM, adjust.for.con.comp = TRUE, scale.model = TRUE, 
                            hyper=list(prec=list(param=c(0.5,0.0005))))
         data$CAR_RR_ADJ=NA
         data$CAR_RRL95_ADJ=NA
@@ -638,16 +654,13 @@ performSmoothingActivity <- function(data, AdjRowset) {
         # replaced with the explicit lines below
         result = c()
         if (adj==FALSE) {
-          #result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], verbose = FALSE)
           # SpatialEpiApp inla method, required for diff extraction method
           result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
         } else {
-          # original inla method 
-          #result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], verbose = FALSE)
           # SpatialEpiApp inla method, required for diff extraction method
           result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], control.predictor=list(compute=TRUE), control.compute=list(dic=TRUE), quantiles=c(0.025,0.5,0.975), verbose = FALSE)
         }
-        
+
         # store the results the dataframe
         if (adj==FALSE){
           if (model=='BYM'){
@@ -657,13 +670,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
             #data$BYM_ssRR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,2])
             #data$BYM_ssRRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,4])
             #data$BYM_ssRRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,6])
-            
-            # original extraction method
-            #data$BYM_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$BYM_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$BYM_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6]) 
-            
-            # SpatialEpiApp extraction method
+
             data$BYM_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$BYM_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$BYM_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"] 
@@ -671,12 +678,6 @@ performSmoothingActivity <- function(data, AdjRowset) {
           if (model=='HET'){
             cte=result$summary.fixed[1]
             
-            # original extraction method
-            #data$HET_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$HET_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$HET_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-            
-            # SpatialEpiApp extraction method
             data$HET_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$HET_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$HET_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]          
@@ -684,12 +685,6 @@ performSmoothingActivity <- function(data, AdjRowset) {
           if (model=='CAR'){
             cte=result$summary.fixed[1]
             
-            # original extraction method
-            #data$CAR_RR_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$CAR_RRL95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$CAR_RRU95_UNADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-            
-            # SpatialEpiApp extraction method
             data$CAR_RR_UNADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$CAR_RRL95_UNADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$CAR_RRU95_UNADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]  
@@ -702,13 +697,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
             #data$BYM_ssRR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,2])
             #data$BYM_ssRRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,4])
             #data$BYM_ssRRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[narea+1:narea,6])
-            
-            # original extraction method
-            #data$BYM_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$BYM_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$BYM_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-            
-            # SpatialEpiApp extraction method
+
             data$BYM_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$BYM_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$BYM_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"] 
@@ -716,25 +705,13 @@ performSmoothingActivity <- function(data, AdjRowset) {
           if (model=='HET'){
             cte=result$summary.fixed[1]
             
-            # original extraction method
-            #data$HET_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$HET_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$HET_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])
-            
-            # SpatialEpiApp extraction method
             data$HET_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$HET_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$HET_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]          
           }
           if (model=='CAR'){
             cte=result$summary.fixed[1]
-            
-            # original extraction method
-            #data$CAR_RR_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,2])
-            #data$CAR_RRL95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,4])
-            #data$CAR_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
-            
-            # SpatialEpiApp extraction method
+
             data$CAR_RR_ADJ[whichrows]=result$summary.fitted.values[,"mean"]
             data$CAR_RRL95_ADJ[whichrows]=result$summary.fitted.values[,"0.025quant"]
             data$CAR_RRU95_ADJ[whichrows]=result$summary.fitted.values[,"0.975quant"]  
