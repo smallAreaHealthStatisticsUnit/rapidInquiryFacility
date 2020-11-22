@@ -57,6 +57,8 @@ const express = require('express'),
     simplify = require('./routes/simplify'),
     zipfile = require('./routes/zipfile');
 
+console.error("STarting express server");
+
 var app = express(); 	// default options, no immediate parsing 
 
 // development error handler

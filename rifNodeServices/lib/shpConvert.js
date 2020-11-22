@@ -549,31 +549,109 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 				}	
 			}
 		} // End of addAreaAndCentroid()
-					
-        function safeUnion(nRecord, nDupRecord, areaID, recNo) {
-            newRecord = undefined
-            newRecordJSON = undefined
-            turf.geomEach(nRecord, function (currentGeometry, featureIndex, featureProperties, featureBBox, featureId) {
-                newFeature = {
-                    "type": "Feature",
-                    "properties": featureProperties,
-                    "geometry": currentGeometry
+
+		/*
+		 * Function:	shapefileDataAddRecord()
+		 * Parameters:	shapefile record, duplicate record, areaID field name, areaID field value
+		 * Returns:		Unioned record
+		 * Description:	Safely Union two records together:
+         
+         safeUnion() caughtN: found non-noded intersection between LINESTRING ( 12.878324035367115 56.46683460351282, 12.850926186428849 56.49599579467321 ) and LINESTRING ( 12.850901304330824 56.496022384405286, 12.88761846320021 56.45693026488514 )
+         
+		 */						
+        function safeUnion(nRecord, nDupRecord, areaID, areaIDfield) {
+
+            function safeUnion2(tempRecord, newFeature, num) {                        
+                tempRecord2 = undefined;
+                try {
+                    tempRecord2 = turf.union(tempRecord, newFeature);	// Union records together
                 }
-                newFeatureJSON = JSON.stringify(newFeature.properties, null, 4);
-                if (featureBBox != undefined) {
-                    newFeature["bbox"] = featureBBox;
+                catch (e) {
+                    console.error("safeUnion2(" + num + ") caught: " + e.message +"\nStack: " + e.stack);
+                    console.error("safeUnion2(" + num + ") newRecord: " + JSON.stringify(newRecord, null, 4));
+                    console.error("safeUnion2(" + num + ") newFeature1: " + JSON.stringify(newFeature.properties, null, 4));
+                    if (e.name == "TopologyException" && e.message.indexOf("found non-noded intersection") >= 0) {
+                        console.error("safeUnion2(" + num + ") Ignored self intersecting duplicate area ID Union error in shapefile " + 
+                            shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+                            "\nArea id field: " + areaIDfield + "; value: " + areaID);
+                        tempRecord2 = tempRecord;
+                    }
+                    else {
+                        console.error("safeUnion2(" + num + ") e.name: " + e.name + "; e.message: " + e.message);
+                        throw (e);
+                    }
                 }
-                if (newRecord == undefined) {
-                    newRecord = turf.featureCollection([turf.truncate(newFeature, {precision: 5, coordinates: 2})]);                 
-                    newRecordJSON = JSON.stringify(newRecord.properties, null, 4);
+                
+                return tempRecord2;
+            }
+                            
+            newRecord = undefined;                            
+            tempRecord = undefined;
+            featureCount=0;
+            
+            try {
+                tempRecord = turf.union(nRecord, nDupRecord);	
+                                        // Union records together
+                newRecord = tempRecord;
+                    
+            }
+            catch (e) {            
+                if (e.name == "TopologyException" && e.message.indexOf("found non-noded intersection") >= 0) {
+                    
+                    turf.geomEach(nRecord, 
+                        function (currentGeometry1, featureIndex1, featureProperties1, featureBBox1, featureId1) {
+                            featureCount++;
+                            newFeature1 = {
+                                "type": "Feature",
+                                "properties": featureProperties1,
+                                "geometry": currentGeometry1
+                            }
+                            if (featureBBox1 != undefined) {
+                                newFeature1["bbox"] = featureBBox1;
+                            }
+                            if (tempRecord == undefined) {
+                                tempRecord = newFeature1;
+                            }
+                            else {
+                                safeUnion2(tempRecord, newFeature1, 1);	// Union records together
+                            }
+                            
+                            turf.geomEach(nDupRecord, 
+                                function (currentGeometry2, featureIndex2, featureProperties2, featureBBox2, featureId2) {
+                                    featureCount++;
+                             
+                                    newFeature2 = {
+                                        "type": "Feature",
+                                        "properties": featureProperties2,
+                                        "geometry": currentGeometry2
+                                    }
+                                    if (featureBBox2 != undefined) {
+                                        newFeature2["bbox"] = featureBBox2;
+                                    }
+                                    
+                                    safeUnion2(tempRecord, newFeature2, 2);	// Union records together
+                            });
+                    });
+                    
+                    console.error("safeUnion() features: " + featureCount + "; value: " + areaID);  
                 }
                 else {
-                    newRecord = turf.union(newRecord, 
-                                           turf.truncate(newFeature, {precision: 5, coordinates: 2}));	
+                    console.error("safeUnion() re-throw error: " + e.message +"\nStack: " + e.stack);
+                    throw e;
                 }
-            });
-                                                                // Union records together
-                                                                // Reduce precision to remove crap (sorry spurious sliver intersections)
+            }
+
+            if (tempRecord != undefined) {
+                newRecord = tempRecord;
+            }
+            if (newRecord == undefined) {
+                console.error("safeUnion() newRecord == undefined Union error in shapefile " + 
+                    shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+                    "\nArea id field: " + areaIDfield + "; value: " + areaID);
+//                throw new Error("safeUnion() newRecord == undefined Union error");
+//               newRecord = nRecord;
+            }
+            return newRecord;
         }
         
 		/*
@@ -710,7 +788,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
                                     
                                     var newFeature=undefined;
                                     if (turf.area(nRecord) > 0.01 && turf.area(nDupRecord) > 0.01) {
-                                        newFeature = safeUnion(nRecord, nDupRecord, areaID, recNo);
+                                        newFeature = safeUnion(nRecord, nDupRecord, areaID, record.properties[areaID]);
 									}
                                     else if (turf.area(nRecord) > 0.01) { // nDupRecord too small
                                         newFeature = nRecord;
@@ -745,7 +823,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
                                     }
 								}
 								catch (e) {
-                                    console.error("safeUnion() re-throw error: " + e.message +"\nStack: " + e.stack);
+                                    console.error("safeUnion() error: " + e.message +"\nStack: " + e.stack);
                                     throw new Error("Duplicate area ID Union error in shapefile " + 
                                         shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
                                         "\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
