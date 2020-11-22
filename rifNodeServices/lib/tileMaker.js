@@ -56,7 +56,7 @@ const async = require('async'),
 	  os = require('os'),
 	  fs = require('fs'),
 	  path = require('path'),
-	  turf = require('turf'),
+      turf = require('@turf/turf'),
 	  geojson2svg = require('geojson2svg'),
 	  converter = geojson2svg({
 			viewportSize: { width: 256, height: 256 },
