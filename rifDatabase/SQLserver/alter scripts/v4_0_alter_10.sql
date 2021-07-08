@@ -794,7 +794,7 @@ COMMIT TRANSACTION;
 GO
 
 SELECT geography, map_background
-  FROM rif40_geographies
+  FROM rif40.rif40_geographies
  ORDER BY 1;
 GO
 

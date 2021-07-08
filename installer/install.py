@@ -12,7 +12,6 @@ __email__ = "m.mccallion@imperial.ac.uk"
 import hashlib
 import os
 import platform
-import psycopg2
 import re
 import shutil
 import subprocess
@@ -24,6 +23,9 @@ from distutils.util import strtobool
 from getpass import getpass
 from inspect import currentframe, getframeinfo
 from pathlib import Path
+
+import natsort
+import psycopg2
 
 WAR_FILES_LOCATION = "war_files_location"
 TOMCAT_HOME = "tomcat_home"
@@ -38,7 +40,7 @@ DATABASE_PASSWORD = "db_password"
 RIF40_PASSWORD = "db_rif40_password"
 POSTGRES_PASSWORD = "db_pg_password"
 
-prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
+PROMPT_STRINGS = {DEVELOPMENT_MODE: "Development mode?",
                   DB_TYPE: "Database type (pg or ms for PostgreSQL or MS "
                            "SQL Server)",
                   SCRIPT_HOME: "Directory for SQL scripts",
@@ -52,12 +54,13 @@ prompt_strings = {DEVELOPMENT_MODE: "Development mode?",
                   DATABASE_USER: "We will create a new user in the {} "
                                  "database, which will also be your RIF user "
                                  "name; what do you want to call it?",
-                  DATABASE_PASSWORD: "Please set a password for the '{}' user",
+                  DATABASE_PASSWORD: "Please set a password for the '{}' "
+                                     "user: ",
                   RIF40_PASSWORD: "Please set a password for the 'rif40' "
-                                  "user, which we will also create",
+                                  "user, which we will also create: ",
                   POSTGRES_PASSWORD: "Please give the password for the "
                                      "'postgres' user, which is the "
-                                     "administrator of the Postgres system"
+                                     "administrator of the Postgres system: "
                   }
 
 # We have the default settings file in the current directory and the user's
@@ -77,6 +80,7 @@ user_props = Path()
 
 
 def main():
+    """The main work starts here."""
     banner("WARNING: This will DELETE any existing database named "
            "'sahsuland'.\n\n Proceed with caution.",
            55)
@@ -144,9 +148,9 @@ def main():
 
                       Database creation failed"""
                 banner(msg.format(
-                        script, process.stdout,
-                        ("Errors from script: "
-                         + process.stderr) if process.stderr else ""),
+                    script, process.stdout,
+                    ("Errors from script: "
+                     + process.stderr) if process.stderr else ""),
                        120)
                 break
             db_created = True
@@ -155,8 +159,8 @@ def main():
             ensure_tomcat_directories_exist(settings)
 
             # Deploy WAR files
-            for f in get_war_files(settings):
-                shutil.copy(f, settings.cat_home / "webapps")
+            for file in get_war_files(settings):
+                shutil.copy(file, settings.cat_home / "webapps")
 
             # Generate RIF startup properties file
             create_properties_file(settings)
@@ -188,7 +192,7 @@ def initialise_config():
             # and store its path in _MEIPASS. This feels like a hack,
             # but it is the documented way to get at the bundled files.
             base_path = Path(sys._MEIPASS)
-        except OSError | TypeError | RuntimeError:
+        except (OSError | TypeError, RuntimeError):
             base_path = Path.cwd()
     else:
         base_path = Path.cwd()
@@ -276,6 +280,12 @@ def get_settings():
                 POSTGRES_PASSWORD,
                 confirm=False).strip()
 
+        settings.alter_scripts_root = (settings.script_root / "Postgres" /
+                                       "psql_scripts" / "alter_scripts")
+    else:
+        settings.alter_scripts_root = (settings.script_root / "SQLserver"
+                                       / "alter scripts")
+
     # Update the user's config file
     with user_props.open("w") as props_file:
         user_parser.write(props_file)
@@ -331,7 +341,7 @@ def get_value_from_user(key, is_path=False, extra=""):
     elif key in default_config:
         current_value = default_config[key]
 
-    base_prompt = prompt_strings.get(key)
+    base_prompt = PROMPT_STRINGS.get(key)
     prompt = "{} [{}]{} ".format(base_prompt.format(extra),
                                  current_value,
                                  "" if base_prompt.endswith("?") else ":")
@@ -349,9 +359,9 @@ def get_value_from_user(key, is_path=False, extra=""):
             if tomcat_home_str is None or tomcat_home_str.strip() == "":
                 print("CATALINA_HOME is not set in the environment and no "
                       "value given for {}."
-                      .format(prompt_strings.get(TOMCAT_HOME)))
+                      .format(PROMPT_STRINGS.get(TOMCAT_HOME)))
                 reply = input(
-                    "{} [{}] ".format(prompt_strings.get(key), current_value))
+                    "{} [{}] ".format(PROMPT_STRINGS.get(key), current_value))
             else:
                 reply = tomcat_home_str
 
@@ -378,10 +388,10 @@ def get_password_from_user(key, confirm=True, extra=""):
     p2 = "y"
     while p1.strip() != p2.strip():
         print()
-        p1 = getpass(prompt_strings.get(key).format(extra))
+        p1 = getpass(PROMPT_STRINGS.get(key).format(extra))
         if not confirm:
             return p1
-        p2 = getpass("Confirm password")
+        p2 = getpass("Confirm password: ")
         if p1.strip() != p2.strip():
             print()
             print("Passwords do not match")
@@ -510,26 +520,26 @@ def get_pg_scripts(settings):
                                             script_root, "",
                                             db=settings.db_name)
 
-    # Note that not all the numbered scripts are used here, because some
-    # would not run -- and did not seem to be necessary -- at the time of
-    # writing, which was Feb-Mar 2019.
-    alter_script_names = ["v4_0_alter_1.sql", "v4_0_alter_2.sql",
-                          "v4_0_alter_5.sql", "v4_0_alter_7.sql",
-                          "v4_0_alter_8.sql", "v4_0_alter_9.sql",
-                          "v4_0_alter_10.sql", "v4_0_alter_11.sql",
-                          "v4_0_alter_12.sql", "v4_0_alter_13.sql"]
+    alter_script_list = get_alter_scripts(settings.alter_scripts_root)
 
     alter_scripts = [format_postgres_script(settings, script_template,
                                             script_root / "alter_scripts",
-                                            script_name,
+                                            script,
                                             db=settings.db_name,
                                             user=settings.db_owner_name)
-                     for script_name in alter_script_names]
+                     for script in alter_script_list]
 
     scripts = [main_script, sahsuland_script, dump_script, restore_script]
     scripts.extend(alter_scripts)
 
     return [(script, script_root) for script in scripts]
+
+
+def get_alter_scripts(script_root):
+    """Return the alter scripts found in the received directory."""
+
+    return natsort.natsorted(path.name for path in
+                             script_root.glob("v4_0_alter_*.sql"))
 
 
 def format_postgres_script(settings, template, script_root, script_name,
@@ -644,8 +654,16 @@ def get_windows_scripts(settings):
     main_script_string = "{} {} {}".format(str(main_script),
                                            settings.db_user, settings.db_pass)
     scripts = [(main_script_string, main_script.parent)]
-    alter_script = win_root / "alter scripts" / "run_alter_scripts.bat"
-    scripts.append((str(alter_script), alter_script.parent))
+
+    alter_script_list = get_alter_scripts(settings.alter_scripts_root)
+
+    script_template = """sqlcmd -E -d {} -b -m-1 -e -r1 -i {} -v pwd="%cd%" """
+    alter_scripts = [script_template.format(settings.db_name, script)
+                     for script in alter_script_list]
+
+    scripts.extend((script, settings.alter_scripts_root)
+                   for script in alter_scripts)
+
     return scripts
 
 
@@ -808,13 +826,14 @@ def go(message):
 
 
 @dataclass
-class Settings():
+class Settings:
     """The settings values for the RIF installation process."""
 
     pass
 
     db_type: str = ""
     script_root: Path = Path()
+    alter_scripts_root = Path()
     cat_home: Path = Path()
     war_dir: Path = Path()
     dev_mode: bool = False

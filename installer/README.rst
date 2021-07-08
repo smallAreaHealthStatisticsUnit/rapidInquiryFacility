@@ -42,7 +42,9 @@ You will also need to install several Python modules using Pip. Run ``pip instal
 
 * ``PyInstaller``
 * ``dataclasses``
+* ``configparser``
 * ``psycopg2``
+* ``natsort``
 * ``pywin32`` (on Windows)
 
 Maven
