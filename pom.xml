@@ -21,7 +21,7 @@
 		<rifGeneric.version>4.0.0-SNAPSHOT</rifGeneric.version>
 		<junit.version>4.11</junit.version>
 		<sqlserver.version>6.4.0.jre8</sqlserver.version>
-		<postgres.version>42.2.5</postgres.version>
+		<postgres.version>42.3.3</postgres.version>
 		<geotools.version>19.3</geotools.version>
 		<commons.lang3.version>3.3.1</commons.lang3.version>
 		<commons-io.version>1.3.2</commons-io.version>
