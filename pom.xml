@@ -30,7 +30,7 @@
 		<jackson.version>1.9.2</jackson.version>
 		<javax.servlet-api.version>3.0.1</javax.servlet-api.version>
 		<jersey-version>1.19.1</jersey-version>
-		<jettison.version>1.1</jettison.version>
+		<jettison.version>1.5.1</jettison.version>
 		<json.version>20140107</json.version>
 		<jsr311-api.version>1.1.1</jsr311-api.version>
 		<mimepull.version>1.9.3</mimepull.version>
