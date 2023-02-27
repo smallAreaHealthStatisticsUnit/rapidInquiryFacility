@@ -32,7 +32,7 @@
     "es6-promise": "^3.2.1",
     "express": "^4.17.1",
     "extend": "^3.0.2",
-    "forever": "^0.15.3",
+    "forever": "^4.0.3",
     "form-data": "^1.0.1",
     "gdal": "^0.9.9",
     "geojson2svg": "^1.2.3",
@@ -42,7 +42,7 @@
     "jszip": "^3.7.0",
     "lodash": "^4.17.21",
     "magic-globals": "^0.5.2",
-    "mapshaper": "^0.3.43",
+    "mapshaper": "^0.6.24",
     "morgan": "^1.10.0",
     "msnodesqlv8": "^0.6.12",
     "mssql": "^4.3.9",
@@ -58,7 +58,7 @@
     "svg2png": "^4.1.1",
     "svg2png-many": "0.0.7",
     "topojson": "^1.6.27",
-    "wellknown": "^0.4.2",
+    "wellknown": "^0.5.0",
     "xml2js": "^0.4.23"
   },
   "scripts": {
