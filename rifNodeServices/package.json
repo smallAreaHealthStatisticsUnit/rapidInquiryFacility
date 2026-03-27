@@ -32,7 +32,7 @@
     "es6-promise": "^3.2.1",
     "express": "^4.17.1",
     "extend": "^3.0.2",
-    "forever": "^0.15.3",
+    "forever": "^4.0.3",
     "form-data": "^1.0.1",
     "gdal": "^0.9.9",
     "geojson2svg": "^1.2.3",
