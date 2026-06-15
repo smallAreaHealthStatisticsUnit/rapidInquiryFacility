@@ -33,7 +33,7 @@
     "express": "^4.22.1",
     "extend": "^3.0.2",
     "forever": "^4.0.3",
-    "form-data": "^1.0.1",
+    "form-data": "^2.5.6",
     "gdal": "^0.9.9",
     "geojson2svg": "^1.2.3",
     "geojson2wkt": "^1.0.0",
