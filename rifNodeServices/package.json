@@ -43,7 +43,7 @@
     "lodash": "^4.18.1",
     "magic-globals": "^0.5.2",
     "mapshaper": "^0.3.43",
-    "morgan": "^1.10.0",
+    "morgan": "^1.11.0",
     "msnodesqlv8": "^0.6.12",
     "mssql": "^4.3.9",
     "mutexjs": "^1.2.0",
