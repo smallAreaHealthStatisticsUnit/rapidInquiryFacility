@@ -23,7 +23,7 @@
   ],
   "dependencies": {
     "@turf/turf": "^5.1.6",
-    "adm-zip": "^0.4.16",
+    "adm-zip": "^0.6.0",
     "async": "^2.6.3",
     "chroma-js": "^1.4.1",
     "cjson": "^0.4.0",
